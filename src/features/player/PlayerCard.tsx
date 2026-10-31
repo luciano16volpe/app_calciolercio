@@ -110,15 +110,15 @@ function Pairs({ data, player, onOpenPlayer }: { data: LeagueData; player: Playe
   );
 }
 
-export function PlayerCard({ data, playerId, onClose, onOpenPlayer, bachecaOpen, onToggleBacheca }: {
+export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch, bachecaOpen, onToggleBacheca }: {
   data: LeagueData;
   playerId: string;
   onClose: () => void;
   onOpenPlayer: (id: string) => void;
+  onOpenMatch: (matchId: string) => void;
   bachecaOpen: boolean;
   onToggleBacheca: () => void;
 }) {
-  const toast = useToast();
   const { dataset } = data;
   const player = dataset.players.find((p) => p.id === playerId);
   const [pagelleOpen, setPagelleOpen] = useState<{ focus?: string } | null>(null);
@@ -135,7 +135,6 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, bachecaOpen,
   if (!player) return null;
   const state = formState(dataset, player, all);
   const w = formWeightView(dataset, player, useForm, all);
-  const openMatch = () => toast('La scheda partita arriva con il passo 3.4');
 
   return (
     <>
@@ -190,7 +189,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, bachecaOpen,
               </div>
             </div>
             <div id="modal-pagelle" style={{ marginTop: 4, paddingTop: 6, borderTop: '1px solid var(--gray2)' }}>
-              <PagelleSection data={data} player={player} onOpenAll={(focus) => setPagelleOpen({ focus })} onOpenMatch={openMatch} />
+              <PagelleSection data={data} player={player} onOpenAll={(focus) => setPagelleOpen({ focus })} onOpenMatch={onOpenMatch} />
             </div>
             <Bacheca data={data} player={player} open={bachecaOpen} onToggle={onToggleBacheca} />
             <Pairs data={data} player={player} onOpenPlayer={onOpenPlayer} />
@@ -198,7 +197,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, bachecaOpen,
         </div>
       </div>
       {pagelleOpen ? (
-        <PlayerPagelleDialog data={data} player={player} focusId={pagelleOpen.focus} onClose={() => setPagelleOpen(null)} onOpenMatch={openMatch} />
+        <PlayerPagelleDialog data={data} player={player} focusId={pagelleOpen.focus} onClose={() => setPagelleOpen(null)} onOpenMatch={onOpenMatch} />
       ) : null}
     </>
   );

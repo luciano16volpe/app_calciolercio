@@ -77,3 +77,9 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 ## Date mostrate (Fase 3)
 - La vecchia app, con le date che oggi restituisce lo script Google (istanti in UTC), mostra ogni partita **un giorno prima**
   (es. 27/10 invece di 28/10). La nuova app mostra il giorno italiano corretto (vedi `romeDate` nell'importazione).
+
+## Scheda partita (Fase 3.4)
+- Nella scheda partita un voto **mancante** resta vuoto. Legacy mostrava "0" (il foglio dà 0 a una cella vuota); con la nuova
+  base dati un voto assente è `null` e non si inventa uno 0. Con i dati attuali non cambia nulla (tutte le pagelle hanno voto).
+- Le immagini delle Gazzette si aprono dal file completo (circa 0,5 MB l'una). Le miniature più leggere si possono generare
+  al momento del caricamento (passo 3.7).

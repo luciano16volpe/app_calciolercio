@@ -1,7 +1,6 @@
 // Pagina Classifiche: scelta della stagione, i quattro numeri, schede scorrevoli.
 // Fonte: renderClassifiche, renderSeasonDash, CL_TABS in legacy/index.html.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useToast } from '../../app/Toast';
 import type { LeagueData } from '../../data/queries';
 import { nextStatsSort, seasonDash, STATS_SORT_DEFAULT, type StatsCol, type StatsFilter } from '../../domain/rankings';
 import { seasonsList } from '../../domain/seasons';
@@ -34,8 +33,7 @@ export function SeasonDash({ data, scope }: { data: LeagueData; scope: string })
   );
 }
 
-export function ClassifichePage({ data, onOpenPlayer }: { data: LeagueData; onOpenPlayer: (playerId: string) => void }) {
-  const toast = useToast();
+export function ClassifichePage({ data, onOpenPlayer, onOpenMatch }: { data: LeagueData; onOpenPlayer: (playerId: string) => void; onOpenMatch: (matchId: string) => void }) {
   // stagione scelta (null = la più recente) e scheda: restano come scelti finché l'app è aperta
   const [scopeSel, setScopeSel] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('marcatori');
@@ -44,7 +42,6 @@ export function ClassifichePage({ data, onOpenPlayer }: { data: LeagueData; onOp
   const [cmp, setCmp] = useState<{ a: string | null; b: string | null }>({ a: null, b: null });
   const seasons = useMemo(() => seasonsList(data.dataset.matches, data.albo).slice().reverse(), [data]);
   const scope = scopeSel ?? (seasons.length ? (seasons[0] as { key: string }).key : 'all');
-  const openMatch = () => toast('La scheda partita arriva con il passo 3.4');
 
   // le scelte attive restano visibili nelle righe scorrevoli
   const seasonsRef = useRef<HTMLDivElement>(null);
@@ -80,7 +77,7 @@ export function ClassifichePage({ data, onOpenPlayer }: { data: LeagueData; onOp
             {tab === 'assist' ? <ScorersList data={data} scope={scope} field="assist" onOpenPlayer={onOpenPlayer} /> : null}
             {tab === 'media' ? <MediaList data={data} scope={scope} onOpenPlayer={onOpenPlayer} /> : null}
             {tab === 'coppie' ? <CoppieList data={data} scope={scope} onOpenPlayer={onOpenPlayer} /> : null}
-            {tab === 'record' ? <RecordList data={data} scope={scope} onOpenPlayer={onOpenPlayer} onOpenMatch={openMatch} /> : null}
+            {tab === 'record' ? <RecordList data={data} scope={scope} onOpenPlayer={onOpenPlayer} onOpenMatch={onOpenMatch} /> : null}
             {tab === 'confronto' ? <Confronto data={data} scope={scope} a={cmp.a} b={cmp.b} onChange={(a, b) => setCmp({ a, b })} /> : null}
           </div>
         </div>

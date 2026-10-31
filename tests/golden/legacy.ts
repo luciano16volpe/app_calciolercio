@@ -65,6 +65,7 @@ export interface LegacyData {
   matches: unknown[];
   ratings: unknown[];
   albo?: unknown[];
+  gazzette?: unknown[];
 }
 
 /** Ambiente legacy con le funzioni richieste e i dati caricati. */
@@ -77,7 +78,8 @@ export function loadLegacy<T extends Record<string, unknown>>(
   const prelude = `
     var players=[], weights=[], matches=[], matchesCache={timestamp:0,data:null}, _seasonMemo={}, useFormInBalance=true, _formCache=null, _evMemo=null;
     function __useForm(b){useFormInBalance=b;}
-    var __el={innerHTML:'',textContent:'',style:{},scrollIntoView:function(){}}, __scope='all', document={getElementById:function(){return __el;}};
+    var __el={innerHTML:'',textContent:'',style:{},scrollIntoView:function(){},querySelectorAll:function(){return [];}}, __scope='all', document={getElementById:function(){return __el;},querySelectorAll:function(){return [];}};
+    function renderScorers(){}
     var sizeA=5, sizeB=5, selected=new Set(), allCombos=[], currentIdx=0, genBest=null, bachecaOpen=false, clTab='marcatori', statsSort={col:'goals',dir:-1}, statsFilter='regulars', cmpA=null, cmpB=null;
     function futPreload(){}
     function __stats(c,d,f){statsSort={col:c,dir:d};statsFilter=f;}
@@ -96,7 +98,7 @@ export function loadLegacy<T extends Record<string, unknown>>(
     function __gen(sa,sb,sel){sizeA=sa;sizeB=sb;selected=new Set(sel);allCombos=[];genBest=null;generateTeams();return {combos:allCombos,genBest:genBest};}
     function clCurrentScope(){return __scope;}
     function __run(fn,scope){__scope=scope;__el.innerHTML='';fn();return __el.innerHTML;}
-    function __set(p,w,m,r,a){players=p;weights=w;matches=m;matchesCache={timestamp:0,data:{ratings:r,albo:a||[]}};_seasonMemo={};_evMemo=null;}
+    function __set(p,w,m,r,a,g){players=p;weights=w;matches=m;matchesCache={timestamp:0,data:{ratings:r,albo:a||[],gazzette:g||[]}};_seasonMemo={};_evMemo=null;}
   `;
   const src = [prelude, ...consts.map(extractConst), ...functions.map(extractFunction)].join('\n');
   const names = functions.concat(consts).join(',');
@@ -131,6 +133,6 @@ export function loadLegacy<T extends Record<string, unknown>>(
     __stats: (c: string, d: number, f: string) => void;
     __cmp: (a: string | null, b: string | null) => void;
   };
-  api.__set(data.players, data.weights, data.matches, data.ratings, data.albo);
+  api.__set(data.players, data.weights, data.matches, data.ratings, data.albo, data.gazzette);
   return api;
 }
