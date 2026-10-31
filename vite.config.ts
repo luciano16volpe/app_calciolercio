@@ -27,5 +27,6 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts', 'src/**/*.test.ts'],
+    testTimeout: 60_000, // i test del sorteggio provano migliaia di combinazioni
   },
 });

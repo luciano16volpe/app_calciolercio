@@ -20,12 +20,12 @@ stessi dati (`tests/fixtures/app_data.json`, `legacy/rosa_calcetto.json`):
 - [x] whatsapp (parseWhatsAppPagelle + abbinamento nomi) — i 4 messaggi reali: 40/40
 
 ## Fase 2 — Importazione dei dati (ripetibile)
-- [ ] Strumento (pagina o script) che legge l'attuale script Google (azione `matches`: partite,
+- [x] Strumento (pagina o script) che legge l'attuale script Google (azione `matches`: partite,
       pagelle, albo, gazzette) e `rosa_calcetto.json`, e scrive in Supabase usando `legacy_id`
       (una seconda importazione aggiorna, non duplica)
-- [ ] Foto dei giocatori (base64 nella rosa) → Storage `photos`; Gazzette (Drive, azione `gazFile`)
+- [x] Foto dei giocatori (base64 nella rosa) → Storage `photos`; Gazzette (Drive, azione `gazFile`)
       → Storage `gazzette/<lega>/<partita>.jpg`
-- [ ] Lega "CalcioLercio" pubblica, l'utente come admin; controllo: stessi numeri della legacy
+- [x] Lega "CalcioLercio" pubblica, l'utente come admin; controllo: stessi numeri della legacy
 
 ## Fase 3 — Schermate, collegate a Supabase
 - [ ] Rosa (+ scheda giocatore) · Gioca · Partite (+ scheda partita, importazione WhatsApp,

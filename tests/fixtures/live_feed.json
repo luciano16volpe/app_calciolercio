@@ -1,0 +1,3929 @@
+{
+ "ok": true,
+ "matches": [
+  {
+   "id": "m_1782114727213",
+   "date": "2026-06-16T22:00:00.000Z",
+   "notes": "Martino e Nico Si fanno",
+   "teamA": [
+    {
+     "id": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+     "name": "Rella"
+    },
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    },
+    {
+     "id": "p_f74997a0-d943-43a9-ba0f-a48894cf7f01",
+     "name": "MartinoNico"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+     "name": "Grosso"
+    },
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    },
+    {
+     "id": "p_ba65481a-bda1-4fda-ae9a-6e53f4a851eb",
+     "name": "DavideAddante"
+    },
+    {
+     "id": "p_34d10f4e-f7b9-47f1-aa1c-a6db2b651b54",
+     "name": "FabioFicarelli"
+    }
+   ],
+   "scoreA": 6,
+   "scoreB": 3,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1782115017206",
+   "date": "2026-06-09T22:00:00.000Z",
+   "notes": "Auguri Distaso",
+   "teamA": [
+    {
+     "id": "p_7a9e8570-80a4-43aa-a949-e8424fff1fef",
+     "name": "Filippo"
+    },
+    {
+     "id": "p_dd795779-f9c7-4b62-9c7d-ad4bdccda637",
+     "name": "FabioFicarelli"
+    },
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    },
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    },
+    {
+     "id": "p_95d8ceef-7c42-4276-97c4-180e40347909",
+     "name": "Lombrico"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+     "name": "Vito Azz"
+    },
+    {
+     "id": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+     "name": "Rella"
+    },
+    {
+     "id": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+     "name": "Grosso"
+    },
+    {
+     "id": "p_67513ab3-8547-48a5-818e-8cf947caad85",
+     "name": "Distaso"
+    },
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_d938f62e-554c-42a2-8e6e-6a2043286989",
+     "name": "Caputo"
+    }
+   ],
+   "scoreA": 5,
+   "scoreB": 9,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1782138984029",
+   "date": "2026-05-19T22:00:00.000Z",
+   "notes": "Caputo Se Ne Va Filippo non viene",
+   "teamA": [
+    {
+     "id": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+     "name": "Rella"
+    },
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    },
+    {
+     "id": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+     "name": "Vito Azz"
+    },
+    {
+     "id": "p_d938f62e-554c-42a2-8e6e-6a2043286989",
+     "name": "Caputo"
+    },
+    {
+     "id": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+     "name": "Seghino"
+    },
+    {
+     "id": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+     "name": "Grosso"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    },
+    {
+     "id": "p_7a9e8570-80a4-43aa-a949-e8424fff1fef",
+     "name": "Filippo"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    },
+    {
+     "id": "p_95d8ceef-7c42-4276-97c4-180e40347909",
+     "name": "Lombrico"
+    },
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    }
+   ],
+   "scoreA": 5,
+   "scoreB": 4,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1782852679795",
+   "date": "2026-06-29T22:00:00.000Z",
+   "notes": "Grosso GoldenGol",
+   "teamA": [
+    {
+     "id": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+     "name": "Rella"
+    },
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_edb21ffe-9ec2-4d4a-b031-ad4b3409f09b",
+     "name": "DavideAddante"
+    },
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    },
+    {
+     "id": "p_91c8faa1-2286-4b53-8d8a-cc0d1d41d652",
+     "name": "MartinoNico"
+    },
+    {
+     "id": "p_1f4549dc-da2e-4ec7-978c-b9ce5a509a07",
+     "name": "Ventrella"
+    },
+    {
+     "id": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+     "name": "Grosso"
+    }
+   ],
+   "scoreA": 9,
+   "scoreB": 10,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1783451214779",
+   "date": "2026-07-06T22:00:00.000Z",
+   "notes": "Rella occhio nero",
+   "teamA": [
+    {
+     "id": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+     "name": "Rella"
+    },
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_91c8faa1-2286-4b53-8d8a-cc0d1d41d652",
+     "name": "MartinoNico"
+    },
+    {
+     "id": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+     "name": "Vito Azz"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    },
+    {
+     "id": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+     "name": "Grosso"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    },
+    {
+     "id": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+     "name": "FabioFicarelli"
+    },
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    }
+   ],
+   "scoreA": 5,
+   "scoreB": 1,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1784032520133",
+   "date": "2026-07-14T22:00:00.000Z",
+   "notes": "Due squadre di merda",
+   "teamA": [
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_38e62dfb-3d53-4c0a-81d5-cccbc04121e1",
+     "name": "Tubo"
+    },
+    {
+     "id": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+     "name": "Grosso"
+    },
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_163b3fe3-66b8-4fb7-a373-e1800ca3af34",
+     "name": "FabioMartino"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    },
+    {
+     "id": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+     "name": "Vito Azz"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    },
+    {
+     "id": "p_1f4549dc-da2e-4ec7-978c-b9ce5a509a07",
+     "name": "Ventrella"
+    },
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    }
+   ],
+   "scoreA": 9,
+   "scoreB": 9,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1784654488723",
+   "date": "2026-07-20T22:00:00.000Z",
+   "notes": "Ritorno di seghino",
+   "teamA": [
+    {
+     "id": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+     "name": "Rella"
+    },
+    {
+     "id": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+     "name": "Grosso"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    },
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+     "name": "Seghino"
+    },
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    },
+    {
+     "id": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+     "name": "Vito Azz"
+    },
+    {
+     "id": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+     "name": "FabioFicarelli"
+    }
+   ],
+   "scoreA": 6,
+   "scoreB": 7,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1785244003500",
+   "date": "2026-07-27T22:00:00.000Z",
+   "notes": "Grosso fa crack",
+   "teamA": [
+    {
+     "id": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+     "name": "Rella"
+    },
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+     "name": "Vito Azz"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    },
+    {
+     "id": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+     "name": "Grosso"
+    },
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    },
+    {
+     "id": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+     "name": "FabioFicarelli"
+    },
+    {
+     "id": "p_edb21ffe-9ec2-4d4a-b031-ad4b3409f09b",
+     "name": "DavideAddante"
+    }
+   ],
+   "scoreA": 13,
+   "scoreB": 9,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1785782104384",
+   "date": "2026-08-02T22:00:00.000Z",
+   "notes": "Ritorno di Uefa e Distaso",
+   "teamA": [
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+     "name": "Rella"
+    },
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    },
+    {
+     "id": "p_67513ab3-8547-48a5-818e-8cf947caad85",
+     "name": "Distaso"
+    },
+    {
+     "id": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+     "name": "FabioFicarelli"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+     "name": "Vito Azz"
+    },
+    {
+     "id": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+     "name": "Seghino"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    },
+    {
+     "id": "p_d8f3fe94-1d49-4b77-ab40-8956dfcbe7ee",
+     "name": "Uefa"
+    }
+   ],
+   "scoreA": 4,
+   "scoreB": 11,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1789385322591",
+   "date": "2026-09-14T22:00:00.000Z",
+   "notes": "Si ritorna",
+   "teamA": [
+    {
+     "id": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+     "name": "Rella"
+    },
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    },
+    {
+     "id": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+     "name": "Vito Azz"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    },
+    {
+     "id": "p_d938f62e-554c-42a2-8e6e-6a2043286989",
+     "name": "Caputo"
+    },
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    },
+    {
+     "id": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+     "name": "Seghino"
+    },
+    {
+     "id": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+     "name": "FabioFicarelli"
+    }
+   ],
+   "scoreA": 13,
+   "scoreB": 3,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1790241838929",
+   "date": "2026-09-22T22:00:00.000Z",
+   "notes": "Chiudi le gambe Rella",
+   "teamA": [
+    {
+     "id": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+     "name": "Rella"
+    },
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    },
+    {
+     "id": "p_edb21ffe-9ec2-4d4a-b031-ad4b3409f09b",
+     "name": "DavideAddante"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    },
+    {
+     "id": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+     "name": "FabioFicarelli"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    },
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_38e62dfb-3d53-4c0a-81d5-cccbc04121e1",
+     "name": "Tubo"
+    },
+    {
+     "id": "p_688392fa-9122-4886-b076-e12c5490e1ab",
+     "name": "Nico Pontrelli"
+    }
+   ],
+   "scoreA": 4,
+   "scoreB": 6,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1790403405403",
+   "date": "2026-09-29T22:00:00.000Z",
+   "notes": "Ritorni",
+   "teamA": [
+    {
+     "id": "p_688392fa-9122-4886-b076-e12c5490e1ab",
+     "name": "Nico Pontrelli"
+    },
+    {
+     "id": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+     "name": "Vito Azz"
+    },
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+     "name": "Rella"
+    },
+    {
+     "id": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+     "name": "FabioFicarelli"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    },
+    {
+     "id": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+     "name": "Grosso"
+    },
+    {
+     "id": "p_7a9e8570-80a4-43aa-a949-e8424fff1fef",
+     "name": "Filippo"
+    },
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    }
+   ],
+   "scoreA": 6,
+   "scoreB": 12,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1791292543461",
+   "date": "2026-10-06T22:00:00.000Z",
+   "notes": "",
+   "teamA": [
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+     "name": "Vito Azz"
+    },
+    {
+     "id": "p_edb21ffe-9ec2-4d4a-b031-ad4b3409f09b",
+     "name": "DavideAddante"
+    },
+    {
+     "id": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+     "name": "FabioFicarelli"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_7a9e8570-80a4-43aa-a949-e8424fff1fef",
+     "name": "Filippo"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    },
+    {
+     "id": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+     "name": "Seghino"
+    },
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    },
+    {
+     "id": "p_62278841-7ffc-427a-8492-c1961578d05b",
+     "name": "Ivano"
+    }
+   ],
+   "scoreA": 9,
+   "scoreB": 10,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1791658589782",
+   "date": "2026-10-13T22:00:00.000Z",
+   "notes": "Senza Rella",
+   "teamA": [
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    },
+    {
+     "id": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+     "name": "Grosso"
+    },
+    {
+     "id": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+     "name": "Vito Azz"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_7a9e8570-80a4-43aa-a949-e8424fff1fef",
+     "name": "Filippo"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    },
+    {
+     "id": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+     "name": "FabioFicarelli"
+    },
+    {
+     "id": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+     "name": "Seghino"
+    },
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    }
+   ],
+   "scoreA": 8,
+   "scoreB": 9,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1792399331094",
+   "date": "2026-10-20T22:00:00.000Z",
+   "notes": "Senza Steppata",
+   "teamA": [
+    {
+     "id": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+     "name": "Rella"
+    },
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    },
+    {
+     "id": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+     "name": "Vito Azz"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_7a9e8570-80a4-43aa-a949-e8424fff1fef",
+     "name": "Filippo"
+    },
+    {
+     "id": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+     "name": "Grosso"
+    },
+    {
+     "id": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+     "name": "Seghino"
+    },
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    },
+    {
+     "id": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+     "name": "FabioFicarelli"
+    }
+   ],
+   "scoreA": 8,
+   "scoreB": 2,
+   "pred": null,
+   "predRank": null
+  },
+  {
+   "id": "m_1793006655774",
+   "date": "2026-10-27T23:00:00.000Z",
+   "notes": "vito in bianco",
+   "teamA": [
+    {
+     "id": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+     "name": "Seghino"
+    },
+    {
+     "id": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+     "name": "Steppata"
+    },
+    {
+     "id": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+     "name": "Grosso"
+    },
+    {
+     "id": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+     "name": "Nico Sifanno"
+    },
+    {
+     "id": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+     "name": "FabioFicarelli"
+    }
+   ],
+   "teamB": [
+    {
+     "id": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+     "name": "Luciano"
+    },
+    {
+     "id": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+     "name": "Cioccolata"
+    },
+    {
+     "id": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+     "name": "Peppe"
+    },
+    {
+     "id": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+     "name": "Vito Azz"
+    },
+    {
+     "id": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+     "name": "Rella"
+    }
+   ],
+   "scoreA": 6,
+   "scoreB": 8,
+   "pred": null,
+   "predRank": null
+  }
+ ],
+ "ratings": [
+  {
+   "matchId": "m_1782114727213",
+   "player": "Rella",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782114727213",
+   "player": "Luciano",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782114727213",
+   "player": "Cioccolata",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782114727213",
+   "player": "Peppe",
+   "rating": 7,
+   "notes": "",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782114727213",
+   "player": "MartinoNico",
+   "rating": 7.5,
+   "notes": "",
+   "playerId": "p_f74997a0-d943-43a9-ba0f-a48894cf7f01",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782114727213",
+   "player": "Steppata",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782114727213",
+   "player": "Grosso",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782114727213",
+   "player": "Nico Sifanno",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782114727213",
+   "player": "DavideAddante",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_ba65481a-bda1-4fda-ae9a-6e53f4a851eb",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782114727213",
+   "player": "FabioFicarelli",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_34d10f4e-f7b9-47f1-aa1c-a6db2b651b54",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782138984029",
+   "player": "Rella",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782138984029",
+   "player": "Nico Sifanno",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782138984029",
+   "player": "Vito Azz",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782138984029",
+   "player": "Seghino",
+   "rating": 7,
+   "notes": "",
+   "playerId": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782138984029",
+   "player": "Grosso",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782138984029",
+   "player": "Cioccolata",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782138984029",
+   "player": "Peppe",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782138984029",
+   "player": "Lombrico",
+   "rating": 4,
+   "notes": "",
+   "playerId": "p_95d8ceef-7c42-4276-97c4-180e40347909",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782138984029",
+   "player": "Luciano",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782138984029",
+   "player": "Steppata",
+   "rating": 7,
+   "notes": "",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782852679795",
+   "player": "Rella",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+   "goals": 5,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782852679795",
+   "player": "Luciano",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782852679795",
+   "player": "DavideAddante",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_edb21ffe-9ec2-4d4a-b031-ad4b3409f09b",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782852679795",
+   "player": "Cioccolata",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782852679795",
+   "player": "Peppe",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782852679795",
+   "player": "Steppata",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782852679795",
+   "player": "Nico Sifanno",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 4,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782852679795",
+   "player": "MartinoNico",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_91c8faa1-2286-4b53-8d8a-cc0d1d41d652",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782852679795",
+   "player": "Ventrella",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_1f4549dc-da2e-4ec7-978c-b9ce5a509a07",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782852679795",
+   "player": "Grosso",
+   "rating": 7,
+   "notes": "",
+   "playerId": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+   "goals": 4,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784032520133",
+   "player": "Steppata",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 1,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784032520133",
+   "player": "Tubo",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_38e62dfb-3d53-4c0a-81d5-cccbc04121e1",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784032520133",
+   "player": "Grosso",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784032520133",
+   "player": "Luciano",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784032520133",
+   "player": "FabioMartino",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_163b3fe3-66b8-4fb7-a373-e1800ca3af34",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784032520133",
+   "player": "Nico Sifanno",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784032520133",
+   "player": "Vito Azz",
+   "rating": 7,
+   "notes": "",
+   "playerId": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+   "goals": 3,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784032520133",
+   "player": "Peppe",
+   "rating": 7,
+   "notes": "",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 5,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784032520133",
+   "player": "Ventrella",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_1f4549dc-da2e-4ec7-978c-b9ce5a509a07",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784032520133",
+   "player": "Cioccolata",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1783451214779",
+   "player": "Rella",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1783451214779",
+   "player": "Steppata",
+   "rating": 7,
+   "notes": "",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1783451214779",
+   "player": "Luciano",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 1,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1783451214779",
+   "player": "MartinoNico",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_91c8faa1-2286-4b53-8d8a-cc0d1d41d652",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1783451214779",
+   "player": "Vito Azz",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1783451214779",
+   "player": "Cioccolata",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1783451214779",
+   "player": "Grosso",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1783451214779",
+   "player": "Peppe",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1783451214779",
+   "player": "FabioFicarelli",
+   "rating": 4.5,
+   "notes": "",
+   "playerId": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1783451214779",
+   "player": "Nico Sifanno",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782115017206",
+   "player": "Filippo",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_7a9e8570-80a4-43aa-a949-e8424fff1fef",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782115017206",
+   "player": "FabioFicarelli",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_dd795779-f9c7-4b62-9c7d-ad4bdccda637",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782115017206",
+   "player": "Cioccolata",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782115017206",
+   "player": "Luciano",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782115017206",
+   "player": "Peppe",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782115017206",
+   "player": "Lombrico",
+   "rating": 4,
+   "notes": "",
+   "playerId": "p_95d8ceef-7c42-4276-97c4-180e40347909",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782115017206",
+   "player": "Vito Azz",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782115017206",
+   "player": "Rella",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782115017206",
+   "player": "Grosso",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782115017206",
+   "player": "Distaso",
+   "rating": 10,
+   "notes": "",
+   "playerId": "p_67513ab3-8547-48a5-818e-8cf947caad85",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782115017206",
+   "player": "Steppata",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1782115017206",
+   "player": "Caputo",
+   "rating": 7.5,
+   "notes": "",
+   "playerId": "p_d938f62e-554c-42a2-8e6e-6a2043286989",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784654488723",
+   "player": "Rella",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784654488723",
+   "player": "Grosso",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784654488723",
+   "player": "Peppe",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784654488723",
+   "player": "Luciano",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784654488723",
+   "player": "Nico Sifanno",
+   "rating": 4.5,
+   "notes": "",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784654488723",
+   "player": "Steppata",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784654488723",
+   "player": "Seghino",
+   "rating": 7,
+   "notes": "",
+   "playerId": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784654488723",
+   "player": "Cioccolata",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784654488723",
+   "player": "Vito Azz",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1784654488723",
+   "player": "FabioFicarelli",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 1,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785244003500",
+   "player": "Rella",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785244003500",
+   "player": "Steppata",
+   "rating": 7,
+   "notes": "",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785244003500",
+   "player": "Luciano",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785244003500",
+   "player": "Vito Azz",
+   "rating": 7.5,
+   "notes": "",
+   "playerId": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+   "goals": 7,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785244003500",
+   "player": "Peppe",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 3,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785244003500",
+   "player": "Cioccolata",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785244003500",
+   "player": "Grosso",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785244003500",
+   "player": "Nico Sifanno",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785244003500",
+   "player": "FabioFicarelli",
+   "rating": 7.5,
+   "notes": "",
+   "playerId": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+   "goals": 5,
+   "autogol": 0,
+   "meta": 1,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785244003500",
+   "player": "DavideAddante",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_edb21ffe-9ec2-4d4a-b031-ad4b3409f09b",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785782104384",
+   "player": "Steppata",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785782104384",
+   "player": "Rella",
+   "rating": 4,
+   "notes": "",
+   "playerId": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785782104384",
+   "player": "Nico Sifanno",
+   "rating": 4.5,
+   "notes": "",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785782104384",
+   "player": "Distaso",
+   "rating": 5,
+   "notes": "",
+   "playerId": "p_67513ab3-8547-48a5-818e-8cf947caad85",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785782104384",
+   "player": "FabioFicarelli",
+   "rating": 5.5,
+   "notes": "",
+   "playerId": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785782104384",
+   "player": "Luciano",
+   "rating": 6,
+   "notes": "",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785782104384",
+   "player": "Vito Azz",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+   "goals": 3,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785782104384",
+   "player": "Seghino",
+   "rating": 6.5,
+   "notes": "",
+   "playerId": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785782104384",
+   "player": "Peppe",
+   "rating": 7.5,
+   "notes": "",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 1,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1785782104384",
+   "player": "Uefa",
+   "rating": 8,
+   "notes": "",
+   "playerId": "p_d8f3fe94-1d49-4b77-ab40-8956dfcbe7ee",
+   "goals": 5,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791658589782",
+   "player": "Steppata",
+   "rating": 5.5,
+   "notes": "Il pensiero pre-partita va senz altro all’offerta all you can Eat di pizza e panzerotti del Fornaccio, forse per questo il Capitano dei blu inizialmente risulta deconcentrato, soprattutto in difesa dove concede troppo agli avversari con addirittura 5 gol (più della metà del loro bottino totale) nei primi minuti. Sicuramente sottotono rispetto ai suoi soliti standard, paga probabilmente lo stresso di una dura giornata lavorativa. D’altronde, 29 anni di contributi non si maturano certo da soli.",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 2,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791658589782",
+   "player": "Luciano",
+   "rating": 6.5,
+   "notes": "Senza dubbio il migliore dei suoi, più ordinato rispetto agli altri, ara il campo (e gli avversari) sulla fascia destra e si riscopre bombardiere scelto con 4 gol, tutti bolidi da fuori area. Continua la sua diatriba con Fabio, accusandolo di stare più per terra che in piedi, si ritrova poi bersaglio degli avversari che per ripicca lo affossano più volte, tra cui anche un intervento con cui si guadagna un rigore che gli provocherà un piede gonfio e viola (occhio che potrebbe essere gotta).",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 4,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791658589782",
+   "player": "Cioccolata",
+   "rating": 5.5,
+   "notes": "Caricatosi tutta la settimana con i video delle giocate di Lamine Yamal, il nostro Cioccolata le prova in partita cercando di superare Luciano, non accorgendosi però di essere compagni di squadra. Meno ordinato del solito, perde diversi palloni sanguinosi in difesa cercando di uscire palla al piede propiziando almeno un paio di gol degli avversari. Partecipe dell inizio di partita horror dei suoi, sale di livello durante il match con le sue famose sgroppate bislacche, trovando anche la rete su ribattuta da fuori area. Trova la soluzione alla sua eterna emicrania semplicemente parlando col dott Gianni della pizzeria da Nico che gli fornisce immediatamente diagnosi e cura.",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791658589782",
+   "player": "Grosso",
+   "rating": 5.5,
+   "notes": "Ritorno in campo per il bomber di San Girolamo, che fin dalle prime considerazioni di stampa e analisti del CalcioLercio post pubblicazione delle squadre, ponevano diversi dubbi legati alla simultanea presenza in squadra con Vito Azz. Cerca infatti fin da subito di trovare, grazie alla sua duttilità, una posizione più congeniale all organizzazione di squadra, talvolta esterno sinistro, talvolta punta di raccordo, senza però risultati degni di nota, diversi gli appoggi sbagliati e poche le occasioni lì davanti. Mezzo punto in più per la grande abnegazione e lo spirito di sacrificio. Lamenta però fin da subito una scarsa condizione atletica a causa dell’intermittenza settimanale che l hanno portato a saltare alcune partite.",
+   "playerId": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791658589782",
+   "player": "Vito Azz",
+   "rating": 5.5,
+   "notes": "Partita dai due volti quella del bomber di Japigia, inizio promettente con gol di pregevole fattura (con cui supera in velocità avversario e appoggia dentro col portiere in uscita), cala fisicamente a metà partita dove pesa molto un suo rigore sbagliato tirato con estrema superficialità (non da lui) e un paio di buoni tiri parati. The Wall Seghino e l ottima organizzazione tattica dei bianchi non gli concedono granché, tiene su qualche palla e pressa i bianchi per quanto può, mette comunque a segno una tripletta. Ci aspettiamo di più, probabilmente paga lo strazio di aver solo distrutto il cellulare di una vecchia e non averla uccisa col muletto.",
+   "playerId": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+   "goals": 3,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 1,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791658589782",
+   "player": "Filippo",
+   "rating": 6,
+   "notes": "Non ruba l’occhio ai pagellisti ma gioca una partita ordinata, concreta e solida, ha buona corsa, vince tutti i rimpalli e segna una tripletta. Quando c’è Fabio in porta si ritrova attaccante dove perde parecchio, non è il suo ruolo e si vede. Para anche un rigore decisivo facendo una danza ridicola, probabilmente disorientando BaVito dal dischetto.",
+   "playerId": "p_7a9e8570-80a4-43aa-a949-e8424fff1fef",
+   "goals": 3,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791658589782",
+   "player": "Peppe",
+   "rating": 6.5,
+   "notes": "Ha una striscia di vittorie consecutive che nemmeno l inter di Mourinho può vantare. Meno devastante del solito, forse a causa di un lieve infortunio, si vede che tira i remi in barca e cerca di gestirsi, poche le sgasate in avanti ma comunque decisive, anche da centrale risulta efficiente ed efficace, per questo in zona gol si vede poco mettendo a referto un solo centro. Neanche mettergli Fabio in squadra funziona per farlo perdere.",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791658589782",
+   "player": "FabioFicarelli",
+   "rating": 7.5,
+   "notes": "Pungolato per tutta la settimana da stampa e mass media, coach Ficarelli vive questo mercoledì come la partita della verità, sfoderando la sua miglior prestazione stagionale. Capocannoniere della partita con ben 5 gol, l’osteopata di San Pasquale sfrutta la solidità e l organizzazione dei compagni di squadra per svariare su tutto il fronte d attacco, corre, pressa, gioca di squadra e finalmente evita (o quantomeno limita fortemente) le sue serpentine e giocate inutili.   Si guadagna la palma di migliore in campo e la sua % di vittorie sale al 12%. Non abbandona però il suo delirio di “onnipotenza” paragonandosi addirittura a Francesco Totti in settimana.",
+   "playerId": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+   "goals": 5,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791658589782",
+   "player": "Seghino",
+   "rating": 7.5,
+   "notes": "Seconda partita consecutiva ad alti livelli per il nostro Seghino, questa volta dominante nel vero senso della parola. Solido e concentrato per tutta la durata della partita, chiude e raddoppia tutti, con le sue lunghe leve riesce ad intercettare tutto quello che si aggira dalle sue zone, non concede veramente nulla. MVP ex-aequo con Fabio. Grande comunicatore in campo, comanda i suoi come un novello Gordon Ramsay.",
+   "playerId": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791658589782",
+   "player": "Nico Sifanno",
+   "rating": 5.5,
+   "notes": "Prestazione incolore ed anonima per lui, lo si vede molto poco complice anche un infortunio che lo relega in porta per un bel po di tempo e, probabilmente, lo costringe a rinunciare anche alle sue solite sgasate a tutta fascia. Forse vi ricorderete di lui per quel gol sbagliato a porta libera ed un paio di bolidi tirati 8 metri sopra la traversa.",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791292543461",
+   "player": "Steppata",
+   "rating": 6,
+   "notes": "Il Capitano dei Blu, già in conferenza stampa pre-partita, affermava la superiorità atletica e tattica dei bianchi ed in effetti così è stato. Inizio di partita timido con qualche rischio e pallone perso di troppo, il calo fisico dei Bianchi a metà partita concede a lui e ai suoi di recuperare, grazie alla maggiore tecnica ed esperienza. Proprio in questa fase il nostro Step sale in cattedra abbandonando addirittura il tasto X del passaggio compulsivo, segnando 2 gol di pregevole fattura da fuori area. Non basta però per spezzare la maledizione di Fabio, la sconfitta maturata con disattenzioni finali che portano a 3 gol subiti in pochissimi minuti lascia ai blu parecchio _amaro in bocca_.",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791292543461",
+   "player": "Luciano",
+   "rating": 6.5,
+   "notes": "El Tractor ritorna ad essere finalmente un valore aggiunto, instoppabili le sue sgroppate a rilento dribblando con la suola, autentico muro in difesa (ricordiamo almeno 27 tiri parati con il suo immenso e lungo corpo) e prodigioso in porta (memorabile un suo colpo di reni da terra che evita una carambola che stava finendo dritta in porta). 2 gol, 1 assist e, soprattutto, 1 autorete che lo proietta capocannoniere dei gol nella propria porta. Il suo tiro dritto per dritto continua a non fare paura e a non girare mai, potrebbe tranquillamente essere un bug delle partitelle del mercoledì sera ma preferisce continuare a cazzeggiare per apportare discutibili “migliorie” all interno dell app CalcioLercio (avrebbe annunciato a breve l introduzione di robot fisici creati dall algoritmo che giocherebbero le partite al posto nostro).",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 2,
+   "autogol": 1,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791292543461",
+   "player": "Vito Azz",
+   "rating": 5.5,
+   "notes": "La leggenda narra che l’ostetrica, subito dopo aver consegnato il bambino appena nato tra le braccia della madre le abbia detto:”signora, questo bambino è un bomber, una punta vera”. Acciaccato, ingottato e ingabbiato nella morsa della difesa bassa dei bianchi, fa registrare la sua peggior partita in termini realizzativi con solo 1 gol all attivo. Compensa parzialmente con una partita fatta di sacrificio ed intelligenza tattica, dal suo pressing iniziale nascono almeno un paio di gol dei suoi, si abbassa molto per favorire i tiri da fuori dei compagni e cercare il rimbalzo favorevole in area. Poco servito e poche palle giocabili per lui, le serpentine di Fabio lo disorientano a tal punto da non riuscire quasi mai a trovare il movimento giusto, meglio nel fraseggio con Davide sulla fascia opposta. Arrabbiato per la partita ed il suo score realizzativo, minaccia lo sciopero delle “ControPagelle”. Compensa con una valangata di frittelline cacio e pepe e una brioche al cioccolato, molto deluso anche dalla mancanza di bomboniere finali Da Nico.",
+   "playerId": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791292543461",
+   "player": "DavideAddante",
+   "rating": 7,
+   "notes": "Merita senz altro la palma di migliore dei suoi il nostro Davidino, che mostra finalmente quella personalità, quella garra charrua che fin qui gli era mancata. Motorino instancabile sulla fascia destra, pressa tutti, attacca con costanza, diverse sue chiusure in recupero risultano decisive. Segna anche il suo primo gol in maglia Lercy a porta vuota con un ottimo pressing corale con Vito Azz. Per la prima volta non chiede a nessuno di fare qualcuna delle sue amate _liste_ (la più gettonata quella dei giocatori più forti delle palazzine con cui Step abbia mai giocato).",
+   "playerId": "p_edb21ffe-9ec2-4d4a-b031-ad4b3409f09b",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791292543461",
+   "player": "FabioFicarelli",
+   "rating": 5,
+   "notes": "Intelligenza tattica, corsa, tecnica, leadership in campo, visione di gioco. A sentirlo parlare sembrerebbe di avere a che fare con un cyborg del calcetto, ma la cruda realtà gli si pone davanti. Efficace e giocatore importante quando fa la cosa semplice, inutile e dannoso quando cerca con le sue serpentine (anche in difesa) tra 2/3 persone di infilarsi in mezzo agli schiaffi, disorientando i compagni e favorendo le ripartenze degli avversari. Surreale quando bisticcia in campo con Luciano ed il capitano Steppata e quando dice a Vito come deve giocare davanti. Buono lo score realizzativo (3 gol e 2 assist), ma adesso deve decidere quale versione di se stesso vuole essere.",
+   "playerId": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+   "goals": 3,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 2,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791292543461",
+   "player": "Filippo",
+   "rating": 5.5,
+   "notes": "Sicuramente un passo indietro rispetto all ultima partita, a differenza di tutti gli altri suoi compagni non ha una collocazione tattica ben precisa, fa fatica in attacco e sbaglia diverse occasioni con tiri fiacchi o sbilenchi. La stanchezza della stressante giornata di lavoro si è fatta sentire, si consola con i suoceri chiusi in bagno (casualmente) dalla figlia.",
+   "playerId": "p_7a9e8570-80a4-43aa-a949-e8424fff1fef",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791292543461",
+   "player": "Peppe",
+   "rating": 7,
+   "notes": "Dominatore assoluto del CalcioLercio, dove c’è lui si vince, poche chiacchiere. Che sia da centrale o da esterno fa sempre la differenza, sbatte sulla rete fuori campo soltanto un paio di volte. Altri 3 gol per lui, si avvicina prepotentemente al titolo di capocannoniere. La sua finta di andare verso l’interno del campo per poi rientrare sul destro e sgasare sulla fascia verrà studiata nelle riunioni tattiche del PSG di Luis Enrique affinché Kvara migliori le sue performance.",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 3,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791292543461",
+   "player": "Seghino",
+   "rating": 6.5,
+   "notes": "Lo ricordiamo in versione colabrodo nell’ultima partita giocata, stavolta il nostro Stash ritorna sui suoi ottimi livelli difensivi, pressing asfissiante a uomo su Vito, tiene perfettamente la posizione e comanda benissimo la linea difensiva dei suoi. Come passare da cuoco del Rustico a chef de rang di Villa Crespi.",
+   "playerId": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 2,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791292543461",
+   "player": "Nico Sifanno",
+   "rating": 6.5,
+   "notes": "A guardare il tabellino marcatori si penserebbe ad una puntata di “Scherzi a parte”, ma il nostro pallanuotista dimostra di essere in crescita, meno sgasate folli sulla fascia ma più ordine e posizione in campo. Non mancano mai i suoi 36 hydration break, viene gravato inoltre dell’onere di segnare sul foglio partita gol ed assist, rendendo il tempo di gioco effettivo inferiore al 30%.",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 3,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1791292543461",
+   "player": "Ivano",
+   "rating": 7,
+   "notes": "Ordinato, preciso, sa giocare il pallone, ha un’ ottima forma fisica (lo vediamo più volte attaccare sulla fascia bucando la difesa avversaria per poi tornare dietro a difendere), gioca semplice facendo sempre la cosa più giusta. Capocannoniere di giornata con 3 reti, condivide la palma di MVP con Peppe. Come direbbe Mara Maionchi:",
+   "playerId": "p_62278841-7ffc-427a-8492-c1961578d05b",
+   "goals": 3,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1790403405403",
+   "player": "Nico Pontrelli",
+   "rating": 4,
+   "notes": "",
+   "playerId": "p_688392fa-9122-4886-b076-e12c5490e1ab",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1790403405403",
+   "player": "Vito Azz",
+   "rating": 6,
+   "notes": "partita di merda ma comunque il nostro operaio del gol la mette dentro ben 4 volte. RAPACE",
+   "playerId": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+   "goals": 4,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1790403405403",
+   "player": "Steppata",
+   "rating": 5,
+   "notes": "innervosito dal disordine dei suoi compagni serve svariati palloni che propiziano le ripartenze avversarie. COMUNQUE ILLUMINANTE",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1790403405403",
+   "player": "Rella",
+   "rating": 4,
+   "notes": "",
+   "playerId": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1790403405403",
+   "player": "FabioFicarelli",
+   "rating": 5,
+   "notes": "ti prego algoritmo mettimi contro di lui alla prossima che vorrei tornare a vincere una partita! TENDA GNORA",
+   "playerId": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1790403405403",
+   "player": "Nico Sifanno",
+   "rating": 6,
+   "notes": "corre tanto, ma ragazzi che fatica mettergli la sufficienza. Scambia il pallone per un ordigno bellico: ogni suo passaggio è un tentativo di esecuzione nei confronti dei compagni. E poi quel palo a porta vuota grida ancora vendetta. FA MALE AL CALCIO",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1790403405403",
+   "player": "Peppe",
+   "rating": 7,
+   "notes": "libero di fare ciò che vuole, stavolta tutto troppo facile, non va neppure una volta a sbattere sulla rete di recinzione. MVP",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1790403405403",
+   "player": "Grosso",
+   "rating": 6.5,
+   "notes": "è in ogni dove efficacemente. Gli manca ancora la miglior confidenza col pallone. 4 gol ma poteva farne 8. SONO TORNATO MERDE!",
+   "playerId": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+   "goals": 4,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1790403405403",
+   "player": "Filippo",
+   "rating": 6.5,
+   "notes": "esteticamente rivedibile, torna in ottima forma fisica ma la verità è che nessuno lo contrasta, tranne il suo destro storto che la spara fuori diverse volte. PRESTANTE",
+   "playerId": "p_7a9e8570-80a4-43aa-a949-e8424fff1fef",
+   "goals": 3,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1790403405403",
+   "player": "Cioccolata",
+   "rating": 6.5,
+   "notes": "la sua marcatura a uomo anni '80 su Vito andrebbe mostrata in loop in tutte le scuole calcio. Vedendolo giocare qualcuno invoca Alessandro Nesta. Ho detto tutto. ELEGANTE",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": ""
+  },
+  {
+   "matchId": "m_1792399331094",
+   "player": "Rella",
+   "rating": 7,
+   "notes": "voglioso di tornare in campo, segna dopo 3 secondi dal calcio d'inizio. Costante spina nel fianco destro dei bianchi, gioca una partita drogata, di cui il Re dell'algoritmo ritiene di non tener conto per migliorare le sue caratteristiche.\nStupendo l'assist di tacco per uno dei gol del maialino Vito",
+   "playerId": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 2,
+   "rigoriSbagliati": 0,
+   "titolo": "ANTIDOPING 💉"
+  },
+  {
+   "matchId": "m_1792399331094",
+   "player": "Luciano",
+   "rating": 6.5,
+   "notes": "partita magistrale in difesa, anticipa gli avversari con le sue marcature preventive e raddoppia quando serve.\nPorta palla con la qualità di Bonucci creando superiorità numerica nella metà campo avversaria.\nMezzo voto in meno perché si intestardisce alla ricerca del gol con almeno quindici tiri da casa sua, di cui nemmeno uno pericoloso e per aver procurato ingenuamente un rigore",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": "ARITMOMANE 🧮"
+  },
+  {
+   "matchId": "m_1792399331094",
+   "player": "Cioccolata",
+   "rating": 6.5,
+   "notes": "ordinato come sempre in difesa, il suo capello brizzolato alla Kolarov si fa notare anche in fase di costruzione del gioco, proponendosi con personalità. Poco cattivo in area di rigore, ma la squadra gira anche grazie a lui.",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 2,
+   "rigoriSbagliati": 0,
+   "titolo": "AUTORITARIO 👮‍♂️"
+  },
+  {
+   "matchId": "m_1792399331094",
+   "player": "Vito Azz",
+   "rating": 7,
+   "notes": "fa a sportellate con il più prestante Seghino, ma trova sempre lo spazio per rendersi pericoloso. 4 gol, di cui uno con palla che gli rimbalza sul pancione sulla linea di porta, è indicativo della sua \"fame di gol\". Poco umile quando cerca il dribbling come se fosse Ronaldo il fenomeno, anzichè fare una semplice sponda come se fosse Vito.\nVelatamente chiede a Nico di non trattenerlo per il braccio.",
+   "playerId": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+   "goals": 4,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": "MVP 🥇"
+  },
+  {
+   "matchId": "m_1792399331094",
+   "player": "Peppe",
+   "rating": 6.5,
+   "notes": "dopo la meta nel riscaldamento, gioca in sourplace, saltando avversari sulla fascia sinistra con la naturalezza di chi salta la fila al paninaro. La squadra è ben messa in campo ed efficace sotto porta, quindi ritiene che non serva il suo contributo.\nNel finale anche un simpatico doppio tunnel a Nico+grosso. Nuovo bonus da segnare: Peppe che scarta la linea di fondo.",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 1,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": "RISPARMIO ENERGETICO 🔋"
+  },
+  {
+   "matchId": "m_1792399331094",
+   "player": "Filippo",
+   "rating": 4.5,
+   "notes": "partita incolore, si presenta con dichiarazioni confusionarie parlando di Moment e pioggia, infatti si vede che non è la sua giornata migliore. Impreciso e mai pericoloso, ogni tiro è più sbilenco del precedente. Indicativo quando in contropiede si trova a tu per tu col portiere blu ma ci mette un quarto d'ora per avanzare e viene rimontato dal difensore.",
+   "playerId": "p_7a9e8570-80a4-43aa-a949-e8424fff1fef",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "TROPPO MOMENT 💊"
+  },
+  {
+   "matchId": "m_1792399331094",
+   "player": "Grosso",
+   "rating": 4.5,
+   "notes": "brutta prestazione in una brutta squadra. Ancora non si è capito quale posizione abbia ricoperto in campo. Corre con foga dietro ogni pallone, pressa tutti gli avversari, per lo più a vuoto. Sbaglia gol clamorosi e battibecca con compagni, avversari e con se stesso. Di buono ricordiamo solo l'assist di tacco per il gol di Fabio.",
+   "playerId": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": "IMBRUTTITO 👺"
+  },
+  {
+   "matchId": "m_1792399331094",
+   "player": "Seghino",
+   "rating": 6,
+   "notes": "è l'unico che cerca di tenere in piedi la squadra ma è come cercare di svuotare il Titanic con un secchio. Assediato dagli avversari come l'Ucraina dai droni russi, nel post partita ammette la superiorità organizzativa degli avversari mentre sbrana una pizza confrontando gli stipendi del tavolo per capire se percepisce una retribuzione  dignitosa o meno.",
+   "playerId": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "È STATO UN ONORE SUONARE CON VOI 🎻"
+  },
+  {
+   "matchId": "m_1792399331094",
+   "player": "Nico Sifanno",
+   "rating": 5,
+   "notes": "riconosciuto tra i Maranza che assaltavano i negozi di Milano perché con la mazza da baseball colpiva tutto e tutti meno che le vetrine. Dopo la Sua partita di ieri, la Meloni propone sanzioni più severe per chi calcia il pallone oltre i cinque metri fuori dalla porta.\nMezzo voto in più di Filippo e il Grosso solo per corsa,  presenza fisica e per il gol, in una partita disastrosa dei bianchi.\nNon gli perdoneremo mai di aver acceso Radio Polemica quando si appende al braccio di Vito",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "ARRESTATELO 🥷"
+  },
+  {
+   "matchId": "m_1792399331094",
+   "player": "FabioFicarelli",
+   "rating": 5.5,
+   "notes": "per tutta la partita recita il rosario alla Madonna del Lamento, ripetendo il mantra _non abbiamo ruoli_.\nGrande intesa con i compagni: va incontro e gliela passano in profondità, va in profondità e gliela passano fuori. L'inutilità del suo pressing individuale su portiere e difensori avversari è pari solo al dispendio di energie. Intelligenza 3 è un regalo. Ci prova con qualche spunto pregevole, come quando salta due avversari sulla linea del fallo laterale con tunnel a Luciano, ma poi chiude gli occhi e la spara sul portiere. Sbaglia un rigore colpendo la base del palo.",
+   "playerId": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 1,
+   "titolo": "BIZZOCA 👁️"
+  },
+  {
+   "matchId": "m_1793006655774",
+   "player": "Seghino",
+   "rating": 6,
+   "notes": "dopo gli incubi della scorsa settimana decide che se non prende la palla si arma di falce e stacca la gamba. Con l'arbitro sarebbe stato espulso tre volte.\nA parte i numerosi interventi irruenti con cui spezza un polso anche al suo compagno di squadra Nico, resta il numero uno in marcatura. Peccato che quando sale si limiti a passaggi in orizzontale e che i suoi tiri da fuori finiscano tutti sopra la traversa.",
+   "playerId": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": "BULLDOZER 🔩"
+  },
+  {
+   "matchId": "m_1793006655774",
+   "player": "Steppata",
+   "rating": 6.5,
+   "notes": "non si vedeva tanta grinta dai tempi della Puglia Sport sul prato in erba vera di Capurso nel campionato Allievi provinciali 2007/2008. Prende per mano la squadra e la conduce ad una prestazione dignitosa, ma non basta. Certo è merito suo se la partita è molto più equilibrata rispetto alla scorsa settimana.\nNervoso per aver visto Luciano fare la spesa già a mezzogiorno, preferisce saltare l'Albanese e smaltire la delusione in solitudine.",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": "LEADER 🕵️‍♂️"
+  },
+  {
+   "matchId": "m_1793006655774",
+   "player": "Grosso",
+   "rating": 6,
+   "notes": "è il mental coach di sè stesso, si morde la lingua per tutta la partita e gioca in maniera più ordinata delle ultime volte. Carino il palo di tacco e incredibile una parata tuffandosi sulla sua destra, ma la verità è che gli manca tanto il gol: non segna dal lontano 29 settembre, terza di seguito a secco.",
+   "playerId": "p_41870830-ae89-41fe-a9a2-3255bea472fa",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 2,
+   "rigoriSbagliati": 0,
+   "titolo": "NOSTALGICO 😔"
+  },
+  {
+   "matchId": "m_1793006655774",
+   "player": "Nico Sifanno",
+   "rating": 5.5,
+   "notes": "solita prestazione identica a tutte le altre, rimandiamo alle precedenti descrizioni.\nConsigliamo di mirare alla palma per centrare la porta.",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": "PUNTERUOLO ROSSO 🌴"
+  },
+  {
+   "matchId": "m_1793006655774",
+   "player": "FabioFicarelli",
+   "rating": 6,
+   "notes": "appare e scompare continuamente dalla partita, alternando sprazzi interessanti a momenti in cui è un vero e proprio uomo in meno. Il 17% di vittorie è un dato che parla da sé. Gli cade la corona quando Steppata gli dà della principessa.\nConquista la sufficienza solo sfruttando le incertezze difensive dei blu nel finale realizzando 4 gol.",
+   "playerId": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+   "goals": 4,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 1,
+   "rigoriSbagliati": 0,
+   "titolo": "SISSY 👸"
+  },
+  {
+   "matchId": "m_1793006655774",
+   "player": "Luciano",
+   "rating": 7,
+   "notes": "ottima anche oggi la Sua partita difensiva, in questo caso efficace anche quando sale, realizzando 3 gol.",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 3,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "MVP"
+  },
+  {
+   "matchId": "m_1793006655774",
+   "player": "Cioccolata",
+   "rating": 6,
+   "notes": "ci illude quando si coordina per una rovesciata che ricorderebbe Mauro Bressan al Camp Nou: poi pensa alla nascitura, si immagina in un letto di ospedale con tre vertebre spezzate e ci rinuncia, svirgolando alla grande.\nBuona prestazione difensiva, con qualche incursione in avanti. Sul finale i suoi cali di concentrazione rischiano di riaprire la partita.\nSalva la sufficienza col tapin che chiude la partita dopo il palo di Vito.\nIconica la sua chiamata di sovrapposizione fantasma mentre in realtà era rimasto comodamente nella sua metà campo.",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "PRESTIGIATORE 🎩"
+  },
+  {
+   "matchId": "m_1793006655774",
+   "player": "Peppe",
+   "rating": 6,
+   "notes": "poco presente nella metà campo avversaria, gioca una buona partita difensiva.",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 3,
+   "rigoriSbagliati": 0,
+   "titolo": "TIMIDO 🫣"
+  },
+  {
+   "matchId": "m_1793006655774",
+   "player": "Vito Azz",
+   "rating": 6,
+   "notes": "partita sporca in cui cerca di farsi spazio tra le maglie strette degli avversari. Lezioso quando si intestardisce in dribbling impossibili, si impegna molto anche in importanti ripieghi difensivi. Meno pericoloso del solito, fa quello che può.\nDiffidato per la seconda  polemica consecutiva, questa volta per un fondamentale fallo laterale che porterà avanti per tutta la partita. Alla terza scatta la squalifica.",
+   "playerId": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "ATTACCABRIGHE 💥"
+  },
+  {
+   "matchId": "m_1793006655774",
+   "player": "Rella",
+   "rating": 6.5,
+   "notes": "mette a segno i primi due gol, conquista la punizione del 3-1.\nGradualmente cala fisicamente ma mantiene bene la posizione in fase di non possesso rendendosi talvolta pericoloso colpendo una spettacolare traversa sul finale.",
+   "playerId": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 2,
+   "rigoriSbagliati": 0,
+   "titolo": "CERTEZZA ⚽"
+  },
+  {
+   "matchId": "m_1789385322591",
+   "player": "Rella",
+   "rating": 7,
+   "notes": "in gran forma, l'Avvocato è a suo agio avanti e indietro sulla fascia destra come se fosse nel corridoio del Tribunale, rendendosi pericoloso in fase offensiva e presente in fase difensiva. Parte col botto con due gol di rapina a inizio partita e mette la ciliegina sulla torta con un terzo da fuori area. Fornisce assist importanti. Fantastico il colpo di tacco per Peppe che purtroppo conclude sul fondo. Gli avversari lo sogneranno per diverse notti.",
+   "playerId": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+   "goals": 3,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "ARRAPATO 💦"
+  },
+  {
+   "matchId": "m_1789385322591",
+   "player": "Steppata",
+   "rating": 6.5,
+   "notes": "già non gli va molto di giocare, poi sul 4 a 0 capisce che le squadre sono squilibrate e allora vorrebbe proprio teletrasportarsi sul divano di casa sua. Difende il clean sheet per quasi tutto il match non facendosi mai saltare e arriva un paio di volte in area di rigore avversaria, dove potrebbe agevolmente segnare ma preferisce servire assist deliziosi.\nDimostra grande attaccamento alla maglia cercando più volte di trasferirsi nella squadra avversaria.",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "DOPPIOFEDISTA"
+  },
+  {
+   "matchId": "m_1789385322591",
+   "player": "Luciano",
+   "rating": 6,
+   "notes": "a volte distratto e disordinato, cerca la porta dei Bianchi con insistenza, gli manca fare gol.\nIn difesa ottimi interventi ma nelle prime partite lo ricordavamo più decisivo anche in avanti.\nQuando è in porta regala un gravissimo autogol che rischia di riaprire una partita morta.\nDivertente quando falcia Fabio da dietro e riparte palla al piede come se nulla fosse, sorprendendosi per il fallo fischiato contro di lui.",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 0,
+   "autogol": 1,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "SCARICO 🚽"
+  },
+  {
+   "matchId": "m_1789385322591",
+   "player": "Peppe",
+   "rating": 7.5,
+   "notes": "al minuto 37' il momento che tutti aspettavamo: il numero da circo con possesso palla prolungato fino a sbattere fuori dal campo, con Rella che chiede: \"ma dove va?!\"\nIl turbine del Sao Paolo è dominante sulla fascia sinistra, segna 4 gol, fornisce assist, sia in ripartenza che in costruzione risulta efficace.",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 4,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "MVP 🥇"
+  },
+  {
+   "matchId": "m_1789385322591",
+   "player": "Vito Azz",
+   "rating": 7,
+   "notes": "con la spensieratezza di un bimbo e le occhiaie di un Direttore della Lidl, sul 10 a 1 continua a sostenere che le squadre _\"sulla carta\"_ sono equilibrate.\nPer fortuna il suo ruolo non è fare il commentatore, ma è fare gol e anche oggi non delude.\nNonostante il suo panzone non fa mancare sponde, pressing e ripiegamenti nella propria metà campo, cerca la palla con la stessa disperazione che avrebbe di fronte all'ultimo panzerottino di un buffet.\nAlcuni parlano di un complotto dell'algoritmo in suo favore, ma si sa, chi vince risulta antipatico.",
+   "playerId": "p_1f5938bf-741e-4c67-b975-b47dbbf0802b",
+   "goals": 5,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "CECCHINO 🔫"
+  },
+  {
+   "matchId": "m_1789385322591",
+   "player": "Cioccolata",
+   "rating": 4.5,
+   "notes": "quando manca la forma fisica meglio a perderlo. Prova un paio di cavalcate a inizio partita, becca due pali ma per il resto non vince un contrasto, non marca, non tiene bene la posizione difensiva. Fa venire la susta anche quando deve recuperare la palla per i rinvii da fondo campo.\nComunque l'algoritmo gli riconosce 0,2 + di Rella.",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "MISTERO 🔮"
+  },
+  {
+   "matchId": "m_1789385322591",
+   "player": "Caputo",
+   "rating": 3.5,
+   "notes": "è l'amore tossico della squadra bianca: presentato come il Principe Azzurro che condurrà la squadra ad una inevitabile vittoria, in realtà il suo _love bombing_ dura poco. Sminuisce i suoi compagni di squadra fino all'insulto, gioca per sè stesso calciando da lontano migliaia di volte senza mai trovare il gol.\nForma fisica decisamente da rivedere, trova il gol solo nel finale quando i Blu hanno ormai gettato i remi in barca.\nSi fa trovare seduto in porta a contare i fili d'erba, regalando il dodicesimo punto agli avversari e decretando la fine anticipata della partita. Infine abbandona il calcio giocato.",
+   "playerId": "p_d938f62e-554c-42a2-8e6e-6a2043286989",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "MALESSERE 💔"
+  },
+  {
+   "matchId": "m_1789385322591",
+   "player": "Nico Sifanno",
+   "rating": 4.5,
+   "notes": "già è scarso, in più viene distrutto psicologicamente sin dal primo minuto, il re dell'ignoranza calcistica oggi non si vede nemmeno una volta sgroppare incredibilmente sulla fascia.\nIn difesa non fa buon uso delle sue doti fisiche, risulta meno utile di un birillo.",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "PSICOTERAPIA 👨‍⚕️"
+  },
+  {
+   "matchId": "m_1789385322591",
+   "player": "Seghino",
+   "rating": 4.5,
+   "notes": "è venuto a giocare?",
+   "playerId": "p_2593d36a-c36d-450c-8aa7-7762ab71e6ec",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "IRRICONOSCIBILE 🫩"
+  },
+  {
+   "matchId": "m_1789385322591",
+   "player": "FabioFicarelli",
+   "rating": 5,
+   "notes": "in ombra, senza idee, non riesce a saltare l'uomo neanche una volta. Quando arriva in area di rigore tira clamorosamente fuori.\nCerca di suonare la carica in diverse occasioni, ma è come se scegliesse una compilation di Ultimo per svegliare un malato terminale dal coma. Giornata no anche per lui.",
+   "playerId": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "VOLENTEROSO 👤"
+  },
+  {
+   "matchId": "m_1790241838929",
+   "player": "Rella",
+   "rating": 5,
+   "notes": "fa a sportellate con Steppata e prende calcioni da Luciano, non lo lasciano in pace e lui in effetti soccombe, giocando tutto il tempo spalle alla porta, con troppa fretta di liberarsi del pallone. Impreciso davanti alla porta, ci mette tanta corsa e buona volontà ma solo un gol e un assist.",
+   "playerId": "p_c8c37df5-72ba-4bc6-98dd-cd073428934d",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "INCONCLUDENTE 🤷🏻‍♂️"
+  },
+  {
+   "matchId": "m_1790241838929",
+   "player": "Nico Sifanno",
+   "rating": 5,
+   "notes": "il duello tra titani da quella parte contro l'altro bidone di giornata (Tubo) ricorda gli scontri tra Serginho e Cafù. Purtroppo il piede è quello che è, Poco fluido nel far girare la palla, fallisce numerose ed incredibili occasioni sotto rete.\nLe sue conclusioni vanno così tanto fuori che si consiglia visita oculistica oltre al già prescritto controllo podologico.",
+   "playerId": "p_fbfbcee8-e3f8-4ccf-89c6-4f88769f8ea3",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "MA NON VEDE? 👓"
+  },
+  {
+   "matchId": "m_1790241838929",
+   "player": "DavideAddante",
+   "rating": 5.5,
+   "notes": "difende con ordine anche se spesso si trova in difficoltà perché in inferiorità numerica o per la poca intesa con i compagni di reparto. Troppo timido quando cerca di proporsi nella metà campo avversaria, il palo gli nega ancora una volta la gioia del primo gol tra i grandi.",
+   "playerId": "p_edb21ffe-9ec2-4d4a-b031-ad4b3409f09b",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "ETERNA PROMESSA 🙏"
+  },
+  {
+   "matchId": "m_1790241838929",
+   "player": "Peppe",
+   "rating": 6.5,
+   "notes": "presente in tutte le azioni dei gol è l'unico che saltando l'uomo riesce a dare dinamicità alla manovra contro una difesa sempre ben schierata. Gioca troppo per sé stesso e poco con la squadra. Quando Fabio passa in attacco ha difficoltà in cabina di regia essendo rimasto di fatto solo. Si prodiga anche a contrastare gli avversari ma diciamocelo: difendere non è cazzo suo",
+   "playerId": "p_064b16cb-a13a-4ede-acde-5cd69d7225f2",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "TENACE 🦎"
+  },
+  {
+   "matchId": "m_1790241838929",
+   "player": "FabioFicarelli",
+   "rating": 5.5,
+   "notes": "buona la prima mezz'ora da terzino con propensione a far partire l'azione, garantisce equilibrio e i blu tengono bene il campo.\nTuttavia sul 3 a 1 perde la testa e decide di sbilanciarsi in avanti scriteriatamente garantendo la superiorità numerica ai bianchi nelle ripartenze.\nAl quinto gol subíto la sua squadra lo asseconda lasciandolo giocare in attacco, costringendo a costruire da dietro gente come NicoSifanno, DavideAddante e Rella.\nSi disinteressa della fase difensiva, passeggiando nervosamente quando non ha la palla, si sveglia solo quando gli arriva tra i piedi prodigandosi in interessanti strappi che lo portano a realizzare il suo unico gol di partita solo al 90°.\nMentre è in porta esce un paio di volte palla al piede cercando di dribblare tutti gli avversari al grido di _\"tanto stiamo perdendo\"_ (?!)\nEcco spiegato il 4 in intelligenza.",
+   "playerId": "p_5e184eb9-2c75-461b-98dc-5047085201c5",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "BORNOUT 🤯"
+  },
+  {
+   "matchId": "m_1790241838929",
+   "player": "Steppata",
+   "rating": 7,
+   "notes": "nonostante sia l'uomo delle caverne è a suo agio nel moderno ruolo di centrale difensivo e regista, copre con disinvoltura tutti gli spazi e avvia la manovra facendo sempre la scelta giusta. Quando il gioco si fa duro...",
+   "playerId": "p_8cd54b0a-c28f-48ca-bc6b-d86f18151c9c",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "MVP 🥇"
+  },
+  {
+   "matchId": "m_1790241838929",
+   "player": "Cioccolata",
+   "rating": 5.5,
+   "notes": "ordinato e in crescita ma non si vede ancora la migliore condizione. Cala da morire nel finale, emblematico quando potrebbe lasciar scorrere il pallone in fallo laterale ma decide di toccarla per regalare la rimessa agli avversari tra gli insulti dei compagni.\nCi mancano le sue imprevedibili serpentine che attendiamo con ansia nelle prossime partite.",
+   "playerId": "p_d754e301-2c7b-45ef-9b2c-9478a92f98ba",
+   "goals": 1,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "LOW BATTERY 🪫"
+  },
+  {
+   "matchId": "m_1790241838929",
+   "player": "Luciano",
+   "rating": 6.5,
+   "notes": "a sprazzi si rivede il primo Luciano, quello insuperabile che riparte palla al piede e arriva di frequente al tiro, mettendola dentro ben 3 volte. Da rivedere la sua eccessiva irruenza, se ci fosse un arbitro sarebbe espulso almeno due volte a partita, col Var pure quattro.",
+   "playerId": "p_dc9714f9-6070-4a39-9448-442672b94a6f",
+   "goals": 3,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "TRANS (AGONISTICA) 🌈"
+  },
+  {
+   "matchId": "m_1790241838929",
+   "player": "Tubo",
+   "rating": 5,
+   "notes": "ordinato a tutta fascia, ma Dio Santo che piedi anarchici!",
+   "playerId": "p_38e62dfb-3d53-4c0a-81d5-cccbc04121e1",
+   "goals": 0,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "MARATONETA 🏃🏻‍♂️"
+  },
+  {
+   "matchId": "m_1790241838929",
+   "player": "Nico Pontrelli",
+   "rating": 5.5,
+   "notes": "quando mister Mancini decide di convocarlo la sua risposta è già un preludio: _\"devo vedere se ho le scarpe\"_.\nParte a mille nei primi dieci minuti, poi l'inesorabile calo, con le scarpe che appunto gli danno filo da torcere spezzando spesso il gioco di una intensa partita. Mette in rete due gol, non male al rientro in campo dopo svariati anni.\nQuando tornerà nel suo miglior stato di forma sarà uno dei crack della partita",
+   "playerId": "p_688392fa-9122-4886-b076-e12c5490e1ab",
+   "goals": 2,
+   "autogol": 0,
+   "meta": 0,
+   "assist": 0,
+   "rigoriSbagliati": 0,
+   "titolo": "CALZOLAIO 👠"
+  }
+ ],
+ "albo": [
+  {
+   "stagione": "Primavera 2026",
+   "chiave": "2026-PRI",
+   "dal": "2026-03-01",
+   "al": "2026-05-31",
+   "stato": "chiusa",
+   "premio": "-",
+   "titolo": "(nessun premio)",
+   "giocatore": "",
+   "valore": "",
+   "aggiornato": "2026-10-29T13:57:15.588Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "goleador",
+   "titolo": "🥇 Goleador",
+   "giocatore": "Vito Azz",
+   "valore": "16 gol",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "media",
+   "titolo": "⭐ Miglior media",
+   "giocatore": "Vito Azz",
+   "valore": "media 6.33",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "stelle",
+   "titolo": "🚀 Re delle Stelle",
+   "giocatore": "FabioFicarelli",
+   "valore": "2 mete",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "stakanov",
+   "titolo": "🏃 Stakanovista",
+   "giocatore": "Peppe",
+   "valore": "8 presenze",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "stakanov",
+   "titolo": "🏃 Stakanovista",
+   "giocatore": "Steppata",
+   "valore": "8 presenze",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "coppia",
+   "titolo": "🤝 Coppia d'oro",
+   "giocatore": "Vito Azz & Steppata",
+   "valore": "4 vinte su 4, +13 gol",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "flop",
+   "titolo": "🥴 Peggior media",
+   "giocatore": "Nico Sifanno",
+   "valore": "media 5.21",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "cucchiaio",
+   "titolo": "🥄 Cucchiaio di legno",
+   "giocatore": "Nico Sifanno",
+   "valore": "1 vinta su 7",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "Vito Azz",
+   "valore": "×3",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "Peppe",
+   "valore": "×2",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "FabioFicarelli",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "Grosso",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "Nico Sifanno",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "Rella",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "Uefa",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "manita",
+   "titolo": "🖐️ Manita",
+   "giocatore": "FabioFicarelli",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "manita",
+   "titolo": "🖐️ Manita",
+   "giocatore": "Peppe",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "manita",
+   "titolo": "🖐️ Manita",
+   "giocatore": "Rella",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "manita",
+   "titolo": "🖐️ Manita",
+   "giocatore": "Uefa",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "manita",
+   "titolo": "🖐️ Manita",
+   "giocatore": "Vito Azz",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "fuoriclasse",
+   "titolo": "🌟 Fuoriclasse",
+   "giocatore": "Distaso",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "fuoriclasse",
+   "titolo": "🌟 Fuoriclasse",
+   "giocatore": "Uefa",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "imbattibile",
+   "titolo": "🧱 Imbattibile",
+   "giocatore": "Steppata",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "imbattibile",
+   "titolo": "🧱 Imbattibile",
+   "giocatore": "Vito Azz",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "occMedia",
+   "titolo": "💎 Miglior Occasionale",
+   "giocatore": "Distaso",
+   "valore": "media 7.50",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "occBomber",
+   "titolo": "🎯 Bomber a gettone",
+   "giocatore": "Seghino",
+   "valore": "1.5 gol a partita (3 in 2)",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "occFortuna",
+   "titolo": "🍀 Portafortuna",
+   "giocatore": "MartinoNico",
+   "valore": "3 vinte su 3",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "occPendolare",
+   "titolo": "✈️ Pendolare d'oro",
+   "giocatore": "MartinoNico",
+   "valore": "3 presenze",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "ritorno",
+   "titolo": "🏠 Il Ritorno",
+   "giocatore": "Distaso",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "ritorno",
+   "titolo": "🏠 Il Ritorno",
+   "giocatore": "Seghino",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "botto",
+   "titolo": "🎆 Ritorno col botto",
+   "giocatore": "Seghino",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "debutto",
+   "titolo": "🎟️ Il Debutto",
+   "giocatore": "DavideAddante",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "debutto",
+   "titolo": "🎟️ Il Debutto",
+   "giocatore": "Distaso",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "debutto",
+   "titolo": "🎟️ Il Debutto",
+   "giocatore": "FabioFicarelli",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "debutto",
+   "titolo": "🎟️ Il Debutto",
+   "giocatore": "FabioMartino",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "debutto",
+   "titolo": "🎟️ Il Debutto",
+   "giocatore": "MartinoNico",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "debutto",
+   "titolo": "🎟️ Il Debutto",
+   "giocatore": "Tubo",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "debutto",
+   "titolo": "🎟️ Il Debutto",
+   "giocatore": "Uefa",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Estate 2026",
+   "chiave": "2026-EST",
+   "dal": "2026-06-01",
+   "al": "2026-08-31",
+   "stato": "chiusa",
+   "premio": "debutto",
+   "titolo": "🎟️ Il Debutto",
+   "giocatore": "Ventrella",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:21:49.222Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "goleador",
+   "titolo": "🥇 Goleador",
+   "giocatore": "Vito Azz",
+   "valore": "18 gol",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "assistman",
+   "titolo": "🅰️ Assistman",
+   "giocatore": "Peppe",
+   "valore": "6 assist",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "media",
+   "titolo": "⭐ Miglior media",
+   "giocatore": "Peppe",
+   "valore": "media 6.71",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "mvp",
+   "titolo": "👑 Re degli MVP",
+   "giocatore": "Peppe",
+   "valore": "2 volte MVP",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "stelle",
+   "titolo": "🚀 Re delle Stelle",
+   "giocatore": "Peppe",
+   "valore": "1 meta",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "stakanov",
+   "titolo": "🏃 Stakanovista",
+   "giocatore": "Peppe",
+   "valore": "7 presenze",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "coppia",
+   "titolo": "🤝 Coppia d'oro",
+   "giocatore": "Rella & Luciano",
+   "valore": "3 vinte su 3, +18 gol",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "coppia",
+   "titolo": "🤝 Coppia d'oro",
+   "giocatore": "Peppe & Luciano",
+   "valore": "3 vinte su 3, +18 gol",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "coppia",
+   "titolo": "🤝 Coppia d'oro",
+   "giocatore": "Peppe & Vito Azz",
+   "valore": "3 vinte su 3, +18 gol",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "flop",
+   "titolo": "🥴 Peggior media",
+   "giocatore": "Nico Sifanno",
+   "valore": "media 5.43",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "cucchiaio",
+   "titolo": "🥄 Cucchiaio di legno",
+   "giocatore": "FabioFicarelli",
+   "valore": "1 vinta su 7",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "rigori",
+   "titolo": "❌ Re dei rigori sbagliati",
+   "giocatore": "FabioFicarelli",
+   "valore": "1 sbagliato",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "autogol",
+   "titolo": "🙃 Re degli autogol",
+   "giocatore": "Luciano",
+   "valore": "2 autogol",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "occMedia",
+   "titolo": "💎 Miglior Occasionale",
+   "giocatore": "DavideAddante",
+   "valore": "media 6.25",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "occBomber",
+   "titolo": "🎯 Bomber a gettone",
+   "giocatore": "Nico Pontrelli",
+   "valore": "1.5 gol a partita (3 in 2)",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "occFortuna",
+   "titolo": "🍀 Portafortuna",
+   "giocatore": "Nico Pontrelli",
+   "valore": "1 vinta su 2",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "occPendolare",
+   "titolo": "✈️ Pendolare d'oro",
+   "giocatore": "DavideAddante",
+   "valore": "2 presenze",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "Vito Azz",
+   "valore": "×4",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "FabioFicarelli",
+   "valore": "×3",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "Luciano",
+   "valore": "×3",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "Filippo",
+   "valore": "×2",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "Peppe",
+   "valore": "×2",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "Grosso",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "Ivano",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "tripletta",
+   "titolo": "🎩 Tripletta",
+   "giocatore": "Rella",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "manita",
+   "titolo": "🖐️ Manita",
+   "giocatore": "FabioFicarelli",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "manita",
+   "titolo": "🖐️ Manita",
+   "giocatore": "Vito Azz",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "regista",
+   "titolo": "🧠 Regista",
+   "giocatore": "Nico Sifanno",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "regista",
+   "titolo": "🧠 Regista",
+   "giocatore": "Peppe",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "imbattibile",
+   "titolo": "🧱 Imbattibile",
+   "giocatore": "Peppe",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "ritorno",
+   "titolo": "🏠 Il Ritorno",
+   "giocatore": "Caputo",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "ritorno",
+   "titolo": "🏠 Il Ritorno",
+   "giocatore": "Filippo",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "ritorno",
+   "titolo": "🏠 Il Ritorno",
+   "giocatore": "Tubo",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "botto",
+   "titolo": "🎆 Ritorno col botto",
+   "giocatore": "Filippo",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "botto",
+   "titolo": "🎆 Ritorno col botto",
+   "giocatore": "Tubo",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "debutto",
+   "titolo": "🎟️ Il Debutto",
+   "giocatore": "Ivano",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  },
+  {
+   "stagione": "Autunno 2026",
+   "chiave": "2026-AUT",
+   "dal": "2026-09-01",
+   "al": "2026-11-30",
+   "stato": "in corso",
+   "premio": "debutto",
+   "titolo": "🎟️ Il Debutto",
+   "giocatore": "Nico Pontrelli",
+   "valore": "×1",
+   "aggiornato": "2026-10-30T10:22:02.553Z"
+  }
+ ],
+ "gazzette": [
+  {
+   "matchId": "m_1790403405403",
+   "data": "2026-09-29T22:00:00.000Z",
+   "fileId": "1CYIh_dvB5ad7WscOujRrnjnj56F7wZke",
+   "url": "https://drive.google.com/file/d/1CYIh_dvB5ad7WscOujRrnjnj56F7wZke/view?usp=drivesdk",
+   "nome": "gazzetta_2026-09-29T22:00:00.000Z.jpg",
+   "caricata": "2026-10-30T09:37:03.574Z"
+  },
+  {
+   "matchId": "m_1791658589782",
+   "data": "2026-10-13T22:00:00.000Z",
+   "fileId": "1bmPjjr4qLKLGbFn-64OarJwNxlts6VUW",
+   "url": "https://drive.google.com/file/d/1bmPjjr4qLKLGbFn-64OarJwNxlts6VUW/view?usp=drivesdk",
+   "nome": "gazzetta_2026-10-13T22:00:00.000Z.jpg",
+   "caricata": "2026-10-30T09:37:55.089Z"
+  },
+  {
+   "matchId": "m_1790241838929",
+   "data": "2026-09-22T22:00:00.000Z",
+   "fileId": "1rifDGIsHG32MqsoDDg6yi2qPVECcd-qv",
+   "url": "https://drive.google.com/file/d/1rifDGIsHG32MqsoDDg6yi2qPVECcd-qv/view?usp=drivesdk",
+   "nome": "gazzetta_2026-09-22T22:00:00.000Z.jpg",
+   "caricata": "2026-10-30T09:38:37.880Z"
+  }
+ ]
+}

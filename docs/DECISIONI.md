@@ -57,3 +57,19 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
   riga "Squadre asimmetriche" compatta.
 - Scheda giocatore: nome nella riga della ✕; grafico pagelle massimo 10 barre; griglia pagelle a 12
   caselle (la riduzione a 9 è stata **rifiutata**); bacheca compatta e apribile.
+
+## Importazione in Supabase (Fase 2)
+- **Strumento a riga di comando**, non una pagina: `npm run import` (prova a secco, non scrive) e
+  `npm run import -- --apply --admin-email=<email>`; controllo con `npm run import:verify`. Ripetibile: giocatori e
+  partite si ritrovano con `legacy_id`; squadre e pagelle di ogni partita si allineano al foglio.
+- **La chiave di amministrazione non sta in nessun file**: lo strumento la chiede alla CLI di Supabase (dove si è già
+  collegati) e la tiene solo in memoria. Scartato: file `.env.import` con la chiave.
+- **Date**: lo script Google le dà in UTC; vanno portate al giorno italiano (Europe/Rome), altrimenti ogni partita
+  slitta di un giorno.
+- **Id dei giocatori**: nel database si usa l'UUID contenuto nell'id attuale (`p_<uuid>`). Così l'ordine tra giocatori è
+  identico a prima: da quello dipende come si scrivono i due nomi della Coppia d'oro.
+- Pesi dell'OVR in `app_settings`, chiave `ovr_weights`. Stato dell'albo: "in corso" nel foglio = "aperta" nel database.
+- Se nei dati c'è qualcosa che non torna (giocatore fuori rosa, pagella senza squadra, data illeggibile…) l'importazione
+  vera si ferma e lo dice. Le partite tolte dal foglio si tolgono dal database solo con `--prune`.
+- Differenza nota e accettata: nei **record a pari merito** l'ordine dei nomi può cambiare (nel foglio dipende da
+  quando una partita è stata ri-salvata, informazione che il database non ha). Valori e persone sono gli stessi.

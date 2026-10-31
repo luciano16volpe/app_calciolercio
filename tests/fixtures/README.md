@@ -19,3 +19,8 @@ voto letto uguale a quello in `app_data.json`, titoli corretti (es. «RISPARMIO 
 «MVP 🥇», «ANTIDOPING 💉», «TROY MCLURE», «SI’, CHEF!», «IN(PS)FERNALE», «É UN BEL PRODOTTINO»).
 "Gianluca" = **Cioccolata** (per esclusione la prima volta, poi ricordato come alias). I corsivi in
 mezzo al testo (`_non abbiamo ruoli_`, `_amaro in bocca_`) restano nella descrizione.
+
+- `live_feed.json` — copia di ciò che risponde lo script Google (azione `matches`) il 31/10/2026: 16 partite,
+  162 pagelle **con titoli (40) e descrizioni (68)**, 77 righe di albo (3 stagioni), 3 Gazzette. Qui le date sono
+  istanti in UTC (`2026-06-16T22:00:00.000Z` = 17 giugno): l'importazione le porta al giorno italiano.
+  Serve ai test dello strumento di importazione (`tests/import/`).
