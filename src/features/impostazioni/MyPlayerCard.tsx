@@ -6,6 +6,7 @@ import { useConfirm } from '../../app/Dialogs';
 import { useToast } from '../../app/Toast';
 import { MY_PLAYER_KEY, requestClaim, unlinkMe, useMyPlayer } from '../../data/claims';
 import type { LeagueData } from '../../data/queries';
+import { ProfileCard } from './ProfileCard';
 
 export function MyPlayerCard({ data }: { data: LeagueData | undefined }) {
   const { user } = useAuth();
@@ -46,6 +47,7 @@ export function MyPlayerCard({ data }: { data: LeagueData | undefined }) {
   };
 
   return (
+    <>
     <div className="card" id="myplayer-card">
       <div className="section-header">⚽ Il mio giocatore</div>
       {q.isLoading ? <div style={{ fontSize: 12, color: 'var(--text3)' }}>⏳ Caricamento…</div> : null}
@@ -76,5 +78,7 @@ export function MyPlayerCard({ data }: { data: LeagueData | undefined }) {
         </div>
       ) : null}
     </div>
+    {s?.linked ? <ProfileCard playerId={s.linked.id} name={s.linked.name} /> : null}
+    </>
   );
 }

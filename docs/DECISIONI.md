@@ -143,3 +143,8 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Ci si può scollegare in qualsiasi momento (poi serve una nuova richiesta).
 - Funzioni del database nel file `supabase/migrations/20261102000000_questo_sono_io.sql`; se manca, le schede mostrano come applicarla.
 - Il profilo personale (partite di tutte le leghe, storico statistiche) è il passo 4.4.
+
+## Profilo personale (Fase 4.4)
+- Compare in Impostazioni, sotto "Il mio giocatore", quando si è collegati a un giocatore. Per ogni lega che si può vedere: partite, vittorie-pareggi-sconfitte, gol, assist, media voto; poi le ultime 8 partite e lo storico delle modifiche alle statistiche e ai ruoli (ultime 30).
+- La **media voto** qui è la media semplice dei voti presenti, non quella delle Classifiche (che segue le regole di legacy). Da chiedere se la vuoi identica.
+- Nessuna nuova migrazione: usa dati già leggibili con i permessi esistenti.

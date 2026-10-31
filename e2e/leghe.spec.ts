@@ -19,6 +19,9 @@ interface Opts {
   mePlayer?: { id: string; name: string } | null;
   /** le mie richieste ("missing" = migrazione 4.3 non applicata) */
   claims?: Array<{ player_id: string; league_id: string; status: string; created_at: string; players: { name: string } }> | 'missing';
+  /** partite del mio giocatore (profilo) e storico delle sue statistiche */
+  profileRows?: unknown[];
+  history?: unknown[];
   /** richieste in attesa viste dall'amministratore */
   pendingClaims?: Array<{ id: string; player_id: string; player_name: string; user_id: string; display_name: string | null; email: string | null; created_at: string }>;
 }
@@ -46,6 +49,8 @@ async function setup(page: Page, opts: Opts = {}) {
         if (opts.claims === 'missing') return json(r, { code: 'PGRST205', message: "Could not find the table 'public.player_claims' in the schema cache" }, 404);
         return json(r, opts.claims ?? []);
       }
+      if (table === 'match_players' && url.search.includes('leagues')) return json(r, opts.profileRows ?? []);
+      if (table === 'player_stats_history') return json(r, opts.history ?? []);
       if (table === 'players' && url.search.includes('user_id=eq')) return json(r, opts.mePlayer ?? null);
       const fake = url.search.includes('L2');
       if (table === 'league_members') {
@@ -211,6 +216,33 @@ test('Questo sono io: collegato, si può scollegare', async ({ page }) => {
   await page.locator('#app-modal-ok').click();
   await expect(page.locator('#toast')).toContainText('Scollegato');
   expect(writes.some((x) => x.table === 'unlink_me')).toBe(true);
+});
+
+test('Profilo: riepilogo per lega, ultime partite e storico', async ({ page }) => {
+  const m = (date: string, a: number, b: number, lid: string, lname: string) => ({ date, score_a: a, score_b: b, league_id: lid, leagues: { name: lname } });
+  const profileRows = [
+    { match_id: 'm1', team: 'A', rating: 7.5, goals: 2, assist: 1, matches: m('2026-10-01', 5, 3, 'L1', 'CalcioLercio') },
+    { match_id: 'm2', team: 'B', rating: 6, goals: 0, assist: 0, matches: m('2026-10-08', 5, 3, 'L1', 'CalcioLercio') },
+    { match_id: 'm3', team: 'A', rating: null, goals: 1, assist: 0, matches: m('2026-10-15', 2, 2, 'L2', 'Altra lega') },
+  ];
+  const history = [{ changed_at: '2026-10-20T10:00:00Z', old_stats: [5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5], new_stats: [5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5], old_roles: ['MED'], new_roles: ['MED'] }];
+  await setup(page, { mePlayer: { id: 'p1', name: 'Marco' }, profileRows, history });
+  await openSettings(page);
+  await expect(page.locator('#profile-card')).toContainText('Marco');
+  await expect(page.locator('.profile-league')).toHaveCount(2);
+  await expect(page.locator('.profile-league').first()).toContainText('CalcioLercio');
+  await expect(page.locator('.profile-league').first()).toContainText('1-0-1'); // V-P-S
+  await expect(page.locator('.profile-league').first()).toContainText('6.75');
+  await expect(page.locator('.profile-match')).toHaveCount(3);
+  await expect(page.locator('.profile-match').first()).toContainText('15/10/2026');
+  await expect(page.locator('.profile-history')).toContainText('tiro 6 → 7');
+  await noOverflow(page);
+});
+
+test('Profilo: senza partite', async ({ page }) => {
+  await setup(page, { mePlayer: { id: 'p1', name: 'Marco' } });
+  await openSettings(page);
+  await expect(page.locator('#profile-empty')).toBeVisible();
 });
 
 test('Questo sono io: se la migrazione manca si spiega cosa fare', async ({ page }) => {
