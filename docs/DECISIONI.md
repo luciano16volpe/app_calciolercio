@@ -116,3 +116,9 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 ## Gazzetta (Fase 3.7e)
 - Carica, sostituisci e rimuovi la Gazzetta si fanno dalla scheda partita in modifica (come legacy), quindi per ora solo l'amministratore. Il ruolo "redazione" è già previsto dal database ma non ha ancora una schermata sua.
 - Al caricamento si salvano il file completo (lato max 2000 px) e una miniatura (500 px) per striscia e archivio. Le Gazzette vecchie senza miniatura mostrano il file completo. La Gazzetta sostituita o rimossa viene cancellata dall'archivio.
+
+## Impostazioni (Fase 3.8)
+- Restano: versione e "Aggiorna app", formazioni (aggiungi/togli, salvate sul telefono come in legacy e usate dal sorteggio), forma recente (interruttore), account.
+- **Tolti** perché non servono più: backup su file (i dati stanno nel database) e indirizzo del foglio Google con la guida.
+- **Pesi delle statistiche: in sola lettura.** Nel database sono unici per tutte le leghe e si cambiano solo dal pannello di Supabase. In legacy ognuno li cambiava sul proprio telefono. Se vuoi poterli cambiare dall'app serve deciderlo insieme (chi può, e per tutte le leghe).
+- La "versione" è la data e ora di compilazione.

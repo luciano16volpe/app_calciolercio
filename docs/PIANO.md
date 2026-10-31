@@ -36,13 +36,13 @@ Ogni passo: aspetto identico a legacy (confronto con screenshot iPhone/Android/3
 - [x] 3.4 Partite: ultima partita, elenco, scheda partita (sola lettura) con equilibrio squadre, Gazzette (striscia, archivio, visualizzatore), testo delle pagelle
 - [x] 3.5 Gioca: formato, convocati, sorteggio, campo, proposte, scambi trascinando, precisione (condividi/foglio/crea partita: 3.6 e 3.7)
 - [x] 3.6 Immagini canvas: figurina, riepilogo, formazioni, foglio, confronto (+ visualizzatore a schermo intero)
-- [ ] 3.7 Accesso admin e modifiche, a passi:
+- [x] 3.7 Accesso admin e modifiche, a passi:
   - [x] 3.7a Accesso con email e password (Impostazioni → Account), ruolo nella lega
   - [x] 3.7b Crea partita da Gioca, risultato, voti, gol e pagelle (scheda partita modificabile), elimina partita
   - [x] 3.7c Importazione pagelle da WhatsApp
   - [x] 3.7d Rosa e statistiche (modifica statistiche e ruoli, foto, aggiungi giocatore)
   - [x] 3.7e Gazzetta (carica, sostituisci, rimuovi) e miniature
-- [ ] 3.8 Impostazioni
+- [x] 3.8 Impostazioni (versione e aggiornamento, formazioni, forma recente, pesi in sola lettura, account)
 
 ## Fase 4 — Multi-lega e account
 - [ ] Creare una lega, codice d'invito, ruoli (admin / redazione / member), cambio lega

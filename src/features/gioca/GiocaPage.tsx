@@ -3,7 +3,7 @@
 // "Crea partita" arriva con il passo 3.7.
 import { Fragment, useMemo, useRef, useState } from 'react';
 import { useImageTools } from '../../app/ImageViewer';
-import { readUseForm } from '../../app/settings';
+import { readModules, readUseForm } from '../../app/settings';
 import { comboSheet, combosFormations } from '../../canvas/make';
 import { NewMatchDialog } from './NewMatchDialog';
 import { useToast } from '../../app/Toast';
@@ -258,7 +258,7 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
     }
     const sc = balanceScores(dataset, weights, readUseForm());
     const idx = live.map((id) => dataset.players.findIndex((p) => p.id === id));
-    const out = generateTeams({ players: dataset.players, scores: sc, selected: idx, sizeA: fmt.sizeA, sizeB: fmt.sizeB });
+    const out = generateTeams({ players: dataset.players, scores: sc, selected: idx, sizeA: fmt.sizeA, sizeB: fmt.sizeB, modules: readModules() });
     if (!out) return;
     setScores(sc);
     setRes({ combos: out.combos, genBest: out.genBest, idx: 0 });
