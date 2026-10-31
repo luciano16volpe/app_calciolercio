@@ -102,3 +102,7 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Il salvataggio aggiorna una riga per giocatore (non è un'unica operazione): se la rete cade a metà, si riprova con "Salva".
 - Legacy: il pulsante + dei contatori si ferma a 20 anche per Meta (il campo ammette 50 scrivendo a mano). Portato così.
 - L'avviso sui "titoli non salvati" di legacy riguardava lo script Google: non serve più.
+
+## Importazione WhatsApp (Fase 3.7c)
+- Lettura e abbinamento dei nomi: stessa logica già provata in Fase 1 (test golden). Qui solo la schermata.
+- I soprannomi imparati restano sul telefono (stessa chiave di legacy) e vengono salvati anche nella lega (colonna `aliases` di `league_players`).

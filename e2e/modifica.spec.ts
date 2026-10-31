@@ -173,3 +173,39 @@ test('Gioca: senza accesso Crea partita spiega cosa fare', async ({ page }) => {
   await res.locator('button', { hasText: 'Crea partita' }).click();
   await expect(page.locator('#toast')).toContainText("serve l'accesso");
 });
+
+test('WhatsApp: si incolla il messaggio, si controllano gli abbinamenti e si assegnano titolo e descrizione', async ({ page }) => {
+  const writes = await login(page);
+  const modal = await openLastMatch(page);
+  await modal.locator('#edit-toggle-btn').click();
+  const name = await modal.locator('.rate-stepper').first().evaluate((el) => (el.parentElement?.parentElement?.firstElementChild?.textContent ?? '').trim());
+  // senza testo: avviso
+  await modal.locator('button', { hasText: 'Analizza il messaggio' }).click();
+  await expect(page.locator('#toast')).toContainText('Incolla prima il messaggio');
+  await modal.locator('#wa-text').fill(`*BLU 8*\n*${name} 7*\nSempre al posto giusto.\nIL MURO\n`);
+  await modal.locator('button', { hasText: 'Analizza il messaggio' }).click();
+  const prev = modal.locator('#wa-preview');
+  await expect(prev).toContainText('Trovate 1 pagelle');
+  await expect(prev.locator('.wa-row')).toHaveCount(1);
+  await expect(prev.locator('.wa-row .wa-written')).toContainText(name);
+  await expect(prev.locator('.wa-det')).toContainText('IL MURO');
+  await prev.locator('button', { hasText: 'Assegna titoli e descrizioni' }).click();
+  await expect(page.locator('#toast')).toContainText('assegnati a 1 giocatori');
+  await expect(prev.locator('.wa-row')).toHaveCount(0);
+  // la pagella è nella scheda del giocatore (ancora da salvare)
+  await expect(modal.locator('.pgt-view').first()).toContainText('IL MURO');
+  // il giocatore ha già un voto nei dati veri? se no, serve metterlo per salvare
+  await modal.locator('.rate-stepper input').first().fill('7');
+  await modal.locator('button', { hasText: 'Salva partita' }).click();
+  await expect(page.locator('#toast')).toContainText('Salvato:', { timeout: 15_000 });
+  expect(writes.some((w) => (w.body as { titolo?: string })?.titolo === 'IL MURO' && /Sempre al posto giusto/.test((w.body as { descrizione?: string }).descrizione ?? ''))).toBe(true);
+});
+
+test('WhatsApp: messaggio senza pagelle', async ({ page }) => {
+  await login(page);
+  const modal = await openLastMatch(page);
+  await modal.locator('#edit-toggle-btn').click();
+  await modal.locator('#wa-text').fill('Ciao a tutti, stasera si gioca?');
+  await modal.locator('button', { hasText: 'Analizza il messaggio' }).click();
+  await expect(modal.locator('#wa-preview')).toContainText('Non ho trovato pagelle');
+});

@@ -39,7 +39,7 @@ Ogni passo: aspetto identico a legacy (confronto con screenshot iPhone/Android/3
 - [ ] 3.7 Accesso admin e modifiche, a passi:
   - [x] 3.7a Accesso con email e password (Impostazioni → Account), ruolo nella lega
   - [x] 3.7b Crea partita da Gioca, risultato, voti, gol e pagelle (scheda partita modificabile), elimina partita
-  - [ ] 3.7c Importazione pagelle da WhatsApp
+  - [x] 3.7c Importazione pagelle da WhatsApp
   - [ ] 3.7d Rosa e statistiche (modifica giocatori, foto)
   - [ ] 3.7e Gazzetta e miniature
 - [ ] 3.8 Impostazioni

@@ -15,6 +15,7 @@ import { clampRating, normalizeTeam } from '../../domain/stats';
 import type { Match, Rating } from '../../domain/types';
 import { waHTML } from '../../domain/whatsapp';
 import { MatchButtons, type MatchActions } from './parts';
+import { WhatsAppImport } from './WhatsAppImport';
 
 const LABEL = { fontSize: 12, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase' as const, letterSpacing: '.5px' };
 
@@ -411,6 +412,13 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false }: { da
               <TeamPanel title="🔵 Blu" team={teamA} ratings={ratings} blue side="A" ed={ed} />
               <TeamPanel title="⚪ Bianchi" team={teamB} ratings={ratings} blue={false} side="B" ed={ed} />
             </div>
+            {draft ? (
+              <WhatsAppImport
+                data={data} m={m}
+                hasRating={(k) => clampRating((draft.fields[k] as PlayerFields | undefined)?.rating) !== null}
+                onAssign={(k, tit, desc) => ed?.set(k, { tit, desc })}
+              />
+            ) : null}
             {editing ? (
               <div id="match-actions" style={{ display: 'flex', gap: 8 }}>
                 <button className="btn btn-primary" style={{ flex: 1 }} disabled={busy} onClick={() => void save()}>💾 Salva partita</button>

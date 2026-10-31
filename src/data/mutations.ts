@@ -74,3 +74,10 @@ export async function createMatch(m: NewMatch): Promise<string> {
   }
   return data.id;
 }
+
+/** Ricorda i soprannomi dei giocatori nella lega (id giocatore → elenco completo dei soprannomi). */
+export async function saveAliases(leagueId: string, byPlayer: Map<string, string[]>): Promise<void> {
+  const results = await Promise.all([...byPlayer].map(([playerId, aliases]) => supabase.from('league_players').update({ aliases }).eq('league_id', leagueId).eq('player_id', playerId)));
+  const bad = results.find((r) => r.error);
+  if (bad?.error) throw fail('soprannomi', bad.error);
+}

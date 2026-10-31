@@ -27,6 +27,8 @@ export interface LeagueData {
   albo: AlboRow[];
   /** Gazzette: id partita → percorso del file. */
   gazzette: Record<string, string>;
+  /** soprannomi dei giocatori nella lega (id giocatore → altri nomi), per l'importazione da WhatsApp */
+  aliases?: Record<string, string[]>;
 }
 
 const PAGE = 1000; // Supabase restituisce al massimo 1000 righe per richiesta
@@ -49,7 +51,7 @@ export async function fetchLeagueData(): Promise<LeagueData> {
   const league = leagues?.[0];
   if (!league) throw new Error('Nessuna lega pubblica trovata.');
 
-  const lp = await fetchAll((a, b) => supabase.from('league_players').select('player_id').eq('league_id', league.id).order('player_id').range(a, b), 'giocatori della lega');
+  const lp = await fetchAll((a, b) => supabase.from('league_players').select('player_id, aliases').eq('league_id', league.id).order('player_id').range(a, b), 'giocatori della lega');
   const ids = lp.map((x) => x.player_id);
   const [players, matches, settings, albo, gaz] = await Promise.all([
     fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path').in('id', ids).order('id').range(a, b), 'giocatori'),
@@ -89,6 +91,7 @@ export async function fetchLeagueData(): Promise<LeagueData> {
     weights,
     photos: Object.fromEntries(players.map((p) => [p.id, p.photo_path])),
     albo: (albo.data ?? []).flatMap((r) => r.rows as unknown as AlboRow[]),
+    aliases: Object.fromEntries(lp.filter((x) => x.aliases?.length).map((x) => [x.player_id, x.aliases])),
     gazzette: Object.fromEntries(gaz.filter((g) => matchSet.has(g.match_id)).map((g) => [g.match_id, g.file_path])),
   };
 }
