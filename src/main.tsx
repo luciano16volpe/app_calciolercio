@@ -4,6 +4,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import './styles/app.css';
+import './styles/menu.css';
 import { App } from './App';
 
 // I dati restano sul telefono: la prossima volta si vede subito l'ultima versione, poi si aggiorna.

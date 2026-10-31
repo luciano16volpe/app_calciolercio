@@ -55,6 +55,10 @@ Completamento della Fase 4 (comando `/completa-fase-4`, in un'unica sessione). P
 Tutte le modifiche al database sono **nuove migrazioni** applicate sempre allo stesso modo:
 `npx supabase migration list --linked` → `npx supabase db push --linked` (il progetto vero è l'unico ambiente: nessun progetto di prova).
 - [x] 4.0 Verifica del database: `membri.sql` mancava ed è stata applicata; storico delle migrazioni allineato (`migration repair`)
+> **Stato al 1/11 sera** (ramo `worktree-fase-4-4`, cartella `.claude/worktrees/fase-4-4`): migrazioni applicate sul database vero fino a `20261105000000_cancella_account.sql`
+> (leghe/ruoli/supremo, inviti/scollega/unisci, cancellazione account). Interfaccia scritta e **collegata in `App.tsx`** (☰, pillola lega, menu, pannelli, `/l/<slug>/…`, `/invito/<token>`),
+> compila e i 417 test di logica passano. **Da fare:** aggiornare/scrivere le prove su schermata (vecchie prove Impostazioni, nuove per menu/inviti/leghe/ruoli),
+> poi registro attività (4.7), storico statistiche con autore (4.8), collaudo (4.9). La lega esistente è stata rinominata "San Marcello" (slug `san-marcello`).
 - [ ] 4.5 Menu laterale e leghe — `docs/specifiche/menu-e-leghe.md`
   - [ ] ☰ in alto a sinistra, pillola con la lega attiva, menu a sezioni per ruolo (Le mie leghe · Redazione · Gestione · Piattaforma · App)
   - [ ] "Le mie leghe" spostata da Impostazioni al menu; crea lega (nome, visibilità, formato, giorno), codice d'invito condivisibile, entra con codice

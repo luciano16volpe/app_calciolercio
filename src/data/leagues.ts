@@ -202,10 +202,9 @@ export async function fetchPlatformUsers(): Promise<PlatformUser[]> {
   return (data ?? []).map((u) => ({ id: u.id, name: u.display_name ?? '', email: u.email ?? '', lastSignIn: u.last_sign_in_at, createdAt: u.created_at, leagues: u.leagues ?? '' }));
 }
 
-/** Amministratori di una lega (per assegnarle un creatore). La funzione `admin_league_admins` arriva con la migrazione 4.6. */
+/** Amministratori di una lega (per assegnarle un creatore). */
 export async function fetchLeagueAdmins(leagueId: string): Promise<Array<{ id: string; name: string }>> {
-  const call = supabase.rpc as unknown as (fn: string, args: object) => Promise<{ data: Array<{ user_id: string; name: string }> | null; error: { message: string } | null }>;
-  const { data, error } = await call.call(supabase, 'admin_league_admins', { l: leagueId });
+  const { data, error } = await supabase.rpc('admin_league_admins', { l: leagueId });
   if (error) throw plain(error);
   return (data ?? []).map((a) => ({ id: a.user_id, name: a.name }));
 }

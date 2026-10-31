@@ -103,7 +103,7 @@ export function CreateLeagueSheet({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function JoinLeagueSheet({ onClose }: { onClose: () => void }) {
+export function JoinLeagueSheet({ onClose, onJoined }: { onClose: () => void; onJoined?: () => void }) {
   const toast = useToast();
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -120,7 +120,8 @@ export function JoinLeagueSheet({ onClose }: { onClose: () => void }) {
       if (l) setSelectedLeague(l.slug);
       await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
       toast('Sei dentro la lega');
-      onClose();
+      if (onJoined) onJoined(); // si apre il profilo: se non sei ancora collegato, scegli chi sei
+      else onClose();
     } catch (e) {
       toast('Errore: ' + (e as Error).message);
     } finally {
