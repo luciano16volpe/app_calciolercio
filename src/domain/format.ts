@@ -9,4 +9,4 @@ export function formatDate(d: unknown): string {
 }
 
 /** Toglie il selettore di variante U+FE0F dalle emoji (Safari le misura male nei testi centrati su canvas). */
-export const noVS = (s: unknown): string => String(s).replace(/️/g, '');
+export const noVS = (s: unknown): string => String(s).replace(/\ufe0f/g, '');

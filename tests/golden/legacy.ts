@@ -56,6 +56,12 @@ export function loadLegacy<T extends Record<string, unknown>>(
     var __el={innerHTML:'',textContent:'',style:{},scrollIntoView:function(){}}, __scope='all', document={getElementById:function(){return __el;}};
     var sizeA=5, sizeB=5, selected=new Set(), allCombos=[], currentIdx=0, genBest=null;
     function toast(){}
+    function save(){}
+    function pgtViewHTML(){return '';}
+    function waRenderPreview(){}
+    var _wa=null;
+    function __wa(id,txt){__el.value=txt;__el.checked=true;waAnalyze(id);return _wa;}
+    function __waApply(){waApply();}
     function renderResult(){}
     function setTimeout(){}
     function __gen(sa,sb,sel){sizeA=sa;sizeB=sb;selected=new Set(sel);allCombos=[];genBest=null;generateTeams();return {combos:allCombos,genBest:genBest};}
@@ -65,7 +71,9 @@ export function loadLegacy<T extends Record<string, unknown>>(
   `;
   const src = [prelude, ...consts.map(extractConst), ...functions.map(extractFunction)].join('\n');
   const names = functions.concat(consts).join(',');
-  const sandbox: Record<string, unknown> = { localStorage: { getItem: () => null }, console };
+  const store = new Map<string, string>(); // memoria del telefono (soprannomi imparati, ecc.)
+  const localStorage = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: unknown) => void store.set(k, String(v)) };
+  const sandbox: Record<string, unknown> = { localStorage, console };
   if (today) {
     // data "di oggi" fissa, per seasonStatus
     const RealDate = Date;
@@ -82,11 +90,13 @@ export function loadLegacy<T extends Record<string, unknown>>(
   }
   vm.createContext(sandbox);
   vm.runInContext(src, sandbox);
-  const api = vm.runInContext(`({__set,__useForm,__run,__gen,${names}})`, sandbox) as T & {
+  const api = vm.runInContext(`({__set,__useForm,__run,__gen,__wa,__waApply,${names}})`, sandbox) as T & {
     __set: (...a: unknown[]) => void;
     __useForm: (b: boolean) => void;
     __run: (fn: () => void, scope: string) => string;
     __gen: (sa: number, sb: number, sel: number[]) => { combos: unknown[]; genBest: number | null };
+    __wa: (id: string, txt: string) => unknown;
+    __waApply: () => void;
   };
   api.__set(data.players, data.weights, data.matches, data.ratings, data.albo);
   return api;
