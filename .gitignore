@@ -7,3 +7,6 @@ playwright-report
 test-results
 .idea/workspace.xml
 *.log
+supabase/.temp
+*.tsbuildinfo
+.vercel
