@@ -124,6 +124,13 @@ export function loadLegacy<T extends Record<string, unknown>>(
     function __cap(){return {toasts:__toasts,calls:__calls,confirms:__confirms};}
     function __answer(b){__confirmAnswer=b;}
     function __reset(){__toasts=[];__calls=[];__confirms=[];}
+    function __players(){return players;}
+    var rosaCardIdx=null;
+    function futMiniHTML(){return '';}
+    function fitPhotoBand(){}
+    function buildRosa(){}
+    function buildConvList(){}
+    function openRosaCard(){}
     function save(){}
     function pgtViewHTML(){return '';}
     function waRenderPreview(){}
@@ -159,9 +166,10 @@ export function loadLegacy<T extends Record<string, unknown>>(
   }
   vm.createContext(sandbox);
   vm.runInContext(src, sandbox);
-  const api = vm.runInContext(`({__setVals,__cap,__answer,__reset,__setLogo,__viewerGet,__set,__useForm,__run,__gen,__wa,__waApply,__draw,__tab,__stats,__cmp,__multiOn,__getEl,__idx,__swap,__combo,__sel,${names}})`, sandbox) as T & {
+  const api = vm.runInContext(`({__players,__setVals,__cap,__answer,__reset,__setLogo,__viewerGet,__set,__useForm,__run,__gen,__wa,__waApply,__draw,__tab,__stats,__cmp,__multiOn,__getEl,__idx,__swap,__combo,__sel,${names}})`, sandbox) as T & {
     __set: (...a: unknown[]) => void;
     __setLogo: (l: unknown) => void;
+    __players: () => Array<{ stats: number[]; roles: string[] }>;
     __setVals: (o: Record<string, string>) => void;
     __cap: () => { toasts: string[]; calls: Array<[string, Record<string, unknown>]>; confirms: Array<Record<string, unknown>> };
     __answer: (b: boolean) => void;

@@ -21,6 +21,13 @@ async function login(page: Page, role: 'admin' | 'member' | null = 'admin') {
     }, [REF, FAKE_JWT]);
   }
   await page.route('**/auth/v1/**', (r: Route) => r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: '{}' }));
+  await page.route('**/storage/v1/object/**', async (r: Route) => {
+    const req = r.request();
+    if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS });
+    if (req.method() === 'GET') return r.continue(); // le foto pubbliche si leggono normalmente
+    writes.push({ method: req.method(), table: 'storage', body: new URL(req.url()).pathname.split('/object/')[1] });
+    return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: JSON.stringify({ Key: 'ok' }) });
+  });
   await page.route('**/rest/v1/**', async (r: Route) => {
     const req = r.request();
     const table = new URL(req.url()).pathname.split('/').pop() as string;
@@ -34,8 +41,8 @@ async function login(page: Page, role: 'admin' | 'member' | null = 'admin') {
     let body: unknown = null;
     try { body = req.postDataJSON(); } catch { /* nessun corpo */ }
     writes.push({ method: req.method(), table, body });
-    const created = req.method() === 'POST' && table === 'matches';
-    return r.fulfill({ status: created ? 201 : 204, headers: CORS, contentType: 'application/json', body: created ? JSON.stringify({ id: 'nuova-partita' }) : '' });
+    const created = req.method() === 'POST' && (table === 'matches' || table === 'players');
+    return r.fulfill({ status: created ? 201 : 204, headers: CORS, contentType: 'application/json', body: created ? JSON.stringify({ id: table === 'players' ? 'nuovo-giocatore' : 'nuova-partita' }) : '' });
   });
   return writes;
 }
@@ -208,4 +215,86 @@ test('WhatsApp: messaggio senza pagelle', async ({ page }) => {
   await modal.locator('#wa-text').fill('Ciao a tutti, stasera si gioca?');
   await modal.locator('button', { hasText: 'Analizza il messaggio' }).click();
   await expect(modal.locator('#wa-preview')).toContainText('Non ho trovato pagelle');
+});
+
+// ── Rosa: scheda giocatore modificabile, nuovo giocatore, foto (passo 3.7d) ────────────────────────────────────────────
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+
+async function openFirstPlayer(page: Page) {
+  await page.goto('/');
+  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await page.locator('#players-list .card-compact .player-header').first().click();
+  return page.locator('#match-modal');
+}
+
+test('Rosa: senza accesso la scheda è di sola lettura', async ({ page }) => {
+  await login(page, null);
+  const modal = await openFirstPlayer(page);
+  await expect(modal.locator('.stat-input')).not.toHaveCount(0);
+  await expect(modal.locator('input.stat-input')).toHaveCount(0);
+  await expect(modal.locator('.role-toggle')).toHaveCount(0);
+  await expect(page.getByText('+ Aggiungi giocatore')).toHaveCount(0);
+});
+
+test('Rosa: l\'amministratore cambia statistica e ruolo', async ({ page }) => {
+  const writes = await login(page);
+  const modal = await openFirstPlayer(page);
+  await expect(modal.locator('.role-toggle')).toHaveCount(3);
+  await expect(modal.locator('input.stat-input')).toHaveCount(11);
+  const input = modal.locator('input.stat-input').first();
+  await input.fill('9');
+  await expect(modal.locator('.mini-bar-fill').first()).toHaveCSS('width', /.+/);
+  await expect.poll(() => writes.filter((w) => w.table === 'players' && w.method === 'PATCH').length, { timeout: 10_000 }).toBeGreaterThan(0);
+  const stats = (writes.find((w) => w.table === 'players') as Write).body as { stats: number[] };
+  expect(stats.stats[0]).toBe(9);
+  expect(stats.stats.length).toBe(11);
+  // ruoli: si può togliere un ruolo solo se ne resta almeno uno
+  const on = modal.locator('.role-toggle[class*="tog-"]');
+  const n = await on.count();
+  for (let i = 0; i < n + 1; i++) {
+    const cur = modal.locator('.role-toggle[class*="tog-"]');
+    if ((await cur.count()) === 0) break;
+    await cur.first().click();
+  }
+  await expect(page.locator('#toast')).toContainText('Almeno un ruolo è richiesto');
+  expect(await modal.locator('.role-toggle[class*="tog-"]').count()).toBe(1);
+  await expect(modal.locator('.photo-edit')).toBeVisible();
+  expect((await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width).toBeLessThanOrEqual(0);
+});
+
+test('Rosa: nuova foto, carica e salva', async ({ page }) => {
+  const writes = await login(page);
+  const modal = await openFirstPlayer(page);
+  // se il giocatore ha già una foto si passa dal menu "Cambia"
+  const photoEdit = modal.locator('.photo-edit');
+  const hasPhoto = await photoEdit.locator('.has-photo').count();
+  const chooser = page.waitForEvent('filechooser');
+  await photoEdit.click();
+  if (hasPhoto) await page.locator('#app-modal button', { hasText: 'Cambia' }).click();
+  await (await chooser).setFiles({ name: 'foto.png', mimeType: 'image/png', buffer: PNG });
+  await expect(page.locator('#toast')).toContainText('Foto aggiornata', { timeout: 15_000 });
+  expect(writes.some((w) => w.table === 'storage' && w.method === 'POST' && /^photos\/.+\.jpg$/.test(String(w.body)))).toBe(true);
+  const upd = writes.find((w) => w.table === 'players' && w.method === 'PATCH') as Write;
+  expect((upd.body as { photo_path: string }).photo_path).toMatch(/\.jpg$/);
+});
+
+test('Rosa: + Aggiungi giocatore', async ({ page }) => {
+  const writes = await login(page);
+  await page.goto('/');
+  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await page.getByText('+ Aggiungi giocatore').click();
+  await expect(page.locator('#app-modal-title')).toHaveText('Nuovo giocatore');
+  // nome vuoto: avviso
+  await page.locator('#app-modal-ok').click();
+  await expect(page.locator('#toast')).toContainText('Nome non valido');
+  expect(writes.length).toBe(0);
+  await page.getByText('+ Aggiungi giocatore').click();
+  await page.locator('#app-modal-input').fill('  Marco ');
+  await page.locator('#app-modal-ok').click();
+  await expect(page.locator('#toast')).toContainText('Giocatore aggiunto', { timeout: 15_000 });
+  const p = writes.find((w) => w.table === 'players') as Write;
+  expect(p.method).toBe('POST');
+  expect(p.body).toEqual({ name: 'Marco', roles: ['MED'], stats: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5] });
+  const lp = writes.find((w) => w.table === 'league_players') as Write;
+  expect((lp.body as { player_id: string }).player_id).toBe('nuovo-giocatore');
 });

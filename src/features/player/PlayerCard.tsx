@@ -13,6 +13,7 @@ import { ICONS, STATS, type Player } from '../../domain/types';
 import { FireChip } from '../rosa/RosaList';
 import { FutMini } from './FutMini';
 import { PagelleSection } from './PagelleSection';
+import { PlayerEditTop } from './PlayerEditTop';
 import { PlayerPagelleDialog } from './PlayerPagelleDialog';
 
 function Avatar({ player, photo }: { player: Player; photo: string | null }) {
@@ -110,7 +111,7 @@ function Pairs({ data, player, onOpenPlayer }: { data: LeagueData; player: Playe
   );
 }
 
-export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch, bachecaOpen, onToggleBacheca }: {
+export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch, bachecaOpen, onToggleBacheca, canEdit = false }: {
   data: LeagueData;
   playerId: string;
   onClose: () => void;
@@ -118,6 +119,8 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   onOpenMatch: (matchId: string) => void;
   bachecaOpen: boolean;
   onToggleBacheca: () => void;
+  /** scheda modificabile (foto, ruoli, statistiche): dalla Rosa, per l'amministratore */
+  canEdit?: boolean;
 }) {
   const { dataset } = data;
   const player = dataset.players.find((p) => p.id === playerId);
@@ -135,6 +138,23 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   if (!player) return null;
   const state = formState(dataset, player, all);
   const w = formWeightView(dataset, player, useForm, all);
+  const weightRow = (
+    <div className="stat-row stat-row-ro" title={formWeightTip}>
+      <span className="stat-icon">⚖️</span>
+      <span className="stat-name">Peso voti</span>
+      {w.off ? (
+        <>
+          <span className="stat-input stat-ro" style={{ color: 'var(--text3)', WebkitTextFillColor: 'var(--text3)' }}>Off</span>
+          <div className="mini-bar"><div className="mini-bar-fill" style={{ width: '0%' }} /></div>
+        </>
+      ) : (
+        <>
+          <span className="stat-input stat-ro">{w.pct}%</span>
+          <div className="mini-bar"><div className="mini-bar-fill" style={{ width: `${w.fill}%`, background: 'var(--amber)' }} /></div>
+        </>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -150,44 +170,38 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
             <div style={{ fontSize: 16, fontWeight: 800 }} id="match-modal-title">
               {player.name}
               <FireChip state={state} />
-              <span className="mt-roles">
-                {(player.roles ?? []).map((r) => (
-                  <span key={r} className={`rp rp-${r.toLowerCase()}`}>{r}</span>
-                ))}
-              </span>
+              {canEdit ? null : (
+                <span className="mt-roles">
+                  {(player.roles ?? []).map((r) => (
+                    <span key={r} className={`rp rp-${r.toLowerCase()}`}>{r}</span>
+                  ))}
+                </span>
+              )}
             </div>
             <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text2)', fontSize: 22, padding: 4, lineHeight: 1 }}>✕</button>
           </div>
           <div id="match-modal-body">
-            <div className="photo-row" style={{ margin: '2px 0 8px', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 16 }}>
-              <Avatar player={player} photo={photoUrl(data.photos[player.id])} />
-              <div style={{ width: 84 }}><FutMini data={data} player={player} /></div>
-            </div>
-            <div className="stats-grid">
-              {STATS.map((s, j) => (
-                <div key={s} className="stat-row">
-                  <span className="stat-icon">{ICONS[j]}</span>
-                  <span className="stat-name">{s}</span>
-                  <span className="stat-input" style={{ border: 'none', background: 'transparent', WebkitTextFillColor: 'var(--text)' }}>{player.stats[j]}</span>
-                  <div className="mini-bar"><div className="mini-bar-fill" style={{ width: `${(player.stats[j] ?? 0) * 10}%` }} /></div>
+            {canEdit ? (
+              <PlayerEditTop data={data} player={player} weightRow={weightRow} />
+            ) : (
+              <>
+                <div className="photo-row" style={{ margin: '2px 0 8px', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 16 }}>
+                  <Avatar player={player} photo={photoUrl(data.photos[player.id])} />
+                  <div style={{ width: 84 }}><FutMini data={data} player={player} /></div>
                 </div>
-              ))}
-              <div className="stat-row stat-row-ro" title={formWeightTip}>
-                <span className="stat-icon">⚖️</span>
-                <span className="stat-name">Peso voti</span>
-                {w.off ? (
-                  <>
-                    <span className="stat-input stat-ro" style={{ color: 'var(--text3)', WebkitTextFillColor: 'var(--text3)' }}>Off</span>
-                    <div className="mini-bar"><div className="mini-bar-fill" style={{ width: '0%' }} /></div>
-                  </>
-                ) : (
-                  <>
-                    <span className="stat-input stat-ro">{w.pct}%</span>
-                    <div className="mini-bar"><div className="mini-bar-fill" style={{ width: `${w.fill}%`, background: 'var(--amber)' }} /></div>
-                  </>
-                )}
-              </div>
-            </div>
+                <div className="stats-grid">
+                  {STATS.map((s, j) => (
+                    <div key={s} className="stat-row">
+                      <span className="stat-icon">{ICONS[j]}</span>
+                      <span className="stat-name">{s}</span>
+                      <span className="stat-input" style={{ border: 'none', background: 'transparent', WebkitTextFillColor: 'var(--text)' }}>{player.stats[j]}</span>
+                      <div className="mini-bar"><div className="mini-bar-fill" style={{ width: `${(player.stats[j] ?? 0) * 10}%` }} /></div>
+                    </div>
+                  ))}
+                  {weightRow}
+                </div>
+              </>
+            )}
             <div id="modal-pagelle" style={{ marginTop: 4, paddingTop: 6, borderTop: '1px solid var(--gray2)' }}>
               <PagelleSection data={data} player={player} onOpenAll={(focus) => setPagelleOpen({ focus })} onOpenMatch={onOpenMatch} />
             </div>

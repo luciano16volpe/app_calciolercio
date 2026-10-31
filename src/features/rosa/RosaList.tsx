@@ -13,7 +13,7 @@ export function FireChip({ state }: { state: 'up' | 'flat' | 'down' | null }) {
   return null;
 }
 
-export function RosaList({ data, onOpen }: { data: LeagueData; onOpen: (playerId: string) => void }) {
+export function RosaList({ data, onOpen, onAdd }: { data: LeagueData; onOpen: (playerId: string) => void; onAdd?: () => void }) {
   const { dataset, weights } = data;
   const rows = useMemo(() => {
     const all = seasonStats(dataset);
@@ -29,6 +29,7 @@ export function RosaList({ data, onOpen }: { data: LeagueData; onOpen: (playerId
   }, [dataset, weights]);
 
   return (
+    <>
     <div id="players-list">
       {rows.map(({ p, ovr, pag, state }, rank) => (
         <div key={p.id} className="card card-compact" style={{ animationDelay: Math.min(rank, 12) * 0.03 + 's' }}>
@@ -55,5 +56,11 @@ export function RosaList({ data, onOpen }: { data: LeagueData; onOpen: (playerId
         </div>
       ))}
     </div>
+    {onAdd ? (
+      <div className="btn-row" style={{ marginTop: 4 }}>
+        <button className="btn btn-secondary" style={{ flex: 1 }} onClick={onAdd}>+ Aggiungi giocatore</button>
+      </div>
+    ) : null}
+    </>
   );
 }

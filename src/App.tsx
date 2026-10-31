@@ -1,8 +1,10 @@
 import { useCallback, useMemo, useState, type ComponentProps } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { BottomNav, type PageName } from './app/BottomNav';
 import { AuthProvider, useRole } from './app/auth';
-import { DialogProvider } from './app/Dialogs';
+import { DialogProvider, usePrompt } from './app/Dialogs';
+import { useToast } from './app/Toast';
+import { createPlayer } from './data/mutations';
+import { useQueryClient } from '@tanstack/react-query';
 import { ImageProvider } from './app/ImageViewer';
 import { ToastProvider } from './app/Toast';
 import { LEAGUE_QUERY_KEY, useLeagueData, type LeagueData } from './data/queries';
@@ -20,6 +22,30 @@ import { RosaList } from './features/rosa/RosaList';
 function GiocaGate({ data }: { data: LeagueData }) {
   const { isAdmin } = useRole(data.league.id);
   return <GiocaPage data={data} canCreate={isAdmin} />;
+}
+/** Rosa: per l'amministratore c'è anche "+ Aggiungi giocatore". */
+function RosaGate({ data, onOpen }: { data: LeagueData; onOpen: (id: string) => void }) {
+  const { isAdmin } = useRole(data.league.id);
+  const prompt = usePrompt();
+  const toast = useToast();
+  const qc = useQueryClient();
+  const add = async () => {
+    const nome = await prompt({ icon: '➕', title: 'Nuovo giocatore', lines: ['Inserisci il nome (non sarà modificabile in seguito).'], okLabel: 'Aggiungi', input: { placeholder: 'Es. Marco' } });
+    if (nome === null) return; // annullato
+    if (!nome.trim()) return toast('Nome non valido');
+    try {
+      await createPlayer(data.league.id, nome.trim());
+      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      toast('Giocatore aggiunto');
+    } catch (e) {
+      toast('Errore: ' + (e as Error).message);
+    }
+  };
+  return <RosaList data={data} onOpen={onOpen} onAdd={isAdmin ? () => void add() : undefined} />;
+}
+function PlayerCardGate({ editable, ...props }: ComponentProps<typeof PlayerCard> & { editable: boolean }) {
+  const { isAdmin } = useRole(props.data.league.id);
+  return <PlayerCard {...props} canEdit={isAdmin && editable} />;
 }
 function MatchCardGate(props: ComponentProps<typeof MatchCard>) {
   const { isAdmin } = useRole(props.data.league.id);
@@ -44,7 +70,7 @@ function Loading({ q }: { q: { isError: boolean; refetch: () => unknown } }) {
 }
 
 /** Cosa c'è nella finestra aperta sopra la pagina (una sola per volta, come in legacy). */
-type View = { kind: 'player'; id: string } | { kind: 'match'; id: string } | { kind: 'gazArchive' } | null;
+type View = { kind: 'player'; id: string; fromRosa?: boolean } | { kind: 'match'; id: string } | { kind: 'gazArchive' } | null;
 
 export function App() {
   const [page, setPage] = useState<PageName>('rosa');
@@ -61,6 +87,7 @@ export function App() {
   };
   const close = useCallback(() => setView(null), []);
   const openPlayer = useCallback((id: string) => setView({ kind: 'player', id }), []);
+  const openPlayerFromRosa = useCallback((id: string) => setView({ kind: 'player', id, fromRosa: true }), []);
   const openMatch = useCallback((id: string) => {
     setGazViewer(null);
     setView({ kind: 'match', id });
@@ -104,7 +131,7 @@ export function App() {
 
       <div id="page-rosa" className={`page${page === 'rosa' ? ' active' : ''}`}>
         <InstallHint />
-        {data ? <RosaList data={data} onOpen={openPlayer} /> : <Loading q={q} />}
+        {data ? <RosaGate data={data} onOpen={openPlayerFromRosa} /> : <Loading q={q} />}
       </div>
       <div id="page-partita" className={`page${page === 'partita' ? ' active' : ''}`}>
         {data ? <GiocaGate data={data} /> : <Loading q={q} />}
@@ -120,7 +147,8 @@ export function App() {
       <BottomNav page={page} onGo={go} />
 
       {data && view?.kind === 'player' ? (
-        <PlayerCard
+        <PlayerCardGate
+          editable={!!view.fromRosa}
           key={view.id}
           data={data}
           playerId={view.id}

@@ -81,3 +81,41 @@ export async function saveAliases(leagueId: string, byPlayer: Map<string, string
   const bad = results.find((r) => r.error);
   if (bad?.error) throw fail('soprannomi', bad.error);
 }
+
+/** Cambia statistiche e/o ruoli di un giocatore (le statistiche nel database sono numeri interi da 0 a 10). */
+export async function updatePlayer(id: string, patch: { stats?: number[]; roles?: string[] }): Promise<void> {
+  const row: { stats?: number[]; roles?: string[] } = {};
+  if (patch.stats) row.stats = patch.stats.map((v) => Math.round(v));
+  if (patch.roles) row.roles = patch.roles;
+  const { error } = await supabase.from('players').update(row).eq('id', id);
+  if (error) throw fail('giocatore', error);
+}
+
+/** Nuovo giocatore nella lega: centrocampista con tutte le statistiche a 5. */
+export async function createPlayer(leagueId: string, name: string): Promise<string> {
+  const { data, error } = await supabase.from('players').insert({ name, roles: ['MED'], stats: Array(11).fill(5) }).select('id').single();
+  if (error || !data) throw fail('giocatore', error ?? { message: 'nessuna risposta' });
+  const r = await supabase.from('league_players').insert({ league_id: leagueId, player_id: data.id });
+  if (r.error) {
+    await supabase.from('players').delete().eq('id', data.id);
+    throw fail('rosa', r.error);
+  }
+  return data.id;
+}
+
+/**
+ * Cambia o toglie la foto (null = toglie). Il nome del file cambia a ogni foto, così nessuno vede quella vecchia rimasta in memoria.
+ * Restituisce il nuovo percorso (o null).
+ */
+export async function setPlayerPhoto(playerId: string, blob: Blob | null, oldPath: string | null): Promise<string | null> {
+  let path: string | null = null;
+  if (blob) {
+    path = `${playerId}-${Date.now()}.jpg`;
+    const up = await supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg' });
+    if (up.error) throw fail('foto', up.error);
+  }
+  const { error } = await supabase.from('players').update({ photo_path: path }).eq('id', playerId);
+  if (error) throw fail('foto', error);
+  if (oldPath) await supabase.storage.from('photos').remove([oldPath]); // pulizia: se fallisce non è grave
+  return path;
+}

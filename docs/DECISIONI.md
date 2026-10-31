@@ -106,3 +106,9 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 ## Importazione WhatsApp (Fase 3.7c)
 - Lettura e abbinamento dei nomi: stessa logica già provata in Fase 1 (test golden). Qui solo la schermata.
 - I soprannomi imparati restano sul telefono (stessa chiave di legacy) e vengono salvati anche nella lega (colonna `aliases` di `league_players`).
+
+## Rosa e statistiche (Fase 3.7d)
+- La scheda modificabile (foto, ruoli, statistiche) si apre dalla Rosa solo per l'amministratore; dalle Classifiche resta di sola lettura, come in legacy.
+- Le statistiche si salvano da sole poco dopo l'ultima modifica. Nel database sono numeri interi: un valore scritto con la virgola (es. 7,5) viene arrotondato al salvataggio.
+- Le foto si salvano come file nell'archivio (200 px, come legacy), con un nome nuovo a ogni cambio, così nessuno vede la foto vecchia rimasta in memoria. Il vecchio file viene tolto.
+- Un giocatore nuovo parte da centrocampista con tutte le statistiche a 5. Come in legacy il nome non si modifica dopo; non esiste l'eliminazione di un giocatore.
