@@ -13,7 +13,7 @@ export function FireChip({ state }: { state: 'up' | 'flat' | 'down' | null }) {
   return null;
 }
 
-export function RosaList({ data }: { data: LeagueData }) {
+export function RosaList({ data, onOpen }: { data: LeagueData; onOpen: (playerId: string) => void }) {
   const { dataset, weights } = data;
   const rows = useMemo(() => {
     const all = seasonStats(dataset);
@@ -32,7 +32,7 @@ export function RosaList({ data }: { data: LeagueData }) {
     <div id="players-list">
       {rows.map(({ p, ovr, pag, state }, rank) => (
         <div key={p.id} className="card card-compact" style={{ animationDelay: Math.min(rank, 12) * 0.03 + 's' }}>
-          <div className="player-header">
+          <div className="player-header" onClick={() => onOpen(p.id)}>
             <div className="ph-top">
               <div className="avatar-stack">
                 <span className={`pag-badge ${pag.cls}`} title="Media pagelle">{pag.label}</span>

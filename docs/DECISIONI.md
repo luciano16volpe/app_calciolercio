@@ -73,3 +73,7 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
   vera si ferma e lo dice. Le partite tolte dal foglio si tolgono dal database solo con `--prune`.
 - Differenza nota e accettata: nei **record a pari merito** l'ordine dei nomi può cambiare (nel foglio dipende da
   quando una partita è stata ri-salvata, informazione che il database non ha). Valori e persone sono gli stessi.
+
+## Date mostrate (Fase 3)
+- La vecchia app, con le date che oggi restituisce lo script Google (istanti in UTC), mostra ogni partita **un giorno prima**
+  (es. 27/10 invece di 28/10). La nuova app mostra il giorno italiano corretto (vedi `romeDate` nell'importazione).

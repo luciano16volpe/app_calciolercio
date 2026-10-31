@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { BottomNav, type PageName } from './app/BottomNav';
+import { ToastProvider } from './app/Toast';
 import { LEAGUE_QUERY_KEY, useLeagueData } from './data/queries';
+import { PlayerCard } from './features/player/PlayerCard';
 import { InstallHint } from './features/rosa/InstallHint';
 import { RosaList } from './features/rosa/RosaList';
-import { useQueryClient } from '@tanstack/react-query';
 
 /** Schede non ancora portate: stesso aspetto delle altre pagine, con un avviso. */
 function Soon({ title }: { title: string }) {
@@ -17,15 +19,19 @@ function Soon({ title }: { title: string }) {
 
 export function App() {
   const [page, setPage] = useState<PageName>('rosa');
+  const [openPlayer, setOpenPlayer] = useState<string | null>(null);
+  // la Bacheca resta aperta (o chiusa) passando da un giocatore all'altro, come in legacy
+  const [bachecaOpen, setBachecaOpen] = useState(false);
   const q = useLeagueData();
   const qc = useQueryClient();
   const go = (p: PageName) => {
     setPage(p);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const closePlayer = useCallback(() => setOpenPlayer(null), []);
 
   return (
-    <>
+    <ToastProvider>
       <header>
         <div className="logo" onClick={() => go('settings')} style={{ cursor: 'pointer' }} title="Apri impostazioni">
           <img src="/logo.png" alt="CalcioLercio" style={{ width: 44, height: 44, display: 'block', objectFit: 'contain' }} />
@@ -51,7 +57,7 @@ export function App() {
       <div id="page-rosa" className={`page${page === 'rosa' ? ' active' : ''}`}>
         <InstallHint />
         {q.data ? (
-          <RosaList data={q.data} />
+          <RosaList data={q.data} onOpen={setOpenPlayer} />
         ) : q.isError ? (
           <div className="card">
             <div className="section-header">Non riesco a caricare i dati</div>
@@ -73,6 +79,18 @@ export function App() {
       <div id="page-settings" className={`page${page === 'settings' ? ' active' : ''}`}><Soon title="Impostazioni" /></div>
 
       <BottomNav page={page} onGo={go} />
-    </>
+
+      {q.data && openPlayer ? (
+        <PlayerCard
+          key={openPlayer}
+          data={q.data}
+          playerId={openPlayer}
+          onClose={closePlayer}
+          onOpenPlayer={setOpenPlayer}
+          bachecaOpen={bachecaOpen}
+          onToggleBacheca={() => setBachecaOpen((o) => !o)}
+        />
+      ) : null}
+    </ToastProvider>
   );
 }

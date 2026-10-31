@@ -30,7 +30,7 @@ stessi dati (`tests/fixtures/app_data.json`, `legacy/rosa_calcetto.json`):
 ## Fase 3 — Schermate, collegate a Supabase
 Ogni passo: aspetto identico a legacy (confronto con screenshot iPhone/Android/360 px), test, riepilogo.
 - [x] 3.1 Struttura (intestazione, 4 schede in basso, cache dati) · Rosa: elenco delle carte · riquadro installa su iPhone
-- [ ] 3.2 Scheda giocatore (sola lettura: foto, ruoli, statistiche, pagelle, bacheca, compagni e avversari)
+- [x] 3.2 Scheda giocatore (sola lettura: foto, ruoli, statistiche, pagelle, bacheca, compagni e avversari)
 - [ ] 3.3 Classifiche (8 schede: Marcatori, Assist, Media voto, Statistiche, Coppie, Confronto, Albo d'oro, Record)
 - [ ] 3.4 Partite: elenco e scheda partita (pagelle, equilibrio squadre) · Gazzette
 - [ ] 3.5 Gioca: convocati, sorteggio, proposte, scambi a mano

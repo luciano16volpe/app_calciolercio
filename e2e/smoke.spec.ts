@@ -39,3 +39,48 @@ test('le 4 schede in basso cambiano pagina', async ({ page }) => {
     await expect(page.locator('.bnav-item.active')).toHaveText(label);
   }
 });
+
+test('scheda giocatore: si apre dalla Rosa, mostra tutto, si chiude e non esce in orizzontale', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await page.locator('.player-header', { hasText: /^.*Peppe/ }).first().click();
+  const modal = page.locator('#match-modal');
+  await expect(modal).toBeVisible();
+  await expect(modal.locator('#match-modal-title')).toContainText('Peppe');
+  // 11 statistiche + "Peso voti"
+  await expect(modal.locator('.stats-grid .stat-row')).toHaveCount(12);
+  await expect(modal.locator('.stats-grid')).toContainText('Peso voti');
+  // pagelle, bacheca, compagni e avversari
+  await expect(modal.locator('.pg-title')).toHaveText(/Pagelle/);
+  await expect(modal.locator('.pg-bar')).toHaveCount(10);
+  await expect(modal.locator('.bach-sum')).toContainText('Bacheca');
+  await expect(modal.locator('.pe-title', { hasText: 'Compagni e avversari' })).toBeVisible();
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+  // tocco su una barra: si apre il riquadro con data e voto
+  await modal.locator('.pg-hit').nth(2).click();
+  await expect(modal.locator('.pg-pop')).toBeVisible();
+  await expect(modal.locator('.pgp-top')).toContainText('voto');
+  // la Bacheca si apre e resta aperta passando a un altro giocatore
+  await modal.locator('.bach-sum').click();
+  await expect(modal.locator('.bach')).toHaveClass(/open/);
+  await modal.locator('.pair-n .albo-name').first().click();
+  await expect(modal.locator('#match-modal-title')).not.toContainText('Peppe');
+  await expect(modal.locator('.bach')).toHaveClass(/open/);
+  // si chiude
+  await modal.locator('button', { hasText: '✕' }).first().click();
+  await expect(modal).toHaveCount(0);
+});
+
+test('scheda giocatore: la finestra "Le pagelle di…" si apre dall\'ultima pagella', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await page.locator('.player-header', { hasText: /^.*Peppe/ }).first().click();
+  await page.locator('.pg-last').click();
+  const dlg = page.locator('#pl-dialog');
+  await expect(dlg).toBeVisible();
+  await expect(dlg.locator('.pl-head')).toContainText('Le pagelle di');
+  await expect(dlg.locator('.pl-item').first()).toBeVisible();
+  await dlg.locator('.pl-head button').click();
+  await expect(dlg).toHaveCount(0);
+});

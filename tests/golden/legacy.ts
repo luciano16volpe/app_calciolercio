@@ -54,7 +54,7 @@ export function loadLegacy<T extends Record<string, unknown>>(
     var players=[], weights=[], matches=[], matchesCache={timestamp:0,data:null}, _seasonMemo={}, useFormInBalance=true, _formCache=null, _evMemo=null;
     function __useForm(b){useFormInBalance=b;}
     var __el={innerHTML:'',textContent:'',style:{},scrollIntoView:function(){}}, __scope='all', document={getElementById:function(){return __el;}};
-    var sizeA=5, sizeB=5, selected=new Set(), allCombos=[], currentIdx=0, genBest=null;
+    var sizeA=5, sizeB=5, selected=new Set(), allCombos=[], currentIdx=0, genBest=null, bachecaOpen=false;
     function toast(){}
     function save(){}
     function pgtViewHTML(){return '';}
@@ -62,6 +62,7 @@ export function loadLegacy<T extends Record<string, unknown>>(
     var _wa=null;
     function __wa(id,txt){__el.value=txt;__el.checked=true;waAnalyze(id);return _wa;}
     function __waApply(){waApply();}
+    function __draw(i){var c={innerHTML:''};drawPagelle(i,players[i],c);return c.innerHTML;}
     function renderResult(){}
     function setTimeout(){}
     function __gen(sa,sb,sel){sizeA=sa;sizeB=sb;selected=new Set(sel);allCombos=[];genBest=null;generateTeams();return {combos:allCombos,genBest:genBest};}
@@ -90,13 +91,14 @@ export function loadLegacy<T extends Record<string, unknown>>(
   }
   vm.createContext(sandbox);
   vm.runInContext(src, sandbox);
-  const api = vm.runInContext(`({__set,__useForm,__run,__gen,__wa,__waApply,${names}})`, sandbox) as T & {
+  const api = vm.runInContext(`({__set,__useForm,__run,__gen,__wa,__waApply,__draw,${names}})`, sandbox) as T & {
     __set: (...a: unknown[]) => void;
     __useForm: (b: boolean) => void;
     __run: (fn: () => void, scope: string) => string;
     __gen: (sa: number, sb: number, sel: number[]) => { combos: unknown[]; genBest: number | null };
     __wa: (id: string, txt: string) => unknown;
     __waApply: () => void;
+    __draw: (i: number) => string;
   };
   api.__set(data.players, data.weights, data.matches, data.ratings, data.albo);
   return api;

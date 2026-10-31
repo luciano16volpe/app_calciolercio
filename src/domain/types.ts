@@ -46,3 +46,8 @@ export interface Dataset {
   matches: Match[];
   ratings: Rating[];
 }
+/** Icona di ogni statistica, nello stesso ordine di STATS (emoji come in legacy). */
+export const ICONS = ["🏃","💪","⚡","💨","🎯","🔀","⚔️","🛡️","🎨","🧤","🧠"] as const;
+
+/** Nome esteso dei ruoli. */
+export const ROLE_LABELS: Record<Role, string> = {"ATT":"Attacco","MED":"Centrocampo","DIF":"Difesa"};
