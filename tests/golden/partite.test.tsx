@@ -2,6 +2,7 @@
 // testo delle pagelle. Si esegue la vera schermata legacy e si confronta con i nuovi componenti.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { LeagueData } from '../../src/data/queries';
@@ -123,7 +124,7 @@ describe.each(datasets)('%s', (_label, raw) => {
 
   it('scheda di ogni partita (sola lettura): descrizione, risultato, highlights, Gazzetta, pagelle', () => {
     for (const m of data.matches) {
-      const mine = plain(renderToStaticMarkup(<MatchCard data={ld} matchId={m.id} onClose={noop} act={act} />));
+      const mine = plain(renderToStaticMarkup(<QueryClientProvider client={new QueryClient()}><MatchCard data={ld} matchId={m.id} onClose={noop} act={act} /></QueryClientProvider>));
       // un voto mancante (null) in legacy scriverebbe la parola "null" nel campo; con i dati del foglio non succede mai
       // (vuoto = 0): nella nuova app il campo resta vuoto
       const theirs = plain(locked(run(() => legacy.openMatch(m.id)))).replace(/VOTO null/g, 'VOTO');

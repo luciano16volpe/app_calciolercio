@@ -96,3 +96,9 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Medaglie della figurina: legacy non le riordina (premi prima, gogna dopo) per un errore di confronto; portato **fedelmente**, senza riordino. Da chiedere all'utente se vuole il riordino.
 - Il piè di pagina del riepilogo usa ✒️ (con U+FE0F) in un testo centrato, come legacy; da verificare su iPhone.
 - Sbordo a 360 px: i 3 pulsanti sotto le squadre in Gioca (Condividi, Foglio, Crea partita) uscivano dallo schermo anche in legacy; ora il testo va a capo. Il controllo e2e usa la larghezza vera dello schermo.
+
+## Modifica partite (Fase 3.7b)
+- Solo l'amministratore vede il ✏️ e "Crea partita". La redazione (che per il database può cambiare solo titolo e descrizione) per ora non ha una schermata sua: da decidere in Fase 4.
+- Il salvataggio aggiorna una riga per giocatore (non è un'unica operazione): se la rete cade a metà, si riprova con "Salva".
+- Legacy: il pulsante + dei contatori si ferma a 20 anche per Meta (il campo ammette 50 scrivendo a mano). Portato così.
+- L'avviso sui "titoli non salvati" di legacy riguardava lo script Google: non serve più.

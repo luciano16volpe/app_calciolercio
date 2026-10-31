@@ -5,6 +5,7 @@ import { Fragment, useMemo, useRef, useState } from 'react';
 import { useImageTools } from '../../app/ImageViewer';
 import { readUseForm } from '../../app/settings';
 import { comboSheet, combosFormations } from '../../canvas/make';
+import { NewMatchDialog } from './NewMatchDialog';
 import { useToast } from '../../app/Toast';
 import { photoUrl, type LeagueData } from '../../data/queries';
 import { balanceScores, generateTeams, type Combo } from '../../domain/balancing';
@@ -145,7 +146,7 @@ export function PrecisionCard({ data }: { data: LeagueData }) {
 /** I tre pulsanti sotto le squadre dividono la riga in parti uguali; sugli schermi stretti (360 px) il testo va a capo invece di uscire dallo schermo. */
 const narrowBtn = { flex: 1, minWidth: 0, padding: '12px 6px', whiteSpace: 'normal', lineHeight: 1.2 } as const;
 
-export function ResultView({ data, res, scores, onChange }: { data: LeagueData; res: Result; scores: number[]; onChange: (r: Result) => void }) {
+export function ResultView({ data, res, scores, onChange, onCreate }: { data: LeagueData; res: Result; scores: number[]; onChange: (r: Result) => void; onCreate?: () => void }) {
   const toast = useToast();
   const { showImage, shareCanvas } = useImageTools();
   const { dataset } = data;
@@ -197,7 +198,7 @@ export function ResultView({ data, res, scores, onChange }: { data: LeagueData; 
       <div style={{ display: 'flex', gap: 8, margin: '4px 0 14px' }}>
         <button className="btn btn-primary" style={{ ...narrowBtn, background: '#25D366', borderColor: '#25D366' }} onClick={() => showImage('⚽ Formazioni di oggi', combosFormations(data, scores, c), 'formazioni.png', '⚽ Formazioni di oggi')}>📲 Condividi</button>
         <button className="btn btn-secondary" style={narrowBtn} onClick={() => { const s = comboSheet(data, c); shareCanvas(s.canvas, 'foglio_partita_' + s.date + '.png', '📋 Foglio partita del ' + formatDate(s.date)); }} title="Foglio A4 in bianco e nero da stampare e compilare in campo">🖨️ Foglio</button>
-        <button className="btn btn-primary" style={narrowBtn} onClick={soon("Creare la partita richiede l'accesso admin (passo 3.7)")}>📅 Crea partita</button>
+        <button className="btn btn-primary" style={narrowBtn} onClick={onCreate ?? soon("Per creare la partita serve l'accesso come amministratore (Impostazioni → Account)")}>📅 Crea partita</button>
       </div>
 
       <div className="card">
@@ -233,12 +234,13 @@ export function ResultView({ data, res, scores, onChange }: { data: LeagueData; 
 }
 
 // ── pagina ─────────────────────────────────────────────────────────────────
-export function GiocaPage({ data, initialSelected = [] }: { data: LeagueData; initialSelected?: string[] }) {
+export function GiocaPage({ data, initialSelected = [], canCreate = false }: { data: LeagueData; initialSelected?: string[]; canCreate?: boolean }) {
   const toast = useToast();
   const { dataset, weights } = data;
   const [fmt, setFmt] = useState<Format>(readFormat);
   const [selected, setSelected] = useState<string[]>(initialSelected); // id dei convocati, nell'ordine in cui sono scelti
   const [res, setRes] = useState<Result | null>(null);
+  const [creating, setCreating] = useState(false);
   const [scores, setScores] = useState<number[]>([]);
   const total = fmt.sizeA + fmt.sizeB;
   const order = useMemo(() => rosaOrder(dataset.players, weights), [dataset, weights]);
@@ -334,7 +336,8 @@ export function GiocaPage({ data, initialSelected = [] }: { data: LeagueData; in
 
       <button className="btn btn-primary btn-full" style={{ marginBottom: 14 }} onClick={generate}>⚽ Genera squadre bilanciate</button>
 
-      {res && res.combos.length ? <ResultView data={data} res={res} scores={scores} onChange={setRes} /> : null}
+      {res && res.combos.length ? <ResultView data={data} res={res} scores={scores} onChange={setRes} onCreate={canCreate ? () => setCreating(true) : undefined} /> : null}
+      {creating && res && res.combos.length ? <NewMatchDialog data={data} combo={res.combos[res.idx] as Combo} idx={res.idx} onClose={() => setCreating(false)} /> : null}
     </>
   );
 }

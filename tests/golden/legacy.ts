@@ -45,7 +45,8 @@ function skipCode(s: string, i: number): number {
 
 /** Testo di `function nome(...) {...}` (parentesi graffe bilanciate, ignorando stringhe, template e commenti). */
 function extractFunction(name: string): string {
-  const start = html.search(new RegExp(`^(?:async )?function ${name}\\(`, 'm'));
+  // l'ultima dichiarazione, come a runtime (se una funzione è scritta due volte vale l'ultima)
+  const start = [...html.matchAll(new RegExp(`^(?:async )?function ${name}\\(`, 'gm'))].pop()?.index ?? -1;
   if (start < 0) throw new Error(`Funzione legacy non trovata: ${name}`);
   const open = html.indexOf('{', html.indexOf(')', start));
   return html.slice(start, skipCode(html, open + 1));
@@ -113,7 +114,16 @@ export function loadLegacy<T extends Record<string, unknown>>(
     function __stats(c,d,f){statsSort={col:c,dir:d};statsFilter=f;}
     function __cmp(a,b){cmpA=a;cmpB=b;}
     function __tab(t){clTab=t;}
-    function toast(){}
+    var __toasts=[], __calls=[], __confirms=[], __confirmAnswer=true;
+    function toast(m){__toasts.push(m);}
+    async function backendCall(n,p){__calls.push([n,p]);return {};}
+    function confirmModal(o){__confirms.push(o);return Promise.resolve(__confirmAnswer);}
+    function closeMatchModal(){}
+    async function loadMatches(){}
+    function __setVals(o){Object.keys(o).forEach(function(k){document.getElementById(k).value=o[k];});}
+    function __cap(){return {toasts:__toasts,calls:__calls,confirms:__confirms};}
+    function __answer(b){__confirmAnswer=b;}
+    function __reset(){__toasts=[];__calls=[];__confirms=[];}
     function save(){}
     function pgtViewHTML(){return '';}
     function waRenderPreview(){}
@@ -149,9 +159,13 @@ export function loadLegacy<T extends Record<string, unknown>>(
   }
   vm.createContext(sandbox);
   vm.runInContext(src, sandbox);
-  const api = vm.runInContext(`({__setLogo,__viewerGet,__set,__useForm,__run,__gen,__wa,__waApply,__draw,__tab,__stats,__cmp,__multiOn,__getEl,__idx,__swap,__combo,__sel,${names}})`, sandbox) as T & {
+  const api = vm.runInContext(`({__setVals,__cap,__answer,__reset,__setLogo,__viewerGet,__set,__useForm,__run,__gen,__wa,__waApply,__draw,__tab,__stats,__cmp,__multiOn,__getEl,__idx,__swap,__combo,__sel,${names}})`, sandbox) as T & {
     __set: (...a: unknown[]) => void;
     __setLogo: (l: unknown) => void;
+    __setVals: (o: Record<string, string>) => void;
+    __cap: () => { toasts: string[]; calls: Array<[string, Record<string, unknown>]>; confirms: Array<Record<string, unknown>> };
+    __answer: (b: boolean) => void;
+    __reset: () => void;
     __viewerGet: () => { title: string | null; canvas: unknown; name: string; text: string } | null;
     __useForm: (b: boolean) => void;
     __run: (fn: () => void, scope: string) => string;

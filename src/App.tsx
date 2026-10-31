@@ -1,10 +1,11 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type ComponentProps } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { BottomNav, type PageName } from './app/BottomNav';
-import { AuthProvider } from './app/auth';
+import { AuthProvider, useRole } from './app/auth';
+import { DialogProvider } from './app/Dialogs';
 import { ImageProvider } from './app/ImageViewer';
 import { ToastProvider } from './app/Toast';
-import { LEAGUE_QUERY_KEY, useLeagueData } from './data/queries';
+import { LEAGUE_QUERY_KEY, useLeagueData, type LeagueData } from './data/queries';
 import { ClassifichePage } from './features/classifiche/ClassifichePage';
 import { GiocaPage } from './features/gioca/GiocaPage';
 import { AccountCard } from './features/impostazioni/AccountCard';
@@ -14,6 +15,16 @@ import { GazArchive, GazViewer, PagelleTextDialog, type MatchActions } from './f
 import { PlayerCard } from './features/player/PlayerCard';
 import { InstallHint } from './features/rosa/InstallHint';
 import { RosaList } from './features/rosa/RosaList';
+
+/** Gioca e scheda partita con i permessi di chi è entrato: la modifica si offre solo a chi può farla (il database la controlla comunque). */
+function GiocaGate({ data }: { data: LeagueData }) {
+  const { isAdmin } = useRole(data.league.id);
+  return <GiocaPage data={data} canCreate={isAdmin} />;
+}
+function MatchCardGate(props: ComponentProps<typeof MatchCard>) {
+  const { isAdmin } = useRole(props.data.league.id);
+  return <MatchCard {...props} canEdit={isAdmin} />;
+}
 
 /** Messaggio al posto di una pagina mentre i dati si caricano o se non arrivano. */
 function Loading({ q }: { q: { isError: boolean; refetch: () => unknown } }) {
@@ -68,6 +79,7 @@ export function App() {
     <AuthProvider>
     <ToastProvider>
       <ImageProvider>
+      <DialogProvider>
       <header>
         <div className="logo" onClick={() => go('settings')} style={{ cursor: 'pointer' }} title="Apri impostazioni">
           <img src="/logo.png" alt="CalcioLercio" style={{ width: 44, height: 44, display: 'block', objectFit: 'contain' }} />
@@ -95,7 +107,7 @@ export function App() {
         {data ? <RosaList data={data} onOpen={openPlayer} /> : <Loading q={q} />}
       </div>
       <div id="page-partita" className={`page${page === 'partita' ? ' active' : ''}`}>
-        {data ? <GiocaPage data={data} /> : <Loading q={q} />}
+        {data ? <GiocaGate data={data} /> : <Loading q={q} />}
       </div>
       <div id="page-partite" className={`page${page === 'partite' ? ' active' : ''}`}>
         {data ? <PartitePage data={data} act={act} onArchive={() => setView({ kind: 'gazArchive' })} /> : <Loading q={q} />}
@@ -119,12 +131,13 @@ export function App() {
           onToggleBacheca={() => setBachecaOpen((o) => !o)}
         />
       ) : null}
-      {data && view?.kind === 'match' ? <MatchCard key={view.id} data={data} matchId={view.id} onClose={close} act={act} /> : null}
+      {data && view?.kind === 'match' ? <MatchCardGate key={view.id} data={data} matchId={view.id} onClose={close} act={act} /> : null}
       {data && view?.kind === 'gazArchive' ? <GazArchive data={data} act={act} onClose={close} /> : null}
       {data && gazViewer ? (
         <GazViewer data={data} matchId={gazViewer.id} fromArchive={gazViewer.fromArchive} onClose={() => setGazViewer(null)} onGoToMatch={openMatch} />
       ) : null}
       {data && ptDialog ? <PagelleTextDialog data={data} matchId={ptDialog} onClose={() => setPtDialog(null)} /> : null}
+      </DialogProvider>
       </ImageProvider>
     </ToastProvider>
     </AuthProvider>

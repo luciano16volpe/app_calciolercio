@@ -1,0 +1,69 @@
+// Finestra di conferma (come confirmModal di legacy) e due piccoli aiuti per la tastiera di iPhone.
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
+
+/** Toglie il cursore dai campi: su iPhone, se la tastiera resta aperta chiudendo una finestra, la barra in basso resta "sospesa". */
+export function releaseKeyboard(): void {
+  const a = document.activeElement as HTMLElement | null;
+  if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) a.blur();
+}
+/** Dopo la chiusura della tastiera rimette la pagina a posto. */
+export function repairViewport(): void {
+  requestAnimationFrame(() => window.scrollTo(window.scrollX, window.scrollY));
+  window.setTimeout(() => window.scrollTo(window.scrollX, window.scrollY), 300);
+}
+
+export interface ConfirmOptions {
+  icon?: string;
+  title?: string;
+  /** righe di testo (una sotto l'altra) */
+  lines?: string[];
+  okLabel?: string;
+  cancelLabel?: string;
+  /** pulsante rosso (azioni che non si annullano) */
+  danger?: boolean;
+}
+
+type Confirm = (o: ConfirmOptions) => Promise<boolean>;
+const DialogContext = createContext<Confirm>(() => Promise.resolve(false));
+export const useConfirm = () => useContext(DialogContext);
+
+export function DialogProvider({ children }: { children: ReactNode }) {
+  const [opts, setOpts] = useState<ConfirmOptions | null>(null);
+  const resolver = useRef<((v: boolean) => void) | null>(null);
+  const confirm = useCallback<Confirm>(
+    (o) =>
+      new Promise<boolean>((resolve) => {
+        resolver.current = resolve;
+        setOpts(o);
+      }),
+    [],
+  );
+  const done = (v: boolean) => {
+    releaseKeyboard();
+    setOpts(null);
+    repairViewport();
+    resolver.current?.(v);
+    resolver.current = null;
+  };
+  const value = useMemo(() => confirm, [confirm]);
+  return (
+    <DialogContext.Provider value={value}>
+      {children}
+      {opts ? (
+        <div id="app-modal" style={{ display: 'flex', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 600, padding: 18, alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '100%', maxWidth: 380, background: 'var(--gray)', borderRadius: 'var(--radius)', padding: 20, boxShadow: '0 12px 36px rgba(0,0,0,0.4)' }}>
+            <div id="app-modal-icon" style={{ fontSize: 34, textAlign: 'center', marginBottom: 8 }}>{opts.icon || '❓'}</div>
+            <div id="app-modal-title" style={{ fontSize: 17, fontWeight: 800, textAlign: 'center', marginBottom: 6, color: 'var(--text)' }}>{opts.title || 'Conferma'}</div>
+            <div id="app-modal-msg" style={{ fontSize: 13, color: 'var(--text2)', textAlign: 'center', lineHeight: 1.5, marginBottom: 14 }}>
+              {(opts.lines ?? []).map((l, i) => (l === '' ? <br key={i} /> : <div key={i}>{l}</div>))}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button id="app-modal-cancel" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => done(false)}>{opts.cancelLabel || 'Annulla'}</button>
+              <button id="app-modal-ok" className={`btn ${opts.danger ? 'btn-danger' : 'btn-primary'}`} style={{ flex: 1 }} onClick={() => done(true)}>{opts.okLabel || 'Conferma'}</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </DialogContext.Provider>
+  );
+}

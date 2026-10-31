@@ -1,12 +1,17 @@
-// Scheda partita (sola lettura): pulsanti, risultato, highlights, Gazzetta, equilibrio squadre, pagelle di ogni giocatore.
+// Scheda partita (in lettura; con il ✏️ per chi ha il permesso diventa modificabile): pulsanti, risultato, highlights, Gazzetta, equilibrio squadre, pagelle di ogni giocatore.
 // Fonte: openMatch, matchHighlightsHTML, matchBalanceHTML, gazSectionHTML in legacy/index.html (stato "bloccato").
-// Le modifiche (voti, gol, risultato, importazione WhatsApp, Gazzetta) arrivano con l'accesso admin, passo 3.7.
+// Modifica di voti, gol, risultato e pagelle: passo 3.7b. Importazione WhatsApp e Gazzetta: 3.7c e 3.7e.
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { readUseForm } from '../../app/settings';
-import { gazzettaUrl, type LeagueData } from '../../data/queries';
+import { useToast } from '../../app/Toast';
+import { deleteMatch, saveMatchRatings, updateMatchHeader } from '../../data/mutations';
+import { gazzettaUrl, LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
+import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
 import { formatDate } from '../../domain/format';
 import { matchBalance, matchHighlights, rateColors, type MatchBalance } from '../../domain/matches';
-import { normalizeTeam } from '../../domain/stats';
+import { clampRating, normalizeTeam } from '../../domain/stats';
 import type { Match, Rating } from '../../domain/types';
 import { waHTML } from '../../domain/whatsapp';
 import { MatchButtons, type MatchActions } from './parts';
@@ -118,47 +123,85 @@ function PgtView({ tit, desc }: { tit: string; desc: string }) {
   );
 }
 
-/** Contatore (solo lettura): emoji sopra, valore sotto. */
-function Counter({ emoji, title, val, max }: { emoji: string; title: string; val: string | number; max: number }) {
+/** Cosa si può fare sui campi di un giocatore quando la scheda è in modifica. */
+export interface FieldEditor {
+  get: (key: string) => PlayerFields;
+  set: (key: string, patch: Partial<PlayerFields>) => void;
+  openPagella: (key: string, name: string) => void;
+}
+
+type CountKey = 'goals' | 'assist' | 'autogol' | 'rigori' | 'meta';
+
+/** Contatore: emoji sopra, valore sotto; in modifica con i pulsanti − e +. `warn` = ha un valore ma manca il voto. */
+function Counter({ emoji, title, val, max, edit, warn }: {
+  emoji: string; title: string; val: string | number; max: number; edit?: { onChange: (v: string) => void; onStep: (d: number) => void }; warn?: boolean;
+}) {
   return (
     <div className="mcnt" title={title}>
       <span className="mcnt-lbl">{emoji}</span>
-      <div className="goal-stepper">
-        <input type="number" min={0} max={max} step={1} placeholder="0" value={val} inputMode="numeric" disabled readOnly />
+      <div className={`goal-stepper${warn ? ' goal-warn' : ''}`}>
+        {edit ? <button type="button" onClick={() => edit.onStep(-1)} className="rate-btn rate-btn-minus">−</button> : null}
+        <input
+          type="number" min={0} max={max} step={1} placeholder="0" value={val} inputMode="numeric"
+          disabled={!edit} readOnly={!edit} onChange={edit ? (e) => edit.onChange(e.target.value) : undefined}
+        />
+        {edit ? <button type="button" onClick={() => edit.onStep(1)} className="rate-btn rate-btn-plus">+</button> : null}
       </div>
     </div>
   );
 }
 
-function TeamPanel({ title, team, ratings, blue }: { title: string; team: Array<{ id: string | null; name: string }>; ratings: Rating[]; blue: boolean }) {
+function TeamPanel({ title, team, ratings, blue, side, ed }: {
+  title: string; team: Array<{ id: string | null; name: string }>; ratings: Rating[]; blue: boolean; side: 'A' | 'B'; ed?: FieldEditor;
+}) {
   const getRating = (pl: { id: string | null; name: string }) =>
     ratings.find((r) => (r.playerId && pl.id && r.playerId === pl.id) || r.player === pl.name);
   return (
     <div style={{ background: blue ? 'var(--blue-light)' : 'var(--teamb-light)', borderRadius: 'var(--radius-sm)', padding: 10, flex: 1 }}>
       <div style={{ fontSize: 12, fontWeight: 800, color: blue ? 'var(--blue)' : 'var(--teamb)', marginBottom: 8 }}>{title}</div>
       {team.map((pl, i) => {
+        const key = `${side}${i}`;
+        const f = ed ? ed.get(key) : null;
         const r = getRating(pl);
-        const val = r && r.rating != null ? String(r.rating) : '';
         const or = (v: unknown): string | number => (v ? (v as number | string) : '');
-        const tit = r && r.titolo ? String(r.titolo) : '';
-        const desc = r && r.notes ? String(r.notes) : '';
+        const val = f ? f.rating : r && r.rating != null ? String(r.rating) : '';
+        const tit = f ? f.tit : r && r.titolo ? String(r.titolo) : '';
+        const desc = f ? f.desc : r && r.notes ? String(r.notes) : '';
+        const noVote = !!f && clampRating(f.rating) === null;
+        const cnt = (k: CountKey, emoji: string, ttl: string, max: number, ro: unknown, warnable: boolean) => (
+          <Counter
+            emoji={emoji} title={ttl} max={max} val={f ? f[k] : or(ro)}
+            warn={warnable && !!f && noVote && (parseInt(f[k]) || 0) > 0}
+            edit={ed && f ? { onChange: (v) => ed.set(key, { [k]: v }), onStep: (d) => ed.set(key, { [k]: stepCount(f[k], d, 20) }) } : undefined}
+          />
+        );
         return (
           <div key={`${pl.name}-${i}`} style={{ padding: '7px 0', borderBottom: '1px solid rgba(128,128,128,0.12)' }}>
             <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pl.name}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
               <span style={{ fontSize: 10, color: 'var(--text2)', fontWeight: 700 }}>VOTO</span>
               <div className="rate-stepper">
-                <input type="number" min={1} max={10} step={0.5} placeholder="—" value={val} inputMode="decimal" disabled readOnly style={rateColors(val)} />
+                {ed && f ? <button type="button" onClick={() => ed.set(key, { rating: stepRating(f.rating, -1) })} className="rate-btn rate-btn-minus">−</button> : null}
+                <input
+                  type="number" min={1} max={10} step={0.5} placeholder="—" value={val} inputMode="decimal"
+                  disabled={!ed} readOnly={!ed} style={rateColors(val)} onChange={ed ? (e) => ed.set(key, { rating: e.target.value }) : undefined}
+                />
+                {ed && f ? <button type="button" onClick={() => ed.set(key, { rating: stepRating(f.rating, 1) })} className="rate-btn rate-btn-plus">+</button> : null}
               </div>
             </div>
             <div className="mcnt-row">
-              <Counter emoji="⚽" title="Gol" val={or(r?.goals)} max={20} />
-              <Counter emoji="🅰️" title="Assist" val={or(r?.assist)} max={20} />
-              <Counter emoji="🙃" title="Autogol" val={or(r?.autogol)} max={20} />
-              <Counter emoji="❌" title="Rigori sbagliati" val={or(r?.rigoriSbagliati)} max={10} />
-              <Counter emoji="🚀" title="Meta — tiri alle stelle" val={or(r?.meta)} max={50} />
+              {cnt('goals', '⚽', 'Gol', 20, r?.goals, true)}
+              {cnt('assist', '🅰️', 'Assist', 20, r?.assist, true)}
+              {cnt('autogol', '🙃', 'Autogol', 20, r?.autogol, true)}
+              {cnt('rigori', '❌', 'Rigori sbagliati', 10, r?.rigoriSbagliati, true)}
+              {cnt('meta', '🚀', 'Meta — tiri alle stelle', 50, r?.meta, false)}
             </div>
             <PgtView tit={tit} desc={desc} />
+            {ed ? (
+              <button type="button" className="rate-btn pgt-add" onClick={() => ed.openPagella(key, pl.name)}>
+                {tit || desc ? '✏️ Modifica pagella' : '＋ Pagella'}
+              </button>
+            ) : null}
           </div>
         );
       })}
@@ -166,15 +209,71 @@ function TeamPanel({ title, team, ratings, blue }: { title: string; team: Array<
   );
 }
 
+/** Finestra "📝 Pagella di …": titolo e descrizione della prestazione. */
+function PagellaDialog({ name, tit, desc, onCancel, onDone }: { name: string; tit: string; desc: string; onCancel: () => void; onDone: (tit: string, desc: string) => void }) {
+  const [t, setT] = useState(tit);
+  const [d, setD] = useState(desc);
+  return (
+    <div id="pgt-dialog" style={{ display: 'flex' }}>
+      <div className="pgt-box">
+        <div className="pgt-h">📝 Pagella di <b>{name}</b></div>
+        <label htmlFor="pgt-d-tit">Titolo</label>
+        <input type="text" id="pgt-d-tit" maxLength={60} placeholder="es. Il Muro di Berlino" value={t} onChange={(e) => setT(e.target.value)} />
+        <label htmlFor="pgt-d-desc">Descrizione della prestazione</label>
+        <textarea id="pgt-d-desc" maxLength={2000} rows={6} placeholder="Scrivi qui la pagella…" value={d} onChange={(e) => setD(e.target.value)} />
+        <div className="pgt-count"><span id="pgt-d-n">{d.length}</span>/2000</div>
+        <div className="pgt-btns">
+          <button type="button" className="btn btn-secondary" onClick={onCancel}>Annulla</button>
+          <button type="button" className="btn btn-primary" onClick={() => onDone(t.trim().slice(0, 60), d.trim().slice(0, 2000))}>Fatto</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Cosa c'è scritto nella scheda mentre la si modifica. */
+interface Draft {
+  fields: Record<string, PlayerFields>;
+  scA: string;
+  scB: string;
+  notes: string;
+}
+
+function startDraft(m: Match, ratings: Rating[]): Draft {
+  const fields: Record<string, PlayerFields> = {};
+  const str = (v: unknown) => (v ? String(v) : '');
+  (['A', 'B'] as const).forEach((side) =>
+    normalizeTeam(side === 'A' ? m.teamA : m.teamB).forEach((pl, i) => {
+      const r = ratings.find((x) => (x.playerId && pl.id && x.playerId === pl.id) || x.player === pl.name);
+      fields[`${side}${i}`] = {
+        id: pl.id, name: pl.name, rating: r && r.rating != null ? String(r.rating) : '', goals: str(r?.goals), assist: str(r?.assist),
+        autogol: str(r?.autogol), rigori: str(r?.rigoriSbagliati), meta: str(r?.meta), tit: r && r.titolo ? String(r.titolo) : '', desc: r && r.notes ? String(r.notes) : '',
+      };
+    }),
+  );
+  return {
+    fields,
+    scA: m.scoreA !== '' && m.scoreA != null ? String(m.scoreA) : '',
+    scB: m.scoreB !== '' && m.scoreB != null ? String(m.scoreB) : '',
+    notes: String(m.notes ?? ''),
+  };
+}
+
 // ── la scheda ──────────────────────────────────────────────────────────────
-export function MatchCard({ data, matchId, onClose, act }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions }) {
+export function MatchCard({ data, matchId, onClose, act, canEdit = false }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions; canEdit?: boolean }) {
   const m = data.dataset.matches.find((x) => x.id === matchId);
+  const toast = useToast();
+  const confirm = useConfirm();
+  const qc = useQueryClient();
   const [balanceOpen, setBalanceOpen] = useState(false);
+  const [draft, setDraft] = useState<Draft | null>(null);
+  const [pagella, setPagella] = useState<{ key: string; name: string } | null>(null);
+  const [busy, setBusy] = useState(false);
   useEffect(() => {
-    const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const k = (e: KeyboardEvent) => e.key === 'Escape' && !pagella && onClose();
     document.addEventListener('keydown', k);
     return () => document.removeEventListener('keydown', k);
-  }, [onClose]);
+  }, [onClose, pagella]);
   const balance = useMemo(
     () => (balanceOpen && m ? matchBalance(data.dataset, data.weights, m, readUseForm()) : null),
     [balanceOpen, data, m],
@@ -184,6 +283,79 @@ export function MatchCard({ data, matchId, onClose, act }: { data: LeagueData; m
   const g = data.gazzette[m.id];
   const scoreA = m.scoreA !== '' && m.scoreA != null ? String(m.scoreA) : '';
   const scoreB = m.scoreB !== '' && m.scoreB != null ? String(m.scoreB) : '';
+  const editing = draft !== null;
+  const teamA = normalizeTeam(m.teamA);
+  const teamB = normalizeTeam(m.teamB);
+  const upd = (patch: Partial<Draft>) => setDraft((d) => (d ? { ...d, ...patch } : d));
+  const ed: FieldEditor | undefined = draft
+    ? {
+        get: (k) => draft.fields[k] as PlayerFields,
+        set: (k, patch) => setDraft((d) => (d ? { ...d, fields: { ...d.fields, [k]: { ...(d.fields[k] as PlayerFields), ...patch } } } : d)),
+        openPagella: (key, name) => setPagella({ key, name }),
+      }
+    : undefined;
+
+  const save = async () => {
+    if (!draft) return;
+    const side = (s: 'A' | 'B', n: number) => Array.from({ length: n }, (_, i) => draft.fields[`${s}${i}`] as PlayerFields);
+    const plan = planSave(side('A', teamA.length), side('B', teamB.length), draft.scA, draft.scB);
+    if (plan.missingRating.length) {
+      toast(`⚠️ Metti il voto a: ${plan.missingRating.join(', ')} (ha gol, assist, autogol, rigori o pagella)`);
+      return;
+    }
+    if (plan.overAssist.length) {
+      const go = await confirm({
+        icon: '🅰️', title: 'Assist più dei gol?', lines: [...plan.overAssist, '', 'Controlla i dati inseriti. Vuoi salvare comunque?'], okLabel: 'Salva comunque', cancelLabel: 'Correggi',
+      });
+      if (!go) return;
+    }
+    const notes = draft.notes.trim();
+    const headerChanged = plan.scoreA !== (m.scoreA ?? '') || plan.scoreB !== (m.scoreB ?? '') || notes !== String(m.notes ?? '');
+    setBusy(true);
+    try {
+      toast('⏳ Salvataggio...');
+      await saveMatchRatings(matchId, plan.rows);
+      if (headerChanged) {
+        try {
+          await updateMatchHeader(matchId, plan.scoreA, plan.scoreB, notes);
+        } catch {
+          toast('Voti salvati, ma errore su punteggio/note');
+        }
+      }
+      releaseKeyboard();
+      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      toast(`Salvato: ${plan.rows.length} pagelle`);
+      repairViewport();
+      onClose();
+    } catch (e) {
+      toast('Errore: ' + (e as Error).message); // le pagelle non sono state salvate: la scheda resta aperta per riprovare
+    } finally {
+      setBusy(false);
+    }
+  };
+  const remove = async () => {
+    const ok = await confirm({
+      icon: '🗑️', title: 'Eliminare la partita?', lines: ["Verranno eliminate anche tutte le pagelle e i gol di questa partita. L'operazione non è reversibile."], okLabel: 'Elimina', danger: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteMatch(matchId);
+      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      toast('Partita eliminata');
+      onClose();
+    } catch (e) {
+      toast('Errore: ' + (e as Error).message);
+    }
+  };
+
+  const stepper = (id: 'sc-a' | 'sc-b', val: string, field: 'scA' | 'scB') => (
+    <div className="score-stepper">
+      {editing ? <button type="button" onClick={() => upd({ [field]: stepScore(val, -1) })} className="rate-btn rate-btn-minus">−</button> : null}
+      <input type="number" min={0} max={99} id={id} value={val} placeholder="0" inputMode="numeric" disabled={!editing} readOnly={!editing} onChange={editing ? (e) => upd({ [field]: e.target.value }) : undefined} />
+      {editing ? <button type="button" onClick={() => upd({ [field]: stepScore(val, 1) })} className="rate-btn rate-btn-plus">+</button> : null}
+    </div>
+  );
+
   return (
     <div
       id="match-modal"
@@ -192,24 +364,33 @@ export function MatchCard({ data, matchId, onClose, act }: { data: LeagueData; m
       <div style={{ maxWidth: 600, margin: '0 auto', background: 'var(--gray)', borderRadius: 'var(--radius)', padding: 16, boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, minHeight: 24 }}>
           <div style={{ fontSize: 16, fontWeight: 800 }} id="match-modal-title">📅 {formatDate(m.date)}</div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text2)', fontSize: 22, padding: 4, lineHeight: 1 }}>✕</button>
+          <button onClick={() => { releaseKeyboard(); onClose(); repairViewport(); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text2)', fontSize: 22, padding: 4, lineHeight: 1 }}>✕</button>
         </div>
         <div id="match-modal-body">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 10 }}>
             <div id="mbar-share" style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}><MatchButtons data={data} m={m} act={act} /></div>
+            {canEdit && !editing ? (
+              <button
+                id="edit-toggle-btn" className="btn btn-secondary btn-sm mbar-btn" onClick={() => setDraft(startDraft(m, ratings))} title="Modifica partita" aria-label="Modifica partita"
+                style={{ border: '2px solid var(--green)', color: 'var(--green)', marginLeft: 'auto', fontSize: 15, padding: '6px 9px' }}
+              >
+                ✏️
+              </button>
+            ) : null}
           </div>
-          <div id="match-fields" style={{ opacity: 0.92 }}>
+          <div id="match-fields" style={{ opacity: editing ? 1 : 0.92 }}>
             <div style={{ ...LABEL, marginBottom: 6 }}>Descrizione</div>
             <input
-              type="text" id="edit-notes" value={String(m.notes ?? '')} placeholder="es. partita serale al Sole" disabled readOnly
+              type="text" id="edit-notes" value={draft ? draft.notes : String(m.notes ?? '')} placeholder="es. partita serale al Sole" disabled={!editing} readOnly={!editing}
+              onChange={editing ? (e) => upd({ notes: e.target.value }) : undefined}
               style={{ width: '100%', padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', fontSize: 13, boxSizing: 'border-box', marginBottom: 8 }}
             />
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '.5px', textAlign: 'center', marginTop: 8 }}>Risultato</div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '10px 0 4px' }}>
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--blue)' }}>🔵 Blu</span>
-              <div className="score-stepper"><input type="number" min={0} max={99} id="sc-a" value={scoreA} placeholder="0" inputMode="numeric" disabled readOnly /></div>
+              {stepper('sc-a', draft ? draft.scA : scoreA, 'scA')}
               <span style={{ fontSize: 18, color: 'var(--text3)', fontWeight: 300 }}>-</span>
-              <div className="score-stepper"><input type="number" min={0} max={99} id="sc-b" value={scoreB} placeholder="0" inputMode="numeric" disabled readOnly /></div>
+              {stepper('sc-b', draft ? draft.scB : scoreB, 'scB')}
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--teamb)' }}>⚪ Bianchi</span>
             </div>
             <Highlights data={data} m={m} />
@@ -227,12 +408,34 @@ export function MatchCard({ data, matchId, onClose, act }: { data: LeagueData; m
             <div id="match-balance" style={{ display: balanceOpen ? 'block' : 'none' }}>{balance ? <BalanceBody b={balance} /> : null}</div>
             <div style={{ ...LABEL, margin: '14px 0 8px' }}>Pagelle (1–10)</div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-              <TeamPanel title="🔵 Blu" team={normalizeTeam(m.teamA)} ratings={ratings} blue />
-              <TeamPanel title="⚪ Bianchi" team={normalizeTeam(m.teamB)} ratings={ratings} blue={false} />
+              <TeamPanel title="🔵 Blu" team={teamA} ratings={ratings} blue side="A" ed={ed} />
+              <TeamPanel title="⚪ Bianchi" team={teamB} ratings={ratings} blue={false} side="B" ed={ed} />
             </div>
+            {editing ? (
+              <div id="match-actions" style={{ display: 'flex', gap: 8 }}>
+                <button className="btn btn-primary" style={{ flex: 1 }} disabled={busy} onClick={() => void save()}>💾 Salva partita</button>
+                <button className="btn btn-danger" disabled={busy} onClick={() => void remove()} aria-label="Elimina la partita">🗑️</button>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
+      {pagella && draft ? (
+        <PagellaDialog
+          key={pagella.key}
+          name={pagella.name}
+          tit={(draft.fields[pagella.key] as PlayerFields).tit}
+          desc={(draft.fields[pagella.key] as PlayerFields).desc}
+          onCancel={() => { releaseKeyboard(); setPagella(null); repairViewport(); }}
+          onDone={(t, d) => {
+            ed?.set(pagella.key, { tit: t, desc: d });
+            releaseKeyboard();
+            setPagella(null);
+            repairViewport();
+            if (t || d) toast('📝 Pagella pronta: ricordati di salvare 💾');
+          }}
+        />
+      ) : null}
     </div>
   );
 }
