@@ -89,7 +89,7 @@ const noop = () => undefined;
 const act: MatchActions = { openMatch: noop, openGazzetta: noop, openPagelleText: noop };
 const toLd = (raw: LegacyData): LeagueData => {
   const gaz = Object.fromEntries(((raw.gazzette ?? []) as Array<{ matchId: string }>).map((g) => [g.matchId, `L/${g.matchId}.jpg`]));
-  return { league: { id: 'L', name: 'Lega', is_public: true }, dataset: raw as unknown as Dataset, weights: real.weights, photos: {}, albo: [], gazzette: gaz };
+  return { league: { id: 'L', name: 'Lega', is_public: true, slug: 'calciolercio', owner_id: null }, dataset: raw as unknown as Dataset, weights: real.weights, photos: {}, albo: [], gazzette: gaz };
 };
 
 describe.each(datasets)('%s', (_label, raw) => {

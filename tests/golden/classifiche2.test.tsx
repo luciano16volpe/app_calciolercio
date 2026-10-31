@@ -59,7 +59,7 @@ const plain = (html: string) =>
     .trim();
 const noop = () => undefined;
 const toLd = (d: Dataset, albo: unknown[] = []): LeagueData => ({
-  league: { id: 'L', name: 'Lega', is_public: true }, dataset: d, weights: real.weights, photos: {}, albo: albo as LeagueData['albo'], gazzette: {},
+  league: { id: 'L', name: 'Lega', is_public: true, slug: 'calciolercio', owner_id: null }, dataset: d, weights: real.weights, photos: {}, albo: albo as LeagueData['albo'], gazzette: {},
 });
 
 describe.each(datasets)('%s', (_label, raw) => {

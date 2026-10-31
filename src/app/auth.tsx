@@ -14,6 +14,7 @@ interface AuthTools {
   /** arrivato dal link "imposta la password": va scelta la nuova */
   recovery: boolean;
   signIn: (email: string, password: string) => Promise<string | null>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: string | null; needsConfirm: boolean }>;
   signOut: () => Promise<void>;
   /** manda via email il link per scegliere (o cambiare) la password */
   sendReset: (email: string) => Promise<string | null>;
@@ -54,6 +55,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     return error ? friendly(error.message) : null;
   }, []);
+  const signUp = useCallback(async (email: string, password: string, name: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(), password, options: { data: { display_name: name.trim() || email.trim().split('@')[0] }, emailRedirectTo: window.location.origin },
+    });
+    if (error) return { error: friendly(error.message), needsConfirm: false };
+    // con la conferma email attiva non c'è ancora una sessione: va aperto il link ricevuto
+    return { error: null, needsConfirm: !data.session };
+  }, []);
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
   }, []);
@@ -68,8 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user: session?.user ?? null, loading, recovery, signIn, signOut, sendReset, setPassword }),
-    [session, loading, recovery, signIn, signOut, sendReset, setPassword],
+    () => ({ user: session?.user ?? null, loading, recovery, signIn, signUp, signOut, sendReset, setPassword }),
+    [session, loading, recovery, signIn, signUp, signOut, sendReset, setPassword],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

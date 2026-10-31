@@ -48,9 +48,33 @@ Ogni passo: aspetto identico a legacy (confronto con screenshot iPhone/Android/3
 - [x] 4.1 Creare una lega, codice d'invito, cambio lega, uscire (Impostazioni → Le mie leghe)
 - [x] 4.2 Membri della lega e ruoli (admin / redazione / member): lista con nomi, cambio ruolo, rimozione — richiede la migrazione `20261101000000_membri.sql` (da incollare in Supabase)
 - [x] 4.3 "Questo sono io" (richiesta del giocatore, conferma dell'admin) — richiede la migrazione `20261102000000_questo_sono_io.sql`
-- [x] 4.4 Profilo personale (Impostazioni → Il mio profilo): con le
-      partite di tutte le leghe; storico delle statistiche
-- [ ] Privacy: informativa, cancellazione account
+- [x] 4.4 Profilo personale (Impostazioni → Il mio profilo): partite di tutte le leghe, storico delle statistiche
+      (da completare nel passo 4.8: "con chi le ha cambiate e quando")
+
+Completamento della Fase 4 (comando `/completa-fase-4`, in un'unica sessione). Parte da quello che esiste e lo adatta.
+Tutte le modifiche al database sono **nuove migrazioni** applicate sempre allo stesso modo:
+`npx supabase migration list --linked` → `npx supabase db push --linked` (il progetto vero è l'unico ambiente: nessun progetto di prova).
+- [x] 4.0 Verifica del database: `membri.sql` mancava ed è stata applicata; storico delle migrazioni allineato (`migration repair`)
+- [ ] 4.5 Menu laterale e leghe — `docs/specifiche/menu-e-leghe.md`
+  - [ ] ☰ in alto a sinistra, pillola con la lega attiva, menu a sezioni per ruolo (Le mie leghe · Redazione · Gestione · Piattaforma · App)
+  - [ ] "Le mie leghe" spostata da Impostazioni al menu; crea lega (nome, visibilità, formato, giorno), codice d'invito condivisibile, entra con codice
+  - [ ] Lega nell'indirizzo `/l/<slug>/…`; ultima lega ricordata; guida "Aggiungi i giocatori" per la lega vuota (dalle mie altre leghe, senza doppioni)
+  - [ ] Nuova migrazione: `slug`, creatore (`owner_id`), proposte di admin, cessione della proprietà, controlli nel database sui ruoli,
+        ingresso automatico del giocatore collegato, funzioni per l'amministratore supremo (`is_super_admin`, tutte le leghe, utenti)
+  - [ ] Più amministratori: solo il creatore nomina/toglie gli admin, gli altri propongono; Impostazioni della lega (rigenera codice, elimina scrivendo il nome)
+- [ ] 4.6 Collegamento account — `docs/specifiche/collegamento-account.md`
+  - [ ] Link d'invito personale (strada principale, pagina `/invito/<token>`, valido 7 giorni); "Questo sono io" resta come riserva
+  - [ ] Scollega (admin o utente); Unisci giocatori (doppioni); blocco su `players.user_id` (si cambia solo con le funzioni sicure)
+- [ ] 4.7 Registro attività — `docs/specifiche/registro-attivita.md`
+  - [ ] Amministratore supremo (`platform_admins`, riga da inserire a mano nello SQL Editor), tabella `audit_log` scritta dai trigger del database
+  - [ ] 4 gruppi (accessi/account · leghe/membri/ruoli · partite/pagelle/Gazzette · giocatori/statistiche), IP e dispositivo, conservazione 60 giorni (pg_cron)
+  - [ ] Schermata "🛡️ Registro attività": filtri, azioni delicate ⚠️, dettaglio, esporta CSV
+- [ ] 4.8 Profilo e privacy
+  - [ ] Storico delle statistiche con **chi** le ha cambiate e **quando**
+  - [ ] Informativa privacy (comprese le righe sul registro attività) in menu → Privacy e all'avviso di registrazione
+  - [ ] Cancellazione dell'account: il giocatore e il suo storico restano senza account collegato; nel registro compare "utente cancellato"
+- [ ] 4.9 Collaudo finale — `.claude/commands/collaudo-finale.md`: matrice dei permessi per ruolo, scenario completo, test esistenti verdi,
+      `docs/COLLAUDO.md`, piano del passaggio in `docs/passaggio/PIANO_PASSAGGIO.md`
 
 ## Fase 5 — Passaggio
 - [ ] Ultima importazione, prova con gli amici sull'indirizzo nuovo, pagina di trasferimento sul
