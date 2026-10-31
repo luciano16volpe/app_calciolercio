@@ -14,7 +14,8 @@ Portare da legacy, un modulo alla volta, con test che confrontano i risultati co
 stessi dati (`tests/fixtures/app_data.json`, `legacy/rosa_calcetto.json`):
 - [x] ovr (calcOvr, futRating, futTier) · form (formWeight, effectiveScore, formState)
 - [x] seasons (seasonOf, seasonStatus, seasonsList) · stats (seasonStats)
-- [ ] awards (computeSeasonAwards, matchEvents, Occasionali) · pairs · records · h2h
+- [x] awards (computeSeasonAwards, matchEvents, Occasionali, albo)
+- [ ] pairs · records · h2h
 - [ ] balancing (comboMetrics, roleFitScore, roleCountPenalty, generateTeams, predGoals)
 - [ ] whatsapp (parseWhatsAppPagelle + abbinamento nomi) — i 4 messaggi reali: 40/40
 

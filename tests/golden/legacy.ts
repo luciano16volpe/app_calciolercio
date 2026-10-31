@@ -26,11 +26,13 @@ function extractFunction(name: string): string {
   throw new Error(`Parentesi non bilanciate in ${name}`);
 }
 
-/** Riga `const NOME = ...;` su una sola riga. */
+/** `const NOME = ...;` su una riga, oppure su più righe fino alla riga che inizia con `];` o `};`. */
 function extractConst(name: string): string {
-  const m = html.match(new RegExp(`^const ${name}\\s*=.*;`, 'm'));
-  if (!m) throw new Error(`Costante legacy non trovata: ${name}`);
-  return m[0];
+  const m = html.match(new RegExp(`^const ${name}\\s*=.*`, 'm'));
+  if (!m || m.index === undefined) throw new Error(`Costante legacy non trovata: ${name}`);
+  if (/;\s*(\/\/.*)?$/.test(m[0])) return m[0];
+  const end = html.slice(m.index).search(/^[\]}];/m);
+  return html.slice(m.index, m.index + end + 2);
 }
 
 export interface LegacyData {
@@ -38,6 +40,7 @@ export interface LegacyData {
   weights: number[];
   matches: unknown[];
   ratings: unknown[];
+  albo?: unknown[];
 }
 
 /** Ambiente legacy con le funzioni richieste e i dati caricati. */
@@ -48,9 +51,9 @@ export function loadLegacy<T extends Record<string, unknown>>(
   today?: string,
 ): T {
   const prelude = `
-    var players=[], weights=[], matches=[], matchesCache={timestamp:0,data:null}, _seasonMemo={}, useFormInBalance=true, _formCache=null;
+    var players=[], weights=[], matches=[], matchesCache={timestamp:0,data:null}, _seasonMemo={}, useFormInBalance=true, _formCache=null, _evMemo=null;
     function __useForm(b){useFormInBalance=b;}
-    function __set(p,w,m,r){players=p;weights=w;matches=m;matchesCache={timestamp:0,data:{ratings:r}};_seasonMemo={};}
+    function __set(p,w,m,r,a){players=p;weights=w;matches=m;matchesCache={timestamp:0,data:{ratings:r,albo:a||[]}};_seasonMemo={};_evMemo=null;}
   `;
   const src = [prelude, ...consts.map(extractConst), ...functions.map(extractFunction)].join('\n');
   const names = functions.concat(consts).join(',');
@@ -75,6 +78,6 @@ export function loadLegacy<T extends Record<string, unknown>>(
     __set: (...a: unknown[]) => void;
     __useForm: (b: boolean) => void;
   };
-  api.__set(data.players, data.weights, data.matches, data.ratings);
+  api.__set(data.players, data.weights, data.matches, data.ratings, data.albo);
   return api;
 }
