@@ -69,3 +69,55 @@ export function mediaRanking(data: Dataset, scope: string): MediaRanking {
 
 /** Colore della media: ≥ 6,5 verde · < 5,5 rosso · altrimenti giallo. */
 export const avgColor = (v: number): string => (v >= 6.5 ? 'var(--green)' : v < 5.5 ? 'var(--red)' : 'var(--amber)');
+
+export type StatsFilter = 'all' | 'regulars' | 'occ';
+export type StatsCol = 'name' | 'pres' | 'w' | 'd' | 'l' | 'winpct' | 'goals' | 'voto';
+
+export interface StatsRow extends PlayerSeason {
+  ratingSum: number;
+  ratingCount: number;
+}
+
+/** Ordinamento iniziale della tabella: più gol prima. */
+export const STATS_SORT_DEFAULT: { col: StatsCol; dir: 1 | -1 } = { col: 'goals', dir: -1 };
+
+/** Nuovo ordinamento toccando un'intestazione: stessa colonna → inverte; altra colonna → nomi A–Z, numeri dal più alto. */
+export function nextStatsSort(cur: { col: StatsCol; dir: 1 | -1 }, col: StatsCol): { col: StatsCol; dir: 1 | -1 } {
+  if (cur.col === col) return { col, dir: cur.dir === 1 ? -1 : 1 };
+  return { col, dir: col === 'name' ? 1 : -1 };
+}
+
+/**
+ * Tabella "Statistiche giocatori": Titolari (presenze ≥ soglia), Occasionali (da 2 fino a sotto la soglia) o Tutti,
+ * ordinata per la colonna scelta (a pari valore per nome).
+ */
+export function statsTable(
+  data: Dataset,
+  scope: string,
+  filter: StatsFilter,
+  sort: { col: StatsCol; dir: 1 | -1 },
+): { rows: StatsRow[]; minPres: number } {
+  const total = scopeMatches(data.matches, scope).length;
+  const minPres = Math.max(2, Math.ceil(total * 0.4));
+  let rows: StatsRow[] = Object.values(seasonStats(data, scope)).map((s) => ({ ...s, ratingSum: s.voteSum, ratingCount: s.votes.length }));
+  if (filter === 'regulars') rows = rows.filter((r) => r.pres >= minPres);
+  else if (filter === 'occ') rows = rows.filter((r) => r.pres >= 2 && r.pres < minPres);
+  const val = (r: StatsRow, col: StatsCol): string | number => {
+    if (col === 'name') return r.name.toLowerCase();
+    if (col === 'voto') return r.ratingCount ? r.ratingSum / r.ratingCount : -1;
+    if (col === 'winpct') {
+      const dec = r.w + r.d + r.l;
+      return dec ? r.w / dec : -1;
+    }
+    return r[col];
+  };
+  const { col, dir } = sort;
+  rows.sort((x, y) => {
+    const a = val(x, col);
+    const b = val(y, col);
+    if (a < b) return -1 * dir;
+    if (a > b) return 1 * dir;
+    return x.name.localeCompare(y.name);
+  });
+  return { rows, minPres };
+}

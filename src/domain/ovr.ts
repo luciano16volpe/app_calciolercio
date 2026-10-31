@@ -31,3 +31,10 @@ export function rosaOrder(players: Array<{ name: string; stats: number[] }>, wei
         (players[a] as { name: string }).name.localeCompare((players[b] as { name: string }).name),
     );
 }
+
+/** Le 6 statistiche "alla FIFA" ricavate dalle 11: etichetta e indici delle statistiche usate (media). */
+export const FUT_STATS: Array<[string, number[]]> = [['VEL', [3]], ['TIR', [4]], ['PAS', [5]], ['DRI', [2]], ['DIF', [7]], ['FIS', [0, 1]]];
+
+/** Valore (0–100) di una delle 6 statistiche della figurina: media delle statistiche indicate × 10, arrotondata. */
+export const futStat = (stats: number[], idx: number[]): number =>
+  Math.round((idx.reduce((s, j) => s + (stats[j] as number), 0) / idx.length) * 10);

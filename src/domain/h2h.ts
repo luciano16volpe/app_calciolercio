@@ -2,6 +2,7 @@
 // Fonte: headToHead, scopeMvp, scopeTrophies, compareRows, cmpLead, defaultRival in legacy/index.html.
 import { alboSeasons, FEATS, type AlboRow, type SeasonAwards } from './awards';
 import { noVS } from './format';
+import { rosaOrder } from './ovr';
 import { mvpPerf, normalizeTeam, playerKey, scopeMatches, seasonStats, type PlayerSeason } from './stats';
 import type { Dataset, Player } from './types';
 
@@ -164,3 +165,40 @@ export function defaultRival(data: Dataset, p: Player, candidates: Player[]): Pl
     });
   return best;
 }
+
+/** Chi è avanti in ogni riga del confronto e quante righe vince ciascuno. */
+export function compareLeads(rows: CompareRow[]): { leads: Array<1 | -1 | 0>; la: number; lb: number } {
+  const leads = rows.map((r) => cmpLead(r.a, r.b, r.lowerIsBetter));
+  return { leads, la: leads.filter((x) => x === 1).length, lb: leads.filter((x) => x === -1).length };
+}
+
+/** Larghezza (0–100) delle due barre di una riga: proporzionale al valore più alto. */
+export function compareBars(a: number | null, b: number | null): { wa: number; wb: number } {
+  const va = Math.abs(a ?? 0);
+  const vb = Math.abs(b ?? 0);
+  const mx = Math.max(va, vb);
+  return { wa: mx ? Math.round((va / mx) * 100) : 0, wb: mx ? Math.round((vb / mx) * 100) : 0 };
+}
+
+/**
+ * I due giocatori messi a confronto: quelli scelti, altrimenti il più forte e (come secondo) il più forte
+ * degli altri. Restituisce gli indici nella rosa. Meno di due giocatori → null.
+ */
+export function resolveCompare(
+  players: Array<{ id: string; name: string; stats: number[] }>,
+  weights: number[],
+  aId: string | null,
+  bId: string | null,
+): [number, number] | null {
+  if (players.length < 2) return null;
+  const order = rosaOrder(players, weights);
+  let a = players.findIndex((p) => p.id === aId);
+  if (a < 0) a = order[0] as number;
+  let b = players.findIndex((p) => p.id === bId);
+  if (b < 0 || b === a) b = order.find((i) => i !== a) as number;
+  return [a, b];
+}
+
+/** Nome della stagione scelta ("Sempre" per tutte). */
+export const scopeLabel = (seasons: Array<{ key: string; label: string }>, scope: string): string =>
+  scope === 'all' ? 'Sempre' : (seasons.find((s) => s.key === scope)?.label ?? scope);
