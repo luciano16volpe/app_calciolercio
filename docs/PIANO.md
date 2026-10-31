@@ -31,7 +31,8 @@ stessi dati (`tests/fixtures/app_data.json`, `legacy/rosa_calcetto.json`):
 Ogni passo: aspetto identico a legacy (confronto con screenshot iPhone/Android/360 px), test, riepilogo.
 - [x] 3.1 Struttura (intestazione, 4 schede in basso, cache dati) · Rosa: elenco delle carte · riquadro installa su iPhone
 - [x] 3.2 Scheda giocatore (sola lettura: foto, ruoli, statistiche, pagelle, bacheca, compagni e avversari)
-- [ ] 3.3 Classifiche (8 schede: Marcatori, Assist, Media voto, Statistiche, Coppie, Confronto, Albo d'oro, Record)
+- [x] 3.3a Classifiche: stagione, quattro numeri, schede Marcatori · Assist · Media voto · Coppie · Record
+- [ ] 3.3b Classifiche: Statistiche (tabella) · Confronto testa a testa · Albo d'oro
 - [ ] 3.4 Partite: elenco e scheda partita (pagelle, equilibrio squadre) · Gazzette
 - [ ] 3.5 Gioca: convocati, sorteggio, proposte, scambi a mano
 - [ ] 3.6 Immagini canvas: figurina, riepilogo, formazioni, foglio, confronto (+ visualizzatore a schermo intero)

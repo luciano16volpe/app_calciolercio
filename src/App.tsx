@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { BottomNav, type PageName } from './app/BottomNav';
 import { ToastProvider } from './app/Toast';
 import { LEAGUE_QUERY_KEY, useLeagueData } from './data/queries';
+import { ClassifichePage } from './features/classifiche/ClassifichePage';
 import { PlayerCard } from './features/player/PlayerCard';
 import { InstallHint } from './features/rosa/InstallHint';
 import { RosaList } from './features/rosa/RosaList';
@@ -75,7 +76,9 @@ export function App() {
       </div>
       <div id="page-partita" className={`page${page === 'partita' ? ' active' : ''}`}><Soon title="Gioca" /></div>
       <div id="page-partite" className={`page${page === 'partite' ? ' active' : ''}`}><Soon title="Partite" /></div>
-      <div id="page-classifiche" className={`page${page === 'classifiche' ? ' active' : ''}`}><Soon title="Classifiche" /></div>
+      <div id="page-classifiche" className={`page${page === 'classifiche' ? ' active' : ''}`}>
+        {q.data ? <ClassifichePage data={q.data} onOpenPlayer={setOpenPlayer} /> : <Soon title="Classifiche" />}
+      </div>
       <div id="page-settings" className={`page${page === 'settings' ? ' active' : ''}`}><Soon title="Impostazioni" /></div>
 
       <BottomNav page={page} onGo={go} />

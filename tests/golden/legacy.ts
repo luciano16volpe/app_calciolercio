@@ -6,24 +6,48 @@ import vm from 'node:vm';
 
 const html = readFileSync(join(process.cwd(), 'legacy', 'index.html'), 'utf8');
 
-/** Testo di `function nome(...) {...}` (parentesi graffe bilanciate, ignorando stringhe e commenti). */
+/** Salta una stringa tra apici e restituisce l'indice dopo la chiusura. */
+function skipQuoted(s: string, i: number): number {
+  const q = s[i];
+  for (i++; i < s.length && s[i] !== q; i++) if (s[i] === '\\') i++;
+  return i + 1;
+}
+
+/** Salta un template tra backtick, compresi quelli annidati dentro ${…}, e restituisce l'indice dopo la chiusura. */
+function skipTemplate(s: string, i: number): number {
+  for (i++; i < s.length; i++) {
+    const c = s[i];
+    if (c === '\\') i++;
+    else if (c === '`') return i + 1;
+    else if (c === '$' && s[i + 1] === '{') i = skipCode(s, i + 2) - 1;
+  }
+  return i;
+}
+
+/** Scorre codice fino alla `}` che chiude il livello corrente; restituisce l'indice dopo di essa. */
+function skipCode(s: string, i: number): number {
+  let depth = 1;
+  while (i < s.length) {
+    const c = s[i];
+    if (c === '"' || c === "'") i = skipQuoted(s, i);
+    else if (c === '`') i = skipTemplate(s, i);
+    else if (c === '/' && s[i + 1] === '/') i = s.indexOf('\n', i) + 1 || s.length;
+    else if (c === '/' && s[i + 1] === '*') i = s.indexOf('*/', i) + 2;
+    else {
+      if (c === '{') depth++;
+      else if (c === '}' && --depth === 0) return i + 1;
+      i++;
+    }
+  }
+  throw new Error('Parentesi non bilanciate');
+}
+
+/** Testo di `function nome(...) {...}` (parentesi graffe bilanciate, ignorando stringhe, template e commenti). */
 function extractFunction(name: string): string {
   const start = html.search(new RegExp(`^function ${name}\\(`, 'm'));
   if (start < 0) throw new Error(`Funzione legacy non trovata: ${name}`);
-  let i = html.indexOf('{', html.indexOf(')', start));
-  let depth = 0;
-  for (; i < html.length; i++) {
-    const c = html[i];
-    if (c === '"' || c === "'" || c === '`') {
-      for (i++; html[i] !== c; i++) if (html[i] === '\\') i++;
-    } else if (c === '/' && html[i + 1] === '/') {
-      i = html.indexOf('\n', i);
-    } else if (c === '/' && html[i + 1] === '*') {
-      i = html.indexOf('*/', i) + 1;
-    } else if (c === '{') depth++;
-    else if (c === '}' && --depth === 0) return html.slice(start, i + 1);
-  }
-  throw new Error(`Parentesi non bilanciate in ${name}`);
+  const open = html.indexOf('{', html.indexOf(')', start));
+  return html.slice(start, skipCode(html, open + 1));
 }
 
 /** `const NOME = ...;` su una riga, oppure su più righe fino alla riga che inizia con `];` o `};`. */
@@ -54,7 +78,8 @@ export function loadLegacy<T extends Record<string, unknown>>(
     var players=[], weights=[], matches=[], matchesCache={timestamp:0,data:null}, _seasonMemo={}, useFormInBalance=true, _formCache=null, _evMemo=null;
     function __useForm(b){useFormInBalance=b;}
     var __el={innerHTML:'',textContent:'',style:{},scrollIntoView:function(){}}, __scope='all', document={getElementById:function(){return __el;}};
-    var sizeA=5, sizeB=5, selected=new Set(), allCombos=[], currentIdx=0, genBest=null, bachecaOpen=false;
+    var sizeA=5, sizeB=5, selected=new Set(), allCombos=[], currentIdx=0, genBest=null, bachecaOpen=false, clTab='marcatori';
+    function __tab(t){clTab=t;}
     function toast(){}
     function save(){}
     function pgtViewHTML(){return '';}
@@ -91,7 +116,7 @@ export function loadLegacy<T extends Record<string, unknown>>(
   }
   vm.createContext(sandbox);
   vm.runInContext(src, sandbox);
-  const api = vm.runInContext(`({__set,__useForm,__run,__gen,__wa,__waApply,__draw,${names}})`, sandbox) as T & {
+  const api = vm.runInContext(`({__set,__useForm,__run,__gen,__wa,__waApply,__draw,__tab,${names}})`, sandbox) as T & {
     __set: (...a: unknown[]) => void;
     __useForm: (b: boolean) => void;
     __run: (fn: () => void, scope: string) => string;
@@ -99,6 +124,7 @@ export function loadLegacy<T extends Record<string, unknown>>(
     __wa: (id: string, txt: string) => unknown;
     __waApply: () => void;
     __draw: (i: number) => string;
+    __tab: (t: string) => void;
   };
   api.__set(data.players, data.weights, data.matches, data.ratings, data.albo);
   return api;

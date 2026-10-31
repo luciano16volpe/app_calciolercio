@@ -84,3 +84,38 @@ test('scheda giocatore: la finestra "Le pagelle di…" si apre dall\'ultima page
   await dlg.locator('.pl-head button').click();
   await expect(dlg).toHaveCount(0);
 });
+
+test('Classifiche: stagione, quattro numeri, schede e apertura della scheda giocatore', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await page.locator('.bottom-nav').getByText('Classifiche', { exact: true }).click();
+  const cl = page.locator('#page-classifiche');
+  // stagioni (la più recente è scelta) + "Sempre"; otto schede
+  await expect(cl.locator('#cl-seasons .chip').first()).toHaveClass(/active/);
+  await expect(cl.locator('#cl-seasons .chip').last()).toContainText('Sempre');
+  await expect(cl.locator('#cl-tabs .chip')).toHaveCount(8);
+  // i quattro numeri
+  await expect(cl.locator('.dash-cell')).toHaveCount(4);
+  await expect(cl.locator('.dash-lbl').nth(0)).toHaveText(/Partite/i);
+  // marcatori: classifica con il primo posto in evidenza
+  await expect(cl.locator('#scorers-list .section-header')).toContainText('marcatori');
+  const firstName = cl.locator('#scorers-list > div').nth(1);
+  await expect(firstName).toContainText('🥇');
+  // cambio stagione: "Sempre" ha almeno tante partite quanto la stagione
+  const seasonMatches = Number(await cl.locator('.dash-val').first().innerText());
+  await cl.locator('#cl-seasons .chip').last().click();
+  const allMatches = Number(await cl.locator('.dash-val').first().innerText());
+  expect(allMatches).toBeGreaterThanOrEqual(seasonMatches);
+  // le altre schede si aprono senza errori
+  for (const label of ['Assist', 'Media voto', 'Coppie', 'Record']) {
+    await cl.locator('#cl-tabs .chip', { hasText: label }).click();
+    await expect(cl.locator('#scorers-list .section-header').first()).toBeVisible();
+  }
+  await cl.locator('#cl-tabs .chip', { hasText: 'Media voto' }).click();
+  await expect(cl.locator('#scorers-list .section-header').first()).toContainText('media voto');
+  // un tocco su un nome apre la scheda del giocatore
+  await cl.locator('.cl-row').first().click();
+  await expect(page.locator('#match-modal')).toBeVisible();
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+});
