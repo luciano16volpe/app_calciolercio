@@ -33,11 +33,15 @@ async function login(page: Page, role: 'admin' | 'member' | null = 'admin') {
     const table = new URL(req.url()).pathname.split('/').pop() as string;
     if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS });
     if (req.method() === 'GET') {
-      if (table === 'league_members') return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: JSON.stringify({ role }) });
+      if (table === 'league_members') {
+        const list = new URL(req.url()).search.includes('leagues'); // "le mie leghe" (elenco) oppure "il mio ruolo" (uno solo)
+        return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: JSON.stringify(list ? [] : { role }) });
+      }
       const h = { ...req.headers() };
       h.authorization = `Bearer ${h.apikey}`; // le letture pubbliche non devono portare il finto accesso
       return r.continue({ headers: h });
     }
+    if (table === 'league_member_list') return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: '[]' }); // è una lettura (elenco membri)
     let body: unknown = null;
     try { body = req.postDataJSON(); } catch { /* nessun corpo */ }
     writes.push({ method: req.method(), table, body });

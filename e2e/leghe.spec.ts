@@ -9,10 +9,17 @@ const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers
 const json = (r: Route, body: unknown, status = 200) => r.fulfill({ status, headers: CORS, contentType: 'application/json', body: JSON.stringify(body) });
 
 interface Write { method: string; table: string; body: unknown }
-interface Opts { loggedIn?: boolean; mine?: Array<{ role: string; leagues: { id: string; name: string; is_public: boolean; invite_code: string } }> }
+interface Opts {
+  loggedIn?: boolean;
+  mine?: Array<{ role: string; leagues: { id: string; name: string; is_public: boolean; invite_code: string } }>;
+  /** elenco dei membri restituito dal database ('missing' = migrazione non ancora applicata) */
+  members?: Array<{ user_id: string; role: string; display_name: string | null; email: string | null; joined_at: string }> | 'missing';
+  failRole?: boolean;
+}
 
 /** Accesso simulato; le letture vanno ai dati veri, tranne le leghe "mie" e la lega finta `L2` (vuota) se presente in `mine`. */
-async function setup(page: Page, { loggedIn = true, mine = [] }: Opts = {}) {
+async function setup(page: Page, opts: Opts = {}) {
+  const { loggedIn = true, mine = [], members = [] } = opts;
   const writes: Write[] = [];
   if (loggedIn) {
     await page.addInitScript(([ref, jwt]) => {
@@ -42,7 +49,12 @@ async function setup(page: Page, { loggedIn = true, mine = [] }: Opts = {}) {
     }
     let body: unknown = null;
     try { body = req.postDataJSON(); } catch { /* nessun corpo */ }
+    if (table === 'league_member_list') {
+      if (members === 'missing') return json(r, { code: 'PGRST202', message: 'Could not find the function public.league_member_list(l) in the schema cache' }, 404);
+      return json(r, members);
+    }
     writes.push({ method: req.method(), table, body });
+    if (table === 'set_member_role' && opts.failRole) return json(r, { code: 'P0001', message: 'Deve restare almeno un amministratore' }, 400);
     if (table === 'join_league') return json(r, 'L2');
     return r.fulfill({ status: req.method() === 'POST' ? 201 : 204, headers: CORS, contentType: 'application/json', body: '' });
   });
@@ -115,4 +127,52 @@ test('Leghe: cambia lega (vuota), codice d\'invito per l\'amministratore, esci',
   await expect(page.locator('#toast')).toContainText('Sei uscito dalla lega', { timeout: 15_000 });
   expect(writes.some((x) => x.table === 'league_members' && x.method === 'DELETE')).toBe(true);
   await noOverflow(page);
+});
+
+const MINE_ADMIN = [{ role: 'admin', leagues: { id: 'L2', name: 'Lega di prova', is_public: false, invite_code: 'abc12345' } }];
+const MEMBERS = [
+  { user_id: 'u1', role: 'admin', display_name: 'Luciano', email: 'admin@example.com', joined_at: '2026-01-01' },
+  { user_id: 'u2', role: 'member', display_name: 'Marco', email: 'marco@example.com', joined_at: '2026-01-02' },
+];
+
+test('Membri: l\'amministratore vede la lista, cambia ruolo e toglie un membro', async ({ page }) => {
+  const writes = await setup(page, { mine: MINE_ADMIN, members: MEMBERS });
+  await openSettings(page);
+  await page.locator('.league-pick', { hasText: 'Lega di prova' }).click();
+  await expect(page.locator('#members-card')).toBeVisible();
+  await expect(page.locator('.member-row')).toHaveCount(2);
+  await expect(page.locator('.member-row').first()).toContainText('(tu)');
+  await page.getByLabel('Ruolo di Marco').selectOption('redazione');
+  await expect(page.locator('#toast')).toContainText('Ruolo cambiato');
+  expect((writes.find((x) => x.table === 'set_member_role') as Write).body).toEqual({ l: 'L2', u: 'u2', r: 'redazione' });
+  await expect(page.getByRole('button', { name: 'Togli Luciano' })).toHaveCount(0); // non ci si toglie da soli da qui
+  await page.getByRole('button', { name: 'Togli Marco' }).click();
+  await page.locator('#app-modal-ok').click();
+  await expect(page.locator('#toast')).toContainText('Membro tolto');
+  expect((writes.find((x) => x.table === 'remove_member') as Write).body).toEqual({ l: 'L2', u: 'u2' });
+  await noOverflow(page);
+});
+
+test('Membri: l\'ultimo amministratore non si può declassare (errore del database mostrato)', async ({ page }) => {
+  await setup(page, { mine: MINE_ADMIN, members: MEMBERS, failRole: true });
+  await openSettings(page);
+  await page.locator('.league-pick', { hasText: 'Lega di prova' }).click();
+  await page.getByLabel('Ruolo di Luciano').selectOption('member');
+  await expect(page.locator('#toast')).toContainText('Deve restare almeno un amministratore');
+});
+
+test('Membri: se la migrazione manca si spiega cosa fare', async ({ page }) => {
+  await setup(page, { mine: MINE_ADMIN, members: 'missing' });
+  await openSettings(page);
+  await page.locator('.league-pick', { hasText: 'Lega di prova' }).click();
+  await expect(page.locator('#members-error')).toContainText('20261101000000_membri.sql');
+});
+
+test('Membri: chi non è amministratore non vede la scheda', async ({ page }) => {
+  await setup(page, { mine: [{ role: 'member', leagues: { id: 'L2', name: 'Lega di prova', is_public: false, invite_code: 'abc12345' } }] });
+  await openSettings(page);
+  await page.locator('.league-pick', { hasText: 'Lega di prova' }).click();
+  await expect(page.locator('.league-pick[aria-pressed="true"]')).toContainText('Lega di prova');
+  await expect(page.locator('#members-card')).toHaveCount(0);
+  await expect(page.locator('#invite-box')).toHaveCount(0);
 });

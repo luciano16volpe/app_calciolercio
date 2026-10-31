@@ -412,9 +412,15 @@ export type Database = {
       is_any_admin: { Args: never; Returns: boolean }
       is_league_admin: { Args: { l: string }; Returns: boolean }
       join_league: { Args: { code: string }; Returns: string }
+      league_member_list: {
+        Args: { l: string }
+        Returns: { user_id: string; role: Database["public"]["Enums"]["league_role"]; display_name: string | null; email: string | null; joined_at: string }[]
+      }
       league_visible: { Args: { l: string }; Returns: boolean }
       match_league: { Args: { m: string }; Returns: string }
       player_visible: { Args: { p: string }; Returns: boolean }
+      remove_member: { Args: { l: string; u: string }; Returns: undefined }
+      set_member_role: { Args: { l: string; r: Database["public"]["Enums"]["league_role"]; u: string }; Returns: undefined }
     }
     Enums: {
       league_role: "admin" | "redazione" | "member"

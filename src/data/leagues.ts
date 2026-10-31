@@ -60,3 +60,39 @@ export async function leaveLeague(leagueId: string, userId: string): Promise<voi
   const { error } = await supabase.from('league_members').delete().eq('league_id', leagueId).eq('user_id', userId);
   if (error) throw fail('uscita', error);
 }
+
+export interface Member {
+  userId: string;
+  role: 'admin' | 'redazione' | 'member';
+  name: string;
+  email: string;
+}
+
+/** Frase da mostrare se la migrazione del passo 4.2 non è ancora stata applicata nel database. */
+export const MEMBERS_MIGRATION_HINT = 'Per gestire i membri serve aggiornare il database: incolla in Supabase (SQL Editor) il file supabase/migrations/20261101000000_membri.sql';
+const missingFn = (msg: string) => /could not find the function|schema cache|PGRST202|does not exist/i.test(msg);
+
+/** Membri della lega, con nome ed email (solo per l'amministratore). */
+export async function fetchMembers(leagueId: string): Promise<Member[]> {
+  const { data, error } = await supabase.rpc('league_member_list', { l: leagueId });
+  if (error) throw new Error(missingFn(error.message) ? MEMBERS_MIGRATION_HINT : error.message);
+  return ((data ?? []) as Array<{ user_id: string; role: Member['role']; display_name: string | null; email: string | null }>).map((m) => ({
+    userId: m.user_id, role: m.role, name: m.display_name ?? '', email: m.email ?? '',
+  }));
+}
+
+export const MEMBERS_KEY = ['league-members'] as const;
+
+export function useMembers(leagueId: string | undefined, enabled: boolean) {
+  return useQuery({ queryKey: [...MEMBERS_KEY, leagueId], queryFn: () => fetchMembers(leagueId as string), enabled: enabled && !!leagueId, retry: false });
+}
+
+export async function setMemberRole(leagueId: string, userId: string, role: Member['role']): Promise<void> {
+  const { error } = await supabase.rpc('set_member_role', { l: leagueId, u: userId, r: role });
+  if (error) throw new Error(missingFn(error.message) ? MEMBERS_MIGRATION_HINT : error.message);
+}
+
+export async function removeMember(leagueId: string, userId: string): Promise<void> {
+  const { error } = await supabase.rpc('remove_member', { l: leagueId, u: userId });
+  if (error) throw new Error(missingFn(error.message) ? MEMBERS_MIGRATION_HINT : error.message);
+}

@@ -129,3 +129,10 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Non si esce da una lega se si è l'unico amministratore. La lega pubblica non si può lasciare (si vede comunque).
 - La lista dei membri con nomi/email richiede una nuova migrazione (i profili sono privati): è il passo 4.2.
 - Nota: il codice d'invito è leggibile da chi vede la lega, quindi anche quello della lega pubblica; chi lo usa diventa solo membro, che nella lega pubblica non cambia nulla.
+
+## Membri e ruoli (Fase 4.2)
+- Solo l'amministratore vede la lista dei membri (nome ed email) e può cambiare ruolo o togliere qualcuno. Sono funzioni del database (`league_member_list`, `set_member_role`, `remove_member`) nel file `supabase/migrations/20261101000000_membri.sql`, da incollare nel SQL Editor di Supabase.
+- Il database impedisce di lasciare la lega senza amministratori (declassare o togliere l'ultimo).
+- Ci si toglie da soli con "Esci" in Le mie leghe, non dalla lista dei membri.
+- Finché la migrazione non è applicata, la scheda Membri mostra come farlo, senza rompere nulla.
+- I tipi in `src/data/types.ts` per le tre funzioni sono scritti a mano: dopo la migrazione si possono rigenerare.
