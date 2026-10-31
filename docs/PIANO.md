@@ -7,7 +7,7 @@ Ogni fase finisce con: test verdi, prova su iPhone e Android (emulati), breve ri
 - [x] `src/styles/app.css` portato da `legacy/index.html` (aspetto identico)
 - [x] Supabase: client (`src/data/supabase.ts`), `.env.local` con URL e chiave pubblica,
       migrazione `supabase/migrations/20261031000000_schema.sql` applicata, tipi generati
-- [ ] Pubblicazione su Vercel/Cloudflare Pages dal nuovo repository (privato)
+- [x] Pubblicazione su Vercel/Cloudflare Pages dal nuovo repository (privato)
 
 ## Fase 1 — Logica pura, con test golden
 Portare da legacy, un modulo alla volta, con test che confrontano i risultati con legacy sugli

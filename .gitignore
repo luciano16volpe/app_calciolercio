@@ -10,3 +10,6 @@ test-results
 supabase/.temp
 *.tsbuildinfo
 .vercel
+
+.vercel
+.env*
