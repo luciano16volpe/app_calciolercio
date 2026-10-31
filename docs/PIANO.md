@@ -28,10 +28,15 @@ stessi dati (`tests/fixtures/app_data.json`, `legacy/rosa_calcetto.json`):
 - [x] Lega "CalcioLercio" pubblica, l'utente come admin; controllo: stessi numeri della legacy
 
 ## Fase 3 — Schermate, collegate a Supabase
-- [ ] Rosa (+ scheda giocatore) · Gioca · Partite (+ scheda partita, importazione WhatsApp,
-      Gazzette) · Classifiche (8 schede) · Impostazioni
-- [ ] Immagini canvas: figurina, riepilogo, formazioni, foglio, confronto (+ visualizzatore)
-- [ ] Accesso admin (email) per modificare; tutti gli altri vedono senza account
+Ogni passo: aspetto identico a legacy (confronto con screenshot iPhone/Android/360 px), test, riepilogo.
+- [x] 3.1 Struttura (intestazione, 4 schede in basso, cache dati) · Rosa: elenco delle carte · riquadro installa su iPhone
+- [ ] 3.2 Scheda giocatore (sola lettura: foto, ruoli, statistiche, pagelle, bacheca, compagni e avversari)
+- [ ] 3.3 Classifiche (8 schede: Marcatori, Assist, Media voto, Statistiche, Coppie, Confronto, Albo d'oro, Record)
+- [ ] 3.4 Partite: elenco e scheda partita (pagelle, equilibrio squadre) · Gazzette
+- [ ] 3.5 Gioca: convocati, sorteggio, proposte, scambi a mano
+- [ ] 3.6 Immagini canvas: figurina, riepilogo, formazioni, foglio, confronto (+ visualizzatore a schermo intero)
+- [ ] 3.7 Accesso admin (email) e modifiche: rosa e statistiche, nuova partita, voti, importazione WhatsApp, Gazzetta
+- [ ] 3.8 Impostazioni
 
 ## Fase 4 — Multi-lega e account
 - [ ] Creare una lega, codice d'invito, ruoli (admin / redazione / member), cambio lega

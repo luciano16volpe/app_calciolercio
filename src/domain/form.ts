@@ -61,3 +61,9 @@ export function formState(data: Dataset, p: Player, all = seasonStats(data)): Fo
 export const onFire = (data: Dataset, p: Player, all = seasonStats(data)): boolean => formState(data, p, all) === 'up';
 /** 🌧️ IN CRISI = "In calo". */
 export const inCrisi = (data: Dataset, p: Player, all = seasonStats(data)): boolean => formState(data, p, all) === 'down';
+/** Badge PAG: media di tutti i voti. ≥ 6,5 verde · < 5,5 rosso · altrimenti giallo · senza voti "PAG —". */
+export function pagInfo(avg: number | null): { label: string; cls: 'pag-none' | 'pag-good' | 'pag-mid' | 'pag-bad'; avg: number | null } {
+  if (avg == null) return { label: 'PAG —', cls: 'pag-none', avg: null };
+  const cls = avg >= 6.5 ? 'pag-good' : avg < 5.5 ? 'pag-bad' : 'pag-mid';
+  return { label: `PAG ${avg.toFixed(1)}`, cls, avg };
+}
