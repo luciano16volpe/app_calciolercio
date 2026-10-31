@@ -3,9 +3,9 @@
 Ogni fase finisce con: test verdi, prova su iPhone e Android (emulati), breve riepilogo all'utente.
 
 ## Fase 0 — Progetto vuoto
-- [ ] Vite + React + TypeScript (strict), ESLint, Vitest, Playwright, vite-plugin-pwa
-- [ ] `src/styles/app.css` portato da `legacy/index.html` (aspetto identico)
-- [ ] Supabase: client (`src/data/supabase.ts`), `.env.local` con URL e chiave pubblica,
+- [x] Vite + React + TypeScript (strict), ESLint, Vitest, Playwright, vite-plugin-pwa
+- [x] `src/styles/app.css` portato da `legacy/index.html` (aspetto identico)
+- [x] Supabase: client (`src/data/supabase.ts`), `.env.local` con URL e chiave pubblica,
       migrazione `supabase/migrations/20261031000000_schema.sql` applicata, tipi generati
 - [ ] Pubblicazione su Vercel/Cloudflare Pages dal nuovo repository (privato)
 

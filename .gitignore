@@ -1,0 +1,9 @@
+node_modules
+dist
+dev-dev-dist
+.env.local
+.env*.local
+playwright-report
+test-results
+.idea/workspace.xml
+*.log
