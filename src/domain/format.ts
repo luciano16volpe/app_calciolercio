@@ -24,3 +24,12 @@ export function avatarClass(roles: string[] | undefined | null): string {
   if (roles.length > 1) return 'av-multi';
   return roles[0] === 'ATT' ? 'av-att' : roles[0] === 'DIF' ? 'av-def' : 'av-mid';
 }
+
+/** Mette in sicurezza il testo per l'HTML (& < > " '), come esc() di legacy. */
+export const esc = (v: unknown): string =>
+  String(v ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');

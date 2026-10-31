@@ -83,3 +83,9 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
   base dati un voto assente è `null` e non si inventa uno 0. Con i dati attuali non cambia nulla (tutte le pagelle hanno voto).
 - Le immagini delle Gazzette si aprono dal file completo (circa 0,5 MB l'una). Le miniature più leggere si possono generare
   al momento del caricamento (passo 3.7).
+
+## Gioca (Fase 3.5)
+- **"Seleziona i primi N"** sceglie i primi N **come appaiono nell'elenco** (i più forti). Legacy prendeva i primi N nell'ordine
+  del file della rosa, che non si vede e non ha un significato (nella nuova base dati la rosa non ha quell'ordine).
+- Il formato (5 vs 5, 6 vs 6, 7 vs 7, asimmetrico) resta ricordato sul telefono. I convocati no, come prima.
+- Il sorteggio gira nel telefono e usa gli stessi calcoli di legacy: stesse proposte, stesso ordine (test su 7 vs 7 con 14 giocatori).

@@ -4,6 +4,7 @@ import { BottomNav, type PageName } from './app/BottomNav';
 import { ToastProvider } from './app/Toast';
 import { LEAGUE_QUERY_KEY, useLeagueData } from './data/queries';
 import { ClassifichePage } from './features/classifiche/ClassifichePage';
+import { GiocaPage } from './features/gioca/GiocaPage';
 import { MatchCard } from './features/partite/MatchCard';
 import { PartitePage } from './features/partite/PartitePage';
 import { GazArchive, GazViewer, PagelleTextDialog, type MatchActions } from './features/partite/parts';
@@ -98,7 +99,9 @@ export function App() {
         <InstallHint />
         {data ? <RosaList data={data} onOpen={openPlayer} /> : <Loading q={q} />}
       </div>
-      <div id="page-partita" className={`page${page === 'partita' ? ' active' : ''}`}><Soon title="Gioca" /></div>
+      <div id="page-partita" className={`page${page === 'partita' ? ' active' : ''}`}>
+        {data ? <GiocaPage data={data} /> : <Loading q={q} />}
+      </div>
       <div id="page-partite" className={`page${page === 'partite' ? ' active' : ''}`}>
         {data ? <PartitePage data={data} act={act} onArchive={() => setView({ kind: 'gazArchive' })} /> : <Loading q={q} />}
       </div>

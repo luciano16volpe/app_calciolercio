@@ -7,6 +7,7 @@
 //  • "_NICO voto 5,5_" / "NICO 6,5" / "FILIPPO voto 5,5" + righe + ultima riga in MAIUSCOLO = titolo
 //  • righe squadra "*BLU 8* 🔵" / "⚪ *BIANCHI 2*": separano solo le squadre (i numeri non si usano)
 // Il voto serve solo a capire dove inizia la pagella di un giocatore. I corsivi in mezzo al testo restano.
+import { esc } from './format';
 import { normalizeTeam, playerKey } from './stats';
 import type { Dataset, Match, Player } from './types';
 
@@ -275,16 +276,8 @@ export function waRemember(
   return { map: { ...map, [k]: p.id }, aliases: [...new Set([...(p.aliases || []), written.trim()])] };
 }
 
-const escHtml = (v: unknown): string =>
-  String(v ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-
 /** Formato WhatsApp → HTML (dopo aver messo in sicurezza il testo): *grassetto* e _corsivo_. */
 export const waHTML = (s: unknown): string =>
-  escHtml(s)
+  esc(s)
     .replace(/\*([^*\n]+)\*/g, '<b>$1</b>')
     .replace(/(^|[\s(])_([^_\n]+)_(?=$|[\s.,;:!?)])/gm, '$1<i>$2</i>');

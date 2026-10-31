@@ -78,7 +78,13 @@ export function loadLegacy<T extends Record<string, unknown>>(
   const prelude = `
     var players=[], weights=[], matches=[], matchesCache={timestamp:0,data:null}, _seasonMemo={}, useFormInBalance=true, _formCache=null, _evMemo=null;
     function __useForm(b){useFormInBalance=b;}
-    var __el={innerHTML:'',textContent:'',style:{},scrollIntoView:function(){},querySelectorAll:function(){return [];}}, __scope='all', document={getElementById:function(){return __el;},querySelectorAll:function(){return [];}};
+    var __el={innerHTML:'',textContent:'',style:{},scrollIntoView:function(){},querySelectorAll:function(){return [];}}, __scope='all', document={getElementById:function(id){ if(!__multi) return __el; return __els[id]||(__els[id]={innerHTML:'',textContent:'',style:{},attrs:{},setAttribute:function(k,v){this.attrs[k]=v;},scrollIntoView:function(){},querySelectorAll:function(){return [];}}); },querySelectorAll:function(){return [];}}, __els={}, __multi=false, backendUrl='x';
+    function __multiOn(b){__multi=b;__els={};}
+    function __getEl(id){return __els[id];}
+    function __idx(i){currentIdx=i;renderResult();}
+    function __swap(a,b){swapPlayers(a,b);}
+    function __combo(){return allCombos[currentIdx];}
+    function __sel(arr){selected=new Set(arr);}
     function renderScorers(){}
     var sizeA=5, sizeB=5, selected=new Set(), allCombos=[], currentIdx=0, genBest=null, bachecaOpen=false, clTab='marcatori', statsSort={col:'goals',dir:-1}, statsFilter='regulars', cmpA=null, cmpB=null;
     function futPreload(){}
@@ -121,7 +127,7 @@ export function loadLegacy<T extends Record<string, unknown>>(
   }
   vm.createContext(sandbox);
   vm.runInContext(src, sandbox);
-  const api = vm.runInContext(`({__set,__useForm,__run,__gen,__wa,__waApply,__draw,__tab,__stats,__cmp,${names}})`, sandbox) as T & {
+  const api = vm.runInContext(`({__set,__useForm,__run,__gen,__wa,__waApply,__draw,__tab,__stats,__cmp,__multiOn,__getEl,__idx,__swap,__combo,__sel,${names}})`, sandbox) as T & {
     __set: (...a: unknown[]) => void;
     __useForm: (b: boolean) => void;
     __run: (fn: () => void, scope: string) => string;
@@ -130,6 +136,12 @@ export function loadLegacy<T extends Record<string, unknown>>(
     __waApply: () => void;
     __draw: (i: number) => string;
     __tab: (t: string) => void;
+    __multiOn: (b: boolean) => void;
+    __getEl: (id: string) => { innerHTML: string; textContent: string; style: Record<string, string>; attrs: Record<string, string> } | undefined;
+    __idx: (i: number) => void;
+    __swap: (a: number, b: number) => void;
+    __combo: () => unknown;
+    __sel: (a: number[]) => void;
     __stats: (c: string, d: number, f: string) => void;
     __cmp: (a: string | null, b: string | null) => void;
   };
