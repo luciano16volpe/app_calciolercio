@@ -157,3 +157,6 @@ export function seasonStats(data: Dataset, scope?: string): Record<string, Playe
 export function playerSeason(data: Dataset, p: Pick<Player, 'id' | 'name'>, all = seasonStats(data)): PlayerSeason | null {
   return all[playerKey(data.players, p.id, p.name).key] ?? null;
 }
+/** Partite di una stagione (`scope` = chiave tipo '2026-AUT') o tutte ('all'). */
+export const scopeMatches = (matches: Match[], scope: string): Match[] =>
+  scope === 'all' ? matches : matches.filter((m) => seasonOf(m.date)?.key === scope);

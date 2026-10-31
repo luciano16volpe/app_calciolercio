@@ -21,3 +21,13 @@ export function futTierOfRating(r: number): FutTier {
 export function futTier(stats: number[], weights: number[]): FutTier {
   return futTierOfRating(futRating(stats, weights));
 }
+/** Ordine di visualizzazione della rosa: OVR più alto prima, a pari OVR per nome. Restituisce gli indici. */
+export function rosaOrder(players: Array<{ name: string; stats: number[] }>, weights: number[]): number[] {
+  return players
+    .map((_, i) => i)
+    .sort(
+      (a, b) =>
+        calcOvr((players[b] as { stats: number[] }).stats, weights) - calcOvr((players[a] as { stats: number[] }).stats, weights) ||
+        (players[a] as { name: string }).name.localeCompare((players[b] as { name: string }).name),
+    );
+}

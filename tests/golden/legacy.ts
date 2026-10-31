@@ -53,6 +53,9 @@ export function loadLegacy<T extends Record<string, unknown>>(
   const prelude = `
     var players=[], weights=[], matches=[], matchesCache={timestamp:0,data:null}, _seasonMemo={}, useFormInBalance=true, _formCache=null, _evMemo=null;
     function __useForm(b){useFormInBalance=b;}
+    var __el={innerHTML:''}, __scope='all', document={getElementById:function(){return __el;}};
+    function clCurrentScope(){return __scope;}
+    function __run(fn,scope){__scope=scope;__el.innerHTML='';fn();return __el.innerHTML;}
     function __set(p,w,m,r,a){players=p;weights=w;matches=m;matchesCache={timestamp:0,data:{ratings:r,albo:a||[]}};_seasonMemo={};_evMemo=null;}
   `;
   const src = [prelude, ...consts.map(extractConst), ...functions.map(extractFunction)].join('\n');
@@ -74,9 +77,10 @@ export function loadLegacy<T extends Record<string, unknown>>(
   }
   vm.createContext(sandbox);
   vm.runInContext(src, sandbox);
-  const api = vm.runInContext(`({__set,__useForm,${names}})`, sandbox) as T & {
+  const api = vm.runInContext(`({__set,__useForm,__run,${names}})`, sandbox) as T & {
     __set: (...a: unknown[]) => void;
     __useForm: (b: boolean) => void;
+    __run: (fn: () => void, scope: string) => string;
   };
   api.__set(data.players, data.weights, data.matches, data.ratings, data.albo);
   return api;
