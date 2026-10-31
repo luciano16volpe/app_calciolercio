@@ -41,6 +41,7 @@ async function login(page: Page, role: 'admin' | 'member' | null = 'admin') {
       h.authorization = `Bearer ${h.apikey}`; // le letture pubbliche non devono portare il finto accesso
       return r.continue({ headers: h });
     }
+    if (table === 'claims_pending') return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: '[]' }); // lettura (richieste in attesa)
     if (table === 'league_member_list') return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: '[]' }); // è una lettura (elenco membri)
     let body: unknown = null;
     try { body = req.postDataJSON(); } catch { /* nessun corpo */ }

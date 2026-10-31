@@ -47,7 +47,8 @@ Ogni passo: aspetto identico a legacy (confronto con screenshot iPhone/Android/3
 ## Fase 4 — Multi-lega e account
 - [x] 4.1 Creare una lega, codice d'invito, cambio lega, uscire (Impostazioni → Le mie leghe)
 - [x] 4.2 Membri della lega e ruoli (admin / redazione / member): lista con nomi, cambio ruolo, rimozione — richiede la migrazione `20261101000000_membri.sql` (da incollare in Supabase)
-- [ ] Registrazione giocatori, "questo sono io" (confermato dall'admin), profilo personale con le
+- [x] 4.3 "Questo sono io" (richiesta del giocatore, conferma dell'admin) — richiede la migrazione `20261102000000_questo_sono_io.sql`
+- [ ] 4.4 Profilo personale con le
       partite di tutte le leghe; storico delle statistiche
 - [ ] Privacy: informativa, cancellazione account
 

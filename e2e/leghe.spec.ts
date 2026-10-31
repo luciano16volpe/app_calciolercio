@@ -15,6 +15,12 @@ interface Opts {
   /** elenco dei membri restituito dal database ('missing' = migrazione non ancora applicata) */
   members?: Array<{ user_id: string; role: string; display_name: string | null; email: string | null; joined_at: string }> | 'missing';
   failRole?: boolean;
+  /** il giocatore a cui sono già collegato */
+  mePlayer?: { id: string; name: string } | null;
+  /** le mie richieste ("missing" = migrazione 4.3 non applicata) */
+  claims?: Array<{ player_id: string; league_id: string; status: string; created_at: string; players: { name: string } }> | 'missing';
+  /** richieste in attesa viste dall'amministratore */
+  pendingClaims?: Array<{ id: string; player_id: string; player_name: string; user_id: string; display_name: string | null; email: string | null; created_at: string }>;
 }
 
 /** Accesso simulato; le letture vanno ai dati veri, tranne le leghe "mie" e la lega finta `L2` (vuota) se presente in `mine`. */
@@ -36,6 +42,11 @@ async function setup(page: Page, opts: Opts = {}) {
     const table = url.pathname.split('/').pop() as string;
     if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS });
     if (req.method() === 'GET') {
+      if (table === 'player_claims') {
+        if (opts.claims === 'missing') return json(r, { code: 'PGRST205', message: "Could not find the table 'public.player_claims' in the schema cache" }, 404);
+        return json(r, opts.claims ?? []);
+      }
+      if (table === 'players' && url.search.includes('user_id=eq')) return json(r, opts.mePlayer ?? null);
       const fake = url.search.includes('L2');
       if (table === 'league_members') {
         if (url.search.includes('leagues')) return json(r, mine);
@@ -53,6 +64,7 @@ async function setup(page: Page, opts: Opts = {}) {
       if (members === 'missing') return json(r, { code: 'PGRST202', message: 'Could not find the function public.league_member_list(l) in the schema cache' }, 404);
       return json(r, members);
     }
+    if (table === 'claims_pending') return json(r, opts.pendingClaims ?? []);
     writes.push({ method: req.method(), table, body });
     if (table === 'set_member_role' && opts.failRole) return json(r, { code: 'P0001', message: 'Deve restare almeno un amministratore' }, 400);
     if (table === 'join_league') return json(r, 'L2');
@@ -166,6 +178,64 @@ test('Membri: se la migrazione manca si spiega cosa fare', async ({ page }) => {
   await openSettings(page);
   await page.locator('.league-pick', { hasText: 'Lega di prova' }).click();
   await expect(page.locator('#members-error')).toContainText('20261101000000_membri.sql');
+});
+
+test('Questo sono io: scelgo il mio nome e mando la richiesta', async ({ page }) => {
+  const writes = await setup(page);
+  await openSettings(page);
+  await expect(page.locator('#myplayer-card')).toBeVisible();
+  await page.locator('#myplayer-send').click();
+  await expect(page.locator('#toast')).toContainText('Scegli il tuo nome');
+  expect(writes.length).toBe(0);
+  expect(await page.locator('#myplayer-select option').count()).toBeGreaterThan(20); // rosa vera: 22 + "scegli"
+  await page.locator('#myplayer-select').selectOption({ index: 1 });
+  await page.locator('#myplayer-send').click();
+  await expect(page.locator('#toast')).toContainText('Richiesta inviata');
+  const w = writes.find((x) => x.table === 'request_claim') as Write;
+  expect(Object.keys(w.body as object).sort()).toEqual(['l', 'p']);
+  await noOverflow(page);
+});
+
+test('Questo sono io: richiesta in attesa, già collegato e scollega', async ({ page }) => {
+  await setup(page, { claims: [{ player_id: 'p1', league_id: 'x', status: 'pending', created_at: '2026-11-01', players: { name: 'Marco' } }] });
+  await openSettings(page);
+  await expect(page.locator('#myplayer-pending')).toContainText('Marco');
+  await expect(page.locator('#myplayer-select')).toHaveCount(0);
+});
+
+test('Questo sono io: collegato, si può scollegare', async ({ page }) => {
+  const writes = await setup(page, { mePlayer: { id: 'p1', name: 'Marco' } });
+  await openSettings(page);
+  await expect(page.locator('#myplayer-name')).toHaveText('Marco');
+  await page.getByRole('button', { name: 'Scollega' }).click();
+  await page.locator('#app-modal-ok').click();
+  await expect(page.locator('#toast')).toContainText('Scollegato');
+  expect(writes.some((x) => x.table === 'unlink_me')).toBe(true);
+});
+
+test('Questo sono io: se la migrazione manca si spiega cosa fare', async ({ page }) => {
+  await setup(page, { claims: 'missing' });
+  await openSettings(page);
+  await expect(page.locator('#myplayer-error')).toContainText('20261102000000_questo_sono_io.sql');
+});
+
+test('Questo sono io: l\'amministratore conferma e rifiuta', async ({ page }) => {
+  const pendingClaims = [
+    { id: 'c1', player_id: 'p1', player_name: 'Marco', user_id: 'u2', display_name: 'Marchino', email: 'm@example.com', created_at: '2026-11-01' },
+    { id: 'c2', player_id: 'p2', player_name: 'Luca', user_id: 'u3', display_name: null, email: 'l@example.com', created_at: '2026-11-02' },
+  ];
+  const writes = await setup(page, { mine: MINE_ADMIN, members: MEMBERS, pendingClaims });
+  await openSettings(page);
+  await page.locator('.league-pick', { hasText: 'Lega di prova' }).click();
+  await expect(page.locator('.claim-row')).toHaveCount(2);
+  await expect(page.locator('.claim-row').first()).toContainText('Marchino dice di essere Marco');
+  await expect(page.locator('.claim-row').nth(1)).toContainText('l@example.com');
+  await page.getByRole('button', { name: 'Conferma Marchino come Marco' }).click();
+  await expect(page.locator('#toast')).toContainText('Marchino è ora Marco');
+  expect((writes.find((x) => x.table === 'review_claim') as Write).body).toEqual({ c: 'c1', approve: true });
+  await page.getByRole('button', { name: 'Rifiuta l@example.com' }).click();
+  await expect(page.locator('#toast')).toContainText('Richiesta rifiutata');
+  expect(writes.filter((x) => x.table === 'review_claim')[1]?.body).toEqual({ c: 'c2', approve: false });
 });
 
 test('Membri: chi non è amministratore non vede la scheda', async ({ page }) => {

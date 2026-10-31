@@ -61,6 +61,47 @@ export type Database = {
         }
         Relationships: []
       }
+      player_claims: {
+        Row: {
+          id: string
+          league_id: string
+          player_id: string
+          user_id: string
+          status: string
+          created_at: string
+          decided_by: string | null
+          decided_at: string | null
+        }
+        Insert: {
+          id?: string
+          league_id: string
+          player_id: string
+          user_id?: string
+          status?: string
+          created_at?: string
+          decided_by?: string | null
+          decided_at?: string | null
+        }
+        Update: {
+          id?: string
+          league_id?: string
+          player_id?: string
+          user_id?: string
+          status?: string
+          created_at?: string
+          decided_by?: string | null
+          decided_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_claims_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gazzette: {
         Row: {
           file_path: string
@@ -420,6 +461,13 @@ export type Database = {
       match_league: { Args: { m: string }; Returns: string }
       player_visible: { Args: { p: string }; Returns: boolean }
       remove_member: { Args: { l: string; u: string }; Returns: undefined }
+      request_claim: { Args: { l: string; p: string }; Returns: undefined }
+      review_claim: { Args: { c: string; approve: boolean }; Returns: undefined }
+      claims_pending: {
+        Args: { l: string }
+        Returns: { id: string; player_id: string; player_name: string; user_id: string; display_name: string | null; email: string | null; created_at: string }[]
+      }
+      unlink_me: { Args: never; Returns: undefined }
       set_member_role: { Args: { l: string; r: Database["public"]["Enums"]["league_role"]; u: string }; Returns: undefined }
     }
     Enums: {

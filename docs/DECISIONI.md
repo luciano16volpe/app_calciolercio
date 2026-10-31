@@ -136,3 +136,10 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Ci si toglie da soli con "Esci" in Le mie leghe, non dalla lista dei membri.
 - Finché la migrazione non è applicata, la scheda Membri mostra come farlo, senza rompere nulla.
 - I tipi in `src/data/types.ts` per le tre funzioni sono scritti a mano: dopo la migrazione si possono rigenerare.
+
+## Questo sono io (Fase 4.3)
+- Il giocatore sceglie il proprio nome nella rosa della lega che sta guardando e manda la richiesta; **la conferma è sempre dell'amministratore** di quella lega (Impostazioni → Membri → Richieste).
+- Un account può essere collegato a **un solo** giocatore e un giocatore a **un solo** account. Alla conferma, le altre richieste per lo stesso giocatore o dello stesso account vengono rifiutate.
+- Ci si può scollegare in qualsiasi momento (poi serve una nuova richiesta).
+- Funzioni del database nel file `supabase/migrations/20261102000000_questo_sono_io.sql`; se manca, le schede mostrano come applicarla.
+- Il profilo personale (partite di tutte le leghe, storico statistiche) è il passo 4.4.
