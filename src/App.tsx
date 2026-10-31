@@ -1,27 +1,19 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { BottomNav, type PageName } from './app/BottomNav';
+import { AuthProvider } from './app/auth';
 import { ImageProvider } from './app/ImageViewer';
 import { ToastProvider } from './app/Toast';
 import { LEAGUE_QUERY_KEY, useLeagueData } from './data/queries';
 import { ClassifichePage } from './features/classifiche/ClassifichePage';
 import { GiocaPage } from './features/gioca/GiocaPage';
+import { AccountCard } from './features/impostazioni/AccountCard';
 import { MatchCard } from './features/partite/MatchCard';
 import { PartitePage } from './features/partite/PartitePage';
 import { GazArchive, GazViewer, PagelleTextDialog, type MatchActions } from './features/partite/parts';
 import { PlayerCard } from './features/player/PlayerCard';
 import { InstallHint } from './features/rosa/InstallHint';
 import { RosaList } from './features/rosa/RosaList';
-
-/** Schede non ancora portate: stesso aspetto delle altre pagine, con un avviso. */
-function Soon({ title }: { title: string }) {
-  return (
-    <div className="card">
-      <div className="section-header">{title}</div>
-      <div style={{ textAlign: 'center', padding: 14, color: 'var(--text3)', fontSize: 13 }}>In arrivo nella nuova versione</div>
-    </div>
-  );
-}
 
 /** Messaggio al posto di una pagina mentre i dati si caricano o se non arrivano. */
 function Loading({ q }: { q: { isError: boolean; refetch: () => unknown } }) {
@@ -73,6 +65,7 @@ export function App() {
   const data = q.data;
 
   return (
+    <AuthProvider>
     <ToastProvider>
       <ImageProvider>
       <header>
@@ -110,7 +103,7 @@ export function App() {
       <div id="page-classifiche" className={`page${page === 'classifiche' ? ' active' : ''}`}>
         {data ? <ClassifichePage data={data} onOpenPlayer={openPlayer} onOpenMatch={openMatch} /> : <Loading q={q} />}
       </div>
-      <div id="page-settings" className={`page${page === 'settings' ? ' active' : ''}`}><Soon title="Impostazioni" /></div>
+      <div id="page-settings" className={`page${page === 'settings' ? ' active' : ''}`}><AccountCard leagueId={data?.league.id} /></div>
 
       <BottomNav page={page} onGo={go} />
 
@@ -134,5 +127,6 @@ export function App() {
       {data && ptDialog ? <PagelleTextDialog data={data} matchId={ptDialog} onClose={() => setPtDialog(null)} /> : null}
       </ImageProvider>
     </ToastProvider>
+    </AuthProvider>
   );
 }

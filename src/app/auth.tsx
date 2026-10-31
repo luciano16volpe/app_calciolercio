@@ -1,0 +1,97 @@
+// Accesso con email e password (Supabase Auth) e ruolo nella lega.
+// I permessi veri li decide il database (Row Level Security): qui si decide solo cosa mostrare.
+import { useQuery } from '@tanstack/react-query';
+import type { Session, User } from '@supabase/supabase-js';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { supabase } from '../data/supabase';
+
+export type Role = 'admin' | 'redazione' | 'member' | null;
+
+interface AuthTools {
+  user: User | null;
+  /** true finché non si sa se c'è già un accesso salvato */
+  loading: boolean;
+  /** arrivato dal link "imposta la password": va scelta la nuova */
+  recovery: boolean;
+  signIn: (email: string, password: string) => Promise<string | null>;
+  signOut: () => Promise<void>;
+  /** manda via email il link per scegliere (o cambiare) la password */
+  sendReset: (email: string) => Promise<string | null>;
+  setPassword: (password: string) => Promise<string | null>;
+}
+
+const AuthContext = createContext<AuthTools | null>(null);
+
+/** Traduce gli errori di Supabase in frasi semplici. */
+function friendly(msg: string): string {
+  if (/invalid login credentials/i.test(msg)) return 'Email o password non corrette.';
+  if (/email not confirmed/i.test(msg)) return "L'email non è ancora confermata.";
+  if (/rate limit|too many/i.test(msg)) return 'Troppi tentativi: riprova tra qualche minuto.';
+  if (/password should be at least/i.test(msg)) return 'La password deve avere almeno 6 caratteri.';
+  if (/failed to fetch|network/i.test(msg)) return 'Nessuna connessione: riprova.';
+  return msg;
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [recovery, setRecovery] = useState(false);
+
+  useEffect(() => {
+    void supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setLoading(false);
+    });
+    const { data } = supabase.auth.onAuthStateChange((event, s) => {
+      setSession(s);
+      if (event === 'PASSWORD_RECOVERY') setRecovery(true);
+      if (event === 'SIGNED_OUT') setRecovery(false);
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  const signIn = useCallback(async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    return error ? friendly(error.message) : null;
+  }, []);
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+  }, []);
+  const sendReset = useCallback(async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin });
+    return error ? friendly(error.message) : null;
+  }, []);
+  const setPassword = useCallback(async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (!error) setRecovery(false);
+    return error ? friendly(error.message) : null;
+  }, []);
+
+  const value = useMemo(
+    () => ({ user: session?.user ?? null, loading, recovery, signIn, signOut, sendReset, setPassword }),
+    [session, loading, recovery, signIn, signOut, sendReset, setPassword],
+  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth(): AuthTools {
+  const v = useContext(AuthContext);
+  if (!v) throw new Error('useAuth va usato dentro AuthProvider');
+  return v;
+}
+
+/** Ruolo di chi è entrato nella lega (null = non è un membro, oppure non ha fatto l'accesso). */
+export function useRole(leagueId: string | undefined): { role: Role; isAdmin: boolean; canEditText: boolean } {
+  const { user } = useAuth();
+  const q = useQuery({
+    queryKey: ['role', leagueId, user?.id],
+    enabled: !!user && !!leagueId,
+    queryFn: async (): Promise<Role> => {
+      const { data, error } = await supabase.from('league_members').select('role').eq('league_id', leagueId as string).eq('user_id', (user as User).id).maybeSingle();
+      if (error) throw new Error(error.message);
+      return (data?.role as Role) ?? null;
+    },
+  });
+  const role = user ? (q.data ?? null) : null;
+  return { role, isAdmin: role === 'admin', canEditText: role === 'admin' || role === 'redazione' };
+}
