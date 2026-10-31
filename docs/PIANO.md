@@ -16,7 +16,7 @@ stessi dati (`tests/fixtures/app_data.json`, `legacy/rosa_calcetto.json`):
 - [x] seasons (seasonOf, seasonStatus, seasonsList) · stats (seasonStats)
 - [x] awards (computeSeasonAwards, matchEvents, Occasionali, albo)
 - [x] pairs · records · h2h
-- [ ] balancing (comboMetrics, roleFitScore, roleCountPenalty, generateTeams, predGoals)
+- [x] balancing (comboMetrics, roleFitScore, roleCountPenalty, generateTeams, predGoals)
 - [ ] whatsapp (parseWhatsAppPagelle + abbinamento nomi) — i 4 messaggi reali: 40/40
 
 ## Fase 2 — Importazione dei dati (ripetibile)
