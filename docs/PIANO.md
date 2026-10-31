@@ -12,8 +12,8 @@ Ogni fase finisce con: test verdi, prova su iPhone e Android (emulati), breve ri
 ## Fase 1 — Logica pura, con test golden
 Portare da legacy, un modulo alla volta, con test che confrontano i risultati con legacy sugli
 stessi dati (`tests/fixtures/app_data.json`, `legacy/rosa_calcetto.json`):
-- [ ] ovr (calcOvr, futRating, futTier) · form (formWeight, effectiveScore, formState)
-- [ ] seasons (seasonOf, seasonStatus, seasonsList) · stats (seasonStats)
+- [x] ovr (calcOvr, futRating, futTier) · form (formWeight, effectiveScore, formState)
+- [x] seasons (seasonOf, seasonStatus, seasonsList) · stats (seasonStats)
 - [ ] awards (computeSeasonAwards, matchEvents, Occasionali) · pairs · records · h2h
 - [ ] balancing (comboMetrics, roleFitScore, roleCountPenalty, generateTeams, predGoals)
 - [ ] whatsapp (parseWhatsAppPagelle + abbinamento nomi) — i 4 messaggi reali: 40/40

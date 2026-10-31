@@ -1,0 +1,63 @@
+// Peso dei voti, valore di bilanciamento e stato di forma.
+// Fonte: formWeight, effectiveScore, formState, onFire, inCrisi in legacy/index.html.
+import { calcOvr } from './ovr';
+import { playerSeason, seasonStats, type PlayerSeason } from './stats';
+import type { Dataset, Player } from './types';
+
+export const FORM_MAX_WEIGHT = 0.25;
+export const FORM_MIN_RATINGS = 2;
+export const FORM_FULL_RATINGS = 18;
+export const FORM_DELTA = 0.2; // ± margine sulla media di sempre
+
+/** Peso della media pagelle: 0 fino a 2 pagelle, poi cresce in linea retta fino al 25% con 18 o più. */
+export function formWeight(count: number): number {
+  if (!count || count <= FORM_MIN_RATINGS) return 0;
+  return FORM_MAX_WEIGHT * Math.min(1, (count - FORM_MIN_RATINGS) / (FORM_FULL_RATINGS - FORM_MIN_RATINGS));
+}
+
+/** Media e numero di tutti i voti validi di un giocatore. */
+export function playerRatingAvg(a: PlayerSeason | null): { avg: number | null; count: number } {
+  return a && a.votes.length ? { avg: a.voteAvg, count: a.votes.length } : { avg: null, count: 0 };
+}
+
+/**
+ * Valore di bilanciamento: OVR spostato un po' verso la media pagelle di sempre.
+ * `useForm` = opzione "usa la forma" (predefinita attiva). `all` = seasonStats(data), da passare
+ * quando si calcolano molti giocatori di fila (evita di ricalcolarlo ogni volta).
+ */
+export function effectiveScore(
+  data: Dataset,
+  weights: number[],
+  p: Player,
+  useForm = true,
+  all = seasonStats(data),
+): number {
+  const ovr = calcOvr(p.stats, weights);
+  if (!useForm) return ovr;
+  const info = playerRatingAvg(playerSeason(data, p, all));
+  const w = formWeight(info.count);
+  if (info.avg == null || w === 0) return ovr; // pochi dati → solo OVR
+  return ovr * (1 - w) + info.avg * w;
+}
+
+export type FormState = 'up' | 'flat' | 'down';
+
+/**
+ * Stato di forma: media delle ultime 3 pagelle contro la media di sempre.
+ * ≥ +0,2 → 'up' (In forma) · ≤ −0,2 → 'down' (In calo) · altrimenti 'flat' (Costante).
+ * Servono almeno 4 pagelle e l'ultima deve essere tra le 5 partite più recenti del gruppo.
+ */
+export function formState(data: Dataset, p: Player, all = seasonStats(data)): FormState | null {
+  const a = playerSeason(data, p, all);
+  if (!a || a.votes.length < 4) return null;
+  const since = data.matches.map((m) => m.date).filter(Boolean).sort().slice(-5)[0];
+  const last = a.votes[a.votes.length - 1] as { date: string };
+  if (since && last.date < since) return null;
+  const d = a.votes.slice(-3).reduce((s, x) => s + x.v, 0) / 3 - (a.voteAvg as number);
+  return d >= FORM_DELTA - 1e-9 ? 'up' : d <= -FORM_DELTA + 1e-9 ? 'down' : 'flat';
+}
+
+/** 🔥 ON FIRE = "In forma". */
+export const onFire = (data: Dataset, p: Player, all = seasonStats(data)): boolean => formState(data, p, all) === 'up';
+/** 🌧️ IN CRISI = "In calo". */
+export const inCrisi = (data: Dataset, p: Player, all = seasonStats(data)): boolean => formState(data, p, all) === 'down';
