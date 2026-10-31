@@ -1,5 +1,7 @@
 // Miniatura della figurina (il pulsante della scheda giocatore). Fonte: futMiniHTML in legacy/index.html.
+import { useImageTools } from '../../app/ImageViewer';
 import { useToast } from '../../app/Toast';
+import { figurinaCanvas } from '../../canvas/make';
 import type { LeagueData } from '../../data/queries';
 import { formState, pagInfo, playerRatingAvg } from '../../domain/form';
 import { futRating, futTierOfRating } from '../../domain/ovr';
@@ -10,6 +12,7 @@ import type { Player } from '../../domain/types';
 
 export function FutMini({ data, player }: { data: LeagueData; player: Player }) {
   const toast = useToast();
+  const { showImage } = useImageTools();
   const { dataset, weights } = data;
   const all = seasonStats(dataset);
   const t = FUT_TIERS[futTierOfRating(futRating(player.stats, weights))];
@@ -22,7 +25,10 @@ export function FutMini({ data, player }: { data: LeagueData; player: Player }) 
   return (
     <button
       className={`fut-mini${t.holo ? ' holo' : ''}${fire ? ' fire' : ''}${crisi ? ' crisi' : ''}`}
-      onClick={() => toast('La figurina arriva con il passo 3.6')}
+      onClick={() => {
+        toast('⏳ Preparo la figurina…');
+        void figurinaCanvas(data, player).then((c) => showImage('🃏 La figurina di ' + player.name, c, 'figurina_' + player.name.replace(/\s+/g, '_') + '.png', '🃏 La figurina di ' + player.name));
+      }}
       title="Apri la figurina"
       style={{ background: `linear-gradient(150deg,${t.metal.join(',')})`, color: t.text }}
     >

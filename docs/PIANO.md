@@ -35,7 +35,7 @@ Ogni passo: aspetto identico a legacy (confronto con screenshot iPhone/Android/3
 - [x] 3.3b Classifiche: Statistiche (tabella) · Confronto testa a testa · Albo d'oro
 - [x] 3.4 Partite: ultima partita, elenco, scheda partita (sola lettura) con equilibrio squadre, Gazzette (striscia, archivio, visualizzatore), testo delle pagelle
 - [x] 3.5 Gioca: formato, convocati, sorteggio, campo, proposte, scambi trascinando, precisione (condividi/foglio/crea partita: 3.6 e 3.7)
-- [ ] 3.6 Immagini canvas: figurina, riepilogo, formazioni, foglio, confronto (+ visualizzatore a schermo intero)
+- [x] 3.6 Immagini canvas: figurina, riepilogo, formazioni, foglio, confronto (+ visualizzatore a schermo intero)
 - [ ] 3.7 Accesso admin (email) e modifiche: rosa e statistiche, nuova partita, voti, importazione WhatsApp, Gazzetta
 - [ ] 3.8 Impostazioni
 

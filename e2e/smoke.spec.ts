@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test';
 test('la pagina si apre senza scorrimento orizzontale', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('header')).toBeVisible();
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  const overflow = (await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width;
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
@@ -22,7 +22,7 @@ test('Rosa: 22 carte, la più forte per prima, niente esce in orizzontale', asyn
   await expect(card('Uefa').locator('.pag-badge')).toHaveClass(/pag-good/);
   await expect(card('Uefa').locator('.pag-badge')).toHaveText('PAG 8.0');
   await expect(card('Caputo').locator('.pag-badge')).toHaveClass(/pag-mid/);
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  const overflow = (await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width;
   expect(overflow).toBeLessThanOrEqual(0);
   // nessuna carta più larga dello schermo
   const widths = await cards.evaluateAll((els) => els.map((e) => e.getBoundingClientRect().right));
@@ -55,7 +55,7 @@ test('scheda giocatore: si apre dalla Rosa, mostra tutto, si chiude e non esce i
   await expect(modal.locator('.pg-bar')).toHaveCount(10);
   await expect(modal.locator('.bach-sum')).toContainText('Bacheca');
   await expect(modal.locator('.pe-title', { hasText: 'Compagni e avversari' })).toBeVisible();
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  const overflow = (await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width;
   expect(overflow).toBeLessThanOrEqual(0);
   // tocco su una barra: si apre il riquadro con data e voto
   await modal.locator('.pg-hit').nth(2).click();
@@ -116,6 +116,6 @@ test('Classifiche: stagione, quattro numeri, schede e apertura della scheda gioc
   // un tocco su un nome apre la scheda del giocatore
   await cl.locator('.cl-row').first().click();
   await expect(page.locator('#match-modal')).toBeVisible();
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  const overflow = (await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width;
   expect(overflow).toBeLessThanOrEqual(0);
 });

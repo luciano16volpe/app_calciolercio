@@ -9,7 +9,7 @@ async function openPartite(page: Page) {
 }
 
 const noOverflow = async (page: Page) =>
-  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  expect((await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width).toBeLessThanOrEqual(0);
 
 test('Partite: ultima partita, striscia delle Gazzette ed elenco per stagione', async ({ page }) => {
   const pt = await openPartite(page);

@@ -1,13 +1,15 @@
 // Gioca: formato della partita, convocati, sorteggio delle squadre bilanciate, campo, scambi a mano.
 // Fonte: pagina "partita" di legacy/index.html (setBaseFormat, buildConvList, generateTeams, renderResult, dragStart…).
-// "Condividi", "Foglio" e "Crea partita" arrivano con i passi 3.6 e 3.7.
+// "Crea partita" arriva con il passo 3.7.
 import { Fragment, useMemo, useRef, useState } from 'react';
+import { useImageTools } from '../../app/ImageViewer';
 import { readUseForm } from '../../app/settings';
+import { comboSheet, combosFormations } from '../../canvas/make';
 import { useToast } from '../../app/Toast';
 import { photoUrl, type LeagueData } from '../../data/queries';
 import { balanceScores, generateTeams, type Combo } from '../../domain/balancing';
 import { pagInfo, playerRatingAvg } from '../../domain/form';
-import { avatarClass, initials } from '../../domain/format';
+import { avatarClass, formatDate, initials } from '../../domain/format';
 import { balancePrecision, comboSummary, swapPlayers, teamPlayers, type TeamPlayer } from '../../domain/gioca';
 import { calcOvr, rosaOrder } from '../../domain/ovr';
 import { pitchSvg } from '../../domain/pitch';
@@ -140,8 +142,12 @@ export function PrecisionCard({ data }: { data: LeagueData }) {
   );
 }
 
+/** I tre pulsanti sotto le squadre dividono la riga in parti uguali; sugli schermi stretti (360 px) il testo va a capo invece di uscire dallo schermo. */
+const narrowBtn = { flex: 1, minWidth: 0, padding: '12px 6px', whiteSpace: 'normal', lineHeight: 1.2 } as const;
+
 export function ResultView({ data, res, scores, onChange }: { data: LeagueData; res: Result; scores: number[]; onChange: (r: Result) => void }) {
   const toast = useToast();
+  const { showImage, shareCanvas } = useImageTools();
   const { dataset } = data;
   const players = useMemo(() => dataset.players.map((p) => ({ ...p, photo: photoUrl(data.photos[p.id]) })), [dataset, data.photos]);
   const c = res.combos[res.idx] as Combo;
@@ -189,9 +195,9 @@ export function ResultView({ data, res, scores, onChange }: { data: LeagueData; 
       </div>
 
       <div style={{ display: 'flex', gap: 8, margin: '4px 0 14px' }}>
-        <button className="btn btn-primary" style={{ flex: 1, background: '#25D366', borderColor: '#25D366' }} onClick={soon("L'immagine delle formazioni arriva con il passo 3.6")}>📲 Condividi</button>
-        <button className="btn btn-secondary" style={{ flex: 1 }} onClick={soon('Il foglio da stampare arriva con il passo 3.6')} title="Foglio A4 in bianco e nero da stampare e compilare in campo">🖨️ Foglio</button>
-        <button className="btn btn-primary" style={{ flex: 1 }} onClick={soon("Creare la partita richiede l'accesso admin (passo 3.7)")}>📅 Crea partita</button>
+        <button className="btn btn-primary" style={{ ...narrowBtn, background: '#25D366', borderColor: '#25D366' }} onClick={() => showImage('⚽ Formazioni di oggi', combosFormations(data, scores, c), 'formazioni.png', '⚽ Formazioni di oggi')}>📲 Condividi</button>
+        <button className="btn btn-secondary" style={narrowBtn} onClick={() => { const s = comboSheet(data, c); shareCanvas(s.canvas, 'foglio_partita_' + s.date + '.png', '📋 Foglio partita del ' + formatDate(s.date)); }} title="Foglio A4 in bianco e nero da stampare e compilare in campo">🖨️ Foglio</button>
+        <button className="btn btn-primary" style={narrowBtn} onClick={soon("Creare la partita richiede l'accesso admin (passo 3.7)")}>📅 Crea partita</button>
       </div>
 
       <div className="card">

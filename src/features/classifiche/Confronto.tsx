@@ -1,7 +1,8 @@
 // "⚔️ Confronto testa a testa": due giocatori, sfide dirette, 12 righe con barre, 6 statistiche della figurina.
-// Fonte: renderConfronto, pickCmp, setCmp in legacy/index.html. L'immagine da condividere arriva col passo 3.6.
+// Fonte: renderConfronto, pickCmp, setCmp in legacy/index.html. 
 import { useState } from 'react';
-import { useToast } from '../../app/Toast';
+import { useImageTools } from '../../app/ImageViewer';
+import { compareCanvas } from '../../canvas/make';
 import type { LeagueData } from '../../data/queries';
 import { avatarClass, initials } from '../../domain/format';
 import { compareBars, compareLeads, compareRows, cmpLead, headToHead, resolveCompare, scopeLabel } from '../../domain/h2h';
@@ -44,7 +45,7 @@ function Picker({ data, slot, other, onPick, onClose }: {
 export function Confronto({ data, scope, a, b, onChange }: {
   data: LeagueData; scope: string; a: string | null; b: string | null; onChange: (a: string | null, b: string | null) => void;
 }) {
-  const toast = useToast();
+  const { shareCanvas } = useImageTools();
   const [picking, setPicking] = useState<'A' | 'B' | null>(null);
   const { dataset, weights } = data;
   const pair = resolveCompare(dataset.players, weights, a, b);
@@ -132,7 +133,7 @@ export function Confronto({ data, scope, a, b, onChange }: {
           );
         })}
       </div>
-      <button className="btn btn-primary btn-full" style={{ marginTop: 12, background: '#25D366', borderColor: '#25D366' }} onClick={() => toast("L'immagine del confronto arriva con il passo 3.6")}>
+      <button className="btn btn-primary btn-full" style={{ marginTop: 12, background: '#25D366', borderColor: '#25D366' }} onClick={() => void compareCanvas(data, pa, pb, scope).then((cv) => shareCanvas(cv, `confronto_${pa.name}_vs_${pb.name}.png`.replace(/\s+/g, '_'), `⚔️ ${pa.name} vs ${pb.name}`))}>
         📲 Condividi il confronto
       </button>
       {picking ? (

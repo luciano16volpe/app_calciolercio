@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { BottomNav, type PageName } from './app/BottomNav';
+import { ImageProvider } from './app/ImageViewer';
 import { ToastProvider } from './app/Toast';
 import { LEAGUE_QUERY_KEY, useLeagueData } from './data/queries';
 import { ClassifichePage } from './features/classifiche/ClassifichePage';
@@ -73,6 +74,7 @@ export function App() {
 
   return (
     <ToastProvider>
+      <ImageProvider>
       <header>
         <div className="logo" onClick={() => go('settings')} style={{ cursor: 'pointer' }} title="Apri impostazioni">
           <img src="/logo.png" alt="CalcioLercio" style={{ width: 44, height: 44, display: 'block', objectFit: 'contain' }} />
@@ -130,6 +132,7 @@ export function App() {
         <GazViewer data={data} matchId={gazViewer.id} fromArchive={gazViewer.fromArchive} onClose={() => setGazViewer(null)} onGoToMatch={openMatch} />
       ) : null}
       {data && ptDialog ? <PagelleTextDialog data={data} matchId={ptDialog} onClose={() => setPtDialog(null)} /> : null}
+      </ImageProvider>
     </ToastProvider>
   );
 }

@@ -89,3 +89,10 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
   del file della rosa, che non si vede e non ha un significato (nella nuova base dati la rosa non ha quell'ordine).
 - Il formato (5 vs 5, 6 vs 6, 7 vs 7, asimmetrico) resta ricordato sul telefono. I convocati no, come prima.
 - Il sorteggio gira nel telefono e usa gli stessi calcoli di legacy: stesse proposte, stesso ordine (test su 7 vs 7 con 14 giocatori).
+
+
+## Immagini da condividere (Fase 3.6)
+- Le immagini (figurina, riepilogo, formazioni, foglio A4, confronto) sono disegnate come in legacy: i test registrano ogni istruzione di disegno e la confrontano con quella di legacy (identiche).
+- Medaglie della figurina: legacy non le riordina (premi prima, gogna dopo) per un errore di confronto; portato **fedelmente**, senza riordino. Da chiedere all'utente se vuole il riordino.
+- Il piè di pagina del riepilogo usa ✒️ (con U+FE0F) in un testo centrato, come legacy; da verificare su iPhone.
+- Sbordo a 360 px: i 3 pulsanti sotto le squadre in Gioca (Condividi, Foglio, Crea partita) uscivano dallo schermo anche in legacy; ora il testo va a capo. Il controllo e2e usa la larghezza vera dello schermo.

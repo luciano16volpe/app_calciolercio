@@ -10,7 +10,7 @@ async function openClassifiche(page: Page, tab: string) {
 }
 
 const noOverflow = async (page: Page) =>
-  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  expect((await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width).toBeLessThanOrEqual(0);
 
 test('Statistiche: filtri Titolari/Occasionali/Tutti e ordinamento toccando le intestazioni', async ({ page }) => {
   const cl = await openClassifiche(page, 'Statistiche');

@@ -12,7 +12,7 @@ async function openGioca(page: Page) {
 }
 
 const noOverflow = async (page: Page) =>
-  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  expect((await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width).toBeLessThanOrEqual(0);
 
 test('Gioca: formato, convocati e contatore', async ({ page }) => {
   const g = await openGioca(page);

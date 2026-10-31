@@ -2,7 +2,9 @@
 // testo delle pagelle. Fonte: matchShareButtons, renderLastMatch, renderMatchesList, renderGazStrip, openGazArchive,
 // openGazzetta, openPagelleText in legacy/index.html.
 import { Fragment, useState, type ReactNode } from 'react';
+import { useImageTools } from '../../app/ImageViewer';
 import { useToast } from '../../app/Toast';
+import { matchFormations, matchSheet, matchSummary } from '../../canvas/make';
 import { gazzettaUrl, type LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';
 import {
@@ -26,16 +28,20 @@ export interface MatchActions {
 // ── pulsanti sotto la partita ──────────────────────────────────────────────
 /** Non giocata → Formazioni · Riepilogo · Foglio. Giocata → Riepilogo + 📰 Gazzetta (se c'è) + 📜 Pagelle (se ce ne sono). */
 export function MatchButtons({ data, m, act }: { data: LeagueData; m: Match; act: MatchActions }) {
-  const toast = useToast();
+  const { showImage, shareCanvas } = useImageTools();
   const played = num(m.scoreA) != null && num(m.scoreB) != null;
-  const soon = () => toast("Le immagini da condividere arrivano con il passo 3.6");
-  const sum = <button className="btn btn-primary btn-sm mbar-btn" onClick={soon}>🖼️ Riepilogo</button>;
+  const fd = formatDate(m.date);
+  const day = m.date || 'partita';
+  const formations = () => showImage('⚽ Formazioni · ' + fd, matchFormations(data, m), 'formazioni_' + day + '.png', '⚽ Formazioni della partita del ' + fd);
+  const summary = () => showImage('🖼️ Riepilogo · ' + fd, matchSummary(data, m), 'riepilogo_' + day + '.png', '⚽ Riepilogo della partita del ' + fd);
+  const sheet = () => shareCanvas(matchSheet(data, m), 'foglio_partita_' + day + '.png', '📋 Foglio partita del ' + fd);
+  const sum = <button className="btn btn-primary btn-sm mbar-btn" onClick={summary}>🖼️ Riepilogo</button>;
   if (!played) {
     return (
       <>
-        <button className="btn btn-primary btn-sm mbar-btn" onClick={soon} style={{ background: '#25D366', borderColor: '#25D366' }}>📲 Formazioni</button>
+        <button className="btn btn-primary btn-sm mbar-btn" onClick={formations} style={{ background: '#25D366', borderColor: '#25D366' }}>📲 Formazioni</button>
         {sum}
-        <button className="btn btn-secondary btn-sm mbar-btn" onClick={soon} title="Foglio A4 in bianco e nero da stampare e compilare in campo">🖨️ Foglio</button>
+        <button className="btn btn-secondary btn-sm mbar-btn" onClick={sheet} title="Foglio A4 in bianco e nero da stampare e compilare in campo">🖨️ Foglio</button>
       </>
     );
   }

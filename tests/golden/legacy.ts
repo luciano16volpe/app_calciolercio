@@ -3,6 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import vm from 'node:vm';
+import { recorderSource } from './canvasRecorder';
 
 const html = readFileSync(join(process.cwd(), 'legacy', 'index.html'), 'utf8');
 
@@ -44,7 +45,7 @@ function skipCode(s: string, i: number): number {
 
 /** Testo di `function nome(...) {...}` (parentesi graffe bilanciate, ignorando stringhe, template e commenti). */
 function extractFunction(name: string): string {
-  const start = html.search(new RegExp(`^function ${name}\\(`, 'm'));
+  const start = html.search(new RegExp(`^(?:async )?function ${name}\\(`, 'm'));
   if (start < 0) throw new Error(`Funzione legacy non trovata: ${name}`);
   const open = html.indexOf('{', html.indexOf(')', start));
   return html.slice(start, skipCode(html, open + 1));
@@ -55,8 +56,22 @@ function extractConst(name: string): string {
   const m = html.match(new RegExp(`^const ${name}\\s*=.*`, 'm'));
   if (!m || m.index === undefined) throw new Error(`Costante legacy non trovata: ${name}`);
   if (/;\s*(\/\/.*)?$/.test(m[0])) return m[0];
-  const end = html.slice(m.index).search(/^[\]}];/m);
-  return html.slice(m.index, m.index + end + 2);
+  // su più righe: fino al primo `;` fuori da parentesi, stringhe e template
+  let i = m.index + m[0].indexOf('=') + 1;
+  let depth = 0;
+  while (i < html.length) {
+    const c = html[i];
+    if (c === '"' || c === "'") i = skipQuoted(html, i);
+    else if (c === '`') i = skipTemplate(html, i);
+    else if (c === '/' && html[i + 1] === '/') i = html.indexOf('\n', i) + 1 || html.length;
+    else {
+      if (c === '{' || c === '[' || c === '(') depth++;
+      else if (c === '}' || c === ']' || c === ')') depth--;
+      else if (c === ';' && depth === 0) return html.slice(m.index, i + 1);
+      i++;
+    }
+  }
+  throw new Error(`Fine della costante legacy non trovata: ${name}`);
 }
 
 export interface LegacyData {
@@ -88,6 +103,13 @@ export function loadLegacy<T extends Record<string, unknown>>(
     function renderScorers(){}
     var sizeA=5, sizeB=5, selected=new Set(), allCombos=[], currentIdx=0, genBest=null, bachecaOpen=false, clTab='marcatori', statsSort={col:'goals',dir:-1}, statsFilter='regulars', cmpA=null, cmpB=null;
     function futPreload(){}
+    var __logo=null, __viewer=null, futPhotoCache={};
+    function __setLogo(l){__logo=l;}
+    document.createElement=function(){return __mkCanvas();};
+    document.querySelector=function(){return __logo;};
+    function openImageViewer(t,c,n,x){__viewer={title:t,canvas:c,name:n,text:x};}
+    function shareCanvas(c,n,x){__viewer={title:null,canvas:c,name:n,text:x};}
+    function __viewerGet(){return __viewer;}
     function __stats(c,d,f){statsSort={col:c,dir:d};statsFilter=f;}
     function __cmp(a,b){cmpA=a;cmpB=b;}
     function __tab(t){clTab=t;}
@@ -106,7 +128,7 @@ export function loadLegacy<T extends Record<string, unknown>>(
     function __run(fn,scope){__scope=scope;__el.innerHTML='';fn();return __el.innerHTML;}
     function __set(p,w,m,r,a,g){players=p;weights=w;matches=m;matchesCache={timestamp:0,data:{ratings:r,albo:a||[],gazzette:g||[]}};_seasonMemo={};_evMemo=null;}
   `;
-  const src = [prelude, ...consts.map(extractConst), ...functions.map(extractFunction)].join('\n');
+  const src = [recorderSource, prelude, ...consts.map(extractConst), ...functions.map(extractFunction)].join('\n');
   const names = functions.concat(consts).join(',');
   const store = new Map<string, string>(); // memoria del telefono (soprannomi imparati, ecc.)
   const localStorage = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: unknown) => void store.set(k, String(v)) };
@@ -127,8 +149,10 @@ export function loadLegacy<T extends Record<string, unknown>>(
   }
   vm.createContext(sandbox);
   vm.runInContext(src, sandbox);
-  const api = vm.runInContext(`({__set,__useForm,__run,__gen,__wa,__waApply,__draw,__tab,__stats,__cmp,__multiOn,__getEl,__idx,__swap,__combo,__sel,${names}})`, sandbox) as T & {
+  const api = vm.runInContext(`({__setLogo,__viewerGet,__set,__useForm,__run,__gen,__wa,__waApply,__draw,__tab,__stats,__cmp,__multiOn,__getEl,__idx,__swap,__combo,__sel,${names}})`, sandbox) as T & {
     __set: (...a: unknown[]) => void;
+    __setLogo: (l: unknown) => void;
+    __viewerGet: () => { title: string | null; canvas: unknown; name: string; text: string } | null;
     __useForm: (b: boolean) => void;
     __run: (fn: () => void, scope: string) => string;
     __gen: (sa: number, sb: number, sel: number[]) => { combos: unknown[]; genBest: number | null };
