@@ -45,7 +45,8 @@ Ogni passo: aspetto identico a legacy (confronto con screenshot iPhone/Android/3
 - [x] 3.8 Impostazioni (versione e aggiornamento, formazioni, forma recente, pesi in sola lettura, account)
 
 ## Fase 4 — Multi-lega e account
-- [ ] Creare una lega, codice d'invito, ruoli (admin / redazione / member), cambio lega
+- [x] 4.1 Creare una lega, codice d'invito, cambio lega, uscire (Impostazioni → Le mie leghe)
+- [ ] 4.2 Membri della lega e ruoli (admin / redazione / member): lista con nomi, cambio ruolo, rimozione (serve una nuova migrazione)
 - [ ] Registrazione giocatori, "questo sono io" (confermato dall'admin), profilo personale con le
       partite di tutte le leghe; storico delle statistiche
 - [ ] Privacy: informativa, cancellazione account

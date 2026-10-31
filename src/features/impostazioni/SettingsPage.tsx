@@ -10,6 +10,7 @@ import { addModule, moduleComposition, MODULE_SIZES, removeModule, type Modules 
 import { FORM_FULL_RATINGS, FORM_MAX_WEIGHT, FORM_MIN_RATINGS } from '../../domain/form';
 import { ICONS, STATS } from '../../domain/types';
 import { AccountCard } from './AccountCard';
+import { LeaguesCard } from './LeaguesCard';
 
 const PILLS = [0, 0.5, 1, 1.5, 2, 2.5, 3];
 const numInput = { width: '100%', padding: 5, border: '1.5px solid var(--gray3)', borderRadius: 6, background: 'var(--gray)', color: 'var(--text)', fontSize: 16, fontWeight: 700, textAlign: 'center', boxSizing: 'border-box' } as const;
@@ -185,6 +186,7 @@ export function SettingsPage({ data }: { data: LeagueData | undefined }) {
           );
         })}
       </div>
+      <LeaguesCard currentId={data?.league.id} />
       <AccountCard leagueId={data?.league.id} />
     </>
   );

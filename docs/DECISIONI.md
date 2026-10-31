@@ -122,3 +122,10 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - **Tolti** perché non servono più: backup su file (i dati stanno nel database) e indirizzo del foglio Google con la guida.
 - **Pesi delle statistiche: in sola lettura.** Nel database sono unici per tutte le leghe e si cambiano solo dal pannello di Supabase. In legacy ognuno li cambiava sul proprio telefono. Se vuoi poterli cambiare dall'app serve deciderlo insieme (chi può, e per tutte le leghe).
 - La "versione" è la data e ora di compilazione.
+
+## Leghe (Fase 4.1)
+- La lega mostrata si sceglie in Impostazioni → Le mie leghe e si ricorda sul telefono. Se la lega scelta non si vede più (uscito, tolta) si torna alla lega pubblica.
+- Chi crea una lega ne diventa amministratore (lo fa il database) e la lega nasce **privata**. Si entra con il codice d'invito, come **membro** (guarda soltanto); il ruolo si cambia poi (passo 4.2).
+- Non si esce da una lega se si è l'unico amministratore. La lega pubblica non si può lasciare (si vede comunque).
+- La lista dei membri con nomi/email richiede una nuova migrazione (i profili sono privati): è il passo 4.2.
+- Nota: il codice d'invito è leggibile da chi vede la lega, quindi anche quello della lega pubblica; chi lo usa diventa solo membro, che nella lega pubblica non cambia nulla.

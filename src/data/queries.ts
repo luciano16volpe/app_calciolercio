@@ -1,6 +1,7 @@
 // Lettura dei dati della lega da Supabase, con la cache di TanStack Query:
 // la schermata mostra subito quello che c'era l'ultima volta, poi si aggiorna.
 import { useQuery } from '@tanstack/react-query';
+import { useSelectedLeague } from '../app/league';
 import type { AlboRow } from '../domain/awards';
 import type { Dataset } from '../domain/types';
 import { dbToDataset, type DbRows } from './dataset';
@@ -47,12 +48,20 @@ async function fetchAll<T>(build: (from: number, to: number) => PromiseLike<{ da
   }
 }
 
-/** Carica tutto quello che serve per mostrare la lega pubblica. */
-export async function fetchLeagueData(): Promise<LeagueData> {
-  const { data: leagues, error } = await supabase.from('leagues').select('id, name, is_public').eq('is_public', true).order('created_at').limit(1);
-  if (error) throw new Error(`lega: ${error.message}`);
-  const league = leagues?.[0];
-  if (!league) throw new Error('Nessuna lega pubblica trovata.');
+/** Carica tutto quello che serve per mostrare una lega: quella scelta (se si può vedere), altrimenti la lega pubblica. */
+export async function fetchLeagueData(leagueId: string | null = null): Promise<LeagueData> {
+  let league: LeagueData['league'] | undefined;
+  if (leagueId) {
+    const chosen = await supabase.from('leagues').select('id, name, is_public').eq('id', leagueId).maybeSingle();
+    if (chosen.error) throw new Error(`lega: ${chosen.error.message}`);
+    league = chosen.data ?? undefined; // lega non più visibile (uscito, tolta): si torna alla pubblica
+  }
+  if (!league) {
+    const { data: leagues, error } = await supabase.from('leagues').select('id, name, is_public').eq('is_public', true).order('created_at').limit(1);
+    if (error) throw new Error(`lega: ${error.message}`);
+    league = leagues?.[0];
+  }
+  if (!league) throw new Error('Nessuna lega trovata.');
 
   const lp = await fetchAll((a, b) => supabase.from('league_players').select('player_id, aliases').eq('league_id', league.id).order('player_id').range(a, b), 'giocatori della lega');
   const ids = lp.map((x) => x.player_id);
@@ -103,9 +112,10 @@ export const LEAGUE_QUERY_KEY = ['league-data'] as const;
 
 /** Dati della lega: dalla cache subito, poi aggiornati in rete. */
 export function useLeagueData() {
+  const leagueId = useSelectedLeague();
   return useQuery({
-    queryKey: LEAGUE_QUERY_KEY,
-    queryFn: fetchLeagueData,
+    queryKey: [...LEAGUE_QUERY_KEY, leagueId],
+    queryFn: () => fetchLeagueData(leagueId),
     staleTime: 60_000, // come legacy: i dati valgono 1 minuto
   });
 }
