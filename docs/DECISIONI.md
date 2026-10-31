@@ -112,3 +112,7 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Le statistiche si salvano da sole poco dopo l'ultima modifica. Nel database sono numeri interi: un valore scritto con la virgola (es. 7,5) viene arrotondato al salvataggio.
 - Le foto si salvano come file nell'archivio (200 px, come legacy), con un nome nuovo a ogni cambio, così nessuno vede la foto vecchia rimasta in memoria. Il vecchio file viene tolto.
 - Un giocatore nuovo parte da centrocampista con tutte le statistiche a 5. Come in legacy il nome non si modifica dopo; non esiste l'eliminazione di un giocatore.
+
+## Gazzetta (Fase 3.7e)
+- Carica, sostituisci e rimuovi la Gazzetta si fanno dalla scheda partita in modifica (come legacy), quindi per ora solo l'amministratore. Il ruolo "redazione" è già previsto dal database ma non ha ancora una schermata sua.
+- Al caricamento si salvano il file completo (lato max 2000 px) e una miniatura (500 px) per striscia e archivio. Le Gazzette vecchie senza miniatura mostrano il file completo. La Gazzetta sostituita o rimossa viene cancellata dall'archivio.

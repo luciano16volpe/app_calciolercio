@@ -41,7 +41,7 @@ Ogni passo: aspetto identico a legacy (confronto con screenshot iPhone/Android/3
   - [x] 3.7b Crea partita da Gioca, risultato, voti, gol e pagelle (scheda partita modificabile), elimina partita
   - [x] 3.7c Importazione pagelle da WhatsApp
   - [x] 3.7d Rosa e statistiche (modifica statistiche e ruoli, foto, aggiungi giocatore)
-  - [ ] 3.7e Gazzetta e miniature
+  - [x] 3.7e Gazzetta (carica, sostituisci, rimuovi) e miniature
 - [ ] 3.8 Impostazioni
 
 ## Fase 4 — Multi-lega e account

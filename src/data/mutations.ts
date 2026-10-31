@@ -119,3 +119,30 @@ export async function setPlayerPhoto(playerId: string, blob: Blob | null, oldPat
   if (oldPath) await supabase.storage.from('photos').remove([oldPath]); // pulizia: se fallisce non è grave
   return path;
 }
+
+/**
+ * Carica (o sostituisce) la Gazzetta di una partita: file completo + miniatura. Il nome cambia a ogni caricamento
+ * (niente immagine vecchia in memoria); i file della Gazzetta precedente vengono tolti. Restituisce il nuovo percorso.
+ */
+export async function setGazzetta(leagueId: string, matchId: string, full: Blob, thumb: Blob, oldPath: string | null): Promise<string> {
+  const path = `${leagueId}/${matchId}-${Date.now()}.jpg`;
+  const bucket = supabase.storage.from('gazzette');
+  const up = await bucket.upload(path, full, { contentType: 'image/jpeg' });
+  if (up.error) throw fail('Gazzetta', up.error);
+  const th = await bucket.upload(path.replace(/\.jpg$/, '-t.jpg'), thumb, { contentType: 'image/jpeg' });
+  if (th.error) console.warn('miniatura Gazzetta non salvata', th.error.message); // non grave: si usa il file completo
+  const { error } = await supabase.from('gazzette').upsert({ match_id: matchId, file_path: path });
+  if (error) {
+    await bucket.remove([path, path.replace(/\.jpg$/, '-t.jpg')]);
+    throw fail('Gazzetta', error);
+  }
+  if (oldPath) await bucket.remove([oldPath, oldPath.replace(/\.jpg$/, '-t.jpg')]); // pulizia: se fallisce non è grave
+  return path;
+}
+
+/** Toglie la Gazzetta di una partita (riga e file). */
+export async function removeGazzetta(matchId: string, path: string): Promise<void> {
+  const { error } = await supabase.from('gazzette').delete().eq('match_id', matchId);
+  if (error) throw fail('Gazzetta', error);
+  await supabase.storage.from('gazzette').remove([path, path.replace(/\.jpg$/, '-t.jpg')]);
+}

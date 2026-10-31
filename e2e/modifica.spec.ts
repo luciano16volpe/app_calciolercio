@@ -298,3 +298,34 @@ test('Rosa: + Aggiungi giocatore', async ({ page }) => {
   const lp = writes.find((w) => w.table === 'league_players') as Write;
   expect((lp.body as { player_id: string }).player_id).toBe('nuovo-giocatore');
 });
+
+test('Gazzetta: senza accesso non ci sono i pulsanti', async ({ page }) => {
+  await login(page, null);
+  const modal = await openLastMatch(page);
+  await expect(modal.locator('#edit-toggle-btn')).toHaveCount(0);
+  await expect(modal.locator('.gaz-edit')).toHaveCount(0);
+});
+
+test('Gazzetta: carica (file + miniatura) e rimuovi', async ({ page }) => {
+  const writes = await login(page);
+  const modal = await openLastMatch(page);
+  await modal.locator('#edit-toggle-btn').click();
+  await expect(modal.locator('.gaz-edit')).toBeVisible();
+  const had = await modal.locator('.gaz-thumb').count();
+  const chooser = page.waitForEvent('filechooser');
+  await modal.locator('.gaz-edit .btn').first().click();
+  await (await chooser).setFiles({ name: 'g.png', mimeType: 'image/png', buffer: PNG });
+  await expect(page.locator('#toast')).toContainText('Gazzetta salvata', { timeout: 15_000 });
+  const files = writes.filter((w) => w.table === 'storage' && w.method === 'POST').map((w) => String(w.body));
+  expect(files.some((f) => /^gazzette\/[^/]+\/[^/]+-\d+\.jpg$/.test(f))).toBe(true);
+  expect(files.some((f) => /^gazzette\/[^/]+\/[^/]+-\d+-t\.jpg$/.test(f))).toBe(true);
+  const row = writes.find((w) => w.table === 'gazzette') as Write;
+  expect((row.body as { file_path: string }).file_path).toMatch(/^[^/]+\/[^/]+-\d+\.jpg$/);
+  if (had) {
+    await modal.locator('.gaz-edit .btn', { hasText: 'Rimuovi' }).click();
+    await page.locator('#app-modal-ok').click();
+    await expect(page.locator('#toast')).toContainText('Gazzetta rimossa', { timeout: 15_000 });
+    expect(writes.some((w) => w.table === 'gazzette' && w.method === 'DELETE')).toBe(true);
+  }
+  await noOverflow(page);
+});

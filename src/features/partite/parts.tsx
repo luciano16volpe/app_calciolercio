@@ -5,7 +5,7 @@ import { Fragment, useState, type ReactNode } from 'react';
 import { useImageTools } from '../../app/ImageViewer';
 import { useToast } from '../../app/Toast';
 import { matchFormations, matchSheet, matchSummary } from '../../canvas/make';
-import { gazzettaUrl, type LeagueData } from '../../data/queries';
+import { gazzettaThumbUrl, gazzettaUrl, type LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';
 import {
   gazzetteBySeason, gazzetteByDate, hasScore, lastMatch, matchHasDesc, matchListGroups, pagelleText, type GazItem,
@@ -132,6 +132,11 @@ export function MatchesList({ data, act }: { data: LeagueData; act: MatchActions
   );
 }
 
+/** Miniatura leggera; se manca (Gazzetta caricata prima delle miniature) si usa il file completo. */
+function GazThumb({ path }: { path: string }) {
+  return <img src={gazzettaThumbUrl(path)} alt="" loading="lazy" onError={(e) => { const full = gazzettaUrl(path); if (e.currentTarget.src !== full) e.currentTarget.src = full; }} />;
+}
+
 // ── Gazzette ───────────────────────────────────────────────────────────────
 /** Le ultime Gazzette in una striscia scorrevole. */
 export function GazStrip({ data, act, onArchive }: { data: LeagueData; act: MatchActions; onArchive: () => void }) {
@@ -146,7 +151,7 @@ export function GazStrip({ data, act, onArchive }: { data: LeagueData; act: Matc
       <div className="gaz-strip">
         {items.slice(0, 10).map(({ m, path }) => (
           <div className="gaz-tile" key={m.id} onClick={() => act.openGazzetta(m.id, true)}>
-            <img src={gazzettaUrl(path)} alt="" loading="lazy" />
+            <GazThumb path={path} />
             <span>{formatDate(m.date)}</span>
           </div>
         ))}
@@ -167,7 +172,7 @@ export function GazArchiveBody({ data, act }: { data: LeagueData; act: MatchActi
           <div className="gaz-grid">
             {gr.list.map(({ m, path }: GazItem) => (
               <div className="gaz-tile" key={m.id} onClick={() => act.openGazzetta(m.id, true)}>
-                <img src={gazzettaUrl(path)} alt="" loading="lazy" />
+                <GazThumb path={path} />
                 <span>{formatDate(m.date)}{hasScore(m) ? ` · ${m.scoreA}-${m.scoreB}` : ''}</span>
               </div>
             ))}

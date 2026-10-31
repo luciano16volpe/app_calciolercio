@@ -1,12 +1,13 @@
 // Scheda partita (in lettura; con il ✏️ per chi ha il permesso diventa modificabile): pulsanti, risultato, highlights, Gazzetta, equilibrio squadre, pagelle di ogni giocatore.
 // Fonte: openMatch, matchHighlightsHTML, matchBalanceHTML, gazSectionHTML in legacy/index.html (stato "bloccato").
 // Modifica di voti, gol, risultato e pagelle: passo 3.7b. Importazione WhatsApp e Gazzetta: 3.7c e 3.7e.
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { readUseForm } from '../../app/settings';
 import { useToast } from '../../app/Toast';
-import { deleteMatch, saveMatchRatings, updateMatchHeader } from '../../data/mutations';
+import { compressGazzetta, makeGazzettaThumb } from '../../canvas/gazzetta';
+import { deleteMatch, removeGazzetta, saveMatchRatings, setGazzetta, updateMatchHeader } from '../../data/mutations';
 import { gazzettaUrl, LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
 import { formatDate } from '../../domain/format';
@@ -270,6 +271,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false }: { da
   const [draft, setDraft] = useState<Draft | null>(null);
   const [pagella, setPagella] = useState<{ key: string; name: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const gazInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const k = (e: KeyboardEvent) => e.key === 'Escape' && !pagella && onClose();
     document.addEventListener('keydown', k);
@@ -332,6 +334,32 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false }: { da
       toast('Errore: ' + (e as Error).message); // le pagelle non sono state salvate: la scheda resta aperta per riprovare
     } finally {
       setBusy(false);
+    }
+  };
+  const uploadGazzetta = async (file: File) => {
+    setBusy(true);
+    try {
+      toast('⏳ Carico la Gazzetta…');
+      const [full, thumb] = await Promise.all([compressGazzetta(file), makeGazzettaThumb(file)]);
+      await setGazzetta(data.league.id, matchId, full, thumb, g ?? null);
+      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      toast('📰 Gazzetta salvata');
+    } catch (e) {
+      toast('❌ Caricamento non riuscito: ' + (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const dropGazzetta = async () => {
+    if (!g) return;
+    const ok = await confirm({ icon: '📰', title: 'Rimuovere la Gazzetta?', lines: ["L'immagine viene eliminata."], okLabel: 'Rimuovi', danger: true });
+    if (!ok) return;
+    try {
+      await removeGazzetta(matchId, g);
+      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      toast('🗑 Gazzetta rimossa');
+    } catch (e) {
+      toast('❌ Non riuscito: ' + (e as Error).message);
     }
   };
   const remove = async () => {
@@ -401,6 +429,15 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false }: { da
                   <div className="gaz-h">📰 La Gazzetta</div>
                   <img className="gaz-thumb" src={gazzettaUrl(g)} alt="La Gazzetta" loading="lazy" onClick={() => act.openGazzetta(m.id)} />
                 </>
+              ) : null}
+              {editing ? (
+                <div className="gaz-edit" style={{ display: 'flex' }}>
+                  <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => gazInput.current?.click()}>
+                    {g ? '🔄 Sostituisci la Gazzetta' : '📰 Carica la Gazzetta'}
+                  </button>
+                  {g ? <button type="button" className="btn btn-secondary btn-sm" style={{ color: 'var(--red)' }} disabled={busy} onClick={() => void dropGazzetta()}>🗑 Rimuovi</button> : null}
+                  <input ref={gazInput} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void uploadGazzetta(f); }} />
+                </div>
               ) : null}
             </div>
             <button type="button" className="btn btn-secondary btn-full eq-toggle" id="match-balance-btn" onClick={() => setBalanceOpen((o) => !o)}>

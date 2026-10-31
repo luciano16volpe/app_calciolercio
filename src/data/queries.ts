@@ -14,6 +14,9 @@ export const photoUrl = (path: string | null | undefined): string | null =>
 
 /** Indirizzo pubblico della Gazzetta di una partita (archivio `gazzette`). */
 export const gazzettaUrl = (path: string): string => `${SUPABASE_PUBLIC_URL}/storage/v1/object/public/gazzette/${path}`;
+/** Percorso della miniatura leggera di una Gazzetta (le Gazzette caricate prima non ce l'hanno: allora si usa il file completo). */
+export const gazzettaThumbPath = (path: string): string => path.replace(/\.jpg$/, '-t.jpg');
+export const gazzettaThumbUrl = (path: string): string => gazzettaUrl(gazzettaThumbPath(path));
 
 export interface LeagueData {
   league: { id: string; name: string; is_public: boolean };
