@@ -1,7 +1,7 @@
 // Collegamento account: invito personale (/invito/<token>), Inviti giocatori, Unisci giocatori,
 // «Questo sono io», richieste dell'amministratore, profilo, privacy.
 import { expect, test, type Page } from '@playwright/test';
-import { lastWrite, mineAs, noOverflow, openApp, openPanel, setup } from './helpers';
+import { fixturePlayer, lastWrite, mineAs, noOverflow, openApp, openPanel, setup } from './helpers';
 
 const status = (player_id: string, name: string, over: Record<string, unknown> = {}) => ({
   player_id, name, linked: false, linked_name: null, invite_token: null, invite_created: null, invite_expires: null, ...over,
@@ -146,6 +146,22 @@ test('Questo sono io: collegato, si può scollegare', async ({ page }) => {
   await page.locator('#app-modal-ok').click();
   await expect(page.locator('#toast')).toContainText('Scollegato');
   expect(writes.some((x) => x.table === 'unlink_me')).toBe(true);
+});
+
+test('Il mio profilo: si vede la scheda del giocatore, uguale a quella della Rosa ma senza modifiche', async ({ page }) => {
+  const me = fixturePlayer();
+  await setup(page, { mePlayer: me });
+  await openApp(page);
+  await openPanel(page, '#menu-profile', '#sheet-profile');
+  const card = page.locator('#profile-player-card');
+  await expect(card).toBeVisible();
+  await expect(card).toContainText(me.name);
+  await expect(card.locator('.stat-row')).toHaveCount(12); // 11 statistiche + peso voti
+  await expect(card.locator('input, textarea')).toHaveCount(0);
+  await expect(card.locator('#match-modal-body')).toBeVisible();
+  await expect(card.getByText('✕')).toHaveCount(0);
+  await expect(page.locator('#profile-card')).toBeVisible(); // sotto, il riepilogo
+  await noOverflow(page);
 });
 
 test('Questo sono io: se la tabella manca si spiega cosa fare', async ({ page }) => {

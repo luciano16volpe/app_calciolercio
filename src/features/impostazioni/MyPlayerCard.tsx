@@ -6,9 +6,10 @@ import { useConfirm } from '../../app/Dialogs';
 import { useToast } from '../../app/Toast';
 import { MY_PLAYER_KEY, requestClaim, unlinkMe, useMyPlayer, useUnclaimed } from '../../data/claims';
 import type { LeagueData } from '../../data/queries';
+import { PlayerCard } from '../player/PlayerCard';
 import { ProfileCard } from './ProfileCard';
 
-export function MyPlayerCard({ data }: { data: LeagueData | undefined }) {
+export function MyPlayerCard({ data, onOpenMatch }: { data: LeagueData | undefined; onOpenMatch?: (matchId: string) => void }) {
   const { user } = useAuth();
   const toast = useToast();
   const confirm = useConfirm();
@@ -18,6 +19,9 @@ export function MyPlayerCard({ data }: { data: LeagueData | undefined }) {
   // solo chi non ha ancora un account collegato (elenco dal database)
   const free = useUnclaimed(data?.league.id, !!user && !!q.data && !q.data.linked && !q.data.pending);
   const [busy, setBusy] = useState(false);
+  const [bacheca, setBacheca] = useState(false);
+  // la scheda che si sta guardando: la mia, o (toccando un compagno) quella di un altro giocatore
+  const [viewId, setViewId] = useState<string | null>(null);
   if (!user) return null;
   const s = q.data;
   const roster = free.data ?? [];
@@ -81,6 +85,24 @@ export function MyPlayerCard({ data }: { data: LeagueData | undefined }) {
         </div>
       ) : null}
     </div>
+    {s?.linked && data && data.dataset.players.some((p) => p.id === s.linked?.id) ? (
+      <div style={{ marginBottom: 12 }}>
+        {viewId && viewId !== s.linked.id ? (
+          <button type="button" id="profile-back" className="btn btn-secondary btn-sm" style={{ marginBottom: 8 }} onClick={() => setViewId(null)}>↩ Torna alla mia scheda</button>
+        ) : null}
+        <PlayerCard
+          key={viewId ?? s.linked.id}
+          inline
+          data={data}
+          playerId={viewId ?? s.linked.id}
+          onClose={() => setViewId(null)}
+          onOpenPlayer={(id) => setViewId(id)}
+          onOpenMatch={(id) => onOpenMatch?.(id)}
+          bachecaOpen={bacheca}
+          onToggleBacheca={() => setBacheca((o) => !o)}
+        />
+      </div>
+    ) : null}
     {s?.linked ? <ProfileCard playerId={s.linked.id} name={s.linked.name} /> : null}
     </>
   );

@@ -12,7 +12,7 @@ import { LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { MyPlayerCard } from '../impostazioni/MyPlayerCard';
 import { PRIVACY_SECTIONS } from './privacyText';
 
-export function ProfilePanel({ data, onClose }: { data: LeagueData; onClose: () => void }) {
+export function ProfilePanel({ data, onClose, onOpenMatch }: { data: LeagueData; onClose: () => void; onOpenMatch: (matchId: string) => void }) {
   const { user } = useAuth();
   const toast = useToast();
   const confirm = useConfirm();
@@ -21,7 +21,7 @@ export function ProfilePanel({ data, onClose }: { data: LeagueData; onClose: () 
   const mine = (leagues.data ?? []).filter((l) => l.role);
   const leave = async (id: string, slug: string, name: string) => {
     if (!user) return;
-    const ok = await confirm({ icon: '🚪', title: 'Uscire dalla lega?', lines: [`Non vedrai più "${name}", a meno che non sia pubblica o ti invitino di nuovo.`], okLabel: 'Esci', danger: true });
+    const ok = await confirm({ icon: '🚪', title: 'Uscire dalla lega?', lines: [`Non vedrai più "${name}", a meno che ti invitino di nuovo.`], okLabel: 'Esci', danger: true });
     if (!ok) return;
     try {
       await leaveLeague(id, user.id);
@@ -34,7 +34,7 @@ export function ProfilePanel({ data, onClose }: { data: LeagueData; onClose: () 
   };
   return (
     <Sheet title="Il mio profilo" onClose={onClose} id="sheet-profile">
-      <MyPlayerCard data={data} />
+      <MyPlayerCard data={data} onOpenMatch={(id) => { onClose(); onOpenMatch(id); }} />
       {mine.length ? (
         <div className="card" id="leave-card" style={{ marginTop: 12 }}>
           <div className="section-header">🚪 Uscire da una lega</div>
