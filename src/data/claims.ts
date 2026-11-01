@@ -46,6 +46,19 @@ export async function unlinkMe(): Promise<void> {
   if (error) throw friendly(error.message);
 }
 
+/** Giocatori della lega non ancora collegati a un account (quelli tra cui scegliere in «Questo sono io»). */
+export async function fetchUnclaimed(leagueId: string): Promise<Array<{ id: string; name: string }>> {
+  const { data, error } = await supabase.rpc('players_unclaimed', { l: leagueId });
+  if (error) throw friendly(error.message);
+  return (data ?? []).map((p) => ({ id: p.player_id, name: p.name }));
+}
+
+export const UNCLAIMED_KEY = ['players-unclaimed'] as const;
+
+export function useUnclaimed(leagueId: string | undefined, enabled: boolean) {
+  return useQuery({ queryKey: [...UNCLAIMED_KEY, leagueId], queryFn: () => fetchUnclaimed(leagueId as string), enabled: enabled && !!leagueId, retry: false });
+}
+
 export interface PendingClaim {
   id: string;
   playerName: string;

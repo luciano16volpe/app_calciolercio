@@ -7,7 +7,7 @@ import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { readUseForm } from '../../app/settings';
 import { useToast } from '../../app/Toast';
 import { compressGazzetta, makeGazzettaThumb } from '../../canvas/gazzetta';
-import { deleteMatch, removeGazzetta, saveMatchRatings, setGazzetta, updateMatchHeader } from '../../data/mutations';
+import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, updateMatchHeader } from '../../data/mutations';
 import { gazzettaUrl, LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
 import { formatDate } from '../../domain/format';
@@ -130,6 +130,8 @@ export interface FieldEditor {
   get: (key: string) => PlayerFields;
   set: (key: string, patch: Partial<PlayerFields>) => void;
   openPagella: (key: string, name: string) => void;
+  /** modalità «solo testo» (redazione): si cambiano solo titoli e descrizioni, voti e numeri restano in sola lettura */
+  textOnly?: boolean;
 }
 
 type CountKey = 'goals' | 'assist' | 'autogol' | 'rigori' | 'meta';
@@ -169,12 +171,13 @@ function TeamPanel({ title, team, ratings, blue, side, ed }: {
         const val = f ? f.rating : r && r.rating != null ? String(r.rating) : '';
         const tit = f ? f.tit : r && r.titolo ? String(r.titolo) : '';
         const desc = f ? f.desc : r && r.notes ? String(r.notes) : '';
+        const full = !!ed && !ed.textOnly; // voti e numeri si cambiano solo in modifica completa
         const noVote = !!f && clampRating(f.rating) === null;
         const cnt = (k: CountKey, emoji: string, ttl: string, max: number, ro: unknown, warnable: boolean) => (
           <Counter
             emoji={emoji} title={ttl} max={max} val={f ? f[k] : or(ro)}
             warn={warnable && !!f && noVote && (parseInt(f[k]) || 0) > 0}
-            edit={ed && f ? { onChange: (v) => ed.set(key, { [k]: v }), onStep: (d) => ed.set(key, { [k]: stepCount(f[k], d, 20) }) } : undefined}
+            edit={ed && f && full ? { onChange: (v) => ed.set(key, { [k]: v }), onStep: (d) => ed.set(key, { [k]: stepCount(f[k], d, 20) }) } : undefined}
           />
         );
         return (
@@ -183,12 +186,12 @@ function TeamPanel({ title, team, ratings, blue, side, ed }: {
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
               <span style={{ fontSize: 10, color: 'var(--text2)', fontWeight: 700 }}>VOTO</span>
               <div className="rate-stepper">
-                {ed && f ? <button type="button" onClick={() => ed.set(key, { rating: stepRating(f.rating, -1) })} className="rate-btn rate-btn-minus">−</button> : null}
+                {ed && f && full ? <button type="button" onClick={() => ed.set(key, { rating: stepRating(f.rating, -1) })} className="rate-btn rate-btn-minus">−</button> : null}
                 <input
                   type="number" min={1} max={10} step={0.5} placeholder="—" value={val} inputMode="decimal"
-                  disabled={!ed} readOnly={!ed} style={rateColors(val)} onChange={ed ? (e) => ed.set(key, { rating: e.target.value }) : undefined}
+                  disabled={!full} readOnly={!full} style={rateColors(val)} onChange={full ? (e) => ed.set(key, { rating: e.target.value }) : undefined}
                 />
-                {ed && f ? <button type="button" onClick={() => ed.set(key, { rating: stepRating(f.rating, 1) })} className="rate-btn rate-btn-plus">+</button> : null}
+                {ed && f && full ? <button type="button" onClick={() => ed.set(key, { rating: stepRating(f.rating, 1) })} className="rate-btn rate-btn-plus">+</button> : null}
               </div>
             </div>
             <div className="mcnt-row">
@@ -262,13 +265,15 @@ function startDraft(m: Match, ratings: Rating[]): Draft {
 }
 
 // ── la scheda ──────────────────────────────────────────────────────────────
-export function MatchCard({ data, matchId, onClose, act, canEdit = false }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions; canEdit?: boolean }) {
+/** `canEdit` = amministratore (modifica tutto); `canEditText` = redazione (solo titoli e descrizioni delle pagelle, e la Gazzetta). */
+export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEditText = false, startText = false }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions; canEdit?: boolean; canEditText?: boolean; startText?: boolean }) {
   const m = data.dataset.matches.find((x) => x.id === matchId);
   const toast = useToast();
   const confirm = useConfirm();
   const qc = useQueryClient();
   const [balanceOpen, setBalanceOpen] = useState(false);
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [textOnly, setTextOnly] = useState(false);
   const [pagella, setPagella] = useState<{ key: string; name: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const gazInput = useRef<HTMLInputElement>(null);
@@ -277,6 +282,16 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false }: { da
     document.addEventListener('keydown', k);
     return () => document.removeEventListener('keydown', k);
   }, [onClose, pagella]);
+  // dal menu della redazione la scheda si apre già pronta per scrivere le pagelle
+  const started = useRef(false);
+  useEffect(() => {
+    if (!startText || !canEditText || started.current) return;
+    const mm = data.dataset.matches.find((x) => x.id === matchId);
+    if (!mm) return;
+    started.current = true;
+    setTextOnly(true);
+    setDraft(startDraft(mm, data.dataset.ratings.filter((r) => r.matchId === matchId)));
+  }, [startText, canEditText, data, matchId]);
   const balance = useMemo(
     () => (balanceOpen && m ? matchBalance(data.dataset, data.weights, m, readUseForm()) : null),
     [balanceOpen, data, m],
@@ -287,6 +302,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false }: { da
   const scoreA = m.scoreA !== '' && m.scoreA != null ? String(m.scoreA) : '';
   const scoreB = m.scoreB !== '' && m.scoreB != null ? String(m.scoreB) : '';
   const editing = draft !== null;
+  const full = editing && !textOnly; // modifica completa (amministratore)
   const teamA = normalizeTeam(m.teamA);
   const teamB = normalizeTeam(m.teamB);
   const upd = (patch: Partial<Draft>) => setDraft((d) => (d ? { ...d, ...patch } : d));
@@ -295,11 +311,41 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false }: { da
         get: (k) => draft.fields[k] as PlayerFields,
         set: (k, patch) => setDraft((d) => (d ? { ...d, fields: { ...d.fields, [k]: { ...(d.fields[k] as PlayerFields), ...patch } } } : d)),
         openPagella: (key, name) => setPagella({ key, name }),
+        textOnly,
       }
     : undefined;
 
+  const saveTexts = async () => {
+    if (!draft) return;
+    const changed = Object.values(draft.fields).flatMap((f) => {
+      if (!f.id) return [];
+      const r = ratings.find((x) => x.playerId === f.id);
+      const oldTit = r && r.titolo ? String(r.titolo) : '';
+      const oldDesc = r && r.notes ? String(r.notes) : '';
+      return f.tit !== oldTit || f.desc !== oldDesc ? [{ playerId: f.id, titolo: f.tit, descrizione: f.desc }] : [];
+    });
+    if (!changed.length) {
+      toast('Nessuna modifica da salvare');
+      return;
+    }
+    setBusy(true);
+    try {
+      toast('⏳ Salvataggio...');
+      await saveMatchTexts(matchId, changed);
+      releaseKeyboard();
+      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      toast(`Salvati titoli e descrizioni: ${changed.length}`);
+      repairViewport();
+      onClose();
+    } catch (e) {
+      toast('Errore: ' + (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
   const save = async () => {
     if (!draft) return;
+    if (textOnly) return saveTexts();
     const side = (s: 'A' | 'B', n: number) => Array.from({ length: n }, (_, i) => draft.fields[`${s}${i}`] as PlayerFields);
     const plan = planSave(side('A', teamA.length), side('B', teamB.length), draft.scA, draft.scB);
     if (plan.missingRating.length) {
@@ -379,9 +425,9 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false }: { da
 
   const stepper = (id: 'sc-a' | 'sc-b', val: string, field: 'scA' | 'scB') => (
     <div className="score-stepper">
-      {editing ? <button type="button" onClick={() => upd({ [field]: stepScore(val, -1) })} className="rate-btn rate-btn-minus">−</button> : null}
-      <input type="number" min={0} max={99} id={id} value={val} placeholder="0" inputMode="numeric" disabled={!editing} readOnly={!editing} onChange={editing ? (e) => upd({ [field]: e.target.value }) : undefined} />
-      {editing ? <button type="button" onClick={() => upd({ [field]: stepScore(val, 1) })} className="rate-btn rate-btn-plus">+</button> : null}
+      {full ? <button type="button" onClick={() => upd({ [field]: stepScore(val, -1) })} className="rate-btn rate-btn-minus">−</button> : null}
+      <input type="number" min={0} max={99} id={id} value={val} placeholder="0" inputMode="numeric" disabled={!full} readOnly={!full} onChange={full ? (e) => upd({ [field]: e.target.value }) : undefined} />
+      {full ? <button type="button" onClick={() => upd({ [field]: stepScore(val, 1) })} className="rate-btn rate-btn-plus">+</button> : null}
     </div>
   );
 
@@ -405,13 +451,20 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false }: { da
               >
                 ✏️
               </button>
+            ) : canEditText && !editing ? (
+              <button
+                id="edit-text-btn" className="btn btn-secondary btn-sm mbar-btn" onClick={() => { setTextOnly(true); setDraft(startDraft(m, ratings)); }} title="Scrivi le pagelle" aria-label="Scrivi titoli e descrizioni"
+                style={{ border: '2px solid var(--green)', color: 'var(--green)', marginLeft: 'auto', fontSize: 13, padding: '6px 9px' }}
+              >
+                📝 Scrivi le pagelle
+              </button>
             ) : null}
           </div>
           <div id="match-fields" style={{ opacity: editing ? 1 : 0.92 }}>
             <div style={{ ...LABEL, marginBottom: 6 }}>Descrizione</div>
             <input
-              type="text" id="edit-notes" value={draft ? draft.notes : String(m.notes ?? '')} placeholder="es. partita serale al Sole" disabled={!editing} readOnly={!editing}
-              onChange={editing ? (e) => upd({ notes: e.target.value }) : undefined}
+              type="text" id="edit-notes" value={draft ? draft.notes : String(m.notes ?? '')} placeholder="es. partita serale al Sole" disabled={!full} readOnly={!full}
+              onChange={full ? (e) => upd({ notes: e.target.value }) : undefined}
               style={{ width: '100%', padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', fontSize: 13, boxSizing: 'border-box', marginBottom: 8 }}
             />
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '.5px', textAlign: 'center', marginTop: 8 }}>Risultato</div>
@@ -458,8 +511,8 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false }: { da
             ) : null}
             {editing ? (
               <div id="match-actions" style={{ display: 'flex', gap: 8 }}>
-                <button className="btn btn-primary" style={{ flex: 1 }} disabled={busy} onClick={() => void save()}>💾 Salva partita</button>
-                <button className="btn btn-danger" disabled={busy} onClick={() => void remove()} aria-label="Elimina la partita">🗑️</button>
+                <button className="btn btn-primary" style={{ flex: 1 }} disabled={busy} onClick={() => void save()}>{textOnly ? '💾 Salva pagelle' : '💾 Salva partita'}</button>
+                {textOnly ? null : <button className="btn btn-danger" disabled={busy} onClick={() => void remove()} aria-label="Elimina la partita">🗑️</button>}
               </div>
             ) : null}
           </div>

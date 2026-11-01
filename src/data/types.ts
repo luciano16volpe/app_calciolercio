@@ -688,6 +688,13 @@ export type Database = {
         Returns: undefined
       }
       player_visible: { Args: { p: string }; Returns: boolean }
+      players_unclaimed: {
+        Args: { l: string }
+        Returns: {
+          name: string
+          player_id: string
+        }[]
+      }
       propose_admin: { Args: { l: string; u: string }; Returns: string }
       regenerate_invite_code: { Args: { l: string }; Returns: string }
       remove_member: { Args: { l: string; u: string }; Returns: undefined }

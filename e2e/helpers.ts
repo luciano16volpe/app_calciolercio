@@ -46,7 +46,7 @@ export async function setup(page: Page, opts: Opts = {}): Promise<Write[]> {
   const { loggedIn = true } = opts;
   const mine: Mine[] = [...(opts.mine ?? [])];
   const writes: Write[] = [];
-  const rpc: Record<string, unknown> = { league_member_list: [], admin_requests_list: [], claims_pending: [], league_players_status: [], is_super_admin: false, ...opts.rpc };
+  const rpc: Record<string, unknown> = { league_member_list: [], admin_requests_list: [], claims_pending: [], league_players_status: [], players_unclaimed: [], is_super_admin: false, ...opts.rpc };
   let pub: MockLeague | null = null;
   if (loggedIn) {
     await page.addInitScript(([ref, jwt]) => {

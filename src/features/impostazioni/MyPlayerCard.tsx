@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '../../app/auth';
 import { useConfirm } from '../../app/Dialogs';
 import { useToast } from '../../app/Toast';
-import { MY_PLAYER_KEY, requestClaim, unlinkMe, useMyPlayer } from '../../data/claims';
+import { MY_PLAYER_KEY, requestClaim, unlinkMe, useMyPlayer, useUnclaimed } from '../../data/claims';
 import type { LeagueData } from '../../data/queries';
 import { ProfileCard } from './ProfileCard';
 
@@ -15,10 +15,12 @@ export function MyPlayerCard({ data }: { data: LeagueData | undefined }) {
   const qc = useQueryClient();
   const q = useMyPlayer(user?.id ?? null);
   const [pick, setPick] = useState('');
+  // solo chi non ha ancora un account collegato (elenco dal database)
+  const free = useUnclaimed(data?.league.id, !!user && !!q.data && !q.data.linked && !q.data.pending);
   const [busy, setBusy] = useState(false);
   if (!user) return null;
   const s = q.data;
-  const roster = [...(data?.dataset.players ?? [])].sort((a, b) => a.name.localeCompare(b.name));
+  const roster = free.data ?? [];
   const refresh = () => qc.invalidateQueries({ queryKey: MY_PLAYER_KEY });
 
   const send = async () => {
@@ -74,6 +76,7 @@ export function MyPlayerCard({ data }: { data: LeagueData | undefined }) {
             <option value="">— scegli —</option>
             {roster.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
+          {free.data && !roster.length ? <div id="myplayer-none" style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 8 }}>Tutti i giocatori di questa lega hanno già un account collegato.</div> : null}
           <button className="btn btn-primary btn-full" id="myplayer-send" disabled={busy} onClick={() => void send()}>Questo sono io</button>
         </div>
       ) : null}

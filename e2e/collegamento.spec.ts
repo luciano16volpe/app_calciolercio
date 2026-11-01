@@ -114,14 +114,14 @@ test('Unisci giocatori: se il database rifiuta si vede il motivo', async ({ page
 });
 
 test('Questo sono io: scelgo il mio nome e mando la richiesta', async ({ page }) => {
-  const writes = await setup(page);
+  const writes = await setup(page, { rpc: { players_unclaimed: [{ player_id: 'p1', name: 'Luca' }, { player_id: 'p2', name: 'Marco' }] } });
   await openApp(page);
   await openPanel(page, '#menu-profile', '#sheet-profile');
   await expect(page.locator('#myplayer-card')).toBeVisible();
   await page.locator('#myplayer-send').click();
   await expect(page.locator('#toast')).toContainText('Scegli il tuo nome');
   expect(writes.length).toBe(0);
-  expect(await page.locator('#myplayer-select option').count()).toBeGreaterThan(20);
+  await expect(page.locator('#myplayer-select option')).toHaveCount(3); // «scegli» + i due liberi
   await page.locator('#myplayer-select').selectOption({ index: 1 });
   await page.locator('#myplayer-send').click();
   await expect(page.locator('#toast')).toContainText('Richiesta inviata');

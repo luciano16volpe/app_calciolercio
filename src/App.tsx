@@ -62,8 +62,8 @@ function PlayerCardGate({ editable, ...props }: ComponentProps<typeof PlayerCard
   return <PlayerCard {...props} canEdit={isAdmin && editable} />;
 }
 function MatchCardGate(props: ComponentProps<typeof MatchCard>) {
-  const { isAdmin } = useRole(props.data.league.id);
-  return <MatchCard {...props} canEdit={isAdmin} />;
+  const { isAdmin, canEditText } = useRole(props.data.league.id);
+  return <MatchCard {...props} canEdit={isAdmin} canEditText={canEditText && !isAdmin} />;
 }
 
 /** Messaggio al posto di una pagina mentre i dati si caricano o se non arrivano. */
@@ -84,7 +84,7 @@ function Loading({ q }: { q: { isError: boolean; refetch: () => unknown } }) {
 }
 
 /** Cosa c'è nella finestra aperta sopra la pagina (una sola per volta, come in legacy). */
-type View = { kind: 'player'; id: string; fromRosa?: boolean } | { kind: 'match'; id: string } | { kind: 'gazArchive' } | null;
+type View = { kind: 'player'; id: string; fromRosa?: boolean } | { kind: 'match'; id: string; text?: boolean } | { kind: 'gazArchive' } | null;
 
 const pageFromPath = (): PageName => (parsePath(window.location.pathname).page as PageKey | null) ?? 'rosa';
 
@@ -115,9 +115,9 @@ function Shell() {
   const close = useCallback(() => setView(null), []);
   const openPlayer = useCallback((id: string) => setView({ kind: 'player', id }), []);
   const openPlayerFromRosa = useCallback((id: string) => setView({ kind: 'player', id, fromRosa: true }), []);
-  const openMatch = useCallback((id: string) => {
+  const openMatch = useCallback((id: string, text?: boolean) => {
     setGazViewer(null);
-    setView({ kind: 'match', id });
+    setView({ kind: 'match', id, text });
   }, []);
   const act: MatchActions = useMemo(
     () => ({
@@ -186,7 +186,7 @@ function Shell() {
           onToggleBacheca={() => setBachecaOpen((o) => !o)}
         />
       ) : null}
-      {data && view?.kind === 'match' ? <MatchCardGate key={view.id} data={data} matchId={view.id} onClose={close} act={act} /> : null}
+      {data && view?.kind === 'match' ? <MatchCardGate key={view.id} data={data} matchId={view.id} startText={view.text} onClose={close} act={act} /> : null}
       {data && view?.kind === 'gazArchive' ? <GazArchive data={data} act={act} onClose={close} /> : null}
       {data && gazViewer ? (
         <GazViewer data={data} matchId={gazViewer.id} fromArchive={gazViewer.fromArchive} onClose={() => setGazViewer(null)} onGoToMatch={openMatch} />

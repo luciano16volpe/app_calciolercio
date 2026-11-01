@@ -35,7 +35,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
   onClose: () => void;
   onOpenPanel: (p: Panel) => void;
   onGoSettings: () => void;
-  onOpenMatch: (id: string) => void;
+  onOpenMatch: (id: string, text?: boolean) => void;
 }) {
   const { user, signOut } = useAuth();
   const toast = useToast();
@@ -153,9 +153,9 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
           {canEditText && !isAdmin && data ? (
             <>
               <div className="menu-sec">Redazione · {data.league.name}</div>
-              <Item icon="📝" title="Pagelle da scrivere" sub={pending.length ? `${pending.length} partite senza descrizioni` : 'tutto scritto'} badge={pending.length} hot onClick={() => { const m = pending[0] ?? last; onClose(); if (m) onOpenMatch(m.id); }} />
-              <Item icon="📥" title="Importa da WhatsApp" sub="incolla il messaggio delle pagelle" onClick={() => { onClose(); if (last) onOpenMatch(last.id); }} />
-              <Item icon="📰" title="Carica la Gazzetta" sub={last ? `ultima partita: ${formatDate(last.date)}` : undefined} onClick={() => { onClose(); if (last) onOpenMatch(last.id); }} />
+              <Item icon="📝" title="Pagelle da scrivere" sub={pending.length ? `${pending.length} partite senza descrizioni` : 'tutto scritto'} badge={pending.length} hot onClick={() => { const m = pending[0] ?? last; onClose(); if (m) onOpenMatch(m.id, true); }} id="menu-red-pending" />
+              <Item icon="📥" title="Importa da WhatsApp" sub="incolla il messaggio delle pagelle" onClick={() => { const m = pending[0] ?? last; onClose(); if (m) onOpenMatch(m.id, true); }} id="menu-red-import" />
+              <Item icon="📰" title="Carica la Gazzetta" sub={last ? `ultima partita: ${formatDate(last.date)}` : undefined} onClick={() => { onClose(); if (last) onOpenMatch(last.id, true); }} id="menu-red-gazzetta" />
             </>
           ) : null}
 

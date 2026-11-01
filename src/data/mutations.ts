@@ -27,6 +27,15 @@ export async function saveMatchRatings(matchId: string, rows: RatingRow[]): Prom
   if (bad?.error) throw fail('pagelle', bad.error);
 }
 
+/** Redazione: cambia solo titolo e descrizione di alcune pagelle ('' = nessun testo). Voti e numeri non si toccano (lo garantisce anche il database). */
+export async function saveMatchTexts(matchId: string, rows: Array<{ playerId: string; titolo: string; descrizione: string }>): Promise<void> {
+  const results = await Promise.all(
+    rows.map((r) => supabase.from('match_players').update({ titolo: r.titolo || null, descrizione: r.descrizione || null }).eq('match_id', matchId).eq('player_id', r.playerId)),
+  );
+  const bad = results.find((x) => x.error);
+  if (bad?.error) throw fail('pagelle', bad.error);
+}
+
 /** Risultato e descrizione di una partita ('' = non inserito). */
 export async function updateMatchHeader(matchId: string, scoreA: number | '', scoreB: number | '', notes: string): Promise<void> {
   const { error } = await supabase.from('matches').update({ score_a: scoreA === '' ? null : scoreA, score_b: scoreB === '' ? null : scoreB, notes: notes || null }).eq('id', matchId);
