@@ -71,7 +71,7 @@ export function MyPlayerCard({ data }: { data: LeagueData | undefined }) {
           {s.rejected ? <div style={{ fontSize: 12, color: 'var(--red)', fontWeight: 700, marginBottom: 8 }}>L'ultima richiesta è stata rifiutata.</div> : null}
           <select
             id="myplayer-select" value={pick} onChange={(e) => setPick(e.target.value)} aria-label="Il tuo nome"
-            style={{ width: '100%', fontSize: 16, padding: '10px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)', marginBottom: 8, boxSizing: 'border-box' }}
+            style={{ width: '100%', fontSize: 16, padding: '10px 12px', borderRadius: 'var(--radius-sm)', border: '1.5px solid var(--gray3)', background: 'var(--gray)', color: 'var(--text)', marginBottom: 8, boxSizing: 'border-box' }}
           >
             <option value="">— scegli —</option>
             {roster.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
