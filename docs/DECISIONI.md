@@ -156,4 +156,5 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - **Redazione**: scheda partita in «solo testo» (titoli, descrizioni, Gazzetta); l'amministratore, salvando, non riscrive i testi che non ha toccato.
 - «Questo sono io» mostra solo i giocatori non ancora collegati. Storico statistiche con nome di chi ha modificato.
 - Le prove con utenti finti girano nel database vero dentro transazioni che si annullano; nessun progetto di prova.
-- Da decidere: permessi su giocatori creati da ex amministratori (proposta in `docs/passaggio/`); eliminazione lega solo al creatore o a ogni admin.
+- Giocatori: modifica solo per gli admin delle sue leghe; eliminazione solo per chi è admin di **tutte** le sue leghe (decisione del 1/11). Ex amministratori non hanno più diritti sui giocatori che avevano creato.
+- Da decidere: eliminazione lega solo al creatore o a ogni admin.

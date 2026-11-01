@@ -66,7 +66,7 @@ begin
    (5,  'creare una partita',                                     '0001100', 'insert into matches(league_id, date) values (''{L1}'', ''2026-01-01'')', null),
    (6,  'eliminare una partita',                                  '0001100', 'delete from matches where id = ''{M1}''', null),
    (7,  'cambiare le statistiche di un giocatore',                '0001100', 'update players set stats = array[6,5,5,5,5,5,5,5,5,5,5]::smallint[] where id = ''{P1}''', null),
-   (8,  'eliminare un giocatore (creato da altri)',               '0000000', 'delete from players where id = ''{P1}''', null),
+   (8,  'eliminare un giocatore che gioca solo in questa lega',  '0001100', 'delete from players where id = ''{P1}''', null),
    (9,  'eliminare un giocatore creato da chi ora è solo membro', '0000000', 'delete from players where id = ''{P9}''', 'e'),
    (10, 'cambiare le statistiche di un giocatore creato da chi ora è solo membro', '0000000', 'update players set stats = array[6,5,5,5,5,5,5,5,5,5,5]::smallint[] where id = ''{P9}''', 'e'),
    (11, 'collegare un giocatore a un account a mano (players.user_id)', '0000000', 'update players set user_id = ''{ME}'' where id = ''{P1}''', null),
