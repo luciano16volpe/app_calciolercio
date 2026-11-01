@@ -15,4 +15,4 @@ Indirizzo definitivo dell'app: https://calciolercio.vercel.app
 8. **Piano per tornare indietro**: ripristinare la vecchia pagina nel vecchio repository (commit precedente alla pagina di trasferimento), rimettere lo script Google in scrittura, avvisare gli amici. I dati inseriti nell'app nuova nel frattempo restano nel database e si possono reimportare a mano.
 9. **Spegnimento dello script Google** solo dopo la tua conferma.
 
-Prima di tutto questo, decidere se l'eliminazione di una lega debba restare a ogni amministratore o solo al creatore.
+Le decisioni sui permessi sono state prese (vedi `docs/DECISIONI.md`).

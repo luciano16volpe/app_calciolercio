@@ -21,9 +21,9 @@ Ambiente: progetto Supabase vero, solo migrazioni nuove e additive; le prove con
 | Media | Cambio lega dal menu senza effetto con l'indirizzo `/l/<slug>` | Corretto |
 | Media | L'admin, salvando con dati vecchi di meno di un minuto, cancellava i testi appena scritti dalla redazione | Corretto: i testi non toccati non si riscrivono |
 | Media | Chi ha creato un giocatore da admin e ora è solo membro può ancora modificarlo/eliminarlo | Corretto il 1/11 con la tua approvazione (migrazioni 20261109000000 e 20261109000100): modifica ed eliminazione solo per gli admin delle leghe del giocatore; eliminare richiede di essere admin di tutte le sue leghe |
-| Bassa | Qualsiasi amministratore (non solo il creatore) può eliminare la lega | Da decidere (oggi come da interfaccia) |
+| Bassa | Qualsiasi amministratore (non solo il creatore) può eliminare la lega | Deciso il 1/11: resta così (serve scrivere il nome della lega) |
 | Bassa | La redazione non salva i soprannomi imparati dall'import (permesso solo agli admin): restano sul telefono | Accettato |
 | Bassa | L'intestazione `x-audit-source: import` può essere dichiarata da chiunque: cambia solo l'etichetta, la persona resta registrata | Accettato |
 
 ## Cosa resta
-Decisioni qui sopra, riga SQL dell'amministratore supremo, prova su telefono vero, poi `PIANO_PASSAGGIO.md`.
+Riga SQL dell'amministratore supremo, prova su telefono vero, poi `PIANO_PASSAGGIO.md`.
