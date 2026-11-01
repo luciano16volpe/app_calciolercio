@@ -242,6 +242,8 @@ interface Draft {
   scA: string;
   scB: string;
   notes: string;
+  /** titolo e descrizione com'erano all'apertura: se non li tocchi, salvando non vengono riscritti (così non cancelli quelli appena scritti dalla redazione) */
+  base: Record<string, { tit: string; desc: string }>;
 }
 
 function startDraft(m: Match, ratings: Rating[]): Draft {
@@ -258,6 +260,7 @@ function startDraft(m: Match, ratings: Rating[]): Draft {
   );
   return {
     fields,
+    base: Object.fromEntries(Object.entries(fields).map(([k, f]) => [k, { tit: f.tit, desc: f.desc }])),
     scA: m.scoreA !== '' && m.scoreA != null ? String(m.scoreA) : '',
     scB: m.scoreB !== '' && m.scoreB != null ? String(m.scoreB) : '',
     notes: String(m.notes ?? ''),
@@ -363,7 +366,8 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
     setBusy(true);
     try {
       toast('⏳ Salvataggio...');
-      await saveMatchRatings(matchId, plan.rows);
+      const untouched = new Set(Object.entries(draft.fields).filter(([k, f]) => f.id && f.tit === draft.base[k]?.tit && f.desc === draft.base[k]?.desc).map(([, f]) => f.id as string));
+      await saveMatchRatings(matchId, plan.rows, untouched);
       if (headerChanged) {
         try {
           await updateMatchHeader(matchId, plan.scoreA, plan.scoreB, notes);

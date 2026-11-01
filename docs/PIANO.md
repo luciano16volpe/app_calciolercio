@@ -55,29 +55,27 @@ Completamento della Fase 4 (comando `/completa-fase-4`, in un'unica sessione). P
 Tutte le modifiche al database sono **nuove migrazioni** applicate sempre allo stesso modo:
 `npx supabase migration list --linked` → `npx supabase db push --linked` (il progetto vero è l'unico ambiente: nessun progetto di prova).
 - [x] 4.0 Verifica del database: `membri.sql` mancava ed è stata applicata; storico delle migrazioni allineato (`migration repair`)
-> **Stato al 1/11 sera** (ramo `worktree-fase-4-4`, cartella `.claude/worktrees/fase-4-4`): migrazioni applicate sul database vero fino a `20261105000000_cancella_account.sql`
-> (leghe/ruoli/supremo, inviti/scollega/unisci, cancellazione account). Interfaccia scritta e **collegata in `App.tsx`** (☰, pillola lega, menu, pannelli, `/l/<slug>/…`, `/invito/<token>`),
-> compila e i 417 test di logica passano. **Da fare:** aggiornare/scrivere le prove su schermata (vecchie prove Impostazioni, nuove per menu/inviti/leghe/ruoli),
-> poi registro attività (4.7), storico statistiche con autore (4.8), collaudo (4.9). La lega esistente è stata rinominata "San Marcello" (slug `san-marcello`).
-- [ ] 4.5 Menu laterale e leghe — `docs/specifiche/menu-e-leghe.md`
-  - [ ] ☰ in alto a sinistra, pillola con la lega attiva, menu a sezioni per ruolo (Le mie leghe · Redazione · Gestione · Piattaforma · App)
-  - [ ] "Le mie leghe" spostata da Impostazioni al menu; crea lega (nome, visibilità, formato, giorno), codice d'invito condivisibile, entra con codice
-  - [ ] Lega nell'indirizzo `/l/<slug>/…`; ultima lega ricordata; guida "Aggiungi i giocatori" per la lega vuota (dalle mie altre leghe, senza doppioni)
-  - [ ] Nuova migrazione: `slug`, creatore (`owner_id`), proposte di admin, cessione della proprietà, controlli nel database sui ruoli,
+> **Stato al 1/11 notte**: Fase 4 completata e collaudata (`docs/COLLAUDO.md`). Migrazioni applicate fino a `20261108000100`. Restano le decisioni segnalate nel collaudo,
+> la riga SQL dell'amministratore supremo e la prova su telefono vero; poi Fase 5 (`docs/passaggio/PIANO_PASSAGGIO.md`).
+- [x] 4.5 Menu laterale e leghe — `docs/specifiche/menu-e-leghe.md`
+  - [x] ☰ in alto a sinistra, pillola con la lega attiva, menu a sezioni per ruolo (Le mie leghe · Redazione · Gestione · Piattaforma · App)
+  - [x] "Le mie leghe" spostata da Impostazioni al menu; crea lega (nome, visibilità, formato, giorno), codice d'invito condivisibile, entra con codice
+  - [x] Lega nell'indirizzo `/l/<slug>/…`; ultima lega ricordata; guida "Aggiungi i giocatori" per la lega vuota (dalle mie altre leghe, senza doppioni)
+  - [x] Nuova migrazione: `slug`, creatore (`owner_id`), proposte di admin, cessione della proprietà, controlli nel database sui ruoli,
         ingresso automatico del giocatore collegato, funzioni per l'amministratore supremo (`is_super_admin`, tutte le leghe, utenti)
-  - [ ] Più amministratori: solo il creatore nomina/toglie gli admin, gli altri propongono; Impostazioni della lega (rigenera codice, elimina scrivendo il nome)
-- [ ] 4.6 Collegamento account — `docs/specifiche/collegamento-account.md`
-  - [ ] Link d'invito personale (strada principale, pagina `/invito/<token>`, valido 7 giorni); "Questo sono io" resta come riserva
-  - [ ] Scollega (admin o utente); Unisci giocatori (doppioni); blocco su `players.user_id` (si cambia solo con le funzioni sicure)
-- [ ] 4.7 Registro attività — `docs/specifiche/registro-attivita.md`
-  - [ ] Amministratore supremo (`platform_admins`, riga da inserire a mano nello SQL Editor), tabella `audit_log` scritta dai trigger del database
-  - [ ] 4 gruppi (accessi/account · leghe/membri/ruoli · partite/pagelle/Gazzette · giocatori/statistiche), IP e dispositivo, conservazione 60 giorni (pg_cron)
-  - [ ] Schermata "🛡️ Registro attività": filtri, azioni delicate ⚠️, dettaglio, esporta CSV
-- [ ] 4.8 Profilo e privacy
-  - [ ] Storico delle statistiche con **chi** le ha cambiate e **quando**
-  - [ ] Informativa privacy (comprese le righe sul registro attività) in menu → Privacy e all'avviso di registrazione
-  - [ ] Cancellazione dell'account: il giocatore e il suo storico restano senza account collegato; nel registro compare "utente cancellato"
-- [ ] 4.9 Collaudo finale — `.claude/commands/collaudo-finale.md`: matrice dei permessi per ruolo, scenario completo, test esistenti verdi,
+  - [x] Più amministratori: solo il creatore nomina/toglie gli admin, gli altri propongono; Impostazioni della lega (rigenera codice, elimina scrivendo il nome)
+- [x] 4.6 Collegamento account — `docs/specifiche/collegamento-account.md`
+  - [x] Link d'invito personale (strada principale, pagina `/invito/<token>`, valido 7 giorni); "Questo sono io" resta come riserva
+  - [x] Scollega (admin o utente); Unisci giocatori (doppioni); blocco su `players.user_id` (si cambia solo con le funzioni sicure)
+- [x] 4.7 Registro attività — `docs/specifiche/registro-attivita.md`
+  - [x] Amministratore supremo (`platform_admins`, riga da inserire a mano nello SQL Editor), tabella `audit_log` scritta dai trigger del database
+  - [x] 4 gruppi (accessi/account · leghe/membri/ruoli · partite/pagelle/Gazzette · giocatori/statistiche), IP e dispositivo, conservazione 60 giorni (pg_cron)
+  - [x] Schermata "🛡️ Registro attività": filtri, azioni delicate ⚠️, dettaglio, esporta CSV
+- [x] 4.8 Profilo e privacy
+  - [x] Storico delle statistiche con **chi** le ha cambiate e **quando**
+  - [x] Informativa privacy (comprese le righe sul registro attività) in menu → Privacy e all'avviso di registrazione
+  - [x] Cancellazione dell'account: il giocatore e il suo storico restano senza account collegato; nel registro compare "utente cancellato"
+- [x] 4.9 Collaudo finale — `.claude/commands/collaudo-finale.md`: matrice dei permessi per ruolo, scenario completo, test esistenti verdi,
       `docs/COLLAUDO.md`, piano del passaggio in `docs/passaggio/PIANO_PASSAGGIO.md`
 
 ## Fase 5 — Passaggio

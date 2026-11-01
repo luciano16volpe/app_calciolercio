@@ -4,20 +4,25 @@ import { supabase } from './supabase';
 
 const fail = (what: string, e: { message: string }) => new Error(`${what}: ${e.message}`);
 
-/** Salva voti, gol, assist e pagelle di una partita. Chi non ha un voto torna senza pagella. */
-export async function saveMatchRatings(matchId: string, rows: RatingRow[]): Promise<void> {
+/**
+ * Salva voti, gol, assist e pagelle di una partita. Chi non ha un voto torna senza pagella.
+ * `untouchedTexts`: giocatori di cui titolo e descrizione non sono stati toccati: non si riscrivono
+ * (se nel frattempo la redazione li ha scritti, restano).
+ */
+export async function saveMatchRatings(matchId: string, rows: RatingRow[], untouchedTexts: Set<string> = new Set()): Promise<void> {
   const byPlayer = new Map(rows.map((r) => [r.playerId, r]));
   const { data: current, error } = await supabase.from('match_players').select('player_id').eq('match_id', matchId);
   if (error) throw fail('squadre', error);
   const results = await Promise.all(
     (current ?? []).map((c) => {
       const r = byPlayer.get(c.player_id);
+      const texts = untouchedTexts.has(c.player_id) ? {} : r ? { titolo: r.titolo || null, descrizione: r.notes || null } : { titolo: null, descrizione: null };
       return supabase
         .from('match_players')
         .update(
           r
-            ? { rating: r.rating, goals: r.goals, assist: r.assist, autogol: r.autogol, meta: r.meta, rigori_sbagliati: r.rigoriSbagliati, titolo: r.titolo || null, descrizione: r.notes || null }
-            : { rating: null, goals: 0, assist: 0, autogol: 0, meta: 0, rigori_sbagliati: 0, titolo: null, descrizione: null },
+            ? { rating: r.rating, goals: r.goals, assist: r.assist, autogol: r.autogol, meta: r.meta, rigori_sbagliati: r.rigoriSbagliati, ...texts }
+            : { rating: null, goals: 0, assist: 0, autogol: 0, meta: 0, rigori_sbagliati: 0, ...texts },
         )
         .eq('match_id', matchId)
         .eq('player_id', c.player_id);

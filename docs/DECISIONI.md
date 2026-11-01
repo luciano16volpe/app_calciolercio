@@ -148,3 +148,12 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Compare in Impostazioni, sotto "Il mio giocatore", quando si è collegati a un giocatore. Per ogni lega che si può vedere: partite, vittorie-pareggi-sconfitte, gol, assist, media voto; poi le ultime 8 partite e lo storico delle modifiche alle statistiche e ai ruoli (ultime 30).
 - La **media voto** qui è la media semplice dei voti presenti, non quella delle Classifiche (che segue le regole di legacy). Da chiedere se la vuoi identica.
 - Nessuna nuova migrazione: usa dati già leggibili con i permessi esistenti.
+
+## Fase 4 — menu, leghe, collegamento, registro, collaudo
+- **Registro attività**: solo amministratore supremo; 4 gruppi (accessi/account, leghe/membri/ruoli, partite/pagelle/Gazzette, giocatori/statistiche), niente letture; IP e dispositivo; conservazione **60 giorni** per righe e per IP/dispositivo (impostazioni separate, pulizia notturna con pg_cron); utenti informati nell'informativa e alla registrazione. Un errore del registro non blocca mai l'app.
+- Gli accessi li segnala l'app con `log_event` (il registro interno di Supabase Auth non è agganciabile); l'importazione manda `x-audit-source: import`.
+- Account cancellato: nel registro «utente cancellato», senza IP e dispositivo; giocatore e storico restano senza account.
+- **Redazione**: scheda partita in «solo testo» (titoli, descrizioni, Gazzetta); l'amministratore, salvando, non riscrive i testi che non ha toccato.
+- «Questo sono io» mostra solo i giocatori non ancora collegati. Storico statistiche con nome di chi ha modificato.
+- Le prove con utenti finti girano nel database vero dentro transazioni che si annullano; nessun progetto di prova.
+- Da decidere: permessi su giocatori creati da ex amministratori (proposta in `docs/passaggio/`); eliminazione lega solo al creatore o a ogni admin.
