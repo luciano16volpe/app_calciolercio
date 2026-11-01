@@ -4,7 +4,7 @@ Ambiente: progetto Supabase vero, solo migrazioni nuove e additive; le prove con
 
 ## Esiti
 - ✅ Completezza: menu e leghe, collegamento account, registro attività, profilo e privacy (vedi `docs/PIANO.md`).
-- ✅ Permessi per ruolo nel database: `supabase/tests/permessi_per_ruolo.sql`, 48 azioni × 7 ruoli (visitatore, membro, redazione, admin, creatore, admin di un'altra lega, amministratore supremo). Tutte come atteso dopo la correzione dei permessi sui giocatori.
+- ✅ Permessi per ruolo nel database: `supabase/tests/permessi_per_ruolo.sql`, 51 azioni × 7 ruoli (visitatore, membro, redazione, admin, creatore, admin di un'altra lega, amministratore supremo). Tutte come atteso dopo la correzione dei permessi sui giocatori.
 - ✅ Registro attività: `supabase/tests/registro_attivita.sql`, 35 controlli (righe giuste, niente righe per aggiornamenti vuoti, stessa operazione raggruppata, IP e dispositivo, origine import/sistema, nessuna modifica o cancellazione possibile, pulizia a 60 giorni, account cancellato anonimo).
 - ✅ Scenario completo sul database: `supabase/tests/scenario_completo.sql`, 30 controlli. Scenario con più telefoni: `e2e/scenario.spec.ts` (database finto condiviso).
 - ✅ Test esistenti delle Fasi 1–3 e i golden: verdi (vedi riepilogo finale).

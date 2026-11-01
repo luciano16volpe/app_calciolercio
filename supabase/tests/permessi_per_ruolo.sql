@@ -106,7 +106,10 @@ begin
    (45, 'creare una nuova lega',                                  '0111111', 'insert into leagues(id, name) values (gen_random_uuid(), ''Nuova'')', null),
    (46, 'leggere il profilo di un altro utente',                  '0000000', 'select 1 from profiles where id <> coalesce(nullif(current_setting(''request.jwt.claim.sub'', true), '''')::uuid, gen_random_uuid())', null),
    (47, 'vedere i giocatori ancora liberi di una lega privata',   '0111100', 'select 1 from public.players_unclaimed(''{L1}'')', null),
-   (48, 'vedere lo storico statistiche di un giocatore di una lega privata', '0111100', 'select 1 from public.player_history(''{P1}'')', null);
+   (48, 'vedere lo storico statistiche di un giocatore di una lega privata', '0111100', 'select 1 from public.player_history(''{P1}'')', null),
+   (49, 'cambiare le regole di gioco (pesi, formazioni, forma recente)', '0000001', 'select public.admin_set_setting(''use_form'', ''false''::jsonb)', null),
+   (50, 'cambiare i pesi con valori non validi', '0000000', 'select public.admin_set_setting(''ovr_weights'', ''[9,1,1,1,1,1,1,1,1,1,1]''::jsonb)', null),
+   (51, 'leggere le regole di gioco (l''app le usa per calcolare OVR e squadre)', '1111111', 'select 1 from app_settings where key = ''ovr_weights''', null);
   -- 44: il codice giusto lo possono usare tutti quelli che hanno un account e non sono già dentro (x, s); v no
   update acts set expect = '0000011' where n = 44;
 

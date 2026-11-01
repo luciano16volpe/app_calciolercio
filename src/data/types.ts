@@ -678,6 +678,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_set_setting: { Args: { k: string; v: Json }; Returns: undefined }
       audit_anonymize_user: { Args: { uid: string }; Returns: undefined }
       audit_cleanup: { Args: never; Returns: undefined }
       audit_ctx: { Args: never; Returns: Record<string, unknown> }
@@ -701,6 +702,7 @@ export type Database = {
       audit_match_label: { Args: { mid: string }; Returns: string }
       audit_player_name: { Args: { pid: string }; Returns: string }
       audit_user_name: { Args: { uid: string }; Returns: string }
+      can_delete_player: { Args: { p: string }; Returns: boolean }
       can_edit_player: { Args: { p: string }; Returns: boolean }
       cancel_admin_request: { Args: { c: string }; Returns: undefined }
       claims_pending: {

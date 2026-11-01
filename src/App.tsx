@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react';
 import { BottomNav, type PageName } from './app/BottomNav';
-import { AuthProvider, useRole } from './app/auth';
+import { AuthProvider, useAuth, useRole } from './app/auth';
+import { useIsSuperAdmin } from './data/leagues';
 import { DialogProvider, usePrompt } from './app/Dialogs';
 import { buildPath, navigate, parsePath, rememberLeague, setSelectedLeague, type PageKey } from './app/league';
 import { useToast } from './app/Toast';
@@ -13,6 +14,7 @@ import { ClassifichePage } from './features/classifiche/ClassifichePage';
 import { GiocaPage } from './features/gioca/GiocaPage';
 import { SettingsPage } from './features/impostazioni/SettingsPage';
 import { AuditPanel } from './features/menu/AuditPanel';
+import { GameSettingsPanel } from './features/menu/GameSettingsPanel';
 import { AdminProposalsPanel, PlatformLeaguesPanel, PlatformUsersPanel } from './features/menu/AdminPanels';
 import { InvitePage } from './features/menu/InvitePage';
 import { CreateLeagueSheet, JoinLeagueSheet } from './features/menu/LeagueSheets';
@@ -65,6 +67,13 @@ function PlayerCardGate({ editable, ...props }: ComponentProps<typeof PlayerCard
 function MatchCardGate(props: ComponentProps<typeof MatchCard>) {
   const { isAdmin, canEditText } = useRole(props.data.league.id);
   return <MatchCard {...props} canEdit={isAdmin} canEditText={canEditText && !isAdmin} />;
+}
+
+/** Regole di gioco: le cambia solo l'amministratore supremo, gli amministratori di lega le vedono. */
+function GameSettingsGate({ data, onClose }: { data: LeagueData; onClose: () => void }) {
+  const { user } = useAuth();
+  const sup = useIsSuperAdmin(user?.id ?? null);
+  return <GameSettingsPanel data={data} editable={sup.data === true} onClose={onClose} />;
 }
 
 /** Messaggio al posto di una pagina mentre i dati si caricano o se non arrivano. */
@@ -199,6 +208,7 @@ function Shell() {
       {panel === 'join-league' ? <JoinLeagueSheet onClose={closePanel} onJoined={() => setPanel('profile')} /> : null}
       {panel === 'privacy' ? <PrivacyPanel onClose={closePanel} onDeleted={() => { setSelectedLeague(null); closePanel(); }} /> : null}
       {panel === 'help' ? <HelpPanel onClose={closePanel} /> : null}
+      {data && panel === 'game-settings' ? <GameSettingsGate data={data} onClose={closePanel} /> : null}
       {panel === 'audit' ? <AuditPanel onClose={closePanel} /> : null}
       {panel === 'platform-leagues' ? <PlatformLeaguesPanel onClose={closePanel} /> : null}
       {panel === 'platform-users' ? <PlatformUsersPanel onClose={closePanel} /> : null}

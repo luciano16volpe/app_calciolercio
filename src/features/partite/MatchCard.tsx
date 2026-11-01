@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
-import { readUseForm } from '../../app/settings';
+import { formOn } from '../../data/gameSettings';
 import { useToast } from '../../app/Toast';
 import { compressGazzetta, makeGazzettaThumb } from '../../canvas/gazzetta';
 import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, updateMatchHeader } from '../../data/mutations';
@@ -296,7 +296,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
     setDraft(startDraft(mm, data.dataset.ratings.filter((r) => r.matchId === matchId)));
   }, [startText, canEditText, data, matchId]);
   const balance = useMemo(
-    () => (balanceOpen && m ? matchBalance(data.dataset, data.weights, m, readUseForm()) : null),
+    () => (balanceOpen && m ? matchBalance(data.dataset, data.weights, m, formOn(data)) : null),
     [balanceOpen, data, m],
   );
   if (!m) return null;

@@ -53,6 +53,10 @@ describe('frasi leggibili', () => {
     expect(describeRow(row({ action: 'players.merge', entity_label: 'Pino → Giuseppe' }))).toEqual(['ha unito i giocatori Pino → Giuseppe']);
     expect(describeRow(row({ action: 'player_claims.approved', entity_label: 'Marco ← Marchino' }))).toEqual(['ha confermato che Marchino è Marco']);
   });
+  it('regole di gioco cambiate dal superadmin', () => {
+    expect(describeRow(row({ action: 'app_settings.update', entity_label: 'ovr_weights' }))).toEqual(['ha cambiato le regole di gioco: pesi delle statistiche']);
+    expect(describeRow(row({ action: 'app_settings.update', entity_label: 'game_modules' }))).toEqual(['ha cambiato le regole di gioco: formazioni']);
+  });
   it('azione sconosciuta: una frase di riserva, mai vuoto', () => {
     expect(describeRow(row({ action: 'cosa.nuova', entity_label: 'boh' }))).toEqual(['cosa.nuova · boh']);
     expect(describeRow(pag('Peppe', {}))[0]).toBeTruthy();

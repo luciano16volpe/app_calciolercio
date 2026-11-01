@@ -13,7 +13,7 @@ import { formatDate } from '../../domain/format';
 
 export type Panel =
   | 'create-league' | 'join-league' | 'profile' | 'members' | 'invites' | 'claims' | 'merge' | 'league-settings' | 'admin-proposals'
-  | 'audit' | 'platform-leagues' | 'platform-users' | 'privacy' | 'help' | 'account';
+  | 'game-settings' | 'audit' | 'platform-leagues' | 'platform-users' | 'privacy' | 'help' | 'account';
 
 const ROLE_LABEL = { admin: 'Admin', redazione: 'Redazione', member: 'Membro' } as const;
 
@@ -166,6 +166,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
               <Item icon="🔗" title="Inviti giocatori" sub="link personale per ogni giocatore" onClick={() => open('invites')} id="menu-invites" />
               <Item icon="✋" title="Richieste «sono io»" badge={claims.data?.length ?? 0} hot onClick={() => open('claims')} id="menu-claims" />
               <Item icon="🔀" title="Unisci giocatori" onClick={() => open('merge')} id="menu-merge" />
+              {!isSuper ? <Item icon="🎮" title="Regole di gioco" sub="formazioni, forma, pesi (sola lettura)" onClick={() => open('game-settings')} id="menu-game-settings" /> : null}
               {isOwner ? <Item icon="🛡️" title="Proposte di amministratore" badge={proposals.data?.length ?? 0} hot onClick={() => open('admin-proposals')} id="menu-proposals" /> : null}
               <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" onClick={() => open('league-settings')} id="menu-league-settings" />
               {cur ? (
@@ -177,6 +178,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
           {isSuper ? (
             <>
               <div className="menu-sec">Piattaforma</div>
+              <Item icon="🎮" title="Regole di gioco" sub="formazioni, forma recente, pesi" onClick={() => open('game-settings')} id="menu-game-settings" />
               <Item icon="🛡️" title="Registro attività" onClick={() => open('audit')} id="menu-audit" />
               <Item icon="🏟️" title="Tutte le leghe" onClick={() => open('platform-leagues')} id="menu-platform-leagues" />
               <Item icon="👤" title="Utenti" onClick={() => open('platform-users')} id="menu-platform-users" />
