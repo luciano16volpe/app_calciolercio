@@ -1,5 +1,11 @@
 // Gioca (passo 3.5): formato, convocati, sorteggio, campo, proposte, scambio trascinando — iPhone, Android e 360 px.
 import { expect, test, type Page } from '@playwright/test';
+import { setup } from './helpers';
+
+// l'app si apre solo con l'accesso: la prova entra come membro della lega pubblica vera (accesso simulato, letture vere)
+test.beforeEach(async ({ page }) => {
+  await setup(page, { publicRole: 'member' });
+});
 
 async function openGioca(page: Page) {
   await page.goto('/');

@@ -1,9 +1,30 @@
-// Account (passo 3.7a): accesso con email e password, messaggi in italiano, nessuno sbordo a 360 px.
+// Pagina d'ingresso (chi non è loggato): logo al centro, Accedi / Registrati, messaggi in italiano, nessuno sbordo a 360 px.
 import { expect, test } from '@playwright/test';
-import { openSettings } from './helpers';
 
-test('Account: il modulo di accesso si vede e rifiuta una password sbagliata', async ({ page }) => {
-  await openSettings(page);
+const noOverflow = async (page: import('@playwright/test').Page) =>
+  expect((await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width).toBeLessThanOrEqual(0);
+
+test('Ingresso: senza accesso si vede solo la pagina con il logo e Accedi / Registrati', async ({ page }) => {
+  await page.goto('/');
+  const login = page.locator('#login-page');
+  await expect(login).toBeVisible();
+  await expect(login.locator('img[alt="CalcioLercio"]')).toBeVisible();
+  await expect(page.locator('#mode-in')).toBeVisible();
+  await expect(page.locator('#mode-up')).toBeVisible();
+  // niente app dietro: né intestazione, né menu, né schede in basso, né rosa
+  await expect(page.locator('header')).toHaveCount(0);
+  await expect(page.locator('#menu-button')).toHaveCount(0);
+  await expect(page.locator('.bottom-nav')).toHaveCount(0);
+  await expect(page.locator('#players-list')).toHaveCount(0);
+  // il logo sta al centro dello schermo
+  const box = await login.locator('img').boundingBox();
+  const vw = (page.viewportSize() as { width: number }).width;
+  expect(Math.abs((box!.x + box!.width / 2) - vw / 2)).toBeLessThanOrEqual(2);
+  await noOverflow(page);
+});
+
+test('Ingresso: avvisi sui campi mancanti, registrazione con avviso sul registro, password sbagliata', async ({ page }) => {
+  await page.goto('/');
   const card = page.locator('#account-card');
   await expect(card.locator('input[type=email]')).toBeVisible();
   // senza dati: avviso
@@ -21,5 +42,22 @@ test('Account: il modulo di accesso si vede e rifiuta una password sbagliata', a
   await card.locator('input[type=password]').fill('sbagliata123');
   await card.locator('button.btn-primary').click();
   await expect(card.locator('#account-msg')).toContainText('Email o password non corrette', { timeout: 15_000 });
-  expect((await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width).toBeLessThanOrEqual(0);
+  await noOverflow(page);
+});
+
+for (const width of [320, 360, 412]) {
+  test(`Ingresso a ${width} px: tutto dentro lo schermo`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 700 });
+    await page.goto('/');
+    await expect(page.locator('#login-page')).toBeVisible();
+    await page.locator('#mode-up').click();
+    await noOverflow(page);
+    const rights = await page.locator('#login-page input, #login-page button').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().right));
+    for (const r of rights) expect(r).toBeLessThanOrEqual(width + 0.5);
+  });
+}
+
+test('Ingresso: dal link d\'invito si arriva alla pagina dell\'invito, non a quella d\'ingresso', async ({ page }) => {
+  await page.goto('/invito/qualunque');
+  await expect(page.locator('#invite-page')).toBeVisible();
 });

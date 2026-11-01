@@ -1,6 +1,12 @@
 // Schermate in un telefono emulato (iPhone, Android e uno schermo piccolo da 360 px).
 // Leggono i dati veri dalla lega pubblica su Supabase: serve la rete.
 import { expect, test } from '@playwright/test';
+import { setup } from './helpers';
+
+// l'app si apre solo con l'accesso: la prova entra come membro della lega pubblica vera (accesso simulato, letture vere)
+test.beforeEach(async ({ page }) => {
+  await setup(page, { publicRole: 'member' });
+});
 
 test('la pagina si apre senza scorrimento orizzontale', async ({ page }) => {
   await page.goto('/');

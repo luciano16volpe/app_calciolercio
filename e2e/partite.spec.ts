@@ -1,5 +1,11 @@
 // Partite (passo 3.4): ultima partita, Gazzette, elenco, scheda partita, equilibrio squadre, testo delle pagelle.
 import { expect, test, type Page } from '@playwright/test';
+import { setup } from './helpers';
+
+// l'app si apre solo con l'accesso: la prova entra come membro della lega pubblica vera (accesso simulato, letture vere)
+test.beforeEach(async ({ page }) => {
+  await setup(page, { publicRole: 'member' });
+});
 
 async function openPartite(page: Page) {
   await page.goto('/');

@@ -1,6 +1,11 @@
 // Impostazioni (passo 3.8): versione, formazioni, forma recente, pesi in sola lettura, account.
 import { expect, test, type Page } from '@playwright/test';
-import { openSettings as openSettingsFromMenu } from './helpers';
+import { openSettings as openSettingsFromMenu, setup } from './helpers';
+
+// l'app si apre solo con l'accesso: la prova entra come membro della lega pubblica vera (accesso simulato, letture vere)
+test.beforeEach(async ({ page }) => {
+  await setup(page, { publicRole: 'member' });
+});
 
 const openSettings = (page: Page) => openSettingsFromMenu(page);
 const noOverflow = async (page: Page) =>

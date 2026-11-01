@@ -7,7 +7,7 @@ const sections = (page: import('@playwright/test').Page) => page.locator('.menu-
 const expectSections = (page: import('@playwright/test').Page, want: string[]) => expect.poll(() => sections(page), { timeout: 10_000 }).toEqual(want);
 
 test('Menu: si apre e si chiude con ✕, toccando lo scuro e con Esc', async ({ page }) => {
-  await setup(page, { loggedIn: false });
+  await setup(page);
   await openApp(page);
   await expect(page.locator('#menu-drawer')).toHaveCount(0);
   await openMenu(page);
@@ -29,19 +29,17 @@ test('Menu: si apre e si chiude con ✕, toccando lo scuro e con Esc', async ({ 
   await expect(page.locator('#menu-drawer')).toBeVisible();
 });
 
-test('Menu: il visitatore vede solo le leghe pubbliche e le voci dell\'app', async ({ page }) => {
-  await setup(page, { loggedIn: false });
+test('Menu: chi è dentro ma senza ruolo nella lega vede solo Le mie leghe e le voci dell\'app', async ({ page }) => {
+  await setup(page);
   await openApp(page);
   await openMenu(page);
-  await expect(page.locator('.menu-nm')).toHaveText('Visitatore');
+  await expect(page.locator('.menu-nm')).toHaveText('Luciano');
   await expectSections(page, ['Le mie leghe', 'App']);
-  await expect(page.locator('.menu-lgrow')).toHaveCount(1);
-  await expect(page.locator('#menu-create')).toHaveCount(0);
-  await expect(page.locator('#menu-join')).toHaveCount(0);
-  await expect(page.locator('#menu-signout')).toHaveCount(0);
-  // "Accedi / Registrati" porta all'account, in Impostazioni app
-  await page.locator('#menu-login').click();
-  await expect(page.locator('#account-card')).toBeVisible();
+  await expect(page.locator('.menu-lgrow:not(.add)')).toHaveCount(1);
+  await expect(page.locator('#menu-create')).toBeVisible();
+  await expect(page.locator('#menu-join')).toBeVisible();
+  await expect(page.locator('#menu-signout')).toBeVisible();
+  await expect(page.locator('#menu-login')).toHaveCount(0);
   await noOverflow(page);
 });
 

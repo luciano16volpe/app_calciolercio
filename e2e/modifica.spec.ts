@@ -73,8 +73,8 @@ async function generateTeams(page: Page) {
   return g.locator('#partita-result');
 }
 
-test('Senza accesso la partita resta in sola lettura', async ({ page }) => {
-  await login(page, null);
+test('Da membro la partita resta in sola lettura', async ({ page }) => {
+  await login(page, 'member');
   const modal = await openLastMatch(page);
   await expect(modal).toBeVisible();
   await expect(modal.locator('#edit-toggle-btn')).toHaveCount(0);
@@ -179,11 +179,11 @@ test('Gioca: Crea partita salva squadre e previsione', async ({ page }) => {
   await noOverflow(page);
 });
 
-test('Gioca: senza accesso Crea partita spiega cosa fare', async ({ page }) => {
-  await login(page, null);
+test('Gioca: da membro Crea partita spiega cosa fare', async ({ page }) => {
+  await login(page, 'member');
   const res = await generateTeams(page);
   await res.locator('button', { hasText: 'Crea partita' }).click();
-  await expect(page.locator('#toast')).toContainText("serve l'accesso");
+  await expect(page.locator('#toast')).toContainText('serve essere amministratore della lega');
 });
 
 test('WhatsApp: si incolla il messaggio, si controllano gli abbinamenti e si assegnano titolo e descrizione', async ({ page }) => {
@@ -232,8 +232,8 @@ async function openFirstPlayer(page: Page) {
   return page.locator('#match-modal');
 }
 
-test('Rosa: senza accesso la scheda è di sola lettura', async ({ page }) => {
-  await login(page, null);
+test('Rosa: da membro la scheda è di sola lettura', async ({ page }) => {
+  await login(page, 'member');
   const modal = await openFirstPlayer(page);
   await expect(modal.locator('.stat-input')).not.toHaveCount(0);
   await expect(modal.locator('input.stat-input')).toHaveCount(0);
@@ -304,8 +304,8 @@ test('Rosa: + Aggiungi giocatore', async ({ page }) => {
   expect((lp.body as { player_id: string }).player_id).toBe('nuovo-giocatore');
 });
 
-test('Gazzetta: senza accesso non ci sono i pulsanti', async ({ page }) => {
-  await login(page, null);
+test('Gazzetta: da membro non ci sono i pulsanti', async ({ page }) => {
+  await login(page, 'member');
   const modal = await openLastMatch(page);
   await expect(modal.locator('#edit-toggle-btn')).toHaveCount(0);
   await expect(modal.locator('.gaz-edit')).toHaveCount(0);
