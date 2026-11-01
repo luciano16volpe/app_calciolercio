@@ -5,7 +5,7 @@ import { AUDIT_NOTICE } from '../menu/privacyText';
 
 const ROLE_LABEL = { admin: 'Amministratore', redazione: 'Redazione', member: 'Membro' } as const;
 // campi di testo a 16px: sotto, iPhone ingrandisce la pagina
-const field = { width: '100%', fontSize: 16, padding: '10px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)', marginBottom: 8, boxSizing: 'border-box' } as const;
+const field = { width: '100%', fontSize: 16, padding: '10px 12px', borderRadius: 'var(--radius-sm)', border: '1.5px solid var(--gray3)', background: 'var(--gray)', color: 'var(--text)', marginBottom: 8, boxSizing: 'border-box' } as const;
 const note = { fontSize: 12, color: 'var(--text3)', marginTop: 8 } as const;
 
 export function AccountCard({ leagueId }: { leagueId: string | undefined }) {
