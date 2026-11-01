@@ -56,7 +56,7 @@ const plain = (html: string) =>
     .trim();
 const noop = () => undefined;
 const toLd = (raw: LegacyData): LeagueData => ({
-  league: { id: 'L', name: 'Lega', is_public: true }, dataset: raw as unknown as Dataset, weights: real.weights,
+  league: { id: 'L', name: 'Lega', is_public: true, slug: 'calciolercio', owner_id: null }, dataset: raw as unknown as Dataset, weights: real.weights,
   // chi ha la foto nei dati di prova la ha anche qui (il campo mostra la foto e il nome sotto)
   photos: Object.fromEntries((raw.players as Array<{ id: string; photo?: string }>).filter((p) => p.photo).map((p) => [p.id, 'p.jpg'])),
   albo: [], gazzette: {},

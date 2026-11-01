@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState, type ComponentProps } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react';
 import { BottomNav, type PageName } from './app/BottomNav';
 import { AuthProvider, useRole } from './app/auth';
 import { DialogProvider, usePrompt } from './app/Dialogs';
+import { buildPath, navigate, parsePath, rememberLeague, setSelectedLeague, type PageKey } from './app/league';
 import { useToast } from './app/Toast';
 import { createPlayer } from './data/mutations';
 import { useQueryClient } from '@tanstack/react-query';
@@ -11,6 +12,15 @@ import { LEAGUE_QUERY_KEY, useLeagueData, type LeagueData } from './data/queries
 import { ClassifichePage } from './features/classifiche/ClassifichePage';
 import { GiocaPage } from './features/gioca/GiocaPage';
 import { SettingsPage } from './features/impostazioni/SettingsPage';
+import { AuditPanel } from './features/menu/AuditPanel';
+import { AdminProposalsPanel, PlatformLeaguesPanel, PlatformUsersPanel } from './features/menu/AdminPanels';
+import { InvitePage } from './features/menu/InvitePage';
+import { CreateLeagueSheet, JoinLeagueSheet } from './features/menu/LeagueSheets';
+import { LeagueSettingsPanel } from './features/menu/LeagueSettingsPanel';
+import { ClaimsPanel, InvitesPanel, MergePanel } from './features/menu/LinkPanels';
+import { MembersPanel } from './features/menu/MembersPanel';
+import { MenuDrawer, type Panel } from './features/menu/MenuDrawer';
+import { EmptyLeagueGuide, HelpPanel, PrivacyPanel, ProfilePanel } from './features/menu/OtherPanels';
 import { MatchCard } from './features/partite/MatchCard';
 import { PartitePage } from './features/partite/PartitePage';
 import { GazArchive, GazViewer, PagelleTextDialog, type MatchActions } from './features/partite/parts';
@@ -23,7 +33,7 @@ function GiocaGate({ data }: { data: LeagueData }) {
   const { isAdmin } = useRole(data.league.id);
   return <GiocaPage data={data} canCreate={isAdmin} />;
 }
-/** Rosa: per l'amministratore c'è anche "+ Aggiungi giocatore". */
+/** Rosa: per l'amministratore c'è anche "+ Aggiungi giocatore" (e la guida se la lega è vuota). */
 function RosaGate({ data, onOpen }: { data: LeagueData; onOpen: (id: string) => void }) {
   const { isAdmin } = useRole(data.league.id);
   const prompt = usePrompt();
@@ -41,15 +51,20 @@ function RosaGate({ data, onOpen }: { data: LeagueData; onOpen: (id: string) => 
       toast('Errore: ' + (e as Error).message);
     }
   };
-  return <RosaList data={data} onOpen={onOpen} onAdd={isAdmin ? () => void add() : undefined} />;
+  return (
+    <>
+      {isAdmin && !data.dataset.players.length ? <EmptyLeagueGuide data={data} onAddNew={() => void add()} /> : null}
+      <RosaList data={data} onOpen={onOpen} onAdd={isAdmin ? () => void add() : undefined} />
+    </>
+  );
 }
 function PlayerCardGate({ editable, ...props }: ComponentProps<typeof PlayerCard> & { editable: boolean }) {
   const { isAdmin } = useRole(props.data.league.id);
   return <PlayerCard {...props} canEdit={isAdmin && editable} />;
 }
 function MatchCardGate(props: ComponentProps<typeof MatchCard>) {
-  const { isAdmin } = useRole(props.data.league.id);
-  return <MatchCard {...props} canEdit={isAdmin} />;
+  const { isAdmin, canEditText } = useRole(props.data.league.id);
+  return <MatchCard {...props} canEdit={isAdmin} canEditText={canEditText && !isAdmin} />;
 }
 
 /** Messaggio al posto di una pagina mentre i dati si caricano o se non arrivano. */
@@ -70,27 +85,40 @@ function Loading({ q }: { q: { isError: boolean; refetch: () => unknown } }) {
 }
 
 /** Cosa c'è nella finestra aperta sopra la pagina (una sola per volta, come in legacy). */
-type View = { kind: 'player'; id: string; fromRosa?: boolean } | { kind: 'match'; id: string } | { kind: 'gazArchive' } | null;
+type View = { kind: 'player'; id: string; fromRosa?: boolean } | { kind: 'match'; id: string; text?: boolean } | { kind: 'gazArchive' } | null;
 
-export function App() {
-  const [page, setPage] = useState<PageName>('rosa');
+const pageFromPath = (): PageName => (parsePath(window.location.pathname).page as PageKey | null) ?? 'rosa';
+
+function Shell() {
+  const [page, setPage] = useState<PageName>(pageFromPath);
   const [view, setView] = useState<View>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [panel, setPanel] = useState<Panel | null>(null);
+  const [inviteToken, setInviteToken] = useState<string | null>(() => parsePath(window.location.pathname).invite);
   const [gazViewer, setGazViewer] = useState<{ id: string; fromArchive: boolean } | null>(null);
   const [ptDialog, setPtDialog] = useState<string | null>(null);
   // la Bacheca resta aperta (o chiusa) passando da un giocatore all'altro, come in legacy
   const [bachecaOpen, setBachecaOpen] = useState(false);
   const q = useLeagueData();
   const qc = useQueryClient();
+  const data = q.data;
   const go = (p: PageName) => {
     setPage(p);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  // la lega e la pagina stanno nell'indirizzo (/l/<slug>/<pagina>): i link condivisi aprono la lega giusta
+  useEffect(() => {
+    if (data && !inviteToken) {
+      navigate(buildPath(data.league.slug, page), true);
+      rememberLeague(data.league.slug);
+    }
+  }, [data?.league.slug, page, inviteToken]); // eslint-disable-line react-hooks/exhaustive-deps
   const close = useCallback(() => setView(null), []);
   const openPlayer = useCallback((id: string) => setView({ kind: 'player', id }), []);
   const openPlayerFromRosa = useCallback((id: string) => setView({ kind: 'player', id, fromRosa: true }), []);
-  const openMatch = useCallback((id: string) => {
+  const openMatch = useCallback((id: string, text?: boolean) => {
     setGazViewer(null);
-    setView({ kind: 'match', id });
+    setView({ kind: 'match', id, text });
   }, []);
   const act: MatchActions = useMemo(
     () => ({
@@ -100,18 +128,18 @@ export function App() {
     }),
     [openMatch],
   );
-  const data = q.data;
+  const closePanel = useCallback(() => setPanel(null), []);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   return (
-    <AuthProvider>
-    <ToastProvider>
-      <ImageProvider>
-      <DialogProvider>
+    <>
       <header>
-        <div className="logo" onClick={() => go('settings')} style={{ cursor: 'pointer' }} title="Apri impostazioni">
+        <button type="button" className="hb" id="menu-button" aria-label="Apri il menu" onClick={() => setMenuOpen(true)}>☰</button>
+        <div className="logo" onClick={() => go('rosa')} style={{ cursor: 'pointer' }}>
           <img src="/logo.png" alt="CalcioLercio" style={{ width: 44, height: 44, display: 'block', objectFit: 'contain' }} />
           CalcioLercio
         </div>
+        {data ? <button type="button" className="lg-pill" id="league-pill" onClick={() => setMenuOpen(true)} aria-label={`Lega attiva: ${data.league.name}. Cambia lega`}>{data.league.name} ▾</button> : null}
         <button
           id="header-refresh"
           onClick={(e) => {
@@ -159,15 +187,54 @@ export function App() {
           onToggleBacheca={() => setBachecaOpen((o) => !o)}
         />
       ) : null}
-      {data && view?.kind === 'match' ? <MatchCardGate key={view.id} data={data} matchId={view.id} onClose={close} act={act} /> : null}
+      {data && view?.kind === 'match' ? <MatchCardGate key={view.id} data={data} matchId={view.id} startText={view.text} onClose={close} act={act} /> : null}
       {data && view?.kind === 'gazArchive' ? <GazArchive data={data} act={act} onClose={close} /> : null}
       {data && gazViewer ? (
         <GazViewer data={data} matchId={gazViewer.id} fromArchive={gazViewer.fromArchive} onClose={() => setGazViewer(null)} onGoToMatch={openMatch} />
       ) : null}
       {data && ptDialog ? <PagelleTextDialog data={data} matchId={ptDialog} onClose={() => setPtDialog(null)} /> : null}
-      </DialogProvider>
-      </ImageProvider>
-    </ToastProvider>
+
+      {menuOpen ? <MenuDrawer data={data} onClose={closeMenu} onOpenPanel={setPanel} onGoSettings={() => go('settings')} onOpenMatch={openMatch} /> : null}
+      {panel === 'create-league' ? <CreateLeagueSheet onClose={closePanel} /> : null}
+      {panel === 'join-league' ? <JoinLeagueSheet onClose={closePanel} onJoined={() => setPanel('profile')} /> : null}
+      {panel === 'privacy' ? <PrivacyPanel onClose={closePanel} onDeleted={() => { setSelectedLeague(null); closePanel(); }} /> : null}
+      {panel === 'help' ? <HelpPanel onClose={closePanel} /> : null}
+      {panel === 'audit' ? <AuditPanel onClose={closePanel} /> : null}
+      {panel === 'platform-leagues' ? <PlatformLeaguesPanel onClose={closePanel} /> : null}
+      {panel === 'platform-users' ? <PlatformUsersPanel onClose={closePanel} /> : null}
+      {data && panel === 'profile' ? <ProfilePanel data={data} onClose={closePanel} /> : null}
+      {data && panel === 'members' ? <MembersPanel data={data} onClose={closePanel} /> : null}
+      {data && panel === 'invites' ? <InvitesPanel data={data} onClose={closePanel} /> : null}
+      {data && panel === 'claims' ? <ClaimsPanel data={data} onClose={closePanel} /> : null}
+      {data && panel === 'merge' ? <MergePanel data={data} onClose={closePanel} /> : null}
+      {data && panel === 'league-settings' ? <LeagueSettingsPanel data={data} onClose={closePanel} /> : null}
+      {data && panel === 'admin-proposals' ? <AdminProposalsPanel data={data} onClose={closePanel} /> : null}
+
+      {inviteToken ? (
+        <InvitePage
+          token={inviteToken}
+          onDone={(a) => {
+            if (a) setSelectedLeague(a.leagueSlug);
+            setInviteToken(null);
+            navigate(a ? buildPath(a.leagueSlug, 'rosa') : '/', true);
+            if (a) setPanel('profile');
+          }}
+        />
+      ) : null}
+    </>
+  );
+}
+
+export function App() {
+  return (
+    <AuthProvider>
+      <ToastProvider>
+        <ImageProvider>
+          <DialogProvider>
+            <Shell />
+          </DialogProvider>
+        </ImageProvider>
+      </ToastProvider>
     </AuthProvider>
   );
 }

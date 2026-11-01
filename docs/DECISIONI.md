@@ -143,3 +143,18 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Ci si può scollegare in qualsiasi momento (poi serve una nuova richiesta).
 - Funzioni del database nel file `supabase/migrations/20261102000000_questo_sono_io.sql`; se manca, le schede mostrano come applicarla.
 - Il profilo personale (partite di tutte le leghe, storico statistiche) è il passo 4.4.
+
+## Profilo personale (Fase 4.4)
+- Compare in Impostazioni, sotto "Il mio giocatore", quando si è collegati a un giocatore. Per ogni lega che si può vedere: partite, vittorie-pareggi-sconfitte, gol, assist, media voto; poi le ultime 8 partite e lo storico delle modifiche alle statistiche e ai ruoli (ultime 30).
+- La **media voto** qui è la media semplice dei voti presenti, non quella delle Classifiche (che segue le regole di legacy). Da chiedere se la vuoi identica.
+- Nessuna nuova migrazione: usa dati già leggibili con i permessi esistenti.
+
+## Fase 4 — menu, leghe, collegamento, registro, collaudo
+- **Registro attività**: solo amministratore supremo; 4 gruppi (accessi/account, leghe/membri/ruoli, partite/pagelle/Gazzette, giocatori/statistiche), niente letture; IP e dispositivo; conservazione **60 giorni** per righe e per IP/dispositivo (impostazioni separate, pulizia notturna con pg_cron); utenti informati nell'informativa e alla registrazione. Un errore del registro non blocca mai l'app.
+- Gli accessi li segnala l'app con `log_event` (il registro interno di Supabase Auth non è agganciabile); l'importazione manda `x-audit-source: import`.
+- Account cancellato: nel registro «utente cancellato», senza IP e dispositivo; giocatore e storico restano senza account.
+- **Redazione**: scheda partita in «solo testo» (titoli, descrizioni, Gazzetta); l'amministratore, salvando, non riscrive i testi che non ha toccato.
+- «Questo sono io» mostra solo i giocatori non ancora collegati. Storico statistiche con nome di chi ha modificato.
+- Le prove con utenti finti girano nel database vero dentro transazioni che si annullano; nessun progetto di prova.
+- Giocatori: modifica solo per gli admin delle sue leghe; eliminazione solo per chi è admin di **tutte** le sue leghe (decisione del 1/11). Ex amministratori non hanno più diritti sui giocatori che avevano creato.
+- Eliminare una lega: **ogni amministratore** può farlo (serve scriverne il nome), non solo il creatore (decisione del 1/11).

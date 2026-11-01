@@ -1,12 +1,8 @@
 // Impostazioni (passo 3.8): versione, formazioni, forma recente, pesi in sola lettura, account.
 import { expect, test, type Page } from '@playwright/test';
+import { openMenu, openSettings as openSettingsFromMenu } from './helpers';
 
-async function openSettings(page: Page) {
-  await page.goto('/');
-  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
-  await page.locator('header .logo').click();
-  await expect(page.locator('#page-settings')).toBeVisible();
-}
+const openSettings = (page: Page) => openSettingsFromMenu(page);
 const noOverflow = async (page: Page) =>
   expect((await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width).toBeLessThanOrEqual(0);
 
@@ -44,7 +40,8 @@ test('Impostazioni: aggiungi e togli una formazione (resta sul telefono)', async
   await expect(page.locator('.module-tile')).toHaveCount(11);
   await page.reload();
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
-  await page.locator('header .logo').click();
+  await openMenu(page);
+  await page.locator('#menu-app-settings').click();
   await expect(page.locator('.module-tile', { hasText: '1-0-4-0' })).toBeVisible();
   // toglila
   await page.getByRole('button', { name: 'Rimuovi 1-0-4-0' }).click();

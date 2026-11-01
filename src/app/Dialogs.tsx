@@ -64,7 +64,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
     <DialogContext.Provider value={value}>
       {children}
       {opts ? (
-        <div id="app-modal" style={{ display: 'flex', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 600, padding: 18, alignItems: 'center', justifyContent: 'center' }}>
+        <div id="app-modal" style={{ display: 'flex', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 850, padding: 18, alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ width: '100%', maxWidth: 380, background: 'var(--gray)', borderRadius: 'var(--radius)', padding: 20, boxShadow: '0 12px 36px rgba(0,0,0,0.4)' }}>
             <div id="app-modal-icon" style={{ fontSize: 34, textAlign: 'center', marginBottom: 8 }}>{opts.icon || '❓'}</div>
             <div id="app-modal-title" style={{ fontSize: 17, fontWeight: 800, textAlign: 'center', marginBottom: 6, color: 'var(--text)' }}>{opts.title || 'Conferma'}</div>

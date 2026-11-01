@@ -48,9 +48,35 @@ Ogni passo: aspetto identico a legacy (confronto con screenshot iPhone/Android/3
 - [x] 4.1 Creare una lega, codice d'invito, cambio lega, uscire (Impostazioni → Le mie leghe)
 - [x] 4.2 Membri della lega e ruoli (admin / redazione / member): lista con nomi, cambio ruolo, rimozione — richiede la migrazione `20261101000000_membri.sql` (da incollare in Supabase)
 - [x] 4.3 "Questo sono io" (richiesta del giocatore, conferma dell'admin) — richiede la migrazione `20261102000000_questo_sono_io.sql`
-- [ ] 4.4 Profilo personale con le
-      partite di tutte le leghe; storico delle statistiche
-- [ ] Privacy: informativa, cancellazione account
+- [x] 4.4 Profilo personale (Impostazioni → Il mio profilo): partite di tutte le leghe, storico delle statistiche
+      (da completare nel passo 4.8: "con chi le ha cambiate e quando")
+
+Completamento della Fase 4 (comando `/completa-fase-4`, in un'unica sessione). Parte da quello che esiste e lo adatta.
+Tutte le modifiche al database sono **nuove migrazioni** applicate sempre allo stesso modo:
+`npx supabase migration list --linked` → `npx supabase db push --linked` (il progetto vero è l'unico ambiente: nessun progetto di prova).
+- [x] 4.0 Verifica del database: `membri.sql` mancava ed è stata applicata; storico delle migrazioni allineato (`migration repair`)
+> **Stato al 1/11 notte**: Fase 4 completata e collaudata (`docs/COLLAUDO.md`). Migrazioni applicate fino a `20261108000100`. Restano le decisioni segnalate nel collaudo,
+> la riga SQL dell'amministratore supremo e la prova su telefono vero; poi Fase 5 (`docs/passaggio/PIANO_PASSAGGIO.md`).
+- [x] 4.5 Menu laterale e leghe — `docs/specifiche/menu-e-leghe.md`
+  - [x] ☰ in alto a sinistra, pillola con la lega attiva, menu a sezioni per ruolo (Le mie leghe · Redazione · Gestione · Piattaforma · App)
+  - [x] "Le mie leghe" spostata da Impostazioni al menu; crea lega (nome, visibilità, formato, giorno), codice d'invito condivisibile, entra con codice
+  - [x] Lega nell'indirizzo `/l/<slug>/…`; ultima lega ricordata; guida "Aggiungi i giocatori" per la lega vuota (dalle mie altre leghe, senza doppioni)
+  - [x] Nuova migrazione: `slug`, creatore (`owner_id`), proposte di admin, cessione della proprietà, controlli nel database sui ruoli,
+        ingresso automatico del giocatore collegato, funzioni per l'amministratore supremo (`is_super_admin`, tutte le leghe, utenti)
+  - [x] Più amministratori: solo il creatore nomina/toglie gli admin, gli altri propongono; Impostazioni della lega (rigenera codice, elimina scrivendo il nome)
+- [x] 4.6 Collegamento account — `docs/specifiche/collegamento-account.md`
+  - [x] Link d'invito personale (strada principale, pagina `/invito/<token>`, valido 7 giorni); "Questo sono io" resta come riserva
+  - [x] Scollega (admin o utente); Unisci giocatori (doppioni); blocco su `players.user_id` (si cambia solo con le funzioni sicure)
+- [x] 4.7 Registro attività — `docs/specifiche/registro-attivita.md`
+  - [x] Amministratore supremo (`platform_admins`, riga da inserire a mano nello SQL Editor), tabella `audit_log` scritta dai trigger del database
+  - [x] 4 gruppi (accessi/account · leghe/membri/ruoli · partite/pagelle/Gazzette · giocatori/statistiche), IP e dispositivo, conservazione 60 giorni (pg_cron)
+  - [x] Schermata "🛡️ Registro attività": filtri, azioni delicate ⚠️, dettaglio, esporta CSV
+- [x] 4.8 Profilo e privacy
+  - [x] Storico delle statistiche con **chi** le ha cambiate e **quando**
+  - [x] Informativa privacy (comprese le righe sul registro attività) in menu → Privacy e all'avviso di registrazione
+  - [x] Cancellazione dell'account: il giocatore e il suo storico restano senza account collegato; nel registro compare "utente cancellato"
+- [x] 4.9 Collaudo finale — `.claude/commands/collaudo-finale.md`: matrice dei permessi per ruolo, scenario completo, test esistenti verdi,
+      `docs/COLLAUDO.md`, piano del passaggio in `docs/passaggio/PIANO_PASSAGGIO.md`
 
 ## Fase 5 — Passaggio
 - [ ] Ultima importazione, prova con gli amici sull'indirizzo nuovo, pagina di trasferimento sul

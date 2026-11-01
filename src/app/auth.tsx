@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import type { Session, User } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { logEvent } from '../data/audit';
 import { supabase } from '../data/supabase';
 
 export type Role = 'admin' | 'redazione' | 'member' | null;
@@ -14,6 +15,7 @@ interface AuthTools {
   /** arrivato dal link "imposta la password": va scelta la nuova */
   recovery: boolean;
   signIn: (email: string, password: string) => Promise<string | null>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: string | null; needsConfirm: boolean }>;
   signOut: () => Promise<void>;
   /** manda via email il link per scegliere (o cambiare) la password */
   sendReset: (email: string) => Promise<string | null>;
@@ -45,6 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       if (event === 'PASSWORD_RECOVERY') setRecovery(true);
+      // chi conferma l'email dal link arriva già con l'accesso: la registrazione si registra ora
+      if (event === 'SIGNED_IN' && /type=signup/.test(window.location.hash)) void logEvent('auth.signup');
       if (event === 'SIGNED_OUT') setRecovery(false);
     });
     return () => data.subscription.unsubscribe();
@@ -52,24 +56,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (!error) void logEvent('auth.login');
     return error ? friendly(error.message) : null;
   }, []);
+  const signUp = useCallback(async (email: string, password: string, name: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(), password, options: { data: { display_name: name.trim() || email.trim().split('@')[0] }, emailRedirectTo: window.location.origin },
+    });
+    if (error) return { error: friendly(error.message), needsConfirm: false };
+    if (data.session) void logEvent('auth.signup');
+    // con la conferma email attiva non c'è ancora una sessione: va aperto il link ricevuto
+    return { error: null, needsConfirm: !data.session };
+  }, []);
   const signOut = useCallback(async () => {
+    await logEvent('auth.logout'); // prima di uscire: serve ancora l'accesso
     await supabase.auth.signOut();
   }, []);
   const sendReset = useCallback(async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin });
+    if (!error) void logEvent('auth.password_reset', email.trim());
     return error ? friendly(error.message) : null;
   }, []);
   const setPassword = useCallback(async (password: string) => {
     const { error } = await supabase.auth.updateUser({ password });
-    if (!error) setRecovery(false);
+    if (!error) {
+      setRecovery(false);
+      void logEvent('auth.password_changed');
+    }
     return error ? friendly(error.message) : null;
   }, []);
 
   const value = useMemo(
-    () => ({ user: session?.user ?? null, loading, recovery, signIn, signOut, sendReset, setPassword }),
-    [session, loading, recovery, signIn, signOut, sendReset, setPassword],
+    () => ({ user: session?.user ?? null, loading, recovery, signIn, signUp, signOut, sendReset, setPassword }),
+    [session, loading, recovery, signIn, signUp, signOut, sendReset, setPassword],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

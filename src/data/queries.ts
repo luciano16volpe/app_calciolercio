@@ -20,7 +20,7 @@ export const gazzettaThumbPath = (path: string): string => path.replace(/\.jpg$/
 export const gazzettaThumbUrl = (path: string): string => gazzettaUrl(gazzettaThumbPath(path));
 
 export interface LeagueData {
-  league: { id: string; name: string; is_public: boolean };
+  league: { id: string; name: string; is_public: boolean; slug: string; owner_id: string | null };
   /** Rosa, partite con squadre e pagelle, nel formato della logica (src/domain). */
   dataset: Dataset;
   /** Pesi dell'OVR (11 valori, uguali per tutte le leghe). */
@@ -49,15 +49,15 @@ async function fetchAll<T>(build: (from: number, to: number) => PromiseLike<{ da
 }
 
 /** Carica tutto quello che serve per mostrare una lega: quella scelta (se si può vedere), altrimenti la lega pubblica. */
-export async function fetchLeagueData(leagueId: string | null = null): Promise<LeagueData> {
+export async function fetchLeagueData(slug: string | null = null): Promise<LeagueData> {
   let league: LeagueData['league'] | undefined;
-  if (leagueId) {
-    const chosen = await supabase.from('leagues').select('id, name, is_public').eq('id', leagueId).maybeSingle();
+  if (slug) {
+    const chosen = await supabase.from('leagues').select('id, name, is_public, slug, owner_id').eq('slug', slug).maybeSingle();
     if (chosen.error) throw new Error(`lega: ${chosen.error.message}`);
-    league = chosen.data ?? undefined; // lega non più visibile (uscito, tolta): si torna alla pubblica
+    league = chosen.data ?? undefined; // lega non più visibile (uscito, tolta, indirizzo sbagliato): si torna alla pubblica
   }
   if (!league) {
-    const { data: leagues, error } = await supabase.from('leagues').select('id, name, is_public').eq('is_public', true).order('created_at').limit(1);
+    const { data: leagues, error } = await supabase.from('leagues').select('id, name, is_public, slug, owner_id').eq('is_public', true).order('created_at').limit(1);
     if (error) throw new Error(`lega: ${error.message}`);
     league = leagues?.[0];
   }
