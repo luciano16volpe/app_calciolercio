@@ -109,6 +109,7 @@ export function describeRow(row: AuditRow): string[] {
     case 'auth.password_changed': return ['ha cambiato la password'];
     case 'auth.password_reset': return ['ha chiesto una nuova password'];
     case 'account.delete': return ['ha cancellato il suo account'];
+    case 'app_settings.update': return [`ha cambiato le regole di gioco: ${({ ovr_weights: 'pesi delle statistiche', use_form: 'forma recente', game_modules: 'formazioni' } as Record<string, string>)[label] ?? label}`];
     case 'platform_admins.insert': return [`${label} è stato nominato amministratore supremo`];
     case 'platform_admins.delete': return [`${label} non è più amministratore supremo`];
 

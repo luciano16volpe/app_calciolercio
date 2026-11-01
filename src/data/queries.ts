@@ -25,6 +25,10 @@ export interface LeagueData {
   dataset: Dataset;
   /** Pesi dell'OVR (11 valori, uguali per tutte le leghe). */
   weights: number[];
+  /** «Forma recente» nel bilanciamento (impostazione unica dell'app; assente = acceso) */
+  useForm?: boolean;
+  /** formazioni personalizzate, nel formato di salvataggio (assente = quelle predefinite) */
+  modulesText?: string;
   /** Foto di ogni giocatore (id → percorso nell'archivio). */
   photos: Record<string, string | null>;
   /** Albo d'oro salvato (righe di tutte le stagioni). */
@@ -68,7 +72,7 @@ export async function fetchLeagueData(slug: string | null = null): Promise<Leagu
   const [players, matches, settings, albo, gaz] = await Promise.all([
     fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path').in('id', ids).order('id').range(a, b), 'giocatori'),
     fetchAll((a, b) => supabase.from('matches').select('id, date, notes, score_a, score_b, pred, pred_rank').eq('league_id', league.id).order('id').range(a, b), 'partite'),
-    supabase.from('app_settings').select('key, value').eq('key', 'ovr_weights'),
+    supabase.from('app_settings').select('key, value').in('key', ['ovr_weights', 'use_form', 'game_modules']),
     supabase.from('albo').select('rows').eq('league_id', league.id),
     fetchAll((a, b) => supabase.from('gazzette').select('match_id, file_path').order('match_id').range(a, b), 'Gazzette'),
   ]);
@@ -94,13 +98,16 @@ export async function fetchLeagueData(slug: string | null = null): Promise<Leagu
   if (settings.error) throw new Error(`impostazioni: ${settings.error.message}`);
   if (albo.error) throw new Error(`albo: ${albo.error.message}`);
 
-  const w = settings.data?.[0]?.value;
+  const setting = (k: string) => settings.data?.find((s) => s.key === k)?.value;
+  const w = setting('ovr_weights');
   const weights = Array.isArray(w) && w.length === 11 ? (w as number[]) : Array(11).fill(1);
   const matchSet = new Set(matchIds);
   return {
     league,
     dataset: dbToDataset({ players, matches, matchPlayers: mp }),
     weights,
+    useForm: setting('use_form') !== false,
+    ...(typeof setting('game_modules') === 'string' ? { modulesText: setting('game_modules') as string } : {}),
     photos: Object.fromEntries(players.map((p) => [p.id, p.photo_path])),
     albo: (albo.data ?? []).flatMap((r) => r.rows as unknown as AlboRow[]),
     aliases: Object.fromEntries(lp.filter((x) => x.aliases?.length).map((x) => [x.player_id, x.aliases])),

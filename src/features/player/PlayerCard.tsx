@@ -1,7 +1,7 @@
 // Scheda giocatore (sola lettura): foto, figurina, statistiche, pagelle, bacheca, compagni e avversari.
 // Fonte: openPlayerCardByIdx, bachecaHTML, playerExtrasHTML in legacy/index.html. Le modifiche arrivano con l'accesso admin.
 import { useEffect, useMemo, useState } from 'react';
-import { readUseForm } from '../../app/settings';
+import { formOn } from '../../data/gameSettings';
 import { useToast } from '../../app/Toast';
 import { photoUrl, type LeagueData } from '../../data/queries';
 import { formState } from '../../domain/form';
@@ -127,7 +127,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   const player = dataset.players.find((p) => p.id === playerId);
   const [pagelleOpen, setPagelleOpen] = useState<{ focus?: string } | null>(null);
   const all = useMemo(() => seasonStats(dataset), [dataset]);
-  const useForm = readUseForm();
+  const useForm = formOn(data);
 
   // Esc chiude la scheda (passando a un altro giocatore la scheda riparte da capo: vedi key in App)
   useEffect(() => {

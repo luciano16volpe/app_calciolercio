@@ -157,4 +157,5 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - «Questo sono io» mostra solo i giocatori non ancora collegati. Storico statistiche con nome di chi ha modificato.
 - Le prove con utenti finti girano nel database vero dentro transazioni che si annullano; nessun progetto di prova.
 - Giocatori: modifica solo per gli admin delle sue leghe; eliminazione solo per chi è admin di **tutte** le sue leghe (decisione del 1/11). Ex amministratori non hanno più diritti sui giocatori che avevano creato.
+- **Regole di gioco** (formazioni, forma recente, pesi dell'OVR): uniche per tutte le leghe, salvate nel database (`app_settings`); le vede chi è amministratore di lega (sola lettura), le cambia **solo il superadmin** (funzione `admin_set_setting`, registrata nel registro attività); nascoste ai membri nell'interfaccia (i valori restano leggibili dall'app perché l'OVR e le squadre si calcolano sul telefono). Le formazioni salvate sui singoli telefoni non valgono più (decisione del 1/11).
 - Eliminare una lega: **ogni amministratore** può farlo (serve scriverne il nome), non solo il creatore (decisione del 1/11).
