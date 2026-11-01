@@ -48,7 +48,22 @@ export function setSelectedLeague(slug: string | null): void {
   } catch {
     /* memoria bloccata: vale solo finché l'app resta aperta */
   }
+  // l'indirizzo vince sulla memoria: va aggiornato anche lui, altrimenti la lega non cambia
+  const cur = parsePath(window.location.pathname);
+  if (cur.slug !== null || cur.invite !== null) {
+    const next = slug ? buildPath(slug, cur.page ?? 'rosa') : '/';
+    if (window.location.pathname !== next) window.history.replaceState(null, '', next);
+  }
   window.dispatchEvent(new Event(EVENT));
+}
+
+/** Ricorda la lega aperta (anche quando arriva dall'indirizzo) senza avvisare nessuno: la lega mostrata non cambia. */
+export function rememberLeague(slug: string): void {
+  try {
+    localStorage.setItem(KEY, slug);
+  } catch {
+    /* memoria bloccata */
+  }
 }
 
 const subscribe = (cb: () => void) => {

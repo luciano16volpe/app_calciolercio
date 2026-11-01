@@ -1,0 +1,221 @@
+// Collegamento account: invito personale (/invito/<token>), Inviti giocatori, Unisci giocatori,
+// «Questo sono io», richieste dell'amministratore, profilo, privacy.
+import { expect, test, type Page } from '@playwright/test';
+import { lastWrite, mineAs, noOverflow, openApp, openPanel, setup } from './helpers';
+
+const status = (player_id: string, name: string, over: Record<string, unknown> = {}) => ({
+  player_id, name, linked: false, linked_name: null, invite_token: null, invite_created: null, invite_expires: null, ...over,
+});
+const open = (page: Page) => openApp(page, '/l/lega-di-prova/rosa', 0);
+
+test('Invito: link valido senza accesso → si vede chi sei e il modulo per registrarti', async ({ page }) => {
+  await setup(page, { loggedIn: false, rpc: { invite_preview: [{ status: 'valid', player_name: 'Marco', league_name: 'Lega di prova' }] } });
+  await page.goto('/invito/tok123');
+  await expect(page.locator('#invite-intro')).toContainText('Ciao Marco');
+  await expect(page.locator('#invite-intro')).toContainText('Lega di prova');
+  await expect(page.locator('#invite-page #account-card')).toBeVisible();
+  await noOverflow(page);
+});
+
+for (const [st, text] of [['expired', 'scaduto'], ['used', 'già stato usato'], ['revoked', 'non è più valido'], ['invalid', 'non valido']] as const) {
+  test(`Invito: link ${st} → messaggio chiaro`, async ({ page }) => {
+    await setup(page, { loggedIn: false, rpc: { invite_preview: st === 'invalid' ? [] : [{ status: st, player_name: 'Marco', league_name: 'Lega di prova' }] } });
+    await page.goto('/invito/tok123');
+    await expect(page.locator('#invite-bad')).toContainText(text);
+  });
+}
+
+test('Invito: con l\'accesso il link si accetta da solo e si arriva al profilo', async ({ page }) => {
+  const writes = await setup(page, {
+    mine: mineAs('member', { owner_id: 'altro' }),
+    rpc: {
+      invite_preview: [{ status: 'valid', player_name: 'Marco', league_name: 'Lega di prova' }],
+      accept_player_invite: [{ player_id: 'p1', player_name: 'Marco', league_id: 'L2', league_name: 'Lega di prova', league_slug: 'lega-di-prova' }],
+    },
+    mePlayer: { id: 'p1', name: 'Marco' },
+  });
+  await page.goto('/invito/tok123');
+  await expect(page.locator('#invite-ok')).toContainText('Benvenuto Marco', { timeout: 15_000 });
+  expect(lastWrite(writes, 'accept_player_invite').body).toEqual({ tok: 'tok123' });
+  await page.locator('#invite-go').click();
+  await expect(page.locator('#invite-page')).toHaveCount(0);
+  expect(new URL(page.url()).pathname).toBe('/l/lega-di-prova/rosa');
+  await expect(page.locator('#sheet-profile')).toBeVisible();
+  await expect(page.locator('#myplayer-name')).toHaveText('Marco');
+});
+
+test('Invito: un errore del database si mostra e si torna all\'app', async ({ page }) => {
+  await setup(page, { rpcError: { accept_player_invite: 'Questo link è già stato usato' }, rpc: { invite_preview: [{ status: 'valid', player_name: 'Marco', league_name: 'X' }] } });
+  await page.goto('/invito/tok123');
+  await expect(page.locator('#invite-error')).toContainText('già stato usato', { timeout: 15_000 });
+  await page.getByRole('button', { name: "Vai all'app" }).click();
+  await expect(page.locator('#invite-page')).toHaveCount(0);
+});
+
+test('Inviti giocatori: crea il link, lo rigenera, scollega un giocatore', async ({ page }) => {
+  const writes = await setup(page, {
+    mine: mineAs('admin'),
+    rpc: {
+      league_players_status: [
+        status('p1', 'Marco'),
+        status('p2', 'Luca', { invite_token: 'tokL', invite_created: '2026-11-01T10:00:00Z', invite_expires: '2026-11-08T10:00:00Z' }),
+        status('p3', 'Sara', { linked: true, linked_name: 'Sara R.' }),
+      ],
+      create_player_invite: 'nuovoToken',
+    },
+  });
+  await open(page);
+  await openPanel(page, '#menu-invites', '#sheet-invites');
+  await expect(page.locator('.invite-row')).toHaveCount(3);
+  await expect(page.locator('.invite-row').nth(1)).toContainText('valido fino al 08/11/2026');
+  await expect(page.locator('.invite-row').nth(2)).toContainText('Collegato a Sara R.');
+  await page.getByRole('button', { name: 'Invita Marco' }).click();
+  await expect.poll(() => writes.some((w) => w.table === 'create_player_invite')).toBe(true);
+  expect(lastWrite(writes, 'create_player_invite').body).toEqual({ p: 'p1', l: 'L2' });
+  await expect(page.locator('#toast')).toContainText(/Ciao Marco!|Messaggio copiato/); // il messaggio da mandare all'amico
+  await page.getByRole('button', { name: 'Rigenera il link di Luca' }).click();
+  await expect.poll(() => writes.filter((w) => w.table === 'create_player_invite').length).toBe(2);
+  expect(lastWrite(writes, 'create_player_invite').body).toEqual({ p: 'p2', l: 'L2' });
+  await expect(page.locator('#toast')).toContainText(/Ciao Luca!|Messaggio copiato/);
+  await page.getByRole('button', { name: 'Scollega Sara' }).click();
+  await page.locator('#app-modal-ok').click();
+  await expect(page.locator('#toast')).toContainText('Scollegato');
+  expect(lastWrite(writes, 'unlink_player').body).toEqual({ p: 'p3' });
+  await noOverflow(page);
+});
+
+test('Unisci giocatori: controlli, conferma e unione', async ({ page }) => {
+  const writes = await setup(page, { publicRole: 'admin' });
+  await openApp(page);
+  await openPanel(page, '#menu-merge', '#sheet-merge');
+  await page.locator('#mg-submit').click();
+  await expect(page.locator('#toast')).toContainText('Scegli i due giocatori');
+  await page.locator('#mg-keep').selectOption({ index: 1 });
+  await expect(page.locator('#mg-drop option')).toHaveCount(22); // «scegli» + 21: chi si tiene non si può assorbire
+  const keep = await page.locator('#mg-keep').inputValue();
+  await page.locator('#mg-drop').selectOption({ index: 1 });
+  const drop = await page.locator('#mg-drop').inputValue();
+  expect(drop).not.toBe(keep);
+  await page.locator('#mg-submit').click();
+  await page.locator('#app-modal-ok').click();
+  await expect(page.locator('#toast')).toContainText('Giocatori uniti');
+  expect(lastWrite(writes, 'merge_players').body).toEqual({ keep, drop_id: drop });
+});
+
+test('Unisci giocatori: se il database rifiuta si vede il motivo', async ({ page }) => {
+  await setup(page, { publicRole: 'admin', rpcError: { merge_players: 'I due giocatori hanno giocato la stessa partita' } });
+  await openApp(page);
+  await openPanel(page, '#menu-merge', '#sheet-merge');
+  await page.locator('#mg-keep').selectOption({ index: 1 });
+  await page.locator('#mg-drop').selectOption({ index: 1 });
+  await page.locator('#mg-submit').click();
+  await page.locator('#app-modal-ok').click();
+  await expect(page.locator('#toast')).toContainText('stessa partita');
+});
+
+test('Questo sono io: scelgo il mio nome e mando la richiesta', async ({ page }) => {
+  const writes = await setup(page);
+  await openApp(page);
+  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await expect(page.locator('#myplayer-card')).toBeVisible();
+  await page.locator('#myplayer-send').click();
+  await expect(page.locator('#toast')).toContainText('Scegli il tuo nome');
+  expect(writes.length).toBe(0);
+  expect(await page.locator('#myplayer-select option').count()).toBeGreaterThan(20);
+  await page.locator('#myplayer-select').selectOption({ index: 1 });
+  await page.locator('#myplayer-send').click();
+  await expect(page.locator('#toast')).toContainText('Richiesta inviata');
+  expect(Object.keys(lastWrite(writes, 'request_claim').body as object).sort()).toEqual(['l', 'p']);
+  await noOverflow(page);
+});
+
+test('Questo sono io: richiesta in attesa', async ({ page }) => {
+  await setup(page, { claims: [{ player_id: 'p1', league_id: 'x', status: 'pending', created_at: '2026-11-01', players: { name: 'Marco' } }] });
+  await openApp(page);
+  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await expect(page.locator('#myplayer-pending')).toContainText('Marco');
+  await expect(page.locator('#myplayer-select')).toHaveCount(0);
+});
+
+test('Questo sono io: collegato, si può scollegare', async ({ page }) => {
+  const writes = await setup(page, { mePlayer: { id: 'p1', name: 'Marco' } });
+  await openApp(page);
+  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await expect(page.locator('#myplayer-name')).toHaveText('Marco');
+  await page.getByRole('button', { name: 'Scollega' }).click();
+  await page.locator('#app-modal-ok').click();
+  await expect(page.locator('#toast')).toContainText('Scollegato');
+  expect(writes.some((x) => x.table === 'unlink_me')).toBe(true);
+});
+
+test('Questo sono io: se la tabella manca si spiega cosa fare', async ({ page }) => {
+  await setup(page, { claims: 'missing' });
+  await openApp(page);
+  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await expect(page.locator('#myplayer-error')).toContainText('20261102000000_questo_sono_io.sql');
+});
+
+test('Richieste «sono io»: l\'amministratore conferma e rifiuta', async ({ page }) => {
+  const pending = [
+    { id: 'c1', player_id: 'p1', player_name: 'Marco', user_id: 'u2', display_name: 'Marchino', email: 'm@example.com', created_at: '2026-11-01' },
+    { id: 'c2', player_id: 'p2', player_name: 'Luca', user_id: 'u3', display_name: null, email: 'l@example.com', created_at: '2026-11-02' },
+  ];
+  const writes = await setup(page, { mine: mineAs('admin'), rpc: { claims_pending: pending } });
+  await open(page);
+  await openPanel(page, '#menu-claims', '#sheet-claims');
+  await expect(page.locator('.claim-row')).toHaveCount(2);
+  await expect(page.locator('.claim-row').first()).toContainText('Marchino dice di essere Marco');
+  await expect(page.locator('.claim-row').nth(1)).toContainText('l@example.com');
+  await page.getByRole('button', { name: 'Conferma Marchino come Marco' }).click();
+  await expect(page.locator('#toast')).toContainText('Marchino è ora Marco');
+  expect(lastWrite(writes, 'review_claim').body).toEqual({ c: 'c1', approve: true });
+  await page.getByRole('button', { name: 'Rifiuta l@example.com' }).click();
+  await expect(page.locator('#toast')).toContainText('Richiesta rifiutata');
+  expect(lastWrite(writes, 'review_claim').body).toEqual({ c: 'c2', approve: false });
+});
+
+test('Profilo: riepilogo per lega, ultime partite e storico', async ({ page }) => {
+  const m = (date: string, a: number, b: number, lid: string, lname: string) => ({ date, score_a: a, score_b: b, league_id: lid, leagues: { name: lname } });
+  const profileRows = [
+    { match_id: 'm1', team: 'A', rating: 7.5, goals: 2, assist: 1, matches: m('2026-10-01', 5, 3, 'L1', 'CalcioLercio') },
+    { match_id: 'm2', team: 'B', rating: 6, goals: 0, assist: 0, matches: m('2026-10-08', 5, 3, 'L1', 'CalcioLercio') },
+    { match_id: 'm3', team: 'A', rating: null, goals: 1, assist: 0, matches: m('2026-10-15', 2, 2, 'L2', 'Altra lega') },
+  ];
+  const history = [{ changed_at: '2026-10-20T10:00:00Z', old_stats: [5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5], new_stats: [5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5], old_roles: ['MED'], new_roles: ['MED'] }];
+  await setup(page, { mePlayer: { id: 'p1', name: 'Marco' }, profileRows, history });
+  await openApp(page);
+  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await expect(page.locator('#profile-card')).toContainText('Marco');
+  await expect(page.locator('.profile-league')).toHaveCount(2);
+  await expect(page.locator('.profile-league').first()).toContainText('CalcioLercio');
+  await expect(page.locator('.profile-league').first()).toContainText('1-0-1');
+  await expect(page.locator('.profile-league').first()).toContainText('6.75');
+  await expect(page.locator('.profile-match')).toHaveCount(3);
+  await expect(page.locator('.profile-match').first()).toContainText('15/10/2026');
+  await expect(page.locator('.profile-history')).toContainText('tiro 6 → 7');
+  await noOverflow(page);
+});
+
+test('Profilo: senza partite', async ({ page }) => {
+  await setup(page, { mePlayer: { id: 'p1', name: 'Marco' } });
+  await openApp(page);
+  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await expect(page.locator('#profile-empty')).toBeVisible();
+});
+
+test('Privacy: informativa con le righe sul registro; la cancellazione chiede di scrivere CANCELLA', async ({ page }) => {
+  const writes = await setup(page);
+  await openApp(page);
+  await openPanel(page, '#menu-privacy', '#sheet-privacy');
+  await expect(page.locator('#sheet-privacy')).toContainText('registriamo le azioni');
+  await page.locator('#delete-account').click();
+  await page.locator('#app-modal-input').fill('boh');
+  await page.locator('#app-modal-ok').click();
+  await expect(page.locator('#toast')).toContainText('Scrivi CANCELLA');
+  expect(writes.some((w) => w.table === 'delete_my_account')).toBe(false);
+  await page.locator('#delete-account').click();
+  await page.locator('#app-modal-input').fill('cancella');
+  await page.locator('#app-modal-ok').click();
+  await expect(page.locator('#toast')).toContainText('Account cancellato');
+  expect(writes.some((w) => w.table === 'delete_my_account')).toBe(true);
+});

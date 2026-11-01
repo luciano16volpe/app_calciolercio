@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type ComponentProps } from '
 import { BottomNav, type PageName } from './app/BottomNav';
 import { AuthProvider, useRole } from './app/auth';
 import { DialogProvider, usePrompt } from './app/Dialogs';
-import { buildPath, navigate, parsePath, setSelectedLeague, type PageKey } from './app/league';
+import { buildPath, navigate, parsePath, rememberLeague, setSelectedLeague, type PageKey } from './app/league';
 import { useToast } from './app/Toast';
 import { createPlayer } from './data/mutations';
 import { useQueryClient } from '@tanstack/react-query';
@@ -107,7 +107,10 @@ function Shell() {
   };
   // la lega e la pagina stanno nell'indirizzo (/l/<slug>/<pagina>): i link condivisi aprono la lega giusta
   useEffect(() => {
-    if (data && !inviteToken) navigate(buildPath(data.league.slug, page), true);
+    if (data && !inviteToken) {
+      navigate(buildPath(data.league.slug, page), true);
+      rememberLeague(data.league.slug);
+    }
   }, [data?.league.slug, page, inviteToken]); // eslint-disable-line react-hooks/exhaustive-deps
   const close = useCallback(() => setView(null), []);
   const openPlayer = useCallback((id: string) => setView({ kind: 'player', id }), []);
