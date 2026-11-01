@@ -38,7 +38,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
   {
     title: 'Chi vede i tuoi dati',
     text: [
-      'I membri di una lega vedono rosa, partite, pagelle e classifiche di quella lega. Se una lega è pubblica la vede chiunque abbia il link.',
+      'I membri di una lega vedono rosa, partite, pagelle e classifiche di quella lega. Non esistono leghe pubbliche: si entra solo con un invito.',
       'Gli amministratori di una lega vedono nome ed email dei membri di quella lega. L’amministratore della piattaforma vede l’elenco di leghe e utenti e il registro attività.',
     ],
   },

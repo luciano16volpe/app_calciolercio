@@ -1,4 +1,4 @@
-// Lega scelta: nell'indirizzo (/l/<slug>/…) e ricordata sul telefono (si riapre all'avvio). Senza scelta: la lega pubblica.
+// Lega scelta: nell'indirizzo (/l/<slug>/…) e ricordata sul telefono (si riapre all'avvio). Senza scelta: la prima di cui si fa parte.
 import { useSyncExternalStore } from 'react';
 
 const KEY = 'calciolercio-league';
@@ -40,7 +40,7 @@ export function getSelectedLeague(): string | null {
   return parsePath(window.location.pathname).slug ?? read();
 }
 
-/** Sceglie la lega da mostrare (null = torna alla lega pubblica) e la ricorda. */
+/** Sceglie la lega da mostrare (null = torna alla prima di cui si fa parte) e la ricorda. */
 export function setSelectedLeague(slug: string | null): void {
   try {
     if (slug) localStorage.setItem(KEY, slug);

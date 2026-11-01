@@ -1,7 +1,9 @@
 // Un piccolo «database finto» in memoria, condiviso da più utenti (ognuno in un telefono emulato diverso), per provare un percorso
 // completo senza toccare il database vero. Imita solo quello che serve allo scenario (leghe, ruoli, inviti, pagelle, registro attività)
 // con le stesse regole di permesso. I permessi veri del database si provano in supabase/tests/*.sql.
+import { readFileSync } from 'node:fs';
 import type { BrowserContext, Route } from '@playwright/test';
+import { mapAlbo, mapMatchPlayers, mapMatches, mapPlayers, type LegacyFeed, type LegacyRosa } from '../scripts/import/map';
 
 type Row = Record<string, unknown>;
 export interface Audit extends Row { id: number; at: string; action: string; actor_id: string | null; actor_name: string | null }
@@ -24,6 +26,9 @@ export class FakeBackend {
   lplayers: Row[] = [];
   matches: Row[] = [];
   mplayers: Row[] = [];
+  albo: Row[] = [];
+  settings: Row[] = [];
+  gaz: Row[] = [];
   invites: Row[] = [];
   requests: Row[] = [];
   supers = new Set<string>();
@@ -31,9 +36,31 @@ export class FakeBackend {
   private tx = 100;
   private aid = 0;
 
-  constructor() {
-    // la lega pubblica (senza di lei l'app non trova niente da mostrare a chi non ha accesso)
-    this.leagues.push({ id: 'pub', name: 'Lega pubblica', slug: 'lega-pubblica', is_public: true, invite_code: 'pubpubpu', owner_id: null, settings: {}, created_at: '2026-01-01' });
+  /** I dati veri di prova (22 giocatori, 16 partite, pagelle, albo) nella lega indicata, come li importerebbe lo script. */
+  seedLegacy(leagueId: string): void {
+    const rosa = JSON.parse(readFileSync('legacy/rosa_calcetto.json', 'utf8')) as LegacyRosa;
+    const feed = JSON.parse(readFileSync('tests/fixtures/live_feed.json', 'utf8')) as LegacyFeed;
+    this.settings.push({ key: 'ovr_weights', value: rosa.weights });
+    const rows = mapPlayers(rosa);
+    const pid = new Map<string, string>();
+    rosa.players.forEach((p, i) => {
+      const id = (rows[i]?.id as string | undefined) ?? uid();
+      pid.set(p.id, id);
+      this.players.push({ id, name: p.name, roles: p.roles ?? [], stats: p.stats.map((v) => Math.round(v)), photo_path: null, user_id: null, legacy_id: p.id });
+      this.lplayers.push({ league_id: leagueId, player_id: id, aliases: p.aliases ?? [], archived: false });
+    });
+    const mid = new Map<string, string>();
+    for (const m of mapMatches(feed, leagueId).rows) {
+      const id = uid();
+      mid.set(String(m.legacy_id), id);
+      this.matches.push({ ...m, id });
+    }
+    this.mplayers.push(...(mapMatchPlayers(feed, rosa, (l) => mid.get(l), (l) => pid.get(l)).rows as Row[]));
+    for (const r of mapAlbo(feed, leagueId).rows) this.albo.push({ ...r });
+    for (const g of feed.gazzette) {
+      const m = mid.get(g.matchId);
+      if (m) this.gaz.push({ match_id: m, file_path: `${leagueId}/${m}.jpg`, uploaded_at: '2026-10-01T00:00:00Z' });
+    }
   }
 
   addUser(id: string, email: string, name: string): string {
@@ -79,7 +106,7 @@ export class FakeBackend {
 
   // ── lettura (GET) ────────────────────────────────────────────────────────
   private table(name: string): Row[] {
-    const t: Record<string, Row[]> = { leagues: this.leagues, league_members: this.members, players: this.players, league_players: this.lplayers, matches: this.matches, match_players: this.mplayers, audit_log: this.audit, albo: [], gazzette: [], app_settings: [], player_claims: [] };
+    const t: Record<string, Row[]> = { leagues: this.leagues, league_members: this.members, players: this.players, league_players: this.lplayers, matches: this.matches, match_players: this.mplayers, audit_log: this.audit, albo: this.albo, gazzette: this.gaz, app_settings: this.settings, player_claims: [] };
     return t[name] ?? [];
   }
   private matchesFilter(row: Row, key: string, expr: string): boolean {

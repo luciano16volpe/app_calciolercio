@@ -1,8 +1,7 @@
 // Redazione: modifica solo titoli e descrizioni delle pagelle e carica la Gazzetta (voci del menu, scheda partita in «solo testo»).
 // Scheda giocatore (amministratore): stato del collegamento e invito. «Questo sono io»: solo i giocatori liberi.
-import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { lastWrite, noOverflow, openApp, openMenu, setup } from './helpers';
+import { fixturePlayer, lastWrite, noOverflow, openApp, openMenu, setup } from './helpers';
 
 test('Redazione: le voci del menu aprono la scheda della partita pronta per scrivere', async ({ page }) => {
   await setup(page, { publicRole: 'redazione' });
@@ -89,16 +88,7 @@ test('Questo sono io: se sono tutti collegati si spiega', async ({ page }) => {
   await expect(page.locator('#myplayer-none')).toContainText('già un account collegato');
 });
 
-/** Un giocatore vero della lega pubblica (id e nome), letto con la chiave pubblica. */
-async function firstRealPlayer(page: import('@playwright/test').Page): Promise<{ id: string; name: string }> {
-  const lines = readFileSync('.env.local', 'utf-8').split(new RegExp(String.fromCharCode(10))).map((l) => l.trim()).filter((l) => l.includes('='));
-  const env = Object.fromEntries(lines.map((l) => [l.slice(0, l.indexOf('=')).trim(), l.slice(l.indexOf('=') + 1).trim()]));
-  const url = env.VITE_SUPABASE_URL as string;
-  const key = env.VITE_SUPABASE_ANON_KEY as string;
-  const r = await page.request.get(`${url}/rest/v1/players?select=id,name&order=name&limit=1`, { headers: { apikey: key, authorization: `Bearer ${key}` } });
-  const rows = (await r.json()) as Array<{ id: string; name: string }>;
-  return rows[0] as { id: string; name: string };
-}
+const firstRealPlayer = async (_page: unknown): Promise<{ id: string; name: string }> => fixturePlayer();
 const status = (player_id: string, name: string, over: Record<string, unknown> = {}) => ({
   player_id, name, linked: false, linked_name: null, invite_token: null, invite_created: null, invite_expires: null, ...over,
 });

@@ -1,55 +1,14 @@
 // Modifica partite (passo 3.7b): scheda partita modificabile, nuova partita da Gioca, eliminazione.
 // Nessuna scrittura vera: l'accesso da amministratore è simulato e ogni scrittura verso Supabase viene intercettata e registrata.
-import { expect, test, type Page, type Route } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+import { setup } from './helpers';
 
-const REF = 'ivrwqpuikbnvnxgvgegd';
-const b64 = (o: unknown) => Buffer.from(JSON.stringify(o)).toString('base64url');
-const FAKE_JWT = `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub: 'u1', role: 'authenticated', exp: 4102444800 })}.firma`;
-const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
 
 interface Write { method: string; table: string; body: unknown }
 
-/** Simula l'accesso (con il ruolo dato, o nessun accesso) e intercetta le scritture. Le letture vanno ai dati veri con la chiave pubblica. */
-async function login(page: Page, role: 'admin' | 'member' | null = 'admin') {
-  const writes: Write[] = [];
-  if (role) {
-    await page.addInitScript(([ref, jwt]) => {
-      localStorage.setItem(`sb-${ref}-auth-token`, JSON.stringify({
-        access_token: jwt, refresh_token: 'r', token_type: 'bearer', expires_in: 99999999, expires_at: 4102444800,
-        user: { id: 'u1', aud: 'authenticated', role: 'authenticated', email: 'admin@example.com', app_metadata: {}, user_metadata: {}, created_at: '2026-01-01T00:00:00Z' },
-      }));
-    }, [REF, FAKE_JWT]);
-  }
-  await page.route('**/auth/v1/**', (r: Route) => r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: '{}' }));
-  await page.route('**/storage/v1/object/**', async (r: Route) => {
-    const req = r.request();
-    if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS });
-    if (req.method() === 'GET') return r.continue(); // le foto pubbliche si leggono normalmente
-    writes.push({ method: req.method(), table: 'storage', body: new URL(req.url()).pathname.split('/object/')[1] });
-    return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: JSON.stringify({ Key: 'ok' }) });
-  });
-  await page.route('**/rest/v1/**', async (r: Route) => {
-    const req = r.request();
-    const table = new URL(req.url()).pathname.split('/').pop() as string;
-    if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS });
-    if (req.method() === 'GET') {
-      if (table === 'league_members') {
-        const list = new URL(req.url()).search.includes('leagues'); // "le mie leghe" (elenco) oppure "il mio ruolo" (uno solo)
-        return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: JSON.stringify(list ? [] : { role }) });
-      }
-      const h = { ...req.headers() };
-      h.authorization = `Bearer ${h.apikey}`; // le letture pubbliche non devono portare il finto accesso
-      return r.continue({ headers: h });
-    }
-    if (table === 'claims_pending') return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: '[]' }); // lettura (richieste in attesa)
-    if (table === 'league_member_list') return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: '[]' }); // è una lettura (elenco membri)
-    let body: unknown = null;
-    try { body = req.postDataJSON(); } catch { /* nessun corpo */ }
-    writes.push({ method: req.method(), table, body });
-    const created = req.method() === 'POST' && (table === 'matches' || table === 'players');
-    return r.fulfill({ status: created ? 201 : 204, headers: CORS, contentType: 'application/json', body: created ? JSON.stringify({ id: table === 'players' ? 'nuovo-giocatore' : 'nuova-partita' }) : '' });
-  });
-  return writes;
+/** Accesso simulato con il ruolo dato in San Marcello (dati veri di prova); le scritture si intercettano e si registrano. */
+async function login(page: Page, role: 'admin' | 'member' = 'admin') {
+  return (await setup(page, { publicRole: role })) as Write[];
 }
 
 async function openLastMatch(page: Page) {

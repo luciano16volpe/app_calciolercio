@@ -72,7 +72,7 @@ export function PlatformLeaguesPanel({ onClose }: { onClose: () => void }) {
       {q.isError ? <div className="card" style={{ color: 'var(--red)', fontWeight: 700, fontSize: 13 }}>{(q.error as Error).message}</div> : null}
       {(q.data ?? []).map((l) => (
         <div className="card platform-league" key={l.id} style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 14, fontWeight: 800 }}>{l.ownerMissing ? '⚠️ ' : ''}{l.name} <span className="menu-role">{l.isPublic ? 'Pubblica' : 'Privata'}</span></div>
+          <div style={{ fontSize: 14, fontWeight: 800 }}>{l.ownerMissing ? '⚠️ ' : ''}{l.name} <span className="menu-role">Privata</span></div>
           <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 4, lineHeight: 1.5 }}>
             Creatore: <b>{l.ownerMissing ? 'nessuno' : l.owner}</b><br />
             Amministratori: {l.admins || '—'}<br />

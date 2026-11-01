@@ -11,7 +11,8 @@ test('Crea lega: controlli sul nome, poi codice d\'invito e lega scelta', async 
   await expect(page.locator('#toast')).toContainText('da 3 a 40 caratteri');
   expect(writes.length).toBe(0);
   await page.locator('#cl-name').fill('  Calcetto del giovedì ');
-  await page.locator('#cl-public').click();
+  await expect(page.locator('#cl-public')).toHaveCount(0); // non esistono leghe pubbliche: si entra solo su invito
+  await expect(page.locator('#cl-private-note')).toContainText('solo con un invito');
   await page.getByRole('button', { name: '7 vs 7' }).click();
   await page.getByRole('button', { name: 'Gio', exact: true }).click();
   await page.locator('#cl-submit').click();
@@ -19,7 +20,7 @@ test('Crea lega: controlli sul nome, poi codice d\'invito e lega scelta', async 
   await expect(page.locator('#created-code')).toHaveText('abc12345');
   const body = lastWrite(writes, 'leagues').body as { id: string; name: string; is_public: boolean; settings: unknown };
   expect(body.name).toBe('Calcetto del giovedì');
-  expect(body.is_public).toBe(true);
+  expect(body.is_public).toBe(false);
   expect(body.settings).toEqual({ format: 7, day: 4 });
   expect(await page.evaluate(() => localStorage.getItem('calciolercio-league'))).toBe('calcetto-del-giovedi');
   await noOverflow(page);

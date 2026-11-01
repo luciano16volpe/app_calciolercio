@@ -9,7 +9,7 @@ import { createPlayer } from './data/mutations';
 import { useQueryClient } from '@tanstack/react-query';
 import { ImageProvider } from './app/ImageViewer';
 import { ToastProvider } from './app/Toast';
-import { LEAGUE_QUERY_KEY, useLeagueData, type LeagueData } from './data/queries';
+import { LEAGUE_QUERY_KEY, NoLeagueError, useLeagueData, type LeagueData } from './data/queries';
 import { ClassifichePage } from './features/classifiche/ClassifichePage';
 import { GiocaPage } from './features/gioca/GiocaPage';
 import { SettingsPage } from './features/impostazioni/SettingsPage';
@@ -77,8 +77,20 @@ function GameSettingsGate({ data, onClose }: { data: LeagueData; onClose: () => 
   return <GameSettingsPanel data={data} editable={sup.data === true} onClose={onClose} />;
 }
 
-/** Messaggio al posto di una pagina mentre i dati si caricano o se non arrivano. */
-function Loading({ q }: { q: { isError: boolean; refetch: () => unknown } }) {
+/** Messaggio al posto di una pagina mentre i dati si caricano o se non arrivano; senza leghe, come entrare. */
+function Loading({ q, onPanel }: { q: { isError: boolean; error?: unknown; refetch: () => unknown }; onPanel: (p: Panel) => void }) {
+  if (q.error instanceof NoLeagueError) {
+    return (
+      <div className="card" id="no-league">
+        <div className="section-header">👋 Benvenuto in CalcioLercio</div>
+        <div style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--text2)' }}>
+          Non fai ancora parte di nessuna lega. Le leghe si vedono solo su invito: apri il <b>link personale</b> che ti ha mandato un amministratore, oppure entra con il <b>codice d’invito</b>. Puoi anche creare una nuova lega.
+        </div>
+        <button type="button" className="f-btn" id="no-league-join" onClick={() => onPanel('join-league')}>🔑 Entra con un codice</button>
+        <button type="button" className="btn btn-secondary btn-full" id="no-league-create" style={{ marginTop: 8 }} onClick={() => onPanel('create-league')}>＋ Crea una nuova lega</button>
+      </div>
+    );
+  }
   if (q.isError) {
     return (
       <div className="card">
@@ -169,16 +181,16 @@ function Shell() {
 
       <div id="page-rosa" className={`page${page === 'rosa' ? ' active' : ''}`}>
         <InstallHint />
-        {data ? <RosaGate data={data} onOpen={openPlayerFromRosa} /> : <Loading q={q} />}
+        {data ? <RosaGate data={data} onOpen={openPlayerFromRosa} /> : <Loading q={q} onPanel={setPanel} />}
       </div>
       <div id="page-partita" className={`page${page === 'partita' ? ' active' : ''}`}>
-        {data ? <GiocaGate data={data} /> : <Loading q={q} />}
+        {data ? <GiocaGate data={data} /> : <Loading q={q} onPanel={setPanel} />}
       </div>
       <div id="page-partite" className={`page${page === 'partite' ? ' active' : ''}`}>
-        {data ? <PartitePage data={data} act={act} onArchive={() => setView({ kind: 'gazArchive' })} /> : <Loading q={q} />}
+        {data ? <PartitePage data={data} act={act} onArchive={() => setView({ kind: 'gazArchive' })} /> : <Loading q={q} onPanel={setPanel} />}
       </div>
       <div id="page-classifiche" className={`page${page === 'classifiche' ? ' active' : ''}`}>
-        {data ? <ClassifichePage data={data} onOpenPlayer={openPlayer} onOpenMatch={openMatch} /> : <Loading q={q} />}
+        {data ? <ClassifichePage data={data} onOpenPlayer={openPlayer} onOpenMatch={openMatch} /> : <Loading q={q} onPanel={setPanel} />}
       </div>
       <div id="page-settings" className={`page${page === 'settings' ? ' active' : ''}`}><SettingsPage data={data} /></div>
 
