@@ -169,7 +169,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
           overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch',
         }}
       >
-        <div style={inline ? { background: 'var(--gray)', borderRadius: 'var(--radius)', padding: 16, border: '1.5px solid var(--gray2)' } : { maxWidth: 600, margin: '0 auto', background: 'var(--gray)', borderRadius: 'var(--radius)', padding: 16, boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+        <div style={inline ? { maxWidth: 420, margin: '0 auto', background: 'var(--gray)', borderRadius: 'var(--radius)', padding: 16, border: '1.5px solid var(--gray2)', boxShadow: '0 6px 20px rgba(0,0,0,0.18)' } : { maxWidth: 600, margin: '0 auto', background: 'var(--gray)', borderRadius: 'var(--radius)', padding: 16, boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, minHeight: 24 }}>
             <div style={{ fontSize: 16, fontWeight: 800 }} id="match-modal-title">
               {player.name}
