@@ -25,21 +25,19 @@ export interface LeagueSettings {
 const fail = (what: string, e: { message: string }) => new Error(`${what}: ${e.message}`);
 const plain = (e: { message: string }) => new Error(e.message);
 
-/** La lega pubblica e quelle di cui faccio parte (senza accesso: solo la pubblica). */
+/** Le leghe di cui faccio parte (non esistono leghe pubbliche: si entra solo su invito). */
 export async function fetchMyLeagues(userId: string | null): Promise<MyLeague[]> {
   const cols = 'id, name, slug, is_public, invite_code, owner_id';
-  const pub = await supabase.from('leagues').select(cols).eq('is_public', true).order('created_at');
-  if (pub.error) throw fail('leghe', pub.error);
   const mk = (l: { id: string; name: string; slug: string; is_public: boolean; invite_code: string; owner_id: string | null }, role: Role): MyLeague => ({
     id: l.id, name: l.name, slug: l.slug, isPublic: l.is_public, role, inviteCode: l.invite_code, ownerId: l.owner_id,
   });
-  const out = new Map<string, MyLeague>((pub.data ?? []).map((l) => [l.id, mk(l, null)]));
+  const out = new Map<string, MyLeague>();
   if (userId) {
     const mine = await supabase.from('league_members').select(`role, leagues(${cols})`).eq('user_id', userId);
     if (mine.error) throw fail('mie leghe', mine.error);
     for (const m of mine.data ?? []) if (m.leagues) out.set(m.leagues.id, mk(m.leagues, m.role));
   }
-  return [...out.values()].sort((a, b) => Number(b.isPublic) - Number(a.isPublic) || a.name.localeCompare(b.name));
+  return [...out.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export const MY_LEAGUES_KEY = ['my-leagues'] as const;
@@ -49,9 +47,9 @@ export function useMyLeagues(userId: string | null) {
 }
 
 /** Crea una lega: chi la crea ne diventa amministratore e creatore. L'id si sceglie qui, così non serve rileggere la riga appena creata. */
-export async function createLeague(input: { name: string; isPublic: boolean; settings: LeagueSettings }): Promise<{ id: string }> {
+export async function createLeague(input: { name: string; settings: LeagueSettings }): Promise<{ id: string }> {
   const id = crypto.randomUUID();
-  const { error } = await supabase.from('leagues').insert({ id, name: input.name, is_public: input.isPublic, settings: input.settings as Json });
+  const { error } = await supabase.from('leagues').insert({ id, name: input.name, is_public: false, settings: input.settings as Json });
   if (error) throw fail('lega', error);
   return { id };
 }
@@ -74,10 +72,9 @@ export async function deleteLeague(leagueId: string): Promise<void> {
   if (error) throw fail('eliminazione', error);
 }
 
-export async function updateLeague(leagueId: string, patch: { name?: string; isPublic?: boolean; settings?: LeagueSettings }): Promise<void> {
-  const row: { name?: string; is_public?: boolean; settings?: Json } = {};
+export async function updateLeague(leagueId: string, patch: { name?: string; settings?: LeagueSettings }): Promise<void> {
+  const row: { name?: string; settings?: Json } = {};
   if (patch.name !== undefined) row.name = patch.name;
-  if (patch.isPublic !== undefined) row.is_public = patch.isPublic;
   if (patch.settings !== undefined) row.settings = patch.settings as Json;
   const { error } = await supabase.from('leagues').update(row).eq('id', leagueId);
   if (error) throw fail('lega', error);

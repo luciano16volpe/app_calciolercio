@@ -18,7 +18,7 @@ export function ProfilePanel({ data, onClose }: { data: LeagueData; onClose: () 
   const confirm = useConfirm();
   const qc = useQueryClient();
   const leagues = useMyLeagues(user?.id ?? null);
-  const mine = (leagues.data ?? []).filter((l) => l.role && !l.isPublic);
+  const mine = (leagues.data ?? []).filter((l) => l.role);
   const leave = async (id: string, slug: string, name: string) => {
     if (!user) return;
     const ok = await confirm({ icon: '🚪', title: 'Uscire dalla lega?', lines: [`Non vedrai più "${name}", a meno che non sia pubblica o ti invitino di nuovo.`], okLabel: 'Esci', danger: true });

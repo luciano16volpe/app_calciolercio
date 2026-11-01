@@ -137,7 +137,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
                 type="button" key={l.id} className={`menu-lgrow${l.id === lid ? ' act' : ''}`} aria-current={l.id === lid} data-slug={l.slug}
                 onClick={() => { setSelectedLeague(l.slug); onClose(); }}
               >
-                <span className="menu-lgic">{l.isPublic ? '⚽' : '🏢'}</span>
+                <span className="menu-lgic">🏢</span>
                 <span className="menu-lgn">{l.name}</span>
                 <span className={`menu-role${l.role === 'admin' ? ' a' : l.role === 'redazione' ? ' r' : ''}`}>{l.role ? ROLE_LABEL[l.role] : 'Ospite'}</span>
               </button>

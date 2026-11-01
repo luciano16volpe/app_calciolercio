@@ -26,7 +26,6 @@ export function LeagueSettingsPanel({ data, onClose }: { data: LeagueData; onClo
   const code = mine.data?.find((l) => l.id === lid)?.inviteCode ?? '';
   const members = useMembers(lid, true);
   const [name, setName] = useState(data.league.name);
-  const [isPublic, setIsPublic] = useState(data.league.is_public);
   const [s, setS] = useState<LeagueSettings>({});
   const [busy, setBusy] = useState(false);
   const [newOwner, setNewOwner] = useState('');
@@ -40,7 +39,7 @@ export function LeagueSettingsPanel({ data, onClose }: { data: LeagueData; onClo
     if (n.length < 3 || n.length > 40) return toast('Il nome deve avere da 3 a 40 caratteri');
     setBusy(true);
     try {
-      await updateLeague(lid, { name: n, isPublic, settings: s });
+      await updateLeague(lid, { name: n, settings: s });
       await refresh();
       toast('Impostazioni salvate');
     } catch (e) {
@@ -106,11 +105,7 @@ export function LeagueSettingsPanel({ data, onClose }: { data: LeagueData; onClo
       <div className="card">
         <div className="f-lab" style={{ marginTop: 0 }}>Nome</div>
         <input className="f-inp" id="ls-name" type="text" maxLength={40} value={name} onChange={(e) => setName(e.target.value)} />
-        <div className="f-lab">Chi può vederla</div>
-        <div className="f-seg">
-          <button type="button" className={!isPublic ? 'on' : ''} onClick={() => setIsPublic(false)}>🔒 Solo i membri</button>
-          <button type="button" className={isPublic ? 'on' : ''} onClick={() => setIsPublic(true)}>🌐 Chiunque abbia il link</button>
-        </div>
+        <div className="f-hint">🔒 La lega è privata: si entra solo con un invito (link personale o codice).</div>
         <div className="f-lab">Formato abituale</div>
         <div className="f-seg">
           {([5, 6, 7] as const).map((f) => <button type="button" key={f} className={s.format === f ? 'on' : ''} onClick={() => setS({ ...s, format: f })}>{f} vs {f}</button>)}

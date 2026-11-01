@@ -36,7 +36,6 @@ export function CreateLeagueSheet({ onClose }: { onClose: () => void }) {
   const toast = useToast();
   const qc = useQueryClient();
   const [name, setName] = useState('');
-  const [isPublic, setIsPublic] = useState(false);
   const [format, setFormat] = useState<5 | 6 | 7>(5);
   const [day, setDay] = useState<number | undefined>(undefined);
   const [busy, setBusy] = useState(false);
@@ -47,7 +46,7 @@ export function CreateLeagueSheet({ onClose }: { onClose: () => void }) {
     if (n.length < 3 || n.length > 40) return toast('Il nome deve avere da 3 a 40 caratteri');
     setBusy(true);
     try {
-      const { id } = await createLeague({ name: n, isPublic, settings: { format, ...(day ? { day } : {}) } });
+      const { id } = await createLeague({ name: n, settings: { format, ...(day ? { day } : {}) } });
       const mine = await fetchMyLeagues(user?.id ?? null);
       const l = mine.find((x) => x.id === id);
       await qc.invalidateQueries({ queryKey: MY_LEAGUES_KEY });
@@ -82,12 +81,7 @@ export function CreateLeagueSheet({ onClose }: { onClose: () => void }) {
       <div className="card">
         <div className="f-lab" style={{ marginTop: 0 }}>Nome della lega</div>
         <input className="f-inp" id="cl-name" type="text" maxLength={40} placeholder="Es. Calcetto del Giovedì" value={name} onChange={(e) => setName(e.target.value)} />
-        <div className="f-lab">Chi può vederla</div>
-        <div className="f-seg">
-          <button type="button" id="cl-private" className={!isPublic ? 'on' : ''} onClick={() => setIsPublic(false)}>🔒 Solo i membri</button>
-          <button type="button" id="cl-public" className={isPublic ? 'on' : ''} onClick={() => setIsPublic(true)}>🌐 Chiunque abbia il link</button>
-        </div>
-        <div className="f-hint">Con «Solo i membri» serve il codice d'invito per entrare.</div>
+        <div className="f-hint" id="cl-private-note">🔒 La lega è privata: si entra solo con un invito (link personale o codice).</div>
         <div className="f-lab">Formato abituale</div>
         <div className="f-seg">
           {([5, 6, 7] as const).map((f) => <button type="button" key={f} className={format === f ? 'on' : ''} onClick={() => setFormat(f)}>{f} vs {f}</button>)}

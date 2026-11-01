@@ -52,20 +52,32 @@ async function fetchAll<T>(build: (from: number, to: number) => PromiseLike<{ da
   }
 }
 
-/** Carica tutto quello che serve per mostrare una lega: quella scelta (se si può vedere), altrimenti la lega pubblica. */
+/** Chi non fa parte di nessuna lega: non c'è niente da mostrare (si entra solo su invito). */
+export class NoLeagueError extends Error {
+  constructor() {
+    super('Non fai ancora parte di nessuna lega.');
+    this.name = 'NoLeagueError';
+  }
+}
+
+/** Carica tutto quello che serve per mostrare una lega: quella scelta (se si può vedere), altrimenti la prima di cui faccio parte. */
 export async function fetchLeagueData(slug: string | null = null): Promise<LeagueData> {
   let league: LeagueData['league'] | undefined;
   if (slug) {
     const chosen = await supabase.from('leagues').select('id, name, is_public, slug, owner_id').eq('slug', slug).maybeSingle();
     if (chosen.error) throw new Error(`lega: ${chosen.error.message}`);
-    league = chosen.data ?? undefined; // lega non più visibile (uscito, tolta, indirizzo sbagliato): si torna alla pubblica
+    league = chosen.data ?? undefined; // lega non più visibile (uscito, tolta, indirizzo sbagliato): si passa alla prima delle mie
   }
   if (!league) {
-    const { data: leagues, error } = await supabase.from('leagues').select('id, name, is_public, slug, owner_id').eq('is_public', true).order('created_at').limit(1);
-    if (error) throw new Error(`lega: ${error.message}`);
-    league = leagues?.[0];
+    const { data: sess } = await supabase.auth.getSession();
+    const uid = sess.session?.user.id;
+    if (uid) {
+      const { data: mine, error } = await supabase.from('league_members').select('joined_at, leagues(id, name, is_public, slug, owner_id)').eq('user_id', uid).order('joined_at').limit(1);
+      if (error) throw new Error(`lega: ${error.message}`);
+      league = mine?.[0]?.leagues ?? undefined;
+    }
   }
-  if (!league) throw new Error('Nessuna lega trovata.');
+  if (!league) throw new NoLeagueError();
 
   const lp = await fetchAll((a, b) => supabase.from('league_players').select('player_id, aliases').eq('league_id', league.id).order('player_id').range(a, b), 'giocatori della lega');
   const ids = lp.map((x) => x.player_id);
@@ -123,6 +135,7 @@ export function useLeagueData() {
   return useQuery({
     queryKey: [...LEAGUE_QUERY_KEY, leagueId],
     queryFn: () => fetchLeagueData(leagueId),
+    retry: (n, e) => !(e instanceof NoLeagueError) && n < 1, // «nessuna lega» non cambia riprovando
     staleTime: 60_000, // come legacy: i dati valgono 1 minuto
   });
 }
