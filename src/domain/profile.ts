@@ -64,6 +64,8 @@ export const recentMatches = (rows: ProfileRow[], n = 10): ProfileRow[] =>
 
 export interface HistoryEntry {
   at: string;
+  /** chi ha cambiato le statistiche (nome); assente se non si sa */
+  by?: string | null;
   oldStats: number[] | null;
   newStats: number[] | null;
   oldRoles: string[] | null;

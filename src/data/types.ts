@@ -771,6 +771,17 @@ export type Database = {
         Args: { drop_id: string; keep: string }
         Returns: undefined
       }
+      player_history: {
+        Args: { p: string }
+        Returns: {
+          changed_at: string
+          changed_by_name: string
+          new_roles: string[]
+          new_stats: number[]
+          old_roles: string[]
+          old_stats: number[]
+        }[]
+      }
       player_visible: { Args: { p: string }; Returns: boolean }
       players_unclaimed: {
         Args: { l: string }

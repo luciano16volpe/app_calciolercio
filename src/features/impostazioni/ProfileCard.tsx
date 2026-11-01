@@ -10,7 +10,7 @@ export function ProfileCard({ playerId, name }: { playerId: string; name: string
   const rows = q.data?.rows ?? [];
   const leagues = summarizeByLeague(rows);
   const last = recentMatches(rows, 8);
-  const history = (q.data?.history ?? []).map((h) => ({ at: h.at, lines: describeChange(h) })).filter((h) => h.lines.length);
+  const history = (q.data?.history ?? []).map((h) => ({ at: h.at, by: h.by ?? '', lines: describeChange(h) })).filter((h) => h.lines.length);
 
   return (
     <div className="card" id="profile-card">
@@ -58,7 +58,7 @@ export function ProfileCard({ playerId, name }: { playerId: string; name: string
           <div style={{ fontSize: 12, fontWeight: 800, margin: '12px 0 4px' }}>Storico delle statistiche</div>
           {history.map((h) => (
             <div key={h.at} className="profile-history" style={{ padding: '5px 0', borderBottom: '1px solid var(--gray2)', fontSize: 12 }}>
-              <div style={{ color: 'var(--text3)', fontSize: 11 }}>{formatDate(h.at.slice(0, 10))}</div>
+              <div className="profile-history-when" style={{ color: 'var(--text3)', fontSize: 11 }}>{formatDate(h.at.slice(0, 10))}{h.by ? ` · modificato da ${h.by}` : ''}</div>
               {h.lines.join(' · ')}
             </div>
           ))}

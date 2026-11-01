@@ -40,7 +40,7 @@ export interface Opts {
 }
 
 /** Funzioni del database che solo leggono: non contano come scritture. */
-const READ_RPCS = new Set(['is_super_admin', 'league_member_list', 'admin_requests_list', 'claims_pending', 'league_players_status', 'invite_preview', 'admin_list_leagues', 'admin_list_users', 'admin_league_admins', 'audit_list', 'players_unclaimed']);
+const READ_RPCS = new Set(['is_super_admin', 'league_member_list', 'admin_requests_list', 'claims_pending', 'league_players_status', 'invite_preview', 'admin_list_leagues', 'admin_list_users', 'admin_league_admins', 'audit_list', 'players_unclaimed', 'player_history']);
 
 const slugify = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -49,7 +49,7 @@ export async function setup(page: Page, opts: Opts = {}): Promise<Write[]> {
   const { loggedIn = true } = opts;
   const mine: Mine[] = [...(opts.mine ?? [])];
   const writes: Write[] = [];
-  const rpc: Record<string, unknown> = { league_member_list: [], admin_requests_list: [], claims_pending: [], league_players_status: [], players_unclaimed: [], is_super_admin: false, ...opts.rpc };
+  const rpc: Record<string, unknown> = { league_member_list: [], admin_requests_list: [], claims_pending: [], league_players_status: [], players_unclaimed: [], player_history: opts.history ?? [], is_super_admin: false, ...opts.rpc };
   let pub: MockLeague | null = null;
   if (loggedIn) {
     await page.addInitScript(([ref, jwt]) => {

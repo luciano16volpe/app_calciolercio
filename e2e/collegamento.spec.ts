@@ -181,7 +181,7 @@ test('Profilo: riepilogo per lega, ultime partite e storico', async ({ page }) =
     { match_id: 'm2', team: 'B', rating: 6, goals: 0, assist: 0, matches: m('2026-10-08', 5, 3, 'L1', 'CalcioLercio') },
     { match_id: 'm3', team: 'A', rating: null, goals: 1, assist: 0, matches: m('2026-10-15', 2, 2, 'L2', 'Altra lega') },
   ];
-  const history = [{ changed_at: '2026-10-20T10:00:00Z', old_stats: [5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5], new_stats: [5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5], old_roles: ['MED'], new_roles: ['MED'] }];
+  const history = [{ changed_by_name: 'Luciano', changed_at: '2026-10-20T10:00:00Z', old_stats: [5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5], new_stats: [5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5], old_roles: ['MED'], new_roles: ['MED'] }];
   await setup(page, { mePlayer: { id: 'p1', name: 'Marco' }, profileRows, history });
   await openApp(page);
   await openPanel(page, '#menu-profile', '#sheet-profile');
@@ -193,6 +193,7 @@ test('Profilo: riepilogo per lega, ultime partite e storico', async ({ page }) =
   await expect(page.locator('.profile-match')).toHaveCount(3);
   await expect(page.locator('.profile-match').first()).toContainText('15/10/2026');
   await expect(page.locator('.profile-history')).toContainText('tiro 6 → 7');
+  await expect(page.locator('.profile-history-when')).toContainText('20/10/2026 · modificato da Luciano');
   await noOverflow(page);
 });
 

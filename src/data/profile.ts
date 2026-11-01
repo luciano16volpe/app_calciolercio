@@ -30,14 +30,10 @@ export async function fetchProfile(playerId: string): Promise<ProfileData> {
     }
     if (!data || data.length < PAGE) break;
   }
-  const h = await supabase
-    .from('player_stats_history')
-    .select('changed_at, old_stats, new_stats, old_roles, new_roles')
-    .eq('player_id', playerId)
-    .order('changed_at', { ascending: false })
-    .limit(30);
+  // storico con il nome di chi ha fatto la modifica (funzione del database, dal più recente)
+  const h = await supabase.rpc('player_history', { p: playerId });
   if (h.error) throw new Error(`storico: ${h.error.message}`);
-  const history = (h.data ?? []).map((x): HistoryEntry => ({ at: x.changed_at, oldStats: x.old_stats, newStats: x.new_stats, oldRoles: x.old_roles, newRoles: x.new_roles }));
+  const history = (h.data ?? []).map((x): HistoryEntry => ({ at: x.changed_at, by: x.changed_by_name, oldStats: x.old_stats, newStats: x.new_stats, oldRoles: x.old_roles, newRoles: x.new_roles }));
   return { rows, history };
 }
 

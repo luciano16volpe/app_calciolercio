@@ -24,6 +24,7 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       'Account: nome, email e password (la password è conservata in forma protetta e non la vediamo).',
       'Giocatore: nome, foto, ruoli, statistiche, partite, voti, gol, assist, titoli e descrizioni delle pagelle, Gazzette.',
       'Appartenenza alle leghe e ruolo in ciascuna (membro, redazione, amministratore).',
+      'Storico delle modifiche alle statistiche e ai ruoli di ogni giocatore, con la data e il nome di chi le ha cambiate.',
     ],
   },
   {
