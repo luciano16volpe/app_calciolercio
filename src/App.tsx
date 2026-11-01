@@ -14,6 +14,7 @@ import { ClassifichePage } from './features/classifiche/ClassifichePage';
 import { GiocaPage } from './features/gioca/GiocaPage';
 import { SettingsPage } from './features/impostazioni/SettingsPage';
 import { AuditPanel } from './features/menu/AuditPanel';
+import { LoginPage } from './features/auth/LoginPage';
 import { GameSettingsPanel } from './features/menu/GameSettingsPanel';
 import { AdminProposalsPanel, PlatformLeaguesPanel, PlatformUsersPanel } from './features/menu/AdminPanels';
 import { InvitePage } from './features/menu/InvitePage';
@@ -235,13 +236,22 @@ function Shell() {
   );
 }
 
+/** Chi non è loggato vede solo la pagina d'accesso (tranne dal link d'invito, che ha il suo modulo). Con «imposta la password» si resta qui finché non è salvata. */
+function Gate() {
+  const { user, loading, recovery } = useAuth();
+  const invite = parsePath(window.location.pathname).invite;
+  if (loading) return <LoginPage waiting />;
+  if (recovery || (!user && !invite)) return <LoginPage />;
+  return <Shell />;
+}
+
 export function App() {
   return (
     <AuthProvider>
       <ToastProvider>
         <ImageProvider>
           <DialogProvider>
-            <Shell />
+            <Gate />
           </DialogProvider>
         </ImageProvider>
       </ToastProvider>

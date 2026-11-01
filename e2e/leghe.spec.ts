@@ -78,7 +78,7 @@ test('Cambio lega: dal menu e con l\'indirizzo /l/<slug>', async ({ page }) => {
 });
 
 test('Cambio lega: un indirizzo sconosciuto riporta alla lega pubblica', async ({ page }) => {
-  await setup(page, { loggedIn: false });
+  await setup(page);
   await openApp(page, '/l/non-esiste/rosa');
   await expect(page.locator('#league-pill')).toContainText('San Marcello');
   expect(new URL(page.url()).pathname).toBe('/l/san-marcello/rosa');

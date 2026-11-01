@@ -198,7 +198,7 @@ export function ResultView({ data, res, scores, onChange, onCreate }: { data: Le
       <div style={{ display: 'flex', gap: 8, margin: '4px 0 14px' }}>
         <button className="btn btn-primary" style={{ ...narrowBtn, background: '#25D366', borderColor: '#25D366' }} onClick={() => showImage('⚽ Formazioni di oggi', combosFormations(data, scores, c), 'formazioni.png', '⚽ Formazioni di oggi')}>📲 Condividi</button>
         <button className="btn btn-secondary" style={narrowBtn} onClick={() => { const s = comboSheet(data, c); shareCanvas(s.canvas, 'foglio_partita_' + s.date + '.png', '📋 Foglio partita del ' + formatDate(s.date)); }} title="Foglio A4 in bianco e nero da stampare e compilare in campo">🖨️ Foglio</button>
-        <button className="btn btn-primary" style={narrowBtn} onClick={onCreate ?? soon("Per creare la partita serve l'accesso come amministratore (Impostazioni → Account)")}>📅 Crea partita</button>
+        <button className="btn btn-primary" style={narrowBtn} onClick={onCreate ?? soon("Per creare la partita serve essere amministratore della lega")}>📅 Crea partita</button>
       </div>
 
       <div className="card">
