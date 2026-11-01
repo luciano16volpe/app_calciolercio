@@ -225,7 +225,7 @@ function Shell() {
       {panel === 'audit' ? <AuditPanel onClose={closePanel} /> : null}
       {panel === 'platform-leagues' ? <PlatformLeaguesPanel onClose={closePanel} /> : null}
       {panel === 'platform-users' ? <PlatformUsersPanel onClose={closePanel} /> : null}
-      {data && panel === 'profile' ? <ProfilePanel data={data} onClose={closePanel} /> : null}
+      {data && panel === 'profile' ? <ProfilePanel data={data} onClose={closePanel} onOpenMatch={openMatch} /> : null}
       {data && panel === 'members' ? <MembersPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'invites' ? <InvitesPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'claims' ? <ClaimsPanel data={data} onClose={closePanel} /> : null}

@@ -112,7 +112,7 @@ function Pairs({ data, player, onOpenPlayer }: { data: LeagueData; player: Playe
   );
 }
 
-export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch, bachecaOpen, onToggleBacheca, canEdit = false }: {
+export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch, bachecaOpen, onToggleBacheca, canEdit = false, inline = false }: {
   data: LeagueData;
   playerId: string;
   onClose: () => void;
@@ -122,6 +122,8 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   onToggleBacheca: () => void;
   /** scheda modificabile (foto, ruoli, statistiche): dalla Rosa, per l'amministratore */
   canEdit?: boolean;
+  /** dentro una pagina (Il mio profilo) invece che a tutto schermo: niente ✕ né Esc */
+  inline?: boolean;
 }) {
   const { dataset } = data;
   const player = dataset.players.find((p) => p.id === playerId);
@@ -131,10 +133,11 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
 
   // Esc chiude la scheda (passando a un altro giocatore la scheda riparte da capo: vedi key in App)
   useEffect(() => {
+    if (inline) return;
     const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', k);
     return () => document.removeEventListener('keydown', k);
-  }, [onClose]);
+  }, [onClose, inline]);
 
   if (!player) return null;
   const state = formState(dataset, player, all);
@@ -160,13 +163,13 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   return (
     <>
       <div
-        id="match-modal"
-        style={{
+        id={inline ? 'profile-player-card' : 'match-modal'}
+        style={inline ? undefined : {
           display: 'block', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 500, padding: 14,
           overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch',
         }}
       >
-        <div style={{ maxWidth: 600, margin: '0 auto', background: 'var(--gray)', borderRadius: 'var(--radius)', padding: 16, boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+        <div style={inline ? { background: 'var(--gray)', borderRadius: 'var(--radius)', padding: 16, border: '1.5px solid var(--gray2)' } : { maxWidth: 600, margin: '0 auto', background: 'var(--gray)', borderRadius: 'var(--radius)', padding: 16, boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, minHeight: 24 }}>
             <div style={{ fontSize: 16, fontWeight: 800 }} id="match-modal-title">
               {player.name}
@@ -179,7 +182,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
                 </span>
               )}
             </div>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text2)', fontSize: 22, padding: 4, lineHeight: 1 }}>✕</button>
+            {inline ? null : <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text2)', fontSize: 22, padding: 4, lineHeight: 1 }}>✕</button>}
           </div>
           <div id="match-modal-body">
             {canEdit ? (
