@@ -61,6 +61,63 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_name: string | null
+          at: string
+          changes: Json | null
+          entity: string
+          entity_id: string | null
+          entity_label: string | null
+          grp: string
+          id: number
+          ip: unknown
+          league_id: string | null
+          league_name: string | null
+          source: string
+          tx: number
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_name?: string | null
+          at?: string
+          changes?: Json | null
+          entity: string
+          entity_id?: string | null
+          entity_label?: string | null
+          grp: string
+          id?: number
+          ip?: unknown
+          league_id?: string | null
+          league_name?: string | null
+          source?: string
+          tx?: number
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_name?: string | null
+          at?: string
+          changes?: Json | null
+          entity?: string
+          entity_id?: string | null
+          entity_label?: string | null
+          grp?: string
+          id?: number
+          ip?: unknown
+          league_id?: string | null
+          league_name?: string | null
+          source?: string
+          tx?: number
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       gazzette: {
         Row: {
           file_path: string
@@ -621,6 +678,29 @@ export type Database = {
           user_id: string
         }[]
       }
+      audit_anonymize_user: { Args: { uid: string }; Returns: undefined }
+      audit_cleanup: { Args: never; Returns: undefined }
+      audit_ctx: { Args: never; Returns: Record<string, unknown> }
+      audit_diff: {
+        Args: { ignore: string[]; n: Json; o: Json }
+        Returns: Json
+      }
+      audit_event: {
+        Args: {
+          p_action: string
+          p_actor?: string
+          p_changes: Json
+          p_entity: string
+          p_entity_id: string
+          p_grp: string
+          p_label: string
+          p_league: string
+        }
+        Returns: undefined
+      }
+      audit_match_label: { Args: { mid: string }; Returns: string }
+      audit_player_name: { Args: { pid: string }; Returns: string }
+      audit_user_name: { Args: { uid: string }; Returns: string }
       can_edit_player: { Args: { p: string }; Returns: boolean }
       cancel_admin_request: { Args: { c: string }; Returns: undefined }
       claims_pending: {
@@ -682,6 +762,10 @@ export type Database = {
         }[]
       }
       league_visible: { Args: { l: string }; Returns: boolean }
+      log_event: {
+        Args: { p_action: string; p_email?: string }
+        Returns: undefined
+      }
       match_league: { Args: { m: string }; Returns: string }
       merge_players: {
         Args: { drop_id: string; keep: string }

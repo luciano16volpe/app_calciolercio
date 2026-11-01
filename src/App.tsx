@@ -12,6 +12,7 @@ import { LEAGUE_QUERY_KEY, useLeagueData, type LeagueData } from './data/queries
 import { ClassifichePage } from './features/classifiche/ClassifichePage';
 import { GiocaPage } from './features/gioca/GiocaPage';
 import { SettingsPage } from './features/impostazioni/SettingsPage';
+import { AuditPanel } from './features/menu/AuditPanel';
 import { AdminProposalsPanel, PlatformLeaguesPanel, PlatformUsersPanel } from './features/menu/AdminPanels';
 import { InvitePage } from './features/menu/InvitePage';
 import { CreateLeagueSheet, JoinLeagueSheet } from './features/menu/LeagueSheets';
@@ -198,6 +199,7 @@ function Shell() {
       {panel === 'join-league' ? <JoinLeagueSheet onClose={closePanel} onJoined={() => setPanel('profile')} /> : null}
       {panel === 'privacy' ? <PrivacyPanel onClose={closePanel} onDeleted={() => { setSelectedLeague(null); closePanel(); }} /> : null}
       {panel === 'help' ? <HelpPanel onClose={closePanel} /> : null}
+      {panel === 'audit' ? <AuditPanel onClose={closePanel} /> : null}
       {panel === 'platform-leagues' ? <PlatformLeaguesPanel onClose={closePanel} /> : null}
       {panel === 'platform-users' ? <PlatformUsersPanel onClose={closePanel} /> : null}
       {data && panel === 'profile' ? <ProfilePanel data={data} onClose={closePanel} /> : null}

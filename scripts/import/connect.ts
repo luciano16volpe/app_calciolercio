@@ -37,8 +37,10 @@ function serviceKeyFromCli(): string {
 }
 
 export function adminClient(): Admin {
+  // l'intestazione fa comparire nel registro attività l'origine «importazione» (supabase/migrations/…registro_attivita.sql)
   return createClient<Database>(SUPABASE_URL, serviceKeyFromCli(), {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { 'x-audit-source': 'import' } },
   });
 }
 

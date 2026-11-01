@@ -1,6 +1,6 @@
 // Menu laterale (☰): apertura e chiusura, sezioni per ruolo, nessuno sbordo a 320 / 360 / 390 px.
 import { expect, test } from '@playwright/test';
-import { mineAs, noOverflow, openApp, openMenu, setup } from './helpers';
+import { lastWrite, mineAs, noOverflow, openApp, openMenu, setup } from './helpers';
 
 const sections = (page: import('@playwright/test').Page) => page.locator('.menu-sec').allTextContents();
 /** Le sezioni dipendono dal ruolo, che arriva dopo l'apertura: si aspetta che l'elenco sia quello atteso. */
@@ -80,6 +80,15 @@ test('Menu: il creatore vede anche le proposte di amministratore', async ({ page
   await openMenu(page);
   await expect(page.locator('#menu-role')).toContainText('Admin (creatore)');
   await expect(page.locator('#menu-proposals')).toBeVisible();
+});
+
+test('Menu: «Esci» avvisa il registro attività prima di uscire', async ({ page }) => {
+  const writes = await setup(page);
+  await openApp(page);
+  await openMenu(page);
+  await page.locator('#menu-signout').click();
+  await expect.poll(() => writes.some((w) => w.table === 'log_event')).toBe(true);
+  expect(lastWrite(writes, 'log_event').body).toEqual({ p_action: 'auth.logout' });
 });
 
 test('Menu: l\'amministratore supremo vede la sezione Piattaforma', async ({ page }) => {

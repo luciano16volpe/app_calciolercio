@@ -34,6 +34,9 @@ export interface Opts {
   history?: unknown[];
   /** dati di una riga della tabella `players` per la lega finta (guide e simili) */
   l2Players?: Array<{ player_id: string; aliases: string[] }>;
+  /** righe del registro attività (le restituisce a pagine, secondo offset e limit); le richieste fatte si annotano in `auditQueries` */
+  audit?: unknown[];
+  auditQueries?: string[];
 }
 
 /** Funzioni del database che solo leggono: non contano come scritture. */
@@ -75,6 +78,12 @@ export async function setup(page: Page, opts: Opts = {}): Promise<Write[]> {
         return json(r, opts.claims ?? []);
       }
       if (table === 'match_players' && q.includes('leagues')) return json(r, opts.profileRows ?? []);
+      if (table === 'audit_log') {
+        opts.auditQueries?.push(q);
+        const off = Number(url.searchParams.get('offset') ?? 0);
+        const lim = Number(url.searchParams.get('limit') ?? 1000);
+        return json(r, (opts.audit ?? []).slice(off, off + lim));
+      }
       if (table === 'player_stats_history') return json(r, opts.history ?? []);
       if (table === 'players' && q.includes('user_id=eq')) return json(r, opts.mePlayer ?? null);
       if (table === 'league_members') {
