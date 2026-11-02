@@ -1,0 +1,98 @@
+<!DOCTYPE html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--green:#4a8ee0;--green-mid:#3a78c8;--blue:#4a9eff;--amber:#f0b030;--red:#e05c4e;--gray:#181c24;--gray2:#232830;--gray3:#384050;--text:#eaedf5;--text2:#8898aa;--text3:#586070;--mid:#2ecc70;--radius:14px}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#0f131a;color:var(--text);height:100vh;overflow:hidden}
+header{background:linear-gradient(120deg,#1a4a8f,#2e69c4);color:#fff;height:48px;display:flex;align-items:center;gap:10px;padding:0 12px}
+.hb{width:34px;height:34px;border-radius:10px;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center}
+.logo{font-weight:800;font-size:16px}.lg{font-size:11px;opacity:.85;font-weight:700;margin-left:4px;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.16)}
+.page{padding:12px}.card{background:var(--gray);border:1px solid var(--gray2);border-radius:var(--radius);height:92px;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav{position:fixed;left:0;right:0;bottom:0;height:58px;background:var(--gray);border-top:1px solid var(--gray2);display:flex;justify-content:space-around;align-items:center;color:var(--text3);font-size:11px}
+.dim{position:fixed;inset:0;background:rgba(0,0,0,.55)}
+.drawer{position:fixed;top:0;bottom:0;left:0;width:84%;max-width:330px;background:#141920;box-shadow:8px 0 30px rgba(0,0,0,.5);overflow:hidden;display:flex;flex-direction:column}
+.dh{background:linear-gradient(135deg,#1a4a8f,#2e69c4);padding:16px 14px 12px;color:#fff;position:relative}
+.dh .x{position:absolute;right:10px;top:10px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px}
+.av{width:50px;height:50px;border-radius:50%;background:#e8eef8;color:#1a4a8f;font-weight:900;font-size:18px;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.7)}
+.who{display:flex;gap:11px;align-items:center}.nm{font-size:16px;font-weight:800}.em{font-size:11px;opacity:.8}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}.chip{font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(255,255,255,.18)}
+.chip.gold{background:#f2c94c;color:#3a2a00}
+.prof{margin-top:10px;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.12);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700}
+.body{flex:1;overflow:hidden;padding:10px 10px 0}
+.sec{font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--text3);text-transform:uppercase;margin:12px 4px 6px}
+.lgbox{background:var(--gray);border:1px solid var(--gray3);border-radius:12px;overflow:hidden}
+.lgrow{display:flex;align-items:center;gap:9px;padding:9px 11px;font-size:13.5px;border-top:1px solid var(--gray2)}
+.lgrow:first-child{border-top:none}.lgrow.act{background:rgba(74,142,224,.14)}
+.lgic{width:28px;height:28px;border-radius:8px;background:var(--gray2);display:flex;align-items:center;justify-content:center;font-size:15px}
+.lgn{flex:1;font-weight:700}.role{font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;background:var(--gray2);color:var(--text2)}
+.role.a{background:#3b2f0a;color:#f2c94c}.role.r{background:#0d2a1a;color:#2ecc70}
+.lgrow.add{color:var(--green);font-weight:800}
+.it{display:flex;align-items:center;gap:11px;padding:9px 6px;font-size:13.5px;border-radius:9px}
+.it .i{width:24px;text-align:center;font-size:16px}.it .t{flex:1}.it .s{font-size:11px;color:var(--text3)}
+.bd{min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--red);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.bd.n{background:var(--gray3);color:var(--text)}
+.code{display:flex;align-items:center;gap:8px;margin:2px 6px 4px 41px;font-size:12px;color:var(--text2)}
+.code b{font-family:ui-monospace,Menlo,monospace;color:var(--text);letter-spacing:1px;background:var(--gray2);padding:3px 7px;border-radius:6px}
+.code span{color:var(--green);font-weight:800}
+.foot{padding:10px 16px 14px;font-size:10px;color:var(--text3);border-top:1px solid var(--gray2)}
+/* create league sheet */
+.sheet{position:fixed;inset:0;background:#0f131a;display:flex;flex-direction:column}
+.sh{height:48px;display:flex;align-items:center;gap:10px;padding:0 12px;background:linear-gradient(120deg,#1a4a8f,#2e69c4);color:#fff;font-weight:800}
+.form{padding:16px}.lab{font-size:11px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px}
+.inp{background:var(--gray2);border:1.5px solid var(--gray3);border-radius:10px;padding:11px 12px;font-size:16px}
+.seg{display:flex;gap:6px}.seg div{flex:1;text-align:center;padding:10px 6px;border-radius:10px;background:var(--gray);border:1.5px solid var(--gray3);font-size:13px;font-weight:700;color:var(--text2)}
+.seg .on{border-color:var(--green);color:var(--text);background:rgba(74,142,224,.15)}
+.hint{font-size:11.5px;color:var(--text3);margin-top:6px;line-height:1.4}
+.btn{margin-top:22px;background:var(--green);color:#fff;text-align:center;padding:14px;border-radius:12px;font-weight:800;font-size:15px}
+.ok{margin-top:16px;background:var(--gray);border:1px dashed var(--gray3);border-radius:12px;padding:12px;font-size:12.5px;color:var(--text2);line-height:1.45}
+.ok b{color:var(--text)}
+</style></head><body>
+<header><button class="hb">☰</button><span class="logo">⚽ CalcioLercio</span><span class="lg" id="hlg">CalcioLercio ▾</span></header>
+<div class="page"><div class="grid"><div class="card"></div><div class="card"></div><div class="card"></div><div class="card"></div><div class="card"></div><div class="card"></div><div class="card"></div><div class="card"></div></div></div>
+<div class="nav"><span>👥 Rosa</span><span>⚽ Gioca</span><span>📅 Partite</span><span>🏆 Classifiche</span></div>
+<div id="root"></div>
+<script>
+const V=new URLSearchParams(location.search).get('v')||'A';
+const item=(i,t,s,b)=>`<div class="it"><span class="i">${i}</span><span class="t">${t}${s?`<div class="s">${s}</div>`:''}</span>${b||''}<span style="color:var(--text3)">›</span></div>`;
+const leagues=(rows)=>`<div class="sec">Le mie leghe</div><div class="lgbox">${rows}
+  <div class="lgrow add"><span class="lgic">＋</span><span class="lgn">Crea nuova lega</span></div>
+  <div class="lgrow add"><span class="lgic">🔑</span><span class="lgn">Entra con un codice</span></div></div>`;
+const app=`<div class="sec">App</div>${item('⚙️','Impostazioni app','versione, aggiornamenti')}${item('🔒','Privacy')}${item('❓','Aiuto')}${item('🚪','Esci')}`;
+const head=(ini,name,mail,chips)=>`<div class="dh"><button class="x">✕</button><div class="who"><div class="av">${ini}</div><div><div class="nm">${name}</div><div class="em">${mail}</div></div></div>
+  <div class="chips">${chips}</div><div class="prof">👤 Il mio profilo <span>›</span></div></div>`;
+let html='';
+if(V==='A') html=`<div class="dim"></div><div class="drawer">${head('LU','Luciano','luciano@…','<span class="chip gold">👑 Amministratore supremo</span><span class="chip">Admin · CalcioLercio</span>')}
+ <div class="body">${leagues(`<div class="lgrow act"><span class="lgic">⚽</span><span class="lgn">CalcioLercio</span><span class="role a">Admin</span></div>
+   <div class="lgrow"><span class="lgic">🏢</span><span class="lgn">Calcetto Ufficio</span><span class="role">Membro</span></div>`)}
+ <div class="sec">Gestione · CalcioLercio</div>
+ ${item('👥','Membri e ruoli','22 giocatori · 9 con account','<span class="bd n">22</span>')}
+ ${item('🔗','Inviti giocatori','3 link attivi')}
+ ${item('✋','Richieste «sono io»','','<span class="bd">2</span>')}
+ ${item('🔀','Unisci giocatori')}
+ ${item('⚙️','Impostazioni della lega','nome, visibilità, regole')}
+ <div class="code">Codice d'invito <b>K7Q2-M9XA</b><span>Copia</span></div>
+ <div class="sec">Piattaforma</div>
+ ${item('🛡️','Registro attività','⚠️ 1 azione delicata oggi')}
+ ${item('🏟️','Tutte le leghe','4 leghe')}
+ ${item('👤','Utenti','31 account')}
+ </div><div class="foot">v2026.11 · CalcioLercio</div></div>`;
+if(V==='B') html=`<div class="dim"></div><div class="drawer">${head('PE','Peppe','peppe@…','<span class="chip">Membro · CalcioLercio</span>')}
+ <div class="body">${leagues(`<div class="lgrow act"><span class="lgic">⚽</span><span class="lgn">CalcioLercio</span><span class="role">Membro</span></div>`)}
+ ${app}</div><div class="foot">v2026.11 · CalcioLercio</div></div>`;
+if(V==='C') html=`<div class="dim"></div><div class="drawer">${head('VA','Vito Azz','vito@…','<span class="chip" style="background:#0d2a1a;color:#2ecc70">✒️ Redazione · CalcioLercio</span>')}
+ <div class="body">${leagues(`<div class="lgrow act"><span class="lgic">⚽</span><span class="lgn">CalcioLercio</span><span class="role r">Redazione</span></div>`)}
+ <div class="sec">Redazione · CalcioLercio</div>
+ ${item('📝','Pagelle da scrivere','2 partite senza descrizioni','<span class="bd">2</span>')}
+ ${item('📥','Importa da WhatsApp','incolla il messaggio delle pagelle')}
+ ${item('📰','Carica la Gazzetta','ultima partita: 28/10')}
+ ${app}</div><div class="foot">v2026.11 · CalcioLercio</div></div>`;
+if(V==='D') html=`<div class="sheet"><div class="sh"><span style="font-size:18px">‹</span> Crea nuova lega</div><div class="form">
+ <div class="lab">Nome della lega</div><div class="inp">Calcetto del Giovedì</div>
+ <div class="lab">Chi può vederla</div><div class="seg"><div class="on">🔒 Solo i membri</div><div>🌐 Chiunque abbia il link</div></div>
+ <div class="hint">Con «Solo i membri» serve il codice d'invito per entrare.</div>
+ <div class="lab">Formato abituale</div><div class="seg"><div class="on">5 vs 5</div><div>6 vs 6</div><div>7 vs 7</div></div>
+ <div class="lab">Giorno della partita</div><div class="seg"><div>Lun</div><div>Mar</div><div>Mer</div><div class="on">Gio</div><div>Ven</div></div>
+ <div class="btn">Crea la lega</div>
+ <div class="ok">Diventerai <b>amministratore</b> della nuova lega. Riceverai il <b>codice d'invito</b> da mandare agli amici; i giocatori che hanno già una scheda in un'altra lega la porteranno con sé (niente doppioni).</div>
+ </div></div>`;
+document.getElementById('root').innerHTML=html;
+</script></body></html>
