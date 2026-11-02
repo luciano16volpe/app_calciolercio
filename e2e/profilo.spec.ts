@@ -2,7 +2,7 @@
 // il riepilogo, il mio giocatore, uscire da una lega. Footer a sole icone con la mia faccia. Database finto con i dati veri di prova.
 import { expect, test, type Browser, type Page, type TestInfo } from '@playwright/test';
 import { FakeBackend } from './fakeBackend';
-import { noOverflow } from './helpers';
+import { noOverflow, openProfile } from './helpers';
 
 type Row = Record<string, unknown>;
 
@@ -144,10 +144,10 @@ test('Titolo e logo riportano al profilo', async ({ browser }, testInfo) => {
   const { be, u } = world();
   const page = await open(browser, testInfo, be, u, '/l/san-marcello/classifiche');
   await expect(page.locator('#page-classifiche.active')).toBeVisible({ timeout: 20_000 });
-  await page.locator('.app-title').click();
+  await openProfile(page);
   await expect(page.locator('#page-profilo.active')).toBeVisible();
   await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
-  await page.locator('.app-logo').click();
+  await openProfile(page);
   await expect(page.locator('#page-profilo.active')).toBeVisible();
 });
 
