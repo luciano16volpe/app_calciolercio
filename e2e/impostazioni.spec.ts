@@ -33,7 +33,7 @@ test('Notifiche: si attivano e si tolgono da Impostazioni (iscrizione salvata co
     Object.defineProperty(Notification, 'permission', { get: () => perm });
     (Notification as unknown as { requestPermission: () => Promise<string> }).requestPermission = async () => (perm = 'granted');
   });
-  const writes = await setup(page, { rpc: { push_public_key: 'BAECAwQFBgc' } });
+  const writes = await setup(page, { rpc: { push_public_key: 'BAECAwQFBgc', my_push_prefs: [{ reminder: true, result: true, ratings: false, gazzetta: true }] } });
   await openSettings(page);
   await expect(page.locator('#push-state')).toContainText('Non sono attive');
   await page.locator('#push-enable').click();
@@ -42,6 +42,15 @@ test('Notifiche: si attivano e si tolgono da Impostazioni (iscrizione salvata co
   expect(writes.some((w) => w.table === 'push_subscriptions')).toBe(false); // niente scritture dirette nella tabella
   await expect(page.locator('#push-state')).toContainText('Attive su questo telefono');
   await expect(page.locator('#push-test')).toBeVisible();
+  // un interruttore per tipo: si vedono quelli salvati e si cambiano con la funzione sicura
+  await expect(page.locator('#push-pref-reminder')).toBeChecked();
+  await expect(page.locator('#push-pref-ratings')).not.toBeChecked();
+  await page.locator('#push-pref-result').uncheck();
+  await expect.poll(() => writes.some((w) => w.table === 'set_push_pref')).toBe(true);
+  expect(lastWrite(writes, 'set_push_pref').body).toEqual({ p_kind: 'result', p_on: false });
+  await page.locator('#push-pref-ratings').check();
+  await expect.poll(() => (lastWrite(writes, 'set_push_pref').body as { p_kind: string }).p_kind).toBe('ratings');
+  expect(lastWrite(writes, 'set_push_pref').body).toEqual({ p_kind: 'ratings', p_on: true });
   await noOverflow(page);
   await page.locator('#push-disable').click();
   await expect(page.locator('#toast')).toContainText('Notifiche disattivate');

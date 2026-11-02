@@ -78,3 +78,25 @@ export async function sendTestPush(): Promise<number> {
   if (!res.ok) throw new Error(body.error ?? 'Non riesco a mandare la notifica di prova');
   return body.inviate ?? 0;
 }
+
+/** Tipi di notifica che ognuno può accendere o spegnere. */
+export type PushKind = 'reminder' | 'result' | 'ratings' | 'gazzetta';
+export type PushPrefs = Record<PushKind, boolean>;
+export const PUSH_KINDS: { id: PushKind; label: string; sub: string }[] = [
+  { id: 'reminder', label: 'Promemoria della mattina', sub: 'alle 7 del giorno della partita: ora, luogo e squadra' },
+  { id: 'result', label: 'Risultato inserito', sub: 'quando viene salvato il risultato della tua partita' },
+  { id: 'ratings', label: 'Pagelle pronte', sub: 'quando titoli e descrizioni sono stati scritti' },
+  { id: 'gazzetta', label: 'Gazzetta caricata', sub: 'quando esce la Gazzetta della partita' },
+];
+
+export async function fetchPushPrefs(): Promise<PushPrefs> {
+  const { data, error } = await supabase.rpc('my_push_prefs');
+  if (error) throw new Error(error.message);
+  const r = (Array.isArray(data) ? data[0] : data) as Partial<PushPrefs> | undefined;
+  return { reminder: r?.reminder !== false, result: r?.result !== false, ratings: r?.ratings !== false, gazzetta: r?.gazzetta !== false };
+}
+
+export async function setPushPref(kind: PushKind, on: boolean): Promise<void> {
+  const { error } = await supabase.rpc('set_push_pref', { p_kind: kind, p_on: on });
+  if (error) throw new Error(error.message);
+}

@@ -1,6 +1,6 @@
 // Testo del promemoria push della mattina della partita (supabase/functions/_shared/reminder.ts).
 import { describe, expect, it } from 'vitest';
-import { buildReminder, hhmm } from '../supabase/functions/_shared/reminder';
+import { buildMessage, buildReminder, ddmm, hhmm, type EventInput } from '../supabase/functions/_shared/reminder';
 
 const base = { league_name: 'San Marcello', league_slug: 'san-marcello', play_time: '21:00:00', place: 'Campo Sole', team: 'A', match_id: 'm1' };
 
@@ -40,5 +40,37 @@ describe('promemoria push', () => {
     const b = buildReminder({ ...base, team: 'B' });
     expect(a.tag).toBe(b.tag);
     expect(a.url).toBe('/l/san-marcello/partite');
+  });
+});
+
+const ev = (over: Partial<EventInput>): EventInput => ({ ...base, kind: 'result', match_date: '2026-10-28', score_a: 5, score_b: 3, ...over });
+
+describe('notifiche degli eventi', () => {
+  it('ddmm: aaaa-mm-gg → gg/mm', () => {
+    expect(ddmm('2026-10-28')).toBe('28/10');
+    expect(ddmm(null)).toBe('');
+  });
+
+  it('risultato: chi ha vinto, chi ha perso, pareggio', () => {
+    expect(buildMessage(ev({ team: 'A' })).body).toBe('🏁 Blu 5 - 3 Bianchi\nHai vinto 🎉');
+    expect(buildMessage(ev({ team: 'B' })).body).toBe('🏁 Blu 5 - 3 Bianchi\nHai perso');
+    expect(buildMessage(ev({ team: 'A', score_a: 4, score_b: 4 })).body).toBe('🏁 Blu 4 - 4 Bianchi\nPareggio');
+    expect(buildMessage(ev({ team: 'B', score_a: 1, score_b: 2 })).body).toBe('🏁 Blu 1 - 2 Bianchi\nHai vinto 🎉');
+  });
+
+  it('risultato: titolo = lega, tocco → Partite, una sola notifica per partita e tipo', () => {
+    const m = buildMessage(ev({}));
+    expect([m.title, m.url, m.tag]).toEqual(['San Marcello', '/l/san-marcello/partite', 'result-m1']);
+  });
+
+  it('pagelle pronte e Gazzetta: parlano della partita del giorno', () => {
+    expect(buildMessage(ev({ kind: 'ratings' })).body).toBe('📝 Le pagelle della partita del 28/10 sono pronte');
+    expect(buildMessage(ev({ kind: 'gazzetta' })).body).toBe('📰 La Gazzetta della partita del 28/10 è online');
+    expect(buildMessage(ev({ kind: 'ratings' })).tag).toBe('ratings-m1');
+    expect(buildMessage(ev({ kind: 'gazzetta' })).tag).toBe('gazzetta-m1');
+  });
+
+  it('il promemoria passa dallo stesso punto', () => {
+    expect(buildMessage(ev({ kind: 'reminder' }))).toEqual(buildReminder(base));
   });
 });

@@ -12,7 +12,8 @@
     "import": "tsx scripts/import/run.ts",
     "import:verify": "tsx scripts/import/verify.ts",
     "e2e": "node scripts/e2e.mjs",
-    "push:setup": "node scripts/push-setup.mjs"
+    "push:setup": "node scripts/push-setup.mjs",
+    "push:deploy": "supabase functions deploy push --project-ref ivrwqpuikbnvnxgvgegd --no-verify-jwt --use-api"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
