@@ -2,6 +2,7 @@
 // Fonte: openMatch, matchHighlightsHTML, matchBalanceHTML, gazSectionHTML in legacy/index.html (stato "bloccato").
 // Modifica di voti, gol, risultato e pagelle: passo 3.7b. Importazione WhatsApp e Gazzetta: 3.7c e 3.7e.
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { HourSelect } from '../../app/HourSelect';
 import { useQueryClient } from '@tanstack/react-query';
 import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { formOn } from '../../data/gameSettings';
@@ -492,10 +493,10 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
             {full ? (
               <div style={{ marginBottom: 8 }}>
                 <div style={{ ...LABEL, marginBottom: 6 }}>⏰ Ora</div>
-                <input
-                  type="time" id="edit-time" className="dt-inp" value={draft ? draft.time : String(m.time ?? '')} disabled={!full} readOnly={!full}
-                  onChange={(e) => upd({ time: e.target.value })}
-                  style={{ padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', fontSize: 16, marginBottom: 8 }}
+                <HourSelect
+                  id="edit-time" value={draft ? draft.time : String(m.time ?? '')} disabled={!full}
+                  onChange={(v) => upd({ time: v })}
+                  style={{ padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', marginBottom: 8 }}
                 />
                 <div style={{ ...LABEL, marginBottom: 6 }}>📍 Luogo</div>
                 <input
