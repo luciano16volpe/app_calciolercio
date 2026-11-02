@@ -5,6 +5,7 @@ import type { LeagueData } from '../../data/queries';
 import { useState } from 'react';
 import { getTheme, setTheme, type Theme } from '../../app/theme';
 import { AccountCard } from './AccountCard';
+import { PasswordCard } from './PasswordCard';
 
 /** Cerca una nuova versione e la carica (il service worker la scarica, poi si ricarica la pagina). */
 async function updateApp(toast: (m: string) => void): Promise<void> {
@@ -63,11 +64,12 @@ export function SettingsPage({ data }: { data: LeagueData | undefined }) {
           <span style={{ fontSize: 11, color: 'var(--text2)' }}>
             Versione in uso: <strong id="app-version">{__APP_VERSION__}</strong>
           </span>
-          <button className="btn btn-secondary btn-sm" id="update-app" onClick={() => void updateApp(toast)}>🔄 Aggiorna app</button>
+          <button className="btn btn-secondary btn-sm" id="update-app" style={{ whiteSpace: 'normal', flex: '1 1 auto' }} onClick={() => void updateApp(toast)}>🔄 Verifica e installa aggiornamenti</button>
         </div>
       </div>
       <ThemeCard />
       <AccountCard leagueId={data?.league.id} />
+      <PasswordCard />
     </>
   );
 }

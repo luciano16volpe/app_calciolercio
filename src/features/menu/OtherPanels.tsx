@@ -96,7 +96,7 @@ export function HelpPanel({ onClose }: { onClose: () => void }) {
     ['Chi può modificare le partite?', 'Gli amministratori. La redazione scrive solo titoli e descrizioni delle pagelle e carica la Gazzetta.'],
     ['Cosa vuol dire «Questo sono io»?', 'Collega il tuo account alla tua scheda di giocatore: scegli il tuo nome in ☰ → Il mio profilo e l’amministratore conferma.'],
     ['Ho un doppione nella rosa', 'Un amministratore può unire i due giocatori: ☰ → Gestione → Unisci giocatori.'],
-    ['Come aggiorno l’app?', '☰ → Impostazioni app → Aggiorna app.'],
+    ['Come aggiorno l’app?', '☰ → Impostazioni app → Verifica e installa aggiornamenti. Per ricaricare solo i dati basta tirare la pagina verso il basso (sul computer, F5).'],
   ];
   return (
     <Sheet title="Aiuto" onClose={onClose} id="sheet-help">

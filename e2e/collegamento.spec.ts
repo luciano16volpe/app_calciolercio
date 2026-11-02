@@ -140,15 +140,50 @@ test('Questo sono io: richiesta in attesa', async ({ page }) => {
   await expect(page.locator('#myplayer-select')).toHaveCount(0);
 });
 
-test('Questo sono io: collegato, si può scollegare', async ({ page }) => {
-  const writes = await setup(page, { mePlayer: { id: 'p1', name: 'Marco' } });
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+
+test('Il mio profilo: da collegato non ci si può scollegare (lo fa solo l’amministratore)', async ({ page }) => {
+  const writes = await setup(page, { mePlayer: fixturePlayer() });
   await openApp(page);
   await openPanel(page, '#menu-profile', '#sheet-profile');
-  await expect(page.locator('#myplayer-name')).toHaveText('Marco');
-  await page.getByRole('button', { name: 'Scollega' }).click();
+  await expect(page.locator('#myplayer-name')).toHaveText(fixturePlayer().name);
+  await expect(page.locator('#myplayer-locked')).toContainText('amministratore');
+  await expect(page.getByRole('button', { name: 'Scollega' })).toHaveCount(0);
+  expect(writes.some((x) => x.table === 'unlink_me')).toBe(false);
+});
+
+test('Il mio profilo: cambio il mio nome', async ({ page }) => {
+  const writes = await setup(page, { mePlayer: fixturePlayer(), rpc: { rename_my_player: 'Marco Rossi' } });
+  await openApp(page);
+  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await page.locator('#my-rename').click();
+  await page.locator('#app-modal-input').fill('Marco Rossi');
   await page.locator('#app-modal-ok').click();
-  await expect(page.locator('#toast')).toContainText('Scollegato');
-  expect(writes.some((x) => x.table === 'unlink_me')).toBe(true);
+  await expect(page.locator('#toast')).toContainText('Ora ti chiami Marco Rossi');
+  expect(lastWrite(writes, 'rename_my_player').body).toEqual({ p_name: 'Marco Rossi' });
+  expect(writes.some((w) => w.table === 'players')).toBe(false); // niente scritture dirette sul giocatore
+});
+
+test('Il mio profilo: se il nome è già usato si vede il motivo', async ({ page }) => {
+  await setup(page, { mePlayer: fixturePlayer(), rpcError: { rename_my_player: 'Il nome «Caputo» è già usato da un altro giocatore (lega San Marcello)' } });
+  await openApp(page);
+  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await page.locator('#my-rename').click();
+  await page.locator('#app-modal-input').fill('Caputo');
+  await page.locator('#app-modal-ok').click();
+  await expect(page.locator('#toast')).toContainText('già usato da un altro giocatore');
+});
+
+test('Il mio profilo: cambio la mia foto (file e collegamento passano dalle funzioni sicure)', async ({ page }) => {
+  const writes = await setup(page, { mePlayer: fixturePlayer() });
+  await openApp(page);
+  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await page.locator('#my-photo-file').setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: PNG });
+  await expect(page.locator('#toast')).toContainText('Foto aggiornata', { timeout: 15_000 });
+  const me = fixturePlayer();
+  expect(writes.some((w) => w.table === 'storage' && w.method === 'POST' && String(w.body).startsWith('photos/' + me.id + '-'))).toBe(true);
+  expect((lastWrite(writes, 'set_my_photo').body as { p_path: string }).p_path).toMatch(new RegExp('^' + me.id + '-[0-9]+\\.jpg$'));
+  expect(writes.some((w) => w.table === 'players')).toBe(false);
 });
 
 test('Il mio profilo: si vede la scheda del giocatore, uguale a quella della Rosa ma senza modifiche', async ({ page }) => {

@@ -773,6 +773,8 @@ export type Database = {
         Args: { drop_id: string; keep: string }
         Returns: undefined
       }
+      my_player_id: { Args: never; Returns: string }
+      norm_name: { Args: { t: string }; Returns: string }
       player_history: {
         Args: { p: string }
         Returns: {
@@ -795,6 +797,7 @@ export type Database = {
       propose_admin: { Args: { l: string; u: string }; Returns: string }
       regenerate_invite_code: { Args: { l: string }; Returns: string }
       remove_member: { Args: { l: string; u: string }; Returns: undefined }
+      rename_my_player: { Args: { p_name: string }; Returns: string }
       request_claim: { Args: { l: string; p: string }; Returns: undefined }
       review_claim: {
         Args: { approve: boolean; c: string }
@@ -808,6 +811,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      set_my_photo: { Args: { p_path: string }; Returns: undefined }
       slugify: { Args: { t: string }; Returns: string }
       transfer_league_ownership: {
         Args: { l: string; new_owner: string }
@@ -817,7 +821,6 @@ export type Database = {
         Args: { base: string; except_id?: string }
         Returns: string
       }
-      unlink_me: { Args: never; Returns: undefined }
       unlink_player: { Args: { p: string }; Returns: undefined }
     }
     Enums: {

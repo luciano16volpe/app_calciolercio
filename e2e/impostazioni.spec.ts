@@ -11,6 +11,37 @@ const openSettings = (page: Page) => openSettingsFromMenu(page);
 const noOverflow = async (page: Page) =>
   expect((await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width).toBeLessThanOrEqual(0);
 
+test('Password: si cambia dalle impostazioni (controlli, poi salva)', async ({ page }) => {
+  let sent: unknown = null;
+  const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': '*' };
+  await page.route('**/auth/v1/user*', (r) => {
+    if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
+    if (r.request().method() === 'PUT') sent = r.request().postDataJSON();
+    return r.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: JSON.stringify({ id: 'u1', email: 'luciano@example.com' }) });
+  });
+  await openSettings(page);
+  const card = page.locator('#password-card');
+  await expect(card).toBeVisible();
+  // troppo corta
+  await card.locator('#pwd-new').fill('abc');
+  await card.locator('#pwd-again').fill('abc');
+  await card.locator('#pwd-save').click();
+  await expect(card.locator('#pwd-msg')).toContainText('almeno 6 caratteri');
+  // due password diverse
+  await card.locator('#pwd-new').fill('segreta123');
+  await card.locator('#pwd-again').fill('segreta124');
+  await card.locator('#pwd-save').click();
+  await expect(card.locator('#pwd-msg')).toContainText('non sono uguali');
+  expect(sent).toBeNull();
+  // giusta
+  await card.locator('#pwd-again').fill('segreta123');
+  await card.locator('#pwd-save').click();
+  await expect(card.locator('#pwd-msg')).toContainText('Password cambiata');
+  expect(sent).toMatchObject({ password: 'segreta123' });
+  await expect(card.locator('#pwd-new')).toHaveValue('');
+  await noOverflow(page);
+});
+
 test('Aspetto: chiaro, scuro e come il telefono; la scelta resta dopo il riavvio', async ({ page }) => {
   await openSettings(page);
   const bg = () => page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--gray').trim());

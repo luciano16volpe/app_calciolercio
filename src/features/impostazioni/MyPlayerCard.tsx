@@ -2,11 +2,11 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useAuth } from '../../app/auth';
-import { useConfirm } from '../../app/Dialogs';
 import { useToast } from '../../app/Toast';
-import { MY_PLAYER_KEY, requestClaim, unlinkMe, useMyPlayer, useUnclaimed } from '../../data/claims';
+import { MY_PLAYER_KEY, requestClaim, useMyPlayer, useUnclaimed } from '../../data/claims';
 import type { LeagueData } from '../../data/queries';
 import { PlayerCard } from '../player/PlayerCard';
+import { MyProfileTools } from './MyProfileTools';
 import { ProfileCard } from './ProfileCard';
 
 /**
@@ -16,7 +16,6 @@ import { ProfileCard } from './ProfileCard';
 export function MyPlayerCard({ data, onOpenMatch, bottom = false }: { data: LeagueData | undefined; onOpenMatch?: (matchId: string) => void; bottom?: boolean }) {
   const { user } = useAuth();
   const toast = useToast();
-  const confirm = useConfirm();
   const qc = useQueryClient();
   const q = useMyPlayer(user?.id ?? null);
   const [pick, setPick] = useState('');
@@ -44,18 +43,6 @@ export function MyPlayerCard({ data, onOpenMatch, bottom = false }: { data: Leag
       setBusy(false);
     }
   };
-  const unlink = async () => {
-    const ok = await confirm({ icon: '🔗', title: 'Scollegare il giocatore?', lines: [`Non sarai più collegato a ${s?.linked?.name}. Per ricollegarti serve una nuova richiesta.`], okLabel: 'Scollega', danger: true });
-    if (!ok) return;
-    try {
-      await unlinkMe();
-      await refresh();
-      toast('Scollegato');
-    } catch (e) {
-      toast('Errore: ' + (e as Error).message);
-    }
-  };
-
   return (
     <>
     {(s?.linked ? bottom : !bottom) ? (
@@ -66,7 +53,7 @@ export function MyPlayerCard({ data, onOpenMatch, bottom = false }: { data: Leag
       {s?.linked ? (
         <div>
           <div style={{ fontSize: 13 }}>Sei collegato a <b id="myplayer-name">{s.linked.name}</b>.</div>
-          <button className="btn btn-secondary btn-full" style={{ marginTop: 10 }} onClick={() => void unlink()}>Scollega</button>
+          <div id="myplayer-locked" style={{ fontSize: 12, color: 'var(--text3)', marginTop: 6 }}>Il collegamento lo gestisce l'amministratore della lega: se serve cambiarlo, chiedi a lui.</div>
         </div>
       ) : s?.pending ? (
         <div id="myplayer-pending" style={{ fontSize: 13 }}>
@@ -109,6 +96,7 @@ export function MyPlayerCard({ data, onOpenMatch, bottom = false }: { data: Leag
         />
       </div>
     ) : null}
+    {!bottom && s?.linked ? <MyProfileTools data={data} playerId={s.linked.id} name={s.linked.name} /> : null}
     {!bottom && s?.linked ? <ProfileCard playerId={s.linked.id} name={s.linked.name} /> : null}
     </>
   );
