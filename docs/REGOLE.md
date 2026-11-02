@@ -82,8 +82,8 @@ il **nome della funzione legacy** da leggere per i dettagli esatti: in caso di d
 
 ## 8. Stagioni e albo d'oro
 - Stagioni a mesi interi (`seasonOf`): Primavera mar–mag, Estate giu–ago, Autunno set–nov,
-  Inverno dic–feb (a cavallo d'anno). Chiave `AAAA-PRI|EST|AUT|INV`, etichetta "Autunno 2026",
-  "Inverno 2026/27".
+  Inverno dic–feb (a cavallo d'anno). Chiave `AAAA-PRI|EST|AUT|INV`, etichetta «Autunno 26» (anno a due cifre; l'inverno con l'anno di inizio: «Inverno 25» = dic 2025–feb 2026).
+  (Novembre 2026: prima era «Autunno 2026» e «Inverno 2026/27».)
 - Stato (`seasonStatus`): **in corso** fino alla fine; **in chiusura** per 14 giorni dopo
   (`ALBO_GRACE_DAYS`, pagelle in ritardo); poi **chiusa** → l'albo viene salvato e **congelato**.
 - Soglia presenze `minPres = max(2, ceil(partite × 0,4))`. Stagioni con < 3 partite assegnano solo
@@ -118,7 +118,7 @@ il **nome della funzione legacy** da leggere per i dettagli esatti: in caso di d
   "📝 Ultima pagella: «…» · data ›" → finestra "Le pagelle di X" (tutte, più recenti prima; quelle
   scritte in evidenza; firma della Redazione in fondo).
 - 🏆 Bacheca **apribile** (chiusa = riga riassuntiva; aperta = vinti raggruppati ×N con stagione
-  abbreviata "Est 26", riga "⏳ In lizza" con emoji, imprese in testo). Resta aperta tra giocatori.
+  per intero «Estate 26» (niente più sigle), riga "⏳ In lizza" con emoji, imprese in testo). Resta aperta tra giocatori.
 - 🤝 Compagni e avversari (compagno d'oro / maledetto, bestia nera, vittima preferita) + ⚔️ Confronta.
 
 ## 11. Partite

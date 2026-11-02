@@ -5,10 +5,10 @@ const KEY = 'calciolercio-league';
 const EVENT = 'calciolercio-league-change';
 
 /** Pagine dell'app e loro nome nell'indirizzo. */
-export const PAGE_PATHS = { rosa: 'rosa', partita: 'gioca', partite: 'partite', classifiche: 'classifiche', settings: 'impostazioni' } as const;
+export const PAGE_PATHS = { profilo: 'profilo', rosa: 'rosa', partita: 'gioca', partite: 'partite', classifiche: 'classifiche', settings: 'impostazioni' } as const;
 export type PageKey = keyof typeof PAGE_PATHS;
 /** Pagina da cui si parte quando si apre una lega (anche toccando il logo). */
-export const HOME_PAGE: PageKey = 'classifiche';
+export const HOME_PAGE: PageKey = 'profilo';
 
 export interface Route {
   slug: string | null;

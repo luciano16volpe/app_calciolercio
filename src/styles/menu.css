@@ -91,3 +91,19 @@ header.app-header{gap:8px;min-height:50px}
 .conv-avatar.has-photo{background-size:cover;background-position:center;color:transparent}
 /* firma della redazione sotto la pagella */
 .pl-ed{margin-top:4px;font-size:10px;font-style:italic;color:var(--text3)}
+
+/* riquadro «ultima partita» con effetti: il contenuto sta sopra la pioggia; sfondo un po' più cupo se si è perso */
+.fx-card > :not(canvas){position:relative;z-index:1}
+.fx-card.fx-rain{overflow:hidden;background-image:linear-gradient(180deg,rgba(70,90,125,.16),rgba(70,90,125,.04))}
+
+/* «Il mio profilo»: elenco delle mie leghe, quella in uso evidenziata */
+.pf-league{width:100%;display:flex;align-items:center;gap:8px;text-align:left;padding:11px 12px;margin-bottom:6px;border-radius:var(--radius-sm);border:1.5px solid var(--gray3);background:var(--gray);color:var(--text);font-family:inherit;cursor:pointer}
+.pf-league.act{border-color:var(--green);background:var(--green-light);cursor:default}
+.pf-lg-n{flex:1;min-width:0;font-size:14px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-lg-r{font-size:11px;font-weight:700;color:var(--text3);flex-shrink:0}
+.pf-lg-ok{width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* la mia faccia (o foto) al posto dell'icona del profilo nel footer */
+.bn-face{width:29px;height:29px;border-radius:50%;background:#e8eef8 center/cover no-repeat;color:#1a4a8f;font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center;border:2px solid var(--gray3);transition:border-color var(--tr),transform var(--tr)}
+.bnav-item.active .bn-face{border-color:var(--green);transform:translateY(-1px) scale(1.06)}
+

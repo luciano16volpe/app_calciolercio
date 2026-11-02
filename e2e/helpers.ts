@@ -147,10 +147,10 @@ export const noOverflow = async (page: Page) =>
 export async function openApp(page: Page, path = '/', players = 22) {
   await page.goto(path);
   if (players > 0) await expect(page.locator('#players-list .card-compact')).toHaveCount(players, { timeout: 20_000 });
-  // aprendo la lega senza dire la pagina si parte da Classifiche: i test della Rosa ci vanno col tasto in basso
+  // aprendo la lega senza dire la pagina si parte da «Il mio profilo»: i test della Rosa ci vanno col tasto in basso
   if (players > 0 && !/\/l\/[^/]+\/[a-z]+/.test(path)) {
-    await expect(page.locator('#page-classifiche.active')).toBeVisible();
-    await page.locator('.bottom-nav .bnav-item').first().click();
+    await expect(page.locator('#page-profilo.active')).toBeVisible();
+    await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
     await expect(page.locator('#page-rosa.active')).toBeVisible();
   }
 }
@@ -173,4 +173,11 @@ export async function openPanel(page: Page, itemId: string, sheetId: string) {
   await openMenu(page);
   await page.locator(itemId).click();
   await expect(page.locator(sheetId)).toBeVisible();
+}
+
+/** Apre «Il mio profilo» dal menu ☰ (è una pagina, come Rosa e Partite). */
+export async function openProfile(page: Page) {
+  await openMenu(page);
+  await page.locator('#menu-profile').click();
+  await expect(page.locator('#page-profilo.active')).toBeVisible();
 }

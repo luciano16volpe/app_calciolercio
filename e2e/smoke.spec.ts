@@ -29,24 +29,24 @@ test('Rosa: 22 carte, la più forte per prima, niente esce in orizzontale', asyn
   for (const r of widths) expect(r).toBeLessThanOrEqual(vw + 0.5);
 });
 
-test('aprendo la lega si parte da Classifiche (e il logo ci riporta)', async ({ page }) => {
+test('aprendo la lega si parte da «Il mio profilo» (e il titolo ci riporta)', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('#page-classifiche')).toHaveClass(/active/);
-  await expect(page.locator('.bnav-item.active')).toHaveText('Classifiche');
-  await expect.poll(() => new URL(page.url()).pathname).toBe('/l/san-marcello/classifiche');
-  await page.locator('.bottom-nav').getByText('Rosa', { exact: true }).click();
+  await expect(page.locator('#page-profilo')).toHaveClass(/active/);
+  await expect(page.locator('.bnav-item.active')).toHaveAttribute('aria-label', 'Il mio profilo');
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/l/san-marcello/profilo');
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
   await expect(page.locator('#page-rosa')).toHaveClass(/active/);
   await page.locator('.app-title').click();
-  await expect(page.locator('#page-classifiche')).toHaveClass(/active/);
+  await expect(page.locator('#page-profilo')).toHaveClass(/active/);
 });
 
 test('le 3 schede in basso (da membro) cambiano pagina', async ({ page }) => {
   await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#page-rosa')).toHaveClass(/active/);
   for (const [label, id] of [['Partite', 'partite'], ['Classifiche', 'classifiche'], ['Rosa', 'rosa']] as const) {
-    await page.locator('.bottom-nav').getByText(label, { exact: true }).click();
+    await page.locator('.bottom-nav').getByRole('button', { name: label, exact: true }).click();
     await expect(page.locator(`#page-${id}`)).toHaveClass(/active/);
-    await expect(page.locator('.bnav-item.active')).toHaveText(label);
+    await expect(page.locator('.bnav-item.active')).toHaveAttribute('aria-label', label);
   }
 });
 
@@ -98,7 +98,7 @@ test('scheda giocatore: la finestra "Le pagelle di…" si apre dall\'ultima page
 test('Classifiche: stagione, quattro numeri, schede e apertura della scheda giocatore', async ({ page }) => {
   await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
-  await page.locator('.bottom-nav').getByText('Classifiche', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Classifiche', exact: true }).click();
   const cl = page.locator('#page-classifiche');
   // stagioni (la più recente è scelta) + "Sempre"; otto schede
   await expect(cl.locator('#cl-seasons .chip').first()).toHaveClass(/active/);
@@ -135,20 +135,20 @@ test('la guida «Installa sul telefono» si vede in ogni pagina finché non si c
   const hint = page.locator('#install-hint');
   await expect(hint).toBeVisible(); // si parte da Classifiche: la guida non è più solo nella Rosa
   for (const label of ['Partite', 'Rosa']) {
-    await page.locator('.bottom-nav').getByText(label, { exact: true }).click();
+    await page.locator('.bottom-nav').getByRole('button', { name: label, exact: true }).click();
     await expect(hint).toBeVisible();
   }
   await expect(page.locator('#page-rosa')).toHaveClass(/active/);
   expect((await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width).toBeLessThanOrEqual(0);
   await hint.getByRole('button', { name: 'Chiudi' }).click();
   await expect(hint).toHaveCount(0);
-  await page.locator('.bottom-nav').getByText('Classifiche', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Classifiche', exact: true }).click();
   await expect(hint).toHaveCount(0);
 });
 
 test('Ricaricare: niente rotellina in alto; si tira la pagina verso il basso e i dati si aggiornano', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('#page-classifiche')).toHaveClass(/active/);
+  await expect(page.locator('#page-profilo')).toHaveClass(/active/);
   await expect(page.locator('#header-refresh')).toHaveCount(0);
   await expect(page.locator('header')).not.toContainText('🔄');
   await page.waitForLoadState('networkidle'); // finito il caricamento iniziale: da qui si contano solo le letture causate dal gesto
@@ -159,7 +159,7 @@ test('Ricaricare: niente rotellina in alto; si tira la pagina verso il basso e i
     page.evaluate(([t, yy]) => {
       const ev = new Event(t as string, { bubbles: true, cancelable: true }) as Event & { touches?: unknown[] };
       ev.touches = t === 'touchend' ? [] : [{ clientX: 180, clientY: yy as number }];
-      (document.querySelector('#page-classifiche') as Element).dispatchEvent(ev);
+      (document.querySelector('#page-profilo') as Element).dispatchEvent(ev);
     }, [type, y] as const);
   // tirata corta: non succede niente
   await touch('touchstart', 100); await touch('touchmove', 140); await touch('touchmove', 170);

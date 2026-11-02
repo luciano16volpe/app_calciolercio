@@ -124,7 +124,7 @@ test('Pagelle: la redazione vede il conteggio senza le saltate, e salta dalla sc
   await expect(page.locator('#sheet-pending')).toBeVisible();
   await page.getByRole('button', { name: 'Indietro' }).click();
   // dalla scheda dell'ultima partita
-  await page.locator('.bottom-nav').getByText('Partite', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Partite', exact: true }).click();
   await page.locator('#last-match .card').click();
   await expect(page.locator('#skip-ratings')).toContainText('Non scrivere le pagelle');
   await page.locator('#skip-ratings').click();
@@ -150,7 +150,7 @@ test('Foto: dentro il pallino in Rosa, in Gioca, nel menu e nell’intestazione 
   // intestazione: la mia foto
   expect(await urlOf(page.locator('#menu-button .hf-av'))).toContain('foto-di-prova.jpg');
   // Gioca (amministratore): il pallino della lista di convocazione
-  await page.locator('.bottom-nav').getByText('Gioca', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Gioca', exact: true }).click();
   await expect(page.locator('#page-partita .conv-avatar.has-photo')).toHaveCount(1);
   expect(await urlOf(page.locator('#page-partita .conv-avatar.has-photo'))).toContain('foto-di-prova.jpg');
   // menu: il cerchio in alto mostra la foto, non l'iniziale
@@ -164,7 +164,7 @@ test('Firma: «Redazione <nome>» è di chi ha scritto le pagelle; senza autore 
   const last = [...be.matches].filter((x) => x.score_a != null).sort((a, b) => String(b.date).localeCompare(String(a.date)))[0] as { id: string };
   const page = await open(browser, testInfo, be, u);
   const pagelle = async () => {
-    await page.locator('.bottom-nav').getByText('Partite', { exact: true }).click();
+    await page.locator('.bottom-nav').getByRole('button', { name: 'Partite', exact: true }).click();
     await page.locator('#last-match .mbar-btn', { hasText: 'Pagelle' }).click();
     const t = page.locator('#pt-dialog .pt-text');
     await expect(t).toContainText('LE PAGELLE DI CALCIOLERCIO');

@@ -6,6 +6,11 @@ import { useImageTools } from '../../app/ImageViewer';
 import { useToast } from '../../app/Toast';
 import { matchFormations, matchSheet, matchSummary } from '../../canvas/make';
 import { gazzettaThumbUrl, gazzettaUrl, type LeagueData } from '../../data/queries';
+import { useAuth } from '../../app/auth';
+import { Confetti } from '../../app/Confetti';
+import { Rain } from '../../app/Rain';
+import { useMyPlayer } from '../../data/claims';
+import { getPlayerMatchResult } from '../../domain/stats';
 import { formatDate, whenWhere } from '../../domain/format';
 import {
   gazzetteBySeason, gazzetteByDate, hasScore, lastMatch, matchHasDesc, matchListGroups, pagelleText, type GazItem,
@@ -57,9 +62,29 @@ export function MatchButtons({ data, m, act }: { data: LeagueData; m: Match; act
 }
 
 // ── ultima partita ─────────────────────────────────────────────────────────
-export function LastMatch({ data, act }: { data: LeagueData; act: MatchActions }) {
+export function LastMatch({ data, act, mine, active = true }: { data: LeagueData; act: MatchActions; mine?: { id: string; name: string } | null; active?: boolean }) {
   const m = lastMatch(data.dataset);
   if (!m) return null;
+  return <LastMatchCard data={data} m={m} act={act} mine={mine} active={active} />;
+}
+
+/** Il mio giocatore (se gioca in questa lega): serve a sapere se ho vinto o perso la partita. */
+export function useMyPlayerIn(data: LeagueData | undefined): { id: string; name: string } | null {
+  const { user } = useAuth();
+  const mine = useMyPlayer(user?.id ?? null);
+  const id = mine.data?.linked?.id;
+  const p = id && data ? data.dataset.players.find((x) => x.id === id) : undefined;
+  return p ? { id: p.id, name: p.name } : null;
+}
+
+/**
+ * Il riquadro di una partita con risultato, pulsanti e tocco per i dettagli: l'ultima della lega (Partite) o la mia ultima (Profilo).
+ * Se `mine` ha giocato quella partita: coriandoli sopra se ha vinto, pioggia sullo sfondo se ha perso. Gli effetti partono solo con `active`
+ * (la pagina è quella che si sta guardando).
+ */
+export function LastMatchCard({ data, m, act, title = '🏆 Ultima partita', id, mine, active = true }: {
+  data: LeagueData; m: Match; act: MatchActions; title?: string; id?: string; mine?: { id: string; name: string } | null; active?: boolean;
+}) {
   const has = hasScore(m);
   const a = parseInt(m.scoreA as string);
   const b = parseInt(m.scoreB as string);
@@ -69,10 +94,16 @@ export function LastMatch({ data, act }: { data: LeagueData; act: MatchActions }
     else if (b > a) win = <span style={{ color: 'var(--teamb)', fontWeight: 800 }}>Vince Bianchi</span>;
     else win = <span style={{ color: 'var(--text2)', fontWeight: 800 }}>Pareggio</span>;
   }
+  const res = has && mine ? getPlayerMatchResult(m, mine.id, mine.name) : null; // 'W' vinta · 'D' pareggio · 'L' persa · null non ho giocato
   return (
-    <div className="card" style={{ borderLeft: '4px solid var(--green)', cursor: 'pointer' }} onClick={() => act.openMatch(m.id)}>
+    <div
+      className={`card fx-card${res === 'L' ? ' fx-rain' : ''}`} id={id} data-result={res ?? undefined}
+      style={{ borderLeft: '4px solid var(--green)', cursor: 'pointer', position: 'relative' }} onClick={() => act.openMatch(m.id)}
+    >
+      {active && res === 'W' ? <Confetti /> : null}
+      {active && res === 'L' ? <Rain /> : null}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <span className="section-header" style={{ margin: 0 }}>🏆 Ultima partita</span>
+        <span className="section-header" style={{ margin: 0 }}>{title}</span>
         <span style={{ fontSize: 11, color: 'var(--text3)' }}>{formatDate(m.date)}{whenWhere(m) ? ` · ${whenWhere(m)}` : ''} ›</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, margin: '4px 0' }}>
@@ -81,6 +112,11 @@ export function LastMatch({ data, act }: { data: LeagueData; act: MatchActions }
         <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--teamb)' }}>⚪ Bianchi</span>
       </div>
       <div style={{ textAlign: 'center', fontSize: 12, marginTop: 4 }}>{win}</div>
+      {res ? (
+        <div id="my-last-result" style={{ textAlign: 'center', fontSize: 13, marginTop: 4, fontWeight: 800, color: res === 'W' ? 'var(--green)' : res === 'L' ? 'var(--red)' : 'var(--text2)' }}>
+          {res === 'W' ? 'Hai vinto 🎉' : res === 'L' ? 'Hai perso 🌧️' : 'Hai pareggiato'}
+        </div>
+      ) : null}
       <div className="lm-actions" onClick={(e) => e.stopPropagation()}><MatchButtons data={data} m={m} act={act} /></div>
       <div style={{ textAlign: 'center', fontSize: 10, color: 'var(--text3)', marginTop: 6 }}>Tocca la partita per i dettagli e le pagelle</div>
     </div>

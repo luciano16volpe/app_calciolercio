@@ -179,3 +179,18 @@ describe('stato di forma: contano le ultime 2 pagelle', () => {
     expect(withVotes([6, 6, 9])).toBeNull();
   });
 });
+
+describe('nome della stagione: «Estate 26» (anno a due cifre)', () => {
+  it.each([
+    ['2026-03-01', 'Primavera 26'], ['2025-05-31', 'Primavera 25'],
+    ['2026-07-15', 'Estate 26'], ['2025-08-31', 'Estate 25'],
+    ['2025-10-05', 'Autunno 25'], ['2026-11-30', 'Autunno 26'],
+    ['2025-12-01', 'Inverno 25'], ['2026-01-20', 'Inverno 25'], ['2026-02-28', 'Inverno 25'], ['2026-12-10', 'Inverno 26'],
+  ])('%s → %s', (date, label) => {
+    expect(seasonOf(date)?.label).toBe(label);
+  });
+  it('la chiave e le date non cambiano', () => {
+    expect(seasonOf('2026-07-15')).toMatchObject({ key: '2026-EST', start: '2026-06-01', end: '2026-08-31' });
+    expect(seasonOf('2026-01-20')).toMatchObject({ key: '2025-INV', start: '2025-12-01', end: '2026-02-28' });
+  });
+});

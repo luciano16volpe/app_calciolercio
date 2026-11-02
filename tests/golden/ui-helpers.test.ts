@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { pagInfo, playerRatingAvg } from '../../src/domain/form';
 import { avatarClass, formatTime, initials, whenWhere } from '../../src/domain/format';
 import { needsRatings, pendingRatings, ratingsCoverage, skippedRatings } from '../../src/domain/matches';
+import { myLastMatch, myNextMatch, myTeam } from '../../src/domain/profile';
 import { playerSeason, seasonStats } from '../../src/domain/stats';
 import type { Dataset } from '../../src/domain/types';
 import { real } from './data';
@@ -109,5 +110,50 @@ describe('pagelle da scrivere e pagelle saltate (meno della metà delle descrizi
   });
   it('una partita non giocata non è mai «da scrivere»', () => {
     expect(needsRatings(ds, ds.matches[6] as never)).toBe(false);
+  });
+});
+
+describe('le mie partite (pagina Il mio profilo)', () => {
+  const t = (...ids: string[]) => ids.map((id) => ({ id, name: id.toUpperCase() }));
+  const m = (id: string, date: string, a: string[], b: string[], over: Record<string, unknown> = {}) => ({ id, date, teamA: t(...a), teamB: t(...b), scoreA: 5, scoreB: 3, ...over });
+  const ds = {
+    players: [],
+    matches: [
+      m('vecchia', '2026-10-01', ['me', 'x'], ['y', 'z']),                                      // giocata: Blu 5-3 → vinta
+      m('persa', '2026-10-08', ['x', 'y'], ['me', 'z']),                                        // giocata: Bianchi (io) perdo 5-3
+      m('altrui', '2026-10-15', ['x', 'y'], ['z', 'w']),                                        // non gioco io
+      m('pari', '2026-10-22', ['me'], ['x'], { scoreA: 2, scoreB: 2 }),                         // pareggio (la più recente giocata)
+      m('futura', '2026-12-20', ['x'], ['me'], { scoreA: null, scoreB: null }),                // in programma, io Bianchi
+      m('piulontana', '2027-01-10', ['me'], ['x'], { scoreA: null, scoreB: null }),            // più avanti
+      m('senzadime', '2026-11-30', ['x'], ['y'], { scoreA: null, scoreB: null }),              // in programma ma non gioco
+      m('ieri', '2026-11-01', ['me'], ['x'], { scoreA: null, scoreB: null }),                  // senza risultato ma già passata
+    ],
+    ratings: [],
+  } as unknown as Dataset;
+  it('in che squadra gioco', () => {
+    expect(myTeam(ds.matches[0] as never, 'me', 'ME')).toBe('A');
+    expect(myTeam(ds.matches[1] as never, 'me', 'ME')).toBe('B');
+    expect(myTeam(ds.matches[2] as never, 'me', 'ME')).toBeNull();
+  });
+  it('ultima partita giocata: la più recente con risultato in cui ci sono, con l\u2019esito', () => {
+    const r = myLastMatch(ds, 'me', 'ME');
+    expect(r?.m.id).toBe('pari');
+    expect(r?.result).toBe('P');
+  });
+  it('esiti: vinta con Blu, persa con Bianchi', () => {
+    const only = (id: string) => ({ ...ds, matches: ds.matches.filter((x) => x.id === id) }) as Dataset;
+    expect(myLastMatch(only('vecchia'), 'me', 'ME')?.result).toBe('V');
+    expect(myLastMatch(only('persa'), 'me', 'ME')?.result).toBe('S');
+    expect(myLastMatch(only('altrui'), 'me', 'ME')).toBeNull();
+  });
+  it('prossima partita: la più vicina di oggi o futura, senza risultato, in cui sono in squadra', () => {
+    const r = myNextMatch(ds, 'me', 'ME', '2026-11-02');
+    expect(r?.m.id).toBe('futura');
+    expect(r?.team).toBe('B');
+  });
+  it('oggi conta ancora come «prossima»; una partita già passata senza risultato no', () => {
+    expect(myNextMatch(ds, 'me', 'ME', '2026-12-20')?.m.id).toBe('futura');
+    expect(myNextMatch(ds, 'me', 'ME', '2026-12-21')?.m.id).toBe('piulontana');
+    expect(myNextMatch(ds, 'me', 'ME', '2027-02-01')).toBeNull();
   });
 });

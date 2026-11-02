@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
 async function openClassifiche(page: Page, tab: string) {
   await page.goto('/');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
-  await page.locator('.bottom-nav').getByText('Classifiche', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Classifiche', exact: true }).click();
   await page.locator('#cl-tabs .chip', { hasText: tab }).click();
   return page.locator('#page-classifiche');
 }

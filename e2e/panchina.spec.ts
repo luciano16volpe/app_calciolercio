@@ -39,7 +39,7 @@ test('Panchina: via dalla lega, resta nella storia, torna dalla Panchina', async
   await expect(page.locator('#players-list .card-compact')).toHaveCount(21);
   await expect(page.locator('#players-list')).not.toContainText(name);
   // la storia resta: nell'ultima partita compare ancora
-  await page.locator('.bottom-nav').getByText('Partite', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Partite', exact: true }).click();
   await page.locator('#last-match .card').click();
   await expect(page.locator('#match-modal')).toContainText(name);
   await page.locator('#match-modal button', { hasText: '✕' }).first().click();
@@ -54,7 +54,7 @@ test('Panchina: via dalla lega, resta nella storia, torna dalla Panchina', async
   await expect(page.locator('#toast')).toContainText('è ora nella Rosa');
   await expect(sheet.locator('#bench-empty')).toBeVisible();
   await page.getByRole('button', { name: 'Indietro' }).click();
-  await page.locator('.bottom-nav').getByText('Rosa', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22);
 
   // un membro semplice non ha la Panchina

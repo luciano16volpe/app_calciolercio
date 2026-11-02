@@ -15,20 +15,23 @@ export interface Season {
 export type SeasonStatus = 'in corso' | 'in chiusura' | 'chiusa';
 
 /** Stagione di una data ISO (YYYY-MM-DD…), oppure null se la data non è valida. */
+/** Anno a due cifre: 2026 → «26». */
+const yy = (y: number): string => String(y).slice(2);
+
 export function seasonOf(date: unknown): Season | null {
   const m = String(date ?? '').match(/^(\d{4})-(\d{2})/);
   if (!m) return null;
   const y = +(m[1] as string);
   const mo = +(m[2] as string);
-  if (mo >= 3 && mo <= 5) return { key: y + '-PRI', label: 'Primavera ' + y, start: y + '-03-01', end: y + '-05-31', ord: y * 4 + 1 };
-  if (mo >= 6 && mo <= 8) return { key: y + '-EST', label: 'Estate ' + y, start: y + '-06-01', end: y + '-08-31', ord: y * 4 + 2 };
-  if (mo >= 9 && mo <= 11) return { key: y + '-AUT', label: 'Autunno ' + y, start: y + '-09-01', end: y + '-11-30', ord: y * 4 + 3 };
+  if (mo >= 3 && mo <= 5) return { key: y + '-PRI', label: 'Primavera ' + yy(y), start: y + '-03-01', end: y + '-05-31', ord: y * 4 + 1 };
+  if (mo >= 6 && mo <= 8) return { key: y + '-EST', label: 'Estate ' + yy(y), start: y + '-06-01', end: y + '-08-31', ord: y * 4 + 2 };
+  if (mo >= 9 && mo <= 11) return { key: y + '-AUT', label: 'Autunno ' + yy(y), start: y + '-09-01', end: y + '-11-30', ord: y * 4 + 3 };
   // l'inverno attraversa due anni: dicembre (anno y) – febbraio (anno y+1)
   const sy = mo === 12 ? y : y - 1;
   const feb = new Date(sy + 1, 2, 0).getDate();
   return {
     key: sy + '-INV',
-    label: `Inverno ${sy}/${String(sy + 1).slice(2)}`,
+    label: `Inverno ${yy(sy)}`,
     start: sy + '-12-01',
     end: `${sy + 1}-02-${feb}`,
     ord: sy * 4 + 4,
