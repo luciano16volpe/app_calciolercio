@@ -66,17 +66,15 @@ export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData
         <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
           <div>
             <label style={lbl} htmlFor="nm-date">📅 Data partita</label>
-            <input type="date" id="nm-date" value={date} onChange={(e) => setDate(e.target.value)} style={{ ...input, fontSize: 16 }} />
+            <input type="date" id="nm-date" className="dt-inp" value={date} onChange={(e) => setDate(e.target.value)} style={{ ...input, fontSize: 16 }} />
           </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <div style={{ flex: '0 0 40%' }}>
-              <label style={lbl} htmlFor="nm-time">⏰ Ora</label>
-              <input type="time" id="nm-time" value={time} onChange={(e) => setTime(e.target.value)} style={{ ...input, fontSize: 16 }} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <label style={lbl} htmlFor="nm-place">📍 Luogo</label>
-              <input type="text" id="nm-place" maxLength={80} placeholder="es. Campo Sole" value={place} onChange={(e) => setPlace(e.target.value)} style={{ ...input, fontSize: 16 }} />
-            </div>
+          <div>
+            <label style={lbl} htmlFor="nm-time">⏰ Ora</label>
+            <input type="time" id="nm-time" className="dt-inp" value={time} onChange={(e) => setTime(e.target.value)} style={{ ...input, fontSize: 16 }} />
+          </div>
+          <div>
+            <label style={lbl} htmlFor="nm-place">📍 Luogo</label>
+            <input type="text" id="nm-place" maxLength={80} placeholder="es. Campo Sole" value={place} onChange={(e) => setPlace(e.target.value)} style={{ ...input, fontSize: 16 }} />
           </div>
           <div>
             <label style={lbl} htmlFor="nm-notes">📝 Note (opz.)</label>

@@ -29,6 +29,7 @@ import { MatchCard } from './features/partite/MatchCard';
 import { PartitePage } from './features/partite/PartitePage';
 import { GazArchive, GazViewer, PagelleTextDialog, type MatchActions } from './features/partite/parts';
 import { PlayerCard } from './features/player/PlayerCard';
+import { AppHeader } from './app/AppHeader';
 import { InstallHint } from './app/InstallHint';
 import { PullToRefresh } from './app/PullToRefresh';
 import { RosaList } from './features/rosa/RosaList';
@@ -166,14 +167,7 @@ function Shell() {
 
   return (
     <>
-      <header>
-        <button type="button" className="hb" id="menu-button" aria-label="Apri il menu" onClick={() => setMenuOpen(true)}>☰</button>
-        <div className="logo" onClick={() => go(HOME_PAGE)} style={{ cursor: 'pointer' }}>
-          <img src="/logo.png" alt="CalcioLercio" style={{ width: 44, height: 44, display: 'block', objectFit: 'contain' }} />
-          CalcioLercio
-        </div>
-        {data ? <button type="button" className="lg-pill" id="league-pill" onClick={() => setMenuOpen(true)} aria-label={`Lega attiva: ${data.league.name}. Cambia lega`}>{data.league.name} ▾</button> : null}
-      </header>
+      <AppHeader data={data} onMenu={() => setMenuOpen(true)} onHome={() => go(HOME_PAGE)} />
 
       <PullToRefresh />
       <InstallHint />
