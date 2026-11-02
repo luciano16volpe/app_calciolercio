@@ -16,3 +16,5 @@ Indirizzo definitivo dell'app: https://calciolercio.vercel.app
 9. **Spegnimento dello script Google** solo dopo la tua conferma.
 
 Le decisioni sui permessi sono state prese (vedi `docs/DECISIONI.md`).
+
+**Notifiche push (prima di invitare gli amici):** lanciare una volta `npm run push:setup`; poi ognuno attiva le notifiche da Impostazioni app → Notifiche (su iPhone con l'app installata nella Home) e prova con «Invia una notifica di prova».

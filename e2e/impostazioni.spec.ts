@@ -1,6 +1,6 @@
 // Impostazioni (passo 3.8): versione, formazioni, forma recente, pesi in sola lettura, account.
 import { expect, test, type Page } from '@playwright/test';
-import { openSettings as openSettingsFromMenu, setup } from './helpers';
+import { lastWrite, openSettings as openSettingsFromMenu, setup } from './helpers';
 
 // l'app si apre solo con l'accesso: la prova entra come membro della lega pubblica vera (accesso simulato, letture vere)
 test.beforeEach(async ({ page }) => {
@@ -10,6 +10,44 @@ test.beforeEach(async ({ page }) => {
 const openSettings = (page: Page) => openSettingsFromMenu(page);
 const noOverflow = async (page: Page) =>
   expect((await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width).toBeLessThanOrEqual(0);
+
+test('Notifiche: su iPhone senza l\u2019app installata si spiega come installarla', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'iphone', 'solo iPhone');
+  await openSettings(page);
+  await expect(page.locator('#push-state')).toContainText('Aggiungi alla schermata Home');
+  await expect(page.locator('#push-enable')).toHaveCount(0);
+  await noOverflow(page);
+});
+
+test('Notifiche: si attivano e si tolgono da Impostazioni (iscrizione salvata con le funzioni sicure)', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name === 'iphone', 'su iPhone servono la schermata Home');
+  // telefono finto: permesso, service worker e iscrizione (nel provino il service worker non c\u2019è)
+  await page.addInitScript(() => {
+    let perm = 'default';
+    let current: unknown = null;
+    const sub = { endpoint: 'https://push.example/abc', toJSON: () => ({ endpoint: 'https://push.example/abc', keys: { p256dh: 'PPP', auth: 'AAA' } }), unsubscribe: async () => { current = null; return true; } };
+    const reg = { pushManager: { getSubscription: async () => current, subscribe: async () => (current = sub) } };
+    const sw = navigator.serviceWorker as unknown as Record<string, unknown>;
+    Object.defineProperty(sw, 'ready', { get: () => Promise.resolve(reg) });
+    sw.getRegistration = async () => reg;
+    Object.defineProperty(Notification, 'permission', { get: () => perm });
+    (Notification as unknown as { requestPermission: () => Promise<string> }).requestPermission = async () => (perm = 'granted');
+  });
+  const writes = await setup(page, { rpc: { push_public_key: 'BAECAwQFBgc' } });
+  await openSettings(page);
+  await expect(page.locator('#push-state')).toContainText('Non sono attive');
+  await page.locator('#push-enable').click();
+  await expect(page.locator('#toast')).toContainText('Notifiche attivate');
+  expect(lastWrite(writes, 'save_push_subscription').body).toMatchObject({ p_endpoint: 'https://push.example/abc', p_p256dh: 'PPP', p_auth: 'AAA' });
+  expect(writes.some((w) => w.table === 'push_subscriptions')).toBe(false); // niente scritture dirette nella tabella
+  await expect(page.locator('#push-state')).toContainText('Attive su questo telefono');
+  await expect(page.locator('#push-test')).toBeVisible();
+  await noOverflow(page);
+  await page.locator('#push-disable').click();
+  await expect(page.locator('#toast')).toContainText('Notifiche disattivate');
+  expect(lastWrite(writes, 'remove_push_subscription').body).toEqual({ p_endpoint: 'https://push.example/abc' });
+  await expect(page.locator('#push-state')).toContainText('Non sono attive');
+});
 
 test('Password: si cambia dalle impostazioni (controlli, poi salva)', async ({ page }) => {
   let sent: unknown = null;

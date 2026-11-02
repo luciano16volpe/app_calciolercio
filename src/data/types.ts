@@ -891,6 +891,7 @@ export type Database = {
         }[]
       }
       propose_admin: { Args: { l: string; u: string }; Returns: string }
+      push_public_key: { Args: never; Returns: string }
       push_reminder_run: { Args: never; Returns: undefined }
       push_reminders_due: {
         Args: { p_today?: string }

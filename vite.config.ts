@@ -12,6 +12,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // il gestore delle notifiche push (public/push-sw.js) viene caricato dal service worker dell'app
+      workbox: { importScripts: ['push-sw.js'] },
       includeAssets: ['apple-touch-icon.png', 'icon-64.png'],
       manifest: {
         name: 'CalcioLercio',
