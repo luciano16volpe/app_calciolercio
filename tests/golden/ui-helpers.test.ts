@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { pagInfo, playerRatingAvg } from '../../src/domain/form';
 import { avatarClass, formatTime, initials, whenWhere } from '../../src/domain/format';
+import { pendingRatings, skippedRatings } from '../../src/domain/matches';
 import { playerSeason, seasonStats } from '../../src/domain/stats';
 import type { Dataset } from '../../src/domain/types';
 import { real } from './data';
@@ -69,5 +70,26 @@ describe('ora e luogo della partita', () => {
     expect(whenWhere({ time: '', place: ' Campo ' })).toBe('Campo');
     expect(whenWhere({ time: '08:30:00', place: '' })).toBe('alle 08:30');
     expect(whenWhere({})).toBe('');
+  });
+});
+
+describe('pagelle da scrivere e pagelle saltate', () => {
+  const m = (id: string, date: string, over: Record<string, unknown> = {}) => ({ id, date, scoreA: 5, scoreB: 3, ...over });
+  const ds = {
+    players: [],
+    matches: [
+      m('a', '2026-10-01'),                                  // risultato, nessuna descrizione → da scrivere
+      m('b', '2026-10-08'),                                  // risultato e descrizione → niente
+      m('c', '2026-10-15', { ratingsSkipped: true }),        // saltata
+      m('d', '2026-10-22', { scoreA: null, scoreB: null }),  // non giocata → niente
+      m('e', '2026-10-29', { ratingsSkipped: true }),        // saltata ma poi qualcuno ha scritto → non compare più tra le saltate
+    ],
+    ratings: [{ matchId: 'b', player: 'X', notes: 'bravo' }, { matchId: 'e', player: 'Y', titolo: 'IL MURO' }],
+  } as unknown as Dataset;
+  it('da scrivere: solo partite con risultato, senza testi e non saltate', () => {
+    expect(pendingRatings(ds).map((x) => x.id)).toEqual(['a']);
+  });
+  it('saltate: con risultato, senza testi, segnate come saltate (dalla più recente)', () => {
+    expect(skippedRatings(ds).map((x) => x.id)).toEqual(['c']);
   });
 });

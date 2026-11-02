@@ -1,6 +1,6 @@
 // Elenco della rosa: carte compatte, la più forte per prima (come legacy: buildRosa).
 import { useMemo } from 'react';
-import type { LeagueData } from '../../data/queries';
+import { photoUrl, type LeagueData } from '../../data/queries';
 import { calcOvr, rosaOrder } from '../../domain/ovr';
 import { formState, pagInfo, playerRatingAvg } from '../../domain/form';
 import { avatarClass, initials } from '../../domain/format';
@@ -31,13 +31,15 @@ export function RosaList({ data, onOpen, onAdd }: { data: LeagueData; onOpen: (p
   return (
     <>
     <div id="players-list">
-      {rows.map(({ p, ovr, pag, state }, rank) => (
+      {rows.map(({ p, ovr, pag, state }, rank) => {
+        const photo = photoUrl(data.photos[p.id]);
+        return (
         <div key={p.id} className="card card-compact" style={{ animationDelay: Math.min(rank, 12) * 0.03 + 's' }}>
           <div className="player-header" onClick={() => onOpen(p.id)}>
             <div className="ph-top">
               <div className="avatar-stack">
                 <span className={`pag-badge ${pag.cls}`} title="Media pagelle">{pag.label}</span>
-                <div className={`avatar avatar-ini ${avatarClass(p.roles)}`}>{initials(p.name)}</div>
+                <div className={`avatar avatar-ini ${avatarClass(p.roles)}${photo ? ' has-photo' : ''}`} style={photo ? { backgroundImage: `url('${photo}')` } : undefined}>{initials(p.name)}</div>
                 <span className="ovr-badge">OVR {ovr}</span>
               </div>
               <div className="ph-info">
@@ -54,7 +56,8 @@ export function RosaList({ data, onOpen, onAdd }: { data: LeagueData; onOpen: (p
             </div>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
     {onAdd ? (
       <div className="btn-row" style={{ marginTop: 4 }}>

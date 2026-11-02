@@ -5,15 +5,15 @@ import { useEffect, useRef } from 'react';
 import { useAuth, useRole } from '../../app/auth';
 import { setSelectedLeague } from '../../app/league';
 import { useToast } from '../../app/Toast';
-import { type LeagueData } from '../../data/queries';
-import { usePendingClaims } from '../../data/claims';
+import { photoUrl, type LeagueData } from '../../data/queries';
+import { useMyPlayer, usePendingClaims } from '../../data/claims';
 import { useAdminRequests, useMembers, useMyLeagues, useIsSuperAdmin } from '../../data/leagues';
-import { hasScore, matchHasDesc } from '../../domain/matches';
+import { pendingRatings } from '../../domain/matches';
 import { formatDate } from '../../domain/format';
 
 export type Panel =
   | 'create-league' | 'join-league' | 'profile' | 'members' | 'invites' | 'claims' | 'merge' | 'league-settings' | 'admin-proposals'
-  | 'game-settings' | 'bench' | 'audit' | 'platform-leagues' | 'platform-users' | 'privacy' | 'help' | 'account';
+  | 'game-settings' | 'bench' | 'pending' | 'audit' | 'platform-leagues' | 'platform-users' | 'privacy' | 'help' | 'account';
 
 const ROLE_LABEL = { admin: 'Admin', redazione: 'Redazione', member: 'Membro' } as const;
 
@@ -63,7 +63,10 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
   const list = leagues.data ?? [];
   const cur = list.find((l) => l.id === lid);
   const name = (user?.user_metadata?.display_name as string | undefined) || user?.email?.split('@')[0] || '';
-  const pending = data ? data.dataset.matches.filter((m) => hasScore(m) && !matchHasDesc(data.dataset, m.id)) : [];
+  const pending = data ? pendingRatings(data.dataset) : []; // escluse le partite «saltate»
+  // la foto del mio giocatore (se ne ho una), per il cerchio in alto nel menu
+  const mine = useMyPlayer(user?.id ?? null);
+  const myPhoto = data && mine.data?.linked ? photoUrl(data.photos[mine.data.linked.id]) : null;
   const last = data ? [...data.dataset.matches].sort((a, b) => ((a.date ?? '') < (b.date ?? '') ? 1 : -1))[0] : undefined;
   const open = (p: Panel) => {
     onClose();
@@ -106,7 +109,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
           {user ? (
             <>
               <div className="menu-who">
-                <div className="menu-av">{initials(name || user.email || '')}</div>
+                <div className="menu-av" id="menu-avatar">{myPhoto ? <img src={myPhoto} alt={name} /> : initials(name || user.email || '')}</div>
                 <div style={{ minWidth: 0 }}>
                   <div className="menu-nm">{name}</div>
                   <div className="menu-em">{user.email}</div>
@@ -154,6 +157,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
             <>
               <div className="menu-sec">Redazione · {data.league.name}</div>
               <Item icon="📝" title="Pagelle da scrivere" sub={pending.length ? `${pending.length} partite senza descrizioni` : 'tutto scritto'} badge={pending.length} hot onClick={() => { const m = pending[0] ?? last; onClose(); if (m) onOpenMatch(m.id, true); }} id="menu-red-pending" />
+              <Item icon="🗂️" title="Partite senza pagelle" sub="scrivi o salta le vecchie" onClick={() => open('pending')} id="menu-red-list" />
               <Item icon="📥" title="Importa da WhatsApp" sub="incolla il messaggio delle pagelle" onClick={() => { const m = pending[0] ?? last; onClose(); if (m) onOpenMatch(m.id, true); }} id="menu-red-import" />
               <Item icon="📰" title="Carica la Gazzetta" sub={last ? `ultima partita: ${formatDate(last.date)}` : undefined} onClick={() => { onClose(); if (last) onOpenMatch(last.id, true); }} id="menu-red-gazzetta" />
             </>
@@ -165,6 +169,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
               <Item icon="👥" title="Membri e ruoli" sub={members.data ? `${members.data.length} persone con account` : undefined} badge={members.data?.length} onClick={() => open('members')} id="menu-members" />
               <Item icon="🔗" title="Inviti giocatori" sub="link personale per ogni giocatore" onClick={() => open('invites')} id="menu-invites" />
               <Item icon="✋" title="Richieste «sono io»" badge={claims.data?.length ?? 0} hot onClick={() => open('claims')} id="menu-claims" />
+              <Item icon="🗂️" title="Partite senza pagelle" sub={pending.length ? `${pending.length} da scrivere o saltare` : 'tutto scritto'} onClick={() => open('pending')} id="menu-pending" />
               <Item icon="🪑" title="Panchina" sub="giocatori senza lega" onClick={() => open('bench')} id="menu-bench" />
               <Item icon="🔀" title="Unisci giocatori" onClick={() => open('merge')} id="menu-merge" />
               {!isSuper ? <Item icon="🎮" title="Regole di gioco" sub="formazioni, forma, pesi (sola lettura)" onClick={() => open('game-settings')} id="menu-game-settings" /> : null}

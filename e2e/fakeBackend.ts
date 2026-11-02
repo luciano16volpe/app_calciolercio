@@ -266,6 +266,15 @@ export class FakeBackend {
         this.players.splice(this.players.findIndex((p) => p.id === pid), 1);
         return { status: 200, body: null };
       }
+      case 'set_ratings_skipped': {
+        const e = need(); if (e) return e;
+        const m = this.matches.find((x) => x.id === a.p_match);
+        if (!m) return err(400, 'Partita non trovata', 'P0001');
+        const r = this.role(m.league_id as string, actor);
+        if (r !== 'admin' && r !== 'redazione') return err(400, 'Permesso negato: solo l’amministratore o la redazione della lega', 'P0001');
+        m.ratings_skipped = !!a.p_skip;
+        return { status: 200, body: null };
+      }
       case 'join_league': {
         const e = need(); if (e) return e;
         const lg = this.leagues.find((x) => x.invite_code === String(a.code).trim());

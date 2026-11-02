@@ -19,6 +19,7 @@ import { GameSettingsPanel } from './features/menu/GameSettingsPanel';
 import { AdminProposalsPanel, PlatformLeaguesPanel, PlatformUsersPanel } from './features/menu/AdminPanels';
 import { InvitePage } from './features/menu/InvitePage';
 import { BenchPanel } from './features/menu/BenchPanel';
+import { PendingPanel } from './features/menu/PendingPanel';
 import { CreateLeagueSheet, JoinLeagueSheet } from './features/menu/LeagueSheets';
 import { LeagueSettingsPanel } from './features/menu/LeagueSettingsPanel';
 import { ClaimsPanel, InvitesPanel, MergePanel } from './features/menu/LinkPanels';
@@ -226,6 +227,7 @@ function Shell() {
       {data && panel === 'claims' ? <ClaimsPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'merge' ? <MergePanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'bench' ? <BenchPanel data={data} onClose={closePanel} /> : null}
+      {data && panel === 'pending' ? <PendingPanel data={data} onClose={closePanel} onOpenMatch={openMatch} /> : null}
       {data && panel === 'league-settings' ? <LeagueSettingsPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'admin-proposals' ? <AdminProposalsPanel data={data} onClose={closePanel} /> : null}
 
