@@ -1,6 +1,6 @@
 // Impostazioni (passo 3.8): versione, formazioni, forma recente, pesi in sola lettura, account.
 import { expect, test, type Page } from '@playwright/test';
-import { lastWrite, openSettings as openSettingsFromMenu, setup } from './helpers';
+import { fixturePlayer, lastWrite, openApp, openSettings as openSettingsFromMenu, setup } from './helpers';
 
 // l'app si apre solo con l'accesso: la prova entra come membro della lega pubblica vera (accesso simulato, letture vere)
 test.beforeEach(async ({ page }) => {
@@ -10,6 +10,54 @@ test.beforeEach(async ({ page }) => {
 const openSettings = (page: Page) => openSettingsFromMenu(page);
 const noOverflow = async (page: Page) =>
   expect((await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width).toBeLessThanOrEqual(0);
+
+/** Telefono finto per le notifiche: permesso, service worker e iscrizione (nel provino il service worker non c\u2019è). */
+async function fakePhone(page: Page) {
+  await page.addInitScript(() => {
+    let perm = 'default';
+    let current: unknown = null;
+    const sub = { endpoint: 'https://push.example/abc', toJSON: () => ({ endpoint: 'https://push.example/abc', keys: { p256dh: 'PPP', auth: 'AAA' } }), unsubscribe: async () => { current = null; return true; } };
+    const reg = { pushManager: { getSubscription: async () => current, subscribe: async () => (current = sub) } };
+    const sw = navigator.serviceWorker as unknown as Record<string, unknown>;
+    Object.defineProperty(sw, 'ready', { get: () => Promise.resolve(reg) });
+    sw.getRegistration = async () => reg;
+    Object.defineProperty(Notification, 'permission', { get: () => perm });
+    (Notification as unknown as { requestPermission: () => Promise<string> }).requestPermission = async () => (perm = 'granted');
+  });
+}
+
+test('Notifiche: al primo accesso chi ha un giocatore collegato riceve la domanda, con «Attiva» si iscrive', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name === 'iphone', 'su iPhone servono la schermata Home');
+  await fakePhone(page);
+  const writes = await setup(page, { mePlayer: fixturePlayer(), rpc: { push_public_key: 'BAECAwQFBgc' } });
+  await openApp(page);
+  await expect(page.locator('#push-prompt')).toBeVisible();
+  await page.locator('#push-prompt-yes').click();
+  await expect(page.locator('#toast')).toContainText('Notifiche attivate');
+  await expect(page.locator('#push-prompt')).toHaveCount(0);
+  expect(lastWrite(writes, 'save_push_subscription').body).toMatchObject({ p_endpoint: 'https://push.example/abc' });
+});
+
+test('Notifiche: «Non ora» non lo richiede più; senza giocatore collegato non compare', async ({ page, browser }, testInfo) => {
+  test.skip(testInfo.project.name === 'iphone', 'su iPhone servono la schermata Home');
+  await fakePhone(page);
+  await setup(page, { mePlayer: fixturePlayer() });
+  await openApp(page);
+  await expect(page.locator('#push-prompt')).toBeVisible();
+  await page.locator('#push-prompt-later').click();
+  await expect(page.locator('#push-prompt')).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('#players-list .card-compact').first()).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('#push-prompt')).toHaveCount(0); // ricordato
+  // chi non ha un giocatore collegato non ha niente da ricevere
+  const ctx = await browser.newContext(testInfo.project.use);
+  const p2 = await ctx.newPage();
+  await fakePhone(p2);
+  await setup(p2, {});
+  await openApp(p2);
+  await expect(p2.locator('#push-prompt')).toHaveCount(0);
+  await ctx.close();
+});
 
 test('Notifiche: su iPhone senza l\u2019app installata si spiega come installarla', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'iphone', 'solo iPhone');

@@ -31,6 +31,7 @@ import { GazArchive, GazViewer, PagelleTextDialog, type MatchActions } from './f
 import { PlayerCard } from './features/player/PlayerCard';
 import { InstallHint } from './app/InstallHint';
 import { PullToRefresh } from './app/PullToRefresh';
+import { PushPrompt } from './app/PushPrompt';
 import { RosaList } from './features/rosa/RosaList';
 
 /** Gioca e scheda partita con i permessi di chi è entrato: la modifica si offre solo a chi può farla (il database la controlla comunque). */
@@ -177,6 +178,7 @@ function Shell() {
 
       <PullToRefresh />
       <InstallHint />
+      <PushPrompt />
       <div id="page-rosa" className={`page${page === 'rosa' ? ' active' : ''}`}>
         {data ? <RosaGate data={data} onOpen={openPlayerFromRosa} /> : <Loading q={q} onPanel={setPanel} />}
       </div>
