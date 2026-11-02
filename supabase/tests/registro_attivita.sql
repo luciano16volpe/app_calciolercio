@@ -25,9 +25,12 @@ begin
   perform set_config('request.headers', '{"x-forwarded-for":"203.0.113.7, 10.0.0.1","user-agent":"ProvaTelefono/1.0"}', true);
   perform set_config('request.jwt.claims', json_build_object('sub', u_adm, 'role', 'authenticated')::text, true);
   perform set_config('request.jwt.claim.sub', u_adm::text, true);
+  insert into platform_admins(user_id) values (u_adm);   -- (per ora le leghe le crea solo l'amministratore supremo: lo è solo per questa riga)
   set local role authenticated;
   insert into leagues(id, name, is_public) values (lg, 'Lega Prova Registro', false);
   reset role;
+  delete from platform_admins where user_id = u_adm;
+  delete from audit_log where entity = 'platform_admins';
   select * into r from audit_log where action = 'leagues.insert' and league_id = lg;
   insert into t_res values ('lega creata: riga con persona, lega, IP e dispositivo',
     r.actor_id = u_adm and r.actor_name = 'Admin Prova' and r.league_name = 'Lega Prova Registro' and host(r.ip) = '203.0.113.7' and r.user_agent = 'ProvaTelefono/1.0' and r.source = 'app' and r.grp = 'leghe',

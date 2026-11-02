@@ -66,7 +66,7 @@ begin
    (5,  'creare una partita',                                     '0001100', 'insert into matches(league_id, date) values (''{L1}'', ''2026-01-01'')', null),
    (6,  'eliminare una partita',                                  '0001100', 'delete from matches where id = ''{M1}''', null),
    (7,  'cambiare le statistiche di un giocatore',                '0001100', 'update players set stats = array[6,5,5,5,5,5,5,5,5,5,5]::smallint[] where id = ''{P1}''', null),
-   (8,  'eliminare un giocatore che gioca solo in questa lega',  '0001100', 'delete from players where id = ''{P1}''', null),
+   (8,  'eliminare un giocatore che gioca in una lega (si toglie dalla lega, non si cancella)',  '0000000', 'delete from players where id = ''{P1}''', null),
    (9,  'eliminare un giocatore creato da chi ora è solo membro', '0000000', 'delete from players where id = ''{P9}''', 'e'),
    (10, 'cambiare le statistiche di un giocatore creato da chi ora è solo membro', '0000000', 'update players set stats = array[6,5,5,5,5,5,5,5,5,5,5]::smallint[] where id = ''{P9}''', 'e'),
    (11, 'collegare un giocatore a un account a mano (players.user_id)', '0000000', 'update players set user_id = ''{ME}'' where id = ''{P1}''', null),
@@ -103,13 +103,17 @@ begin
    (42, 'nominare un amministratore supremo',                     '0000000', 'insert into platform_admins(user_id) values (''{ME}'')', null),
    (43, 'entrare in una lega privata scrivendo direttamente tra i membri', '0000000', 'insert into league_members(league_id, user_id, role) values (''{L1}'', ''{ME}'', ''member'')', 'out'),
    (44, 'entrare in una lega con il codice giusto',               '0000100'::text, 'select public.join_league(''{CODE}'')', 'out'),
-   (45, 'creare una nuova lega',                                  '0111111', 'insert into leagues(id, name) values (gen_random_uuid(), ''Nuova'')', null),
+   (45, 'creare una nuova lega (per ora solo l''amministratore supremo)', '0000001', 'insert into leagues(id, name) values (gen_random_uuid(), ''Nuova'')', null),
    (46, 'leggere il profilo di un altro utente',                  '0000000', 'select 1 from profiles where id <> coalesce(nullif(current_setting(''request.jwt.claim.sub'', true), '''')::uuid, gen_random_uuid())', null),
    (47, 'vedere i giocatori ancora liberi di una lega privata',   '0111100', 'select 1 from public.players_unclaimed(''{L1}'')', null),
    (48, 'vedere lo storico statistiche di un giocatore di una lega privata', '0111100', 'select 1 from public.player_history(''{P1}'')', null),
    (49, 'cambiare le regole di gioco (pesi, formazioni, forma recente)', '0000001', 'select public.admin_set_setting(''use_form'', ''false''::jsonb)', null),
    (50, 'cambiare i pesi con valori non validi', '0000000', 'select public.admin_set_setting(''ovr_weights'', ''[9,1,1,1,1,1,1,1,1,1,1]''::jsonb)', null),
-   (51, 'leggere le regole di gioco (l''app le usa per calcolare OVR e squadre)', '1111111', 'select 1 from app_settings where key = ''ovr_weights''', null);
+   (51, 'leggere le regole di gioco (l''app le usa per calcolare OVR e squadre)', '1111111', 'select 1 from app_settings where key = ''ovr_weights''', null),
+   (52, 'togliere un giocatore dalla lega (finisce in Panchina)', '0001100', 'select public.remove_player_from_league(''{L1}'', ''{P1}'')', null),
+   (53, 'vedere la Panchina (giocatori senza lega)',             '0001111', 'select count(*) from public.bench_players()', null),
+   (54, 'portare in lega un giocatore della Panchina',            '0001100', 'select public.add_player_to_league(''{L1}'', ''{P9}'')', null),
+   (55, 'cancellare per sempre un giocatore dalla Panchina',      '0000001', 'select public.delete_bench_player(''{P9}'')', null);
   -- 44: il codice giusto lo possono usare tutti quelli che hanno un account e non sono già dentro (x, s); v no
   update acts set expect = '0000011' where n = 44;
 

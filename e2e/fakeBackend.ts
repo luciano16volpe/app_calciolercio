@@ -47,7 +47,7 @@ export class FakeBackend {
       const id = (rows[i]?.id as string | undefined) ?? uid();
       pid.set(p.id, id);
       this.players.push({ id, name: p.name, roles: p.roles ?? [], stats: p.stats.map((v) => Math.round(v)), photo_path: null, user_id: null, legacy_id: p.id });
-      this.lplayers.push({ league_id: leagueId, player_id: id, aliases: p.aliases ?? [], archived: false });
+      this.lplayers.push({ league_id: leagueId, player_id: id, aliases: p.aliases ?? [] });
     });
     const mid = new Map<string, string>();
     for (const m of mapMatches(feed, leagueId).rows) {
@@ -91,7 +91,7 @@ export class FakeBackend {
       if (!p) {
         p = { id: uid(), name: n, roles: ['MED'], stats: Array(11).fill(5), photo_path: null, user_id: null };
         this.players.push(p);
-        this.lplayers.push({ league_id: leagueId, player_id: p.id, aliases: [], archived: false });
+        this.lplayers.push({ league_id: leagueId, player_id: p.id, aliases: [] });
       }
       return p.id as string;
     });
@@ -159,6 +159,8 @@ export class FakeBackend {
     if (!actor) return err(401, 'Devi prima accedere');
     const arr = (Array.isArray(body) ? body : [body]) as Row[];
     if (method === 'POST' && name === 'leagues') {
+      // per ora le leghe le crea solo l'amministratore supremo (regola del database)
+      if (!this.supers.has(actor)) return err(403, 'new row violates row-level security policy for table "leagues"');
       for (const b of arr) {
         const l = { id: b.id ?? uid(), name: b.name, slug: slugify(String(b.name)), is_public: !!b.is_public, invite_code: uid().slice(0, 8), owner_id: actor, settings: b.settings ?? {}, created_at: new Date().toISOString() };
         this.leagues.push(l);
@@ -178,7 +180,7 @@ export class FakeBackend {
     if (method === 'POST' && name === 'league_players') {
       for (const b of arr) {
         if (!this.isAdmin(String(b.league_id), actor)) return err(403, 'new row violates row-level security policy for table "league_players"');
-        this.lplayers.push({ league_id: b.league_id, player_id: b.player_id, aliases: [], archived: false });
+        this.lplayers.push({ league_id: b.league_id, player_id: b.player_id, aliases: [] });
         this.log(actor, 'league_players.insert', 'league_players', this.playerName(String(b.player_id)), 'giocatori', b.league_id as string, null, ua);
       }
       return { status: 201, body: null };
@@ -220,6 +222,50 @@ export class FakeBackend {
       case 'player_history': return { status: 200, body: [] };
       case 'claims_pending': return { status: 200, body: [] };
       case 'players_unclaimed': return { status: 200, body: this.lplayers.filter((lp) => lp.league_id === l).map((lp) => this.players.find((p) => p.id === lp.player_id)!).filter((p) => !p.user_id).map((p) => ({ player_id: p.id, name: p.name })) };
+      case 'remove_player_from_league': {
+        const e = need(); if (e) return e;
+        const lg = a.p_league as string, pid = a.p_player as string;
+        if (!this.isAdmin(lg, actor)) return err(400, 'Permesso negato: solo un amministratore della lega toglie un giocatore', 'P0001');
+        const i = this.lplayers.findIndex((lp) => lp.league_id === lg && lp.player_id === pid);
+        if (i < 0) return err(400, 'Questo giocatore non è nella lega', 'P0001');
+        const pl = this.players.find((p) => p.id === pid);
+        if (pl?.user_id && this.role(lg, pl.user_id as string) === 'admin') return err(400, 'Il giocatore è collegato a un amministratore della lega: togli prima il ruolo da «Membri e ruoli»', 'P0001');
+        this.lplayers.splice(i, 1);
+        if (pl?.user_id) {
+          const j = this.members.findIndex((m) => m.league_id === lg && m.user_id === pl.user_id);
+          if (j >= 0) this.members.splice(j, 1);
+        }
+        this.log(actor, 'league_players.delete', 'league_players', String(pl?.name), 'giocatori', lg, null, ua);
+        return { status: 200, body: !this.lplayers.some((lp) => lp.player_id === pid) };
+      }
+      case 'bench_players': {
+        const e = need(); if (e) return e;
+        if (!(this.members.some((m) => m.user_id === actor && m.role === 'admin') || this.supers.has(actor as string))) return err(400, 'Permesso negato: la Panchina è per gli amministratori', 'P0001');
+        return { status: 200, body: this.players.filter((p) => !this.lplayers.some((lp) => lp.player_id === p.id)).map((p) => ({
+          player_id: p.id, name: p.name, roles: p.roles ?? [], photo_path: p.photo_path ?? null, linked: !!p.user_id,
+          matches_played: this.mplayers.filter((x) => x.player_id === p.id).length })) };
+      }
+      case 'add_player_to_league': {
+        const e = need(); if (e) return e;
+        const lg = a.p_league as string, pid = a.p_player as string;
+        if (!this.isAdmin(lg, actor)) return err(400, 'Permesso negato: solo un amministratore della lega aggiunge un giocatore', 'P0001');
+        const pl = this.players.find((p) => p.id === pid);
+        if (!pl) return err(400, 'Giocatore non trovato', 'P0001');
+        if (this.lplayers.some((lp) => lp.player_id === pid)) return err(400, 'Il giocatore non è in Panchina: gioca già in una lega', 'P0001');
+        this.lplayers.push({ league_id: lg, player_id: pid, aliases: [] });
+        if (pl.user_id && !this.role(lg, pl.user_id as string)) this.members.push({ league_id: lg, user_id: pl.user_id, role: 'member', joined_at: new Date().toISOString() });
+        this.log(actor, 'league_players.insert', 'league_players', String(pl.name), 'giocatori', lg, null, ua);
+        return { status: 200, body: null };
+      }
+      case 'delete_bench_player': {
+        const e = need(); if (e) return e;
+        const pid = a.p_player as string;
+        if (!this.supers.has(actor as string)) return err(400, 'Permesso negato: solo l’amministratore supremo cancella un giocatore', 'P0001');
+        if (this.lplayers.some((lp) => lp.player_id === pid)) return err(400, 'Il giocatore gioca ancora in una lega: toglilo prima dalla lega', 'P0001');
+        if (this.mplayers.some((x) => x.player_id === pid)) return err(400, 'Il giocatore ha partite e pagelle nella storia delle leghe: non si cancella (resta in Panchina)', 'P0001');
+        this.players.splice(this.players.findIndex((p) => p.id === pid), 1);
+        return { status: 200, body: null };
+      }
       case 'join_league': {
         const e = need(); if (e) return e;
         const lg = this.leagues.find((x) => x.invite_code === String(a.code).trim());
@@ -231,7 +277,7 @@ export class FakeBackend {
           // chi entra porta con sé il suo giocatore (niente doppioni)
           const mine = this.players.find((p) => p.user_id === actor);
           if (mine && !this.lplayers.some((lp) => lp.league_id === id && lp.player_id === mine.id)) {
-            this.lplayers.push({ league_id: id, player_id: mine.id, aliases: [], archived: false });
+            this.lplayers.push({ league_id: id, player_id: mine.id, aliases: [] });
             this.log(actor, 'league_players.insert', 'league_players', String(mine.name), 'giocatori', id, null, ua);
           }
         }

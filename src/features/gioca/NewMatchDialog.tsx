@@ -18,6 +18,10 @@ export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData
   const qc = useQueryClient();
   const players = data.dataset.players;
   const [date, setDate] = useState(() => new Date().toISOString().substring(0, 10));
+  // ora e luogo: si propongono quelli dell'ultima partita che li ha (di solito si gioca sempre allo stesso posto)
+  const last = [...data.dataset.matches].reverse().find((x) => x.place || x.time);
+  const [time, setTime] = useState(() => String(last?.time ?? ''));
+  const [place, setPlace] = useState(() => String(last?.place ?? ''));
   const [notes, setNotes] = useState('');
   const [sa, setSa] = useState('');
   const [sb, setSb] = useState('');
@@ -30,11 +34,13 @@ export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData
   };
   const save = async () => {
     if (!date) return toast('Scegli la data');
+    if (!time) return toast('Scegli l’ora della partita');
+    if (!place.trim()) return toast('Scrivi dove si gioca');
     setBusy(true);
     try {
       toast('⏳ Salvataggio...');
       await createMatch({
-        leagueId: data.league.id, date, notes: notes.trim(),
+        leagueId: data.league.id, date, time, place: place.trim(), notes: notes.trim(),
         teamA: combo.tA.map((i) => (players[i] as { id: string }).id),
         teamB: combo.tB.map((i) => (players[i] as { id: string }).id),
         scoreA: sa !== '' ? clampInt(sa, 0, 99, 0) : '', scoreB: sb !== '' ? clampInt(sb, 0, 99, 0) : '',
@@ -61,6 +67,16 @@ export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData
           <div>
             <label style={lbl} htmlFor="nm-date">📅 Data partita</label>
             <input type="date" id="nm-date" value={date} onChange={(e) => setDate(e.target.value)} style={{ ...input, fontSize: 16 }} />
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <div style={{ flex: '0 0 40%' }}>
+              <label style={lbl} htmlFor="nm-time">⏰ Ora</label>
+              <input type="time" id="nm-time" value={time} onChange={(e) => setTime(e.target.value)} style={{ ...input, fontSize: 16 }} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <label style={lbl} htmlFor="nm-place">📍 Luogo</label>
+              <input type="text" id="nm-place" maxLength={80} placeholder="es. Campo Sole" value={place} onChange={(e) => setPlace(e.target.value)} style={{ ...input, fontSize: 16 }} />
+            </div>
           </div>
           <div>
             <label style={lbl} htmlFor="nm-notes">📝 Note (opz.)</label>

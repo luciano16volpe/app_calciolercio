@@ -6,7 +6,7 @@ import { useImageTools } from '../../app/ImageViewer';
 import { useToast } from '../../app/Toast';
 import { matchFormations, matchSheet, matchSummary } from '../../canvas/make';
 import { gazzettaThumbUrl, gazzettaUrl, type LeagueData } from '../../data/queries';
-import { formatDate } from '../../domain/format';
+import { formatDate, whenWhere } from '../../domain/format';
 import {
   gazzetteBySeason, gazzetteByDate, hasScore, lastMatch, matchHasDesc, matchListGroups, pagelleText, type GazItem,
 } from '../../domain/matches';
@@ -73,7 +73,7 @@ export function LastMatch({ data, act }: { data: LeagueData; act: MatchActions }
     <div className="card" style={{ borderLeft: '4px solid var(--green)', cursor: 'pointer' }} onClick={() => act.openMatch(m.id)}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <span className="section-header" style={{ margin: 0 }}>🏆 Ultima partita</span>
-        <span style={{ fontSize: 11, color: 'var(--text3)' }}>{formatDate(m.date)} ›</span>
+        <span style={{ fontSize: 11, color: 'var(--text3)' }}>{formatDate(m.date)}{whenWhere(m) ? ` · ${whenWhere(m)}` : ''} ›</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, margin: '4px 0' }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--blue)' }}>🔵 Blu</span>
@@ -119,6 +119,7 @@ export function MatchesList({ data, act }: { data: LeagueData; act: MatchActions
                     ) : null}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--text2)' }}>{totalPlayers} giocatori · {ratedCount}/{totalPlayers} pagelle</div>
+                  {whenWhere(m) ? <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>⏰ {whenWhere(m)}</div> : null}
                   {m.notes ? <div style={{ fontSize: 11, color: 'var(--text3)', fontStyle: 'italic', marginTop: 2 }}>{String(m.notes)}</div> : null}
                 </div>
                 {ratedCount > 0 ? <span style={{ fontSize: 18 }}>📊</span> : <span style={{ fontSize: 18, opacity: 0.4 }}>📝</span>}

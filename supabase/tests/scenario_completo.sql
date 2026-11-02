@@ -33,7 +33,12 @@ begin
 
   -- 1. il creatore apre la lega A con 6 giocatori e una partita
   perform pg_temp.as_user(u_o);
+  -- (per ora le leghe le crea solo l'amministratore supremo: il creatore lo è solo per il tempo di questa riga)
+  perform pg_temp.as_user(null); insert into platform_admins(user_id) values (u_o);
+  perform pg_temp.as_user(u_o);
   insert into leagues(id, name, is_public) values (la, 'Lega A scenario', false);
+  perform pg_temp.as_user(null); delete from platform_admins where user_id = u_o; delete from audit_log where entity = 'platform_admins';
+  perform pg_temp.as_user(u_o);
   insert into players(id, name) select p[g], 'Gioc' || g from generate_series(1, 6) g;
   insert into league_players(league_id, player_id) select la, p[g] from generate_series(1, 6) g;
   insert into matches(id, league_id, date) values (m1, la, '2026-10-28');
@@ -57,7 +62,12 @@ begin
 
   -- 4. il creatore apre la lega B; l'amico entra con il codice portando il suo giocatore (niente doppioni)
   perform pg_temp.as_user(u_o);
+  -- (per ora le leghe le crea solo l'amministratore supremo: il creatore lo è solo per il tempo di questa riga)
+  perform pg_temp.as_user(null); insert into platform_admins(user_id) values (u_o);
+  perform pg_temp.as_user(u_o);
   insert into leagues(id, name, is_public) values (lb, 'Lega B scenario', false);
+  perform pg_temp.as_user(null); delete from platform_admins where user_id = u_o; delete from audit_log where entity = 'platform_admins';
+  perform pg_temp.as_user(u_o);
   perform pg_temp.as_user(null);
   select invite_code into code_b from leagues where id = lb;
   select count(*) into nplayers from players where name like 'Gioc%';

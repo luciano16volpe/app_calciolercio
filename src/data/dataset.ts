@@ -1,13 +1,14 @@
 // Dal database ai dati che usa la logica (src/domain): rosa, partite con le squadre, pagelle.
 // Funzione pura: non parla con Supabase, riceve le righe già lette.
 import type { Dataset, Match, Player, Rating } from '../domain/types';
+import { formatTime } from '../domain/format';
 import type { Database } from './types';
 
 type Tables = Database['public']['Tables'];
 
 export interface DbRows {
   players: Pick<Tables['players']['Row'], 'id' | 'name' | 'roles' | 'stats'>[];
-  matches: Pick<Tables['matches']['Row'], 'id' | 'date' | 'notes' | 'score_a' | 'score_b' | 'pred' | 'pred_rank'>[];
+  matches: (Pick<Tables['matches']['Row'], 'id' | 'date' | 'notes' | 'score_a' | 'score_b' | 'pred' | 'pred_rank'> & Partial<Pick<Tables['matches']['Row'], 'play_time' | 'place'>>)[];
   matchPlayers: Pick<
     Tables['match_players']['Row'],
     'match_id' | 'player_id' | 'team' | 'position' | 'rating' | 'goals' | 'assist' | 'autogol' | 'meta' | 'rigori_sbagliati' | 'titolo' | 'descrizione'
@@ -42,6 +43,8 @@ export function dbToDataset(rows: DbRows): Dataset {
       id: m.id,
       date: m.date,
       notes: m.notes ?? '',
+      time: formatTime(m.play_time),
+      place: m.place ?? '',
       teamA: team('A'),
       teamB: team('B'),
       scoreA: m.score_a,

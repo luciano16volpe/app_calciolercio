@@ -41,9 +41,9 @@ export async function saveMatchTexts(matchId: string, rows: Array<{ playerId: st
   if (bad?.error) throw fail('pagelle', bad.error);
 }
 
-/** Risultato e descrizione di una partita ('' = non inserito). */
-export async function updateMatchHeader(matchId: string, scoreA: number | '', scoreB: number | '', notes: string): Promise<void> {
-  const { error } = await supabase.from('matches').update({ score_a: scoreA === '' ? null : scoreA, score_b: scoreB === '' ? null : scoreB, notes: notes || null }).eq('id', matchId);
+/** Risultato, descrizione, ora e luogo di una partita ('' = non inserito). */
+export async function updateMatchHeader(matchId: string, scoreA: number | '', scoreB: number | '', notes: string, time: string, place: string): Promise<void> {
+  const { error } = await supabase.from('matches').update({ score_a: scoreA === '' ? null : scoreA, score_b: scoreB === '' ? null : scoreB, notes: notes || null, play_time: time || null, place: place.trim() || null }).eq('id', matchId);
   if (error) throw fail('risultato', error);
 }
 
@@ -56,6 +56,9 @@ export async function deleteMatch(matchId: string): Promise<void> {
 export interface NewMatch {
   leagueId: string;
   date: string;
+  /** ora (hh:mm) e luogo: obbligatori per una partita nuova */
+  time: string;
+  place: string;
   notes: string;
   teamA: string[];
   teamB: string[];
@@ -71,7 +74,7 @@ export async function createMatch(m: NewMatch): Promise<string> {
   const { data, error } = await supabase
     .from('matches')
     .insert({
-      league_id: m.leagueId, date: m.date, notes: m.notes || null,
+      league_id: m.leagueId, date: m.date, play_time: m.time || null, place: m.place.trim() || null, notes: m.notes || null,
       score_a: m.scoreA === '' ? null : m.scoreA, score_b: m.scoreB === '' ? null : m.scoreB, pred: m.pred, pred_rank: m.predRank,
     })
     .select('id')

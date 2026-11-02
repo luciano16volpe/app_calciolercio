@@ -9,7 +9,7 @@ import { createPlayer } from './data/mutations';
 import { useQueryClient } from '@tanstack/react-query';
 import { ImageProvider } from './app/ImageViewer';
 import { ToastProvider } from './app/Toast';
-import { LEAGUE_QUERY_KEY, NoLeagueError, useLeagueData, type LeagueData } from './data/queries';
+import { LEAGUE_QUERY_KEY, NoLeagueError, rosterView, useLeagueData, type LeagueData } from './data/queries';
 import { ClassifichePage } from './features/classifiche/ClassifichePage';
 import { GiocaPage } from './features/gioca/GiocaPage';
 import { SettingsPage } from './features/impostazioni/SettingsPage';
@@ -18,6 +18,7 @@ import { LoginPage } from './features/auth/LoginPage';
 import { GameSettingsPanel } from './features/menu/GameSettingsPanel';
 import { AdminProposalsPanel, PlatformLeaguesPanel, PlatformUsersPanel } from './features/menu/AdminPanels';
 import { InvitePage } from './features/menu/InvitePage';
+import { BenchPanel } from './features/menu/BenchPanel';
 import { CreateLeagueSheet, JoinLeagueSheet } from './features/menu/LeagueSheets';
 import { LeagueSettingsPanel } from './features/menu/LeagueSettingsPanel';
 import { ClaimsPanel, InvitesPanel, MergePanel } from './features/menu/LinkPanels';
@@ -35,7 +36,8 @@ import { RosaList } from './features/rosa/RosaList';
 /** Gioca e scheda partita con i permessi di chi è entrato: la modifica si offre solo a chi può farla (il database la controlla comunque). */
 function GiocaGate({ data }: { data: LeagueData }) {
   const { isAdmin } = useRole(data.league.id);
-  return <GiocaPage data={data} canCreate={isAdmin} />;
+  const roster = useMemo(() => rosterView(data), [data]);
+  return <GiocaPage data={roster} canCreate={isAdmin} />;
 }
 /** Rosa: per l'amministratore c'è anche "+ Aggiungi giocatore" (e la guida se la lega è vuota). */
 function RosaGate({ data, onOpen }: { data: LeagueData; onOpen: (id: string) => void }) {
@@ -43,6 +45,7 @@ function RosaGate({ data, onOpen }: { data: LeagueData; onOpen: (id: string) => 
   const prompt = usePrompt();
   const toast = useToast();
   const qc = useQueryClient();
+  const roster = useMemo(() => rosterView(data), [data]);
   const add = async () => {
     const nome = await prompt({ icon: '➕', title: 'Nuovo giocatore', lines: ['Inserisci il nome (non sarà modificabile in seguito).'], okLabel: 'Aggiungi', input: { placeholder: 'Es. Marco' } });
     if (nome === null) return; // annullato
@@ -57,8 +60,8 @@ function RosaGate({ data, onOpen }: { data: LeagueData; onOpen: (id: string) => 
   };
   return (
     <>
-      {isAdmin && !data.dataset.players.length ? <EmptyLeagueGuide data={data} onAddNew={() => void add()} /> : null}
-      <RosaList data={data} onOpen={onOpen} onAdd={isAdmin ? () => void add() : undefined} />
+      {isAdmin && !roster.dataset.players.length ? <EmptyLeagueGuide data={data} onAddNew={() => void add()} /> : null}
+      <RosaList data={roster} onOpen={onOpen} onAdd={isAdmin ? () => void add() : undefined} />
     </>
   );
 }
@@ -80,6 +83,8 @@ function GameSettingsGate({ data, onClose }: { data: LeagueData; onClose: () => 
 
 /** Messaggio al posto di una pagina mentre i dati si caricano o se non arrivano; senza leghe, come entrare. */
 function Loading({ q, onPanel }: { q: { isError: boolean; error?: unknown; refetch: () => unknown }; onPanel: (p: Panel) => void }) {
+  const { user } = useAuth();
+  const canCreate = useIsSuperAdmin(user?.id ?? null).data === true; // per ora le leghe le crea solo l'amministratore supremo
   if (q.error instanceof NoLeagueError) {
     return (
       <div className="card" id="no-league">
@@ -88,7 +93,7 @@ function Loading({ q, onPanel }: { q: { isError: boolean; error?: unknown; refet
           Non fai ancora parte di nessuna lega. Le leghe si vedono solo su invito: apri il <b>link personale</b> che ti ha mandato un amministratore, oppure entra con il <b>codice d’invito</b>. Puoi anche creare una nuova lega.
         </div>
         <button type="button" className="f-btn" id="no-league-join" onClick={() => onPanel('join-league')}>🔑 Entra con un codice</button>
-        <button type="button" className="btn btn-secondary btn-full" id="no-league-create" style={{ marginTop: 8 }} onClick={() => onPanel('create-league')}>＋ Crea una nuova lega</button>
+        {canCreate ? <button type="button" className="btn btn-secondary btn-full" id="no-league-create" style={{ marginTop: 8 }} onClick={() => onPanel('create-league')}>＋ Crea una nuova lega</button> : null}
       </div>
     );
   }
@@ -128,7 +133,7 @@ function Shell() {
   // «Gioca» (nuova partita) è solo per gli amministratori della lega: agli altri la scheda non c'è, e l'indirizzo /gioca li porta alla pagina iniziale
   const { isAdmin, ready } = useRole(data?.league.id);
   // pagina iniziale: Classifiche; una lega ancora vuota si apre sulla Rosa (lì c'è la guida «Aggiungi i giocatori»)
-  const wanted: PageName = chosen ?? (data && !data.dataset.players.length ? 'rosa' : HOME_PAGE);
+  const wanted: PageName = chosen ?? (data && !rosterView(data).dataset.players.length ? 'rosa' : HOME_PAGE);
   const page: PageName = wanted === 'partita' && ready && !isAdmin ? HOME_PAGE : wanted;
   const go = (p: PageName) => {
     setChosen(p);
@@ -224,6 +229,7 @@ function Shell() {
       {data && panel === 'invites' ? <InvitesPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'claims' ? <ClaimsPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'merge' ? <MergePanel data={data} onClose={closePanel} /> : null}
+      {data && panel === 'bench' ? <BenchPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'league-settings' ? <LeagueSettingsPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'admin-proposals' ? <AdminProposalsPanel data={data} onClose={closePanel} /> : null}
 

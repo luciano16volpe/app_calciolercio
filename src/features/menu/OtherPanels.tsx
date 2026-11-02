@@ -92,7 +92,7 @@ export function PrivacyPanel({ onClose, onDeleted }: { onClose: () => void; onDe
 export function HelpPanel({ onClose }: { onClose: () => void }) {
   const items: Array<[string, string]> = [
     ['Come entro in una lega?', 'Con il link personale che ti manda un amministratore, oppure con il codice d’invito: ☰ → Entra con un codice.'],
-    ['Come creo una lega?', '☰ → Crea nuova lega. Ne diventi amministratore e creatore, e ricevi il codice d’invito da mandare agli amici.'],
+    ['Come si crea una lega?', 'Per ora le leghe le crea solo l’amministratore supremo: se te ne serve una nuova, chiedi a lui. Per entrare in una lega esistente usa il link personale o il codice d’invito.'],
     ['Chi può modificare le partite?', 'Gli amministratori. La redazione scrive solo titoli e descrizioni delle pagelle e carica la Gazzetta.'],
     ['Cosa vuol dire «Questo sono io»?', 'Collega il tuo account alla tua scheda di giocatore: scegli il tuo nome in ☰ → Il mio profilo e l’amministratore conferma.'],
     ['Ho un doppione nella rosa', 'Un amministratore può unire i due giocatori: ☰ → Gestione → Unisci giocatori.'],

@@ -13,7 +13,7 @@ import { formatDate } from '../../domain/format';
 
 export type Panel =
   | 'create-league' | 'join-league' | 'profile' | 'members' | 'invites' | 'claims' | 'merge' | 'league-settings' | 'admin-proposals'
-  | 'game-settings' | 'audit' | 'platform-leagues' | 'platform-users' | 'privacy' | 'help' | 'account';
+  | 'game-settings' | 'bench' | 'audit' | 'platform-leagues' | 'platform-users' | 'privacy' | 'help' | 'account';
 
 const ROLE_LABEL = { admin: 'Admin', redazione: 'Redazione', member: 'Membro' } as const;
 
@@ -144,7 +144,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
             ))}
             {user ? (
               <>
-                <button type="button" className="menu-lgrow add" id="menu-create" onClick={() => open('create-league')}><span className="menu-lgic">＋</span><span className="menu-lgn">Crea nuova lega</span></button>
+                {isSuper ? <button type="button" className="menu-lgrow add" id="menu-create" onClick={() => open('create-league')}><span className="menu-lgic">＋</span><span className="menu-lgn">Crea nuova lega</span></button> : null}
                 <button type="button" className="menu-lgrow add" id="menu-join" onClick={() => open('join-league')}><span className="menu-lgic">🔑</span><span className="menu-lgn">Entra con un codice</span></button>
               </>
             ) : null}
@@ -165,6 +165,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
               <Item icon="👥" title="Membri e ruoli" sub={members.data ? `${members.data.length} persone con account` : undefined} badge={members.data?.length} onClick={() => open('members')} id="menu-members" />
               <Item icon="🔗" title="Inviti giocatori" sub="link personale per ogni giocatore" onClick={() => open('invites')} id="menu-invites" />
               <Item icon="✋" title="Richieste «sono io»" badge={claims.data?.length ?? 0} hot onClick={() => open('claims')} id="menu-claims" />
+              <Item icon="🪑" title="Panchina" sub="giocatori senza lega" onClick={() => open('bench')} id="menu-bench" />
               <Item icon="🔀" title="Unisci giocatori" onClick={() => open('merge')} id="menu-merge" />
               {!isSuper ? <Item icon="🎮" title="Regole di gioco" sub="formazioni, forma, pesi (sola lettura)" onClick={() => open('game-settings')} id="menu-game-settings" /> : null}
               {isOwner ? <Item icon="🛡️" title="Proposte di amministratore" badge={proposals.data?.length ?? 0} hot onClick={() => open('admin-proposals')} id="menu-proposals" /> : null}

@@ -22,6 +22,7 @@ test('Scenario completo: lega, invito, collegamento, codice, ruoli, pagelle, reg
   const R = be.addUser('u-rita', 'rita@example.com', 'Rita Redazione');
   const S = be.addUser('u-sara', 'sara@example.com', 'Sara Suprema');
   be.supers.add(S);
+  be.supers.add(O); // per ora le leghe le crea solo l'amministratore supremo: il «creatore» dello scenario lo è
   const pages: Page[] = [];
   const phone = async (user: string | null): Promise<Page> => {
     const ctx = await browser.newContext({ ...use });

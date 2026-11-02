@@ -10,7 +10,7 @@ import { compressGazzetta, makeGazzettaThumb } from '../../canvas/gazzetta';
 import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, updateMatchHeader } from '../../data/mutations';
 import { gazzettaUrl, LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
-import { formatDate } from '../../domain/format';
+import { formatDate, whenWhere } from '../../domain/format';
 import { matchBalance, matchHighlights, rateColors, type MatchBalance } from '../../domain/matches';
 import { clampRating, normalizeTeam } from '../../domain/stats';
 import type { Match, Rating } from '../../domain/types';
@@ -242,6 +242,9 @@ interface Draft {
   scA: string;
   scB: string;
   notes: string;
+  /** ora (hh:mm) e luogo */
+  time: string;
+  place: string;
   /** titolo e descrizione com'erano all'apertura: se non li tocchi, salvando non vengono riscritti (così non cancelli quelli appena scritti dalla redazione) */
   base: Record<string, { tit: string; desc: string }>;
 }
@@ -264,6 +267,8 @@ function startDraft(m: Match, ratings: Rating[]): Draft {
     scA: m.scoreA !== '' && m.scoreA != null ? String(m.scoreA) : '',
     scB: m.scoreB !== '' && m.scoreB != null ? String(m.scoreB) : '',
     notes: String(m.notes ?? ''),
+    time: String(m.time ?? ''),
+    place: String(m.place ?? ''),
   };
 }
 
@@ -362,7 +367,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
       if (!go) return;
     }
     const notes = draft.notes.trim();
-    const headerChanged = plan.scoreA !== (m.scoreA ?? '') || plan.scoreB !== (m.scoreB ?? '') || notes !== String(m.notes ?? '');
+    const headerChanged = plan.scoreA !== (m.scoreA ?? '') || plan.scoreB !== (m.scoreB ?? '') || notes !== String(m.notes ?? '') || draft.time !== String(m.time ?? '') || draft.place.trim() !== String(m.place ?? '');
     setBusy(true);
     try {
       toast('⏳ Salvataggio...');
@@ -370,9 +375,9 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
       await saveMatchRatings(matchId, plan.rows, untouched);
       if (headerChanged) {
         try {
-          await updateMatchHeader(matchId, plan.scoreA, plan.scoreB, notes);
+          await updateMatchHeader(matchId, plan.scoreA, plan.scoreB, notes, draft.time, draft.place);
         } catch {
-          toast('Voti salvati, ma errore su punteggio/note');
+          toast('Voti salvati, ma errore su punteggio, ora, luogo o note');
         }
       }
       releaseKeyboard();
@@ -465,6 +470,28 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
             ) : null}
           </div>
           <div id="match-fields" style={{ opacity: editing ? 1 : 0.92 }}>
+            {full ? (
+              <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
+                <div style={{ flex: '0 0 40%' }}>
+                  <div style={{ ...LABEL, marginBottom: 6 }}>⏰ Ora</div>
+                  <input
+                    type="time" id="edit-time" value={draft ? draft.time : String(m.time ?? '')} disabled={!full} readOnly={!full}
+                    onChange={(e) => upd({ time: e.target.value })}
+                    style={{ width: '100%', padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', fontSize: 16, boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ ...LABEL, marginBottom: 6 }}>📍 Luogo</div>
+                  <input
+                    type="text" id="edit-place" maxLength={80} value={draft ? draft.place : String(m.place ?? '')} placeholder="es. Campo Sole" disabled={!full} readOnly={!full}
+                    onChange={(e) => upd({ place: e.target.value })}
+                    style={{ width: '100%', padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', fontSize: 16, boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+            ) : whenWhere(m) ? (
+              <div id="match-when" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text2)', marginBottom: 8 }}>⏰ {whenWhere(m)}</div>
+            ) : null}
             <div style={{ ...LABEL, marginBottom: 6 }}>Descrizione</div>
             <input
               type="text" id="edit-notes" value={draft ? draft.notes : String(m.notes ?? '')} placeholder="es. partita serale al Sole" disabled={!full} readOnly={!full}

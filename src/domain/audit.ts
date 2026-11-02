@@ -141,8 +141,6 @@ export function describeRow(row: AuditRow): string[] {
     case 'league_players.delete': return [`ha tolto ${label} dalla lega`];
     case 'league_players.update': {
       const out: string[] = [];
-      const ar = pair(ch, 'archived');
-      if (ar) out.push(ar[1] ? `ha archiviato ${label}` : `ha ripristinato ${label}`);
       if (pair(ch, 'aliases')) out.push(`ha aggiornato i soprannomi di ${label}`);
       if (pair(ch, 'nickname')) out.push(`ha cambiato il soprannome di ${label}`);
       return list(out);
@@ -199,8 +197,8 @@ function splitArrow(label: string): { player: string; who: string } {
 const FIELD_NAME: Record<string, string> = {
   rating: 'voto', goals: 'gol', assist: 'assist', autogol: 'autogol', meta: 'meta', rigori_sbagliati: 'rigori sbagliati', titolo: 'titolo',
   descrizione: 'descrizione', team: 'squadra', position: 'posizione', name: 'nome', roles: 'ruoli', stats: 'statistiche', photo_path: 'foto',
-  score_a: 'gol Blu', score_b: 'gol Bianchi', notes: 'descrizione', date: 'data', is_public: 'pubblica', invite_code: 'codice d’invito',
-  owner_id: 'creatore', role: 'ruolo', status: 'stato', archived: 'archiviato', aliases: 'soprannomi', nickname: 'soprannome', user_id: 'account',
+  score_a: 'gol Blu', score_b: 'gol Bianchi', notes: 'descrizione', date: 'data', play_time: 'ora', place: 'luogo', is_public: 'pubblica', invite_code: 'codice d’invito',
+  owner_id: 'creatore', role: 'ruolo', status: 'stato', aliases: 'soprannomi', nickname: 'soprannome', user_id: 'account',
   settings: 'impostazioni', season_key: 'stagione', file_path: 'file', slug: 'indirizzo',
 };
 const show = (v: unknown): string => (v === null || v === undefined ? '—' : typeof v === 'object' ? JSON.stringify(v) : String(v));
