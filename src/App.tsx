@@ -220,7 +220,7 @@ function Shell() {
       ) : null}
       {data && ptDialog ? <PagelleTextDialog data={data} matchId={ptDialog} onClose={() => setPtDialog(null)} /> : null}
 
-      {menuOpen ? <MenuDrawer data={data} onClose={closeMenu} onOpenPanel={(p) => (p === 'profile' ? go('profilo') : setPanel(p))} onGoSettings={() => go('settings')} onOpenMatch={openMatch} /> : null}
+      {menuOpen ? <MenuDrawer data={data} onClose={closeMenu} onOpenPanel={setPanel} onGoSettings={() => go('settings')} onOpenMatch={openMatch} /> : null}
       {panel === 'create-league' ? <CreateLeagueSheet onClose={closePanel} /> : null}
       {panel === 'join-league' ? <JoinLeagueSheet onClose={closePanel} onJoined={() => go('profilo')} /> : null}
       {panel === 'privacy' ? <PrivacyPanel onClose={closePanel} onDeleted={() => { setSelectedLeague(null); closePanel(); }} /> : null}

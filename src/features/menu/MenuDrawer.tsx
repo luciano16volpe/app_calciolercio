@@ -12,7 +12,7 @@ import { pendingRatings } from '../../domain/matches';
 import { formatDate } from '../../domain/format';
 
 export type Panel =
-  | 'create-league' | 'join-league' | 'profile' | 'members' | 'invites' | 'claims' | 'merge' | 'league-settings' | 'admin-proposals'
+  | 'create-league' | 'join-league' | 'members' | 'invites' | 'claims' | 'merge' | 'league-settings' | 'admin-proposals'
   | 'game-settings' | 'bench' | 'pending' | 'audit' | 'platform-leagues' | 'platform-users' | 'privacy' | 'help' | 'account';
 
 const ROLE_LABEL = { admin: 'Admin', redazione: 'Redazione', member: 'Membro' } as const;
@@ -116,7 +116,6 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
                 </div>
               </div>
               <div className="menu-chips">{roleChips}</div>
-              <button type="button" className="menu-prof" id="menu-profile" onClick={() => open('profile')}>👤 Il mio profilo <span>›</span></button>
             </>
           ) : (
             <>
