@@ -1,4 +1,5 @@
 // Pagina d'ingresso per chi non è loggato: il logo al centro e le opzioni Accedi / Registrati (e «password dimenticata»).
+import { InstallHint } from '../../app/InstallHint';
 import { AccountCard } from '../impostazioni/AccountCard';
 
 export function LoginPage({ waiting = false }: { waiting?: boolean }) {
@@ -13,6 +14,7 @@ export function LoginPage({ waiting = false }: { waiting?: boolean }) {
       <div style={{ width: '100%', maxWidth: 380 }}>
         {waiting ? <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text3)' }}>⏳ Un attimo…</div> : <AccountCard leagueId={undefined} />}
         {waiting ? null : <div style={{ fontSize: 12, color: 'var(--text3)', textAlign: 'center', marginTop: 8, lineHeight: 1.4 }}>Hai ricevuto un link d’invito? Aprilo da qui: ti registri e il tuo giocatore è già collegato.</div>}
+        {waiting ? null : <InstallHint inPage />}
       </div>
     </div>
   );

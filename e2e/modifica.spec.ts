@@ -12,7 +12,7 @@ async function login(page: Page, role: 'admin' | 'member' = 'admin') {
 }
 
 async function openLastMatch(page: Page) {
-  await page.goto('/');
+  await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   await page.locator('.bottom-nav').getByText('Partite', { exact: true }).click();
   await page.locator('#last-match .card').click();
@@ -22,7 +22,7 @@ const noOverflow = async (page: Page) =>
   expect((await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width).toBeLessThanOrEqual(0);
 
 async function generateTeams(page: Page) {
-  await page.goto('/');
+  await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   await page.evaluate(() => localStorage.removeItem('calciolercio-format'));
   await page.locator('.bottom-nav').getByText('Gioca', { exact: true }).click();
@@ -33,13 +33,6 @@ async function generateTeams(page: Page) {
 }
 
 test('Da membro la partita resta in sola lettura', async ({ page }) => {
-  await login(page, 'member');
-  const modal = await openLastMatch(page);
-  await expect(modal).toBeVisible();
-  await expect(modal.locator('#edit-toggle-btn')).toHaveCount(0);
-});
-
-test('Un semplice membro non può modificare', async ({ page }) => {
   await login(page, 'member');
   const modal = await openLastMatch(page);
   await expect(modal).toBeVisible();
@@ -185,7 +178,7 @@ test('WhatsApp: messaggio senza pagelle', async ({ page }) => {
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
 
 async function openFirstPlayer(page: Page) {
-  await page.goto('/');
+  await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   await page.locator('#players-list .card-compact .player-header').first().click();
   return page.locator('#match-modal');
@@ -244,7 +237,7 @@ test('Rosa: nuova foto, carica e salva', async ({ page }) => {
 
 test('Rosa: + Aggiungi giocatore', async ({ page }) => {
   const writes = await login(page);
-  await page.goto('/');
+  await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   await page.getByText('+ Aggiungi giocatore').click();
   await expect(page.locator('#app-modal-title')).toHaveText('Nuovo giocatore');

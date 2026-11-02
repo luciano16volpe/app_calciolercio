@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 async function openApp(page: Page) {
-  await page.goto('/');
+  await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   await page.evaluate(() => localStorage.removeItem('calciolercio-format'));
 }

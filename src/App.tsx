@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
 import { BottomNav, type PageName } from './app/BottomNav';
 import { AuthProvider, useAuth, useRole } from './app/auth';
 import { useIsSuperAdmin } from './data/leagues';
 import { DialogProvider, usePrompt } from './app/Dialogs';
-import { buildPath, navigate, parsePath, rememberLeague, setSelectedLeague, type PageKey } from './app/league';
+import { buildPath, HOME_PAGE, navigate, parsePath, rememberLeague, setSelectedLeague, type PageKey } from './app/league';
 import { useToast } from './app/Toast';
 import { createPlayer } from './data/mutations';
 import { useQueryClient } from '@tanstack/react-query';
@@ -28,7 +28,7 @@ import { MatchCard } from './features/partite/MatchCard';
 import { PartitePage } from './features/partite/PartitePage';
 import { GazArchive, GazViewer, PagelleTextDialog, type MatchActions } from './features/partite/parts';
 import { PlayerCard } from './features/player/PlayerCard';
-import { InstallHint } from './features/rosa/InstallHint';
+import { InstallHint } from './app/InstallHint';
 import { RosaList } from './features/rosa/RosaList';
 
 /** Gioca e scheda partita con i permessi di chi è entrato: la modifica si offre solo a chi può farla (il database la controlla comunque). */
@@ -109,7 +109,7 @@ function Loading({ q, onPanel }: { q: { isError: boolean; error?: unknown; refet
 /** Cosa c'è nella finestra aperta sopra la pagina (una sola per volta, come in legacy). */
 type View = { kind: 'player'; id: string; fromRosa?: boolean } | { kind: 'match'; id: string; text?: boolean } | { kind: 'gazArchive' } | null;
 
-const pageFromPath = (): PageName => (parsePath(window.location.pathname).page as PageKey | null) ?? 'rosa';
+const pageFromPath = (): PageName => (parsePath(window.location.pathname).page as PageKey | null) ?? HOME_PAGE;
 
 function Shell() {
   const [page, setPage] = useState<PageName>(pageFromPath);
@@ -128,6 +128,13 @@ function Shell() {
     setPage(p);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  // una lega ancora vuota si apre sulla Rosa (lì c'è la guida «Aggiungi i giocatori»); le altre su Classifiche
+  const homeChecked = useRef<string | null>(null);
+  useEffect(() => {
+    if (!data || inviteToken || homeChecked.current === data.league.slug) return;
+    homeChecked.current = data.league.slug;
+    if (!data.dataset.players.length && !parsePath(window.location.pathname).page && page === HOME_PAGE) setPage('rosa');
+  }, [data, inviteToken, page]);
   // la lega e la pagina stanno nell'indirizzo (/l/<slug>/<pagina>): i link condivisi aprono la lega giusta
   useEffect(() => {
     if (data && !inviteToken) {
@@ -157,7 +164,7 @@ function Shell() {
     <>
       <header>
         <button type="button" className="hb" id="menu-button" aria-label="Apri il menu" onClick={() => setMenuOpen(true)}>☰</button>
-        <div className="logo" onClick={() => go('rosa')} style={{ cursor: 'pointer' }}>
+        <div className="logo" onClick={() => go(HOME_PAGE)} style={{ cursor: 'pointer' }}>
           <img src="/logo.png" alt="CalcioLercio" style={{ width: 44, height: 44, display: 'block', objectFit: 'contain' }} />
           CalcioLercio
         </div>
@@ -179,8 +186,8 @@ function Shell() {
         </button>
       </header>
 
+      <InstallHint />
       <div id="page-rosa" className={`page${page === 'rosa' ? ' active' : ''}`}>
-        <InstallHint />
         {data ? <RosaGate data={data} onOpen={openPlayerFromRosa} /> : <Loading q={q} onPanel={setPanel} />}
       </div>
       <div id="page-partita" className={`page${page === 'partita' ? ' active' : ''}`}>
@@ -239,7 +246,7 @@ function Shell() {
           onDone={(a) => {
             if (a) setSelectedLeague(a.leagueSlug);
             setInviteToken(null);
-            navigate(a ? buildPath(a.leagueSlug, 'rosa') : '/', true);
+            navigate(a ? buildPath(a.leagueSlug, HOME_PAGE) : '/', true);
             if (a) setPanel('profile');
           }}
         />

@@ -17,13 +17,16 @@ test('Invito: link valido senza accesso → si vede chi sei e il modulo per regi
   await noOverflow(page);
 });
 
-for (const [st, text] of [['expired', 'scaduto'], ['used', 'già stato usato'], ['revoked', 'non è più valido'], ['invalid', 'non valido']] as const) {
-  test(`Invito: link ${st} → messaggio chiaro`, async ({ page }) => {
+test('Invito: link scaduto, usato, annullato o non valido → messaggio chiaro', async ({ browser }) => {
+  for (const [st, text] of [['expired', 'scaduto'], ['used', 'già stato usato'], ['revoked', 'non è più valido'], ['invalid', 'non valido']] as const) {
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
     await setup(page, { loggedIn: false, rpc: { invite_preview: st === 'invalid' ? [] : [{ status: st, player_name: 'Marco', league_name: 'Lega di prova' }] } });
     await page.goto('/invito/tok123');
     await expect(page.locator('#invite-bad')).toContainText(text);
-  });
-}
+    await ctx.close();
+  }
+});
 
 test('Invito: con l\'accesso il link si accetta da solo e si arriva al profilo', async ({ page }) => {
   const writes = await setup(page, {
@@ -39,7 +42,7 @@ test('Invito: con l\'accesso il link si accetta da solo e si arriva al profilo',
   expect(lastWrite(writes, 'accept_player_invite').body).toEqual({ tok: 'tok123' });
   await page.locator('#invite-go').click();
   await expect(page.locator('#invite-page')).toHaveCount(0);
-  expect(new URL(page.url()).pathname).toBe('/l/lega-di-prova/rosa');
+  expect(new URL(page.url()).pathname).toBe('/l/lega-di-prova/classifiche');
   await expect(page.locator('#sheet-profile')).toBeVisible();
   await expect(page.locator('#myplayer-name')).toHaveText('Marco');
 });

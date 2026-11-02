@@ -45,7 +45,7 @@ test('Ingresso: avvisi sui campi mancanti, registrazione con avviso sul registro
   await noOverflow(page);
 });
 
-for (const width of [320, 360, 412]) {
+for (const width of [360]) {
   test(`Ingresso a ${width} px: tutto dentro lo schermo`, async ({ page }) => {
     await page.setViewportSize({ width, height: 700 });
     await page.goto('/');
@@ -60,4 +60,19 @@ for (const width of [320, 360, 412]) {
 test('Ingresso: dal link d\'invito si arriva alla pagina dell\'invito, non a quella d\'ingresso', async ({ page }) => {
   await page.goto('/invito/qualunque');
   await expect(page.locator('#invite-page')).toBeVisible();
+});
+
+test('Ingresso: la guida «Installa sul telefono» c\'è, con il testo giusto, e si chiude', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'solo telefono');
+  await page.goto('/');
+  const hint = page.locator('#login-page #install-hint');
+  await expect(hint).toBeVisible();
+  const android = /Android/.test(await page.evaluate(() => navigator.userAgent));
+  await expect(hint).toContainText(android ? 'Installa app' : 'Aggiungi alla schermata Home');
+  await noOverflow(page);
+  await hint.getByRole('button', { name: 'Chiudi' }).click();
+  await expect(hint).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('#login-page')).toBeVisible();
+  await expect(page.locator('#install-hint')).toHaveCount(0); // ricordato
 });

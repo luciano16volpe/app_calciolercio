@@ -8,15 +8,8 @@ test.beforeEach(async ({ page }) => {
   await setup(page, { publicRole: 'member' });
 });
 
-test('la pagina si apre senza scorrimento orizzontale', async ({ page }) => {
-  await page.goto('/');
-  await expect(page.locator('header')).toBeVisible();
-  const overflow = (await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width;
-  expect(overflow).toBeLessThanOrEqual(0);
-});
-
 test('Rosa: 22 carte, la più forte per prima, niente esce in orizzontale', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/l/san-marcello/rosa');
   const cards = page.locator('#players-list .card-compact');
   await expect(cards).toHaveCount(22, { timeout: 20_000 });
   // prime due: Caputo e Peppe (OVR 7.3, in ordine di nome)
@@ -36,8 +29,19 @@ test('Rosa: 22 carte, la più forte per prima, niente esce in orizzontale', asyn
   for (const r of widths) expect(r).toBeLessThanOrEqual(vw + 0.5);
 });
 
-test('le 4 schede in basso cambiano pagina', async ({ page }) => {
+test('aprendo la lega si parte da Classifiche (e il logo ci riporta)', async ({ page }) => {
   await page.goto('/');
+  await expect(page.locator('#page-classifiche')).toHaveClass(/active/);
+  await expect(page.locator('.bnav-item.active')).toHaveText('Classifiche');
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/l/san-marcello/classifiche');
+  await page.locator('.bottom-nav').getByText('Rosa', { exact: true }).click();
+  await expect(page.locator('#page-rosa')).toHaveClass(/active/);
+  await page.locator('.logo').click();
+  await expect(page.locator('#page-classifiche')).toHaveClass(/active/);
+});
+
+test('le 4 schede in basso cambiano pagina', async ({ page }) => {
+  await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#page-rosa')).toHaveClass(/active/);
   for (const [label, id] of [['Gioca', 'partita'], ['Partite', 'partite'], ['Classifiche', 'classifiche'], ['Rosa', 'rosa']] as const) {
     await page.locator('.bottom-nav').getByText(label, { exact: true }).click();
@@ -47,7 +51,7 @@ test('le 4 schede in basso cambiano pagina', async ({ page }) => {
 });
 
 test('scheda giocatore: si apre dalla Rosa, mostra tutto, si chiude e non esce in orizzontale', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   await page.locator('.player-header', { hasText: /^.*Peppe/ }).first().click();
   const modal = page.locator('#match-modal');
@@ -79,7 +83,7 @@ test('scheda giocatore: si apre dalla Rosa, mostra tutto, si chiude e non esce i
 });
 
 test('scheda giocatore: la finestra "Le pagelle di…" si apre dall\'ultima pagella', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   await page.locator('.player-header', { hasText: /^.*Peppe/ }).first().click();
   await page.locator('.pg-last').click();
@@ -92,7 +96,7 @@ test('scheda giocatore: la finestra "Le pagelle di…" si apre dall\'ultima page
 });
 
 test('Classifiche: stagione, quattro numeri, schede e apertura della scheda giocatore', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   await page.locator('.bottom-nav').getByText('Classifiche', { exact: true }).click();
   const cl = page.locator('#page-classifiche');
@@ -124,4 +128,20 @@ test('Classifiche: stagione, quattro numeri, schede e apertura della scheda gioc
   await expect(page.locator('#match-modal')).toBeVisible();
   const overflow = (await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width;
   expect(overflow).toBeLessThanOrEqual(0);
+});
+
+test('la guida «Installa sul telefono» si vede in ogni pagina finché non si chiude', async ({ page }) => {
+  await page.goto('/');
+  const hint = page.locator('#install-hint');
+  await expect(hint).toBeVisible(); // si parte da Classifiche: la guida non è più solo nella Rosa
+  for (const label of ['Gioca', 'Partite', 'Rosa']) {
+    await page.locator('.bottom-nav').getByText(label, { exact: true }).click();
+    await expect(hint).toBeVisible();
+  }
+  await expect(page.locator('#page-rosa')).toHaveClass(/active/);
+  expect((await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width).toBeLessThanOrEqual(0);
+  await hint.getByRole('button', { name: 'Chiudi' }).click();
+  await expect(hint).toHaveCount(0);
+  await page.locator('.bottom-nav').getByText('Classifiche', { exact: true }).click();
+  await expect(hint).toHaveCount(0);
 });
