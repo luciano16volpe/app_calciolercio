@@ -124,6 +124,11 @@ function Shell() {
   const q = useLeagueData();
   const qc = useQueryClient();
   const data = q.data;
+  // «Gioca» (nuova partita) è solo per gli amministratori della lega: agli altri la scheda non c'è, e l'indirizzo /gioca li porta alla pagina iniziale
+  const { isAdmin, ready } = useRole(data?.league.id);
+  useEffect(() => {
+    if (data && ready && !isAdmin && page === 'partita') setPage(HOME_PAGE);
+  }, [data, ready, isAdmin, page]);
   const go = (p: PageName) => {
     setPage(p);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -190,9 +195,11 @@ function Shell() {
       <div id="page-rosa" className={`page${page === 'rosa' ? ' active' : ''}`}>
         {data ? <RosaGate data={data} onOpen={openPlayerFromRosa} /> : <Loading q={q} onPanel={setPanel} />}
       </div>
-      <div id="page-partita" className={`page${page === 'partita' ? ' active' : ''}`}>
-        {data ? <GiocaGate data={data} /> : <Loading q={q} onPanel={setPanel} />}
-      </div>
+      {isAdmin ? (
+        <div id="page-partita" className={`page${page === 'partita' ? ' active' : ''}`}>
+          {data ? <GiocaGate data={data} /> : <Loading q={q} onPanel={setPanel} />}
+        </div>
+      ) : null}
       <div id="page-partite" className={`page${page === 'partite' ? ' active' : ''}`}>
         {data ? <PartitePage data={data} act={act} onArchive={() => setView({ kind: 'gazArchive' })} /> : <Loading q={q} onPanel={setPanel} />}
       </div>
@@ -201,7 +208,7 @@ function Shell() {
       </div>
       <div id="page-settings" className={`page${page === 'settings' ? ' active' : ''}`}><SettingsPage data={data} /></div>
 
-      <BottomNav page={page} onGo={go} />
+      <BottomNav page={page} onGo={go} canPlay={isAdmin} />
 
       {data && view?.kind === 'player' ? (
         <PlayerCardGate

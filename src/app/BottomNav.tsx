@@ -1,4 +1,4 @@
-// Le 4 schede in basso: Rosa · Gioca · Partite · Classifiche (icone e stile come legacy).
+// Le schede in basso: Rosa · Gioca (solo amministratori) · Partite · Classifiche (icone e stile come legacy).
 import type { ReactNode } from 'react';
 
 export type PageName = 'rosa' | 'partita' | 'partite' | 'classifiche' | 'settings';
@@ -61,10 +61,10 @@ const ITEMS: Array<{ id: Exclude<PageName, 'settings'>; label: string; icon: Rea
   },
 ];
 
-export function BottomNav({ page, onGo }: { page: PageName; onGo: (p: PageName) => void }) {
+export function BottomNav({ page, onGo, canPlay }: { page: PageName; onGo: (p: PageName) => void; canPlay: boolean }) {
   return (
     <nav className="bottom-nav">
-      {ITEMS.map((it) => (
+      {ITEMS.filter((it) => it.id !== 'partita' || canPlay).map((it) => (
         <button key={it.id} className={`bnav-item${page === it.id ? ' active' : ''}`} onClick={() => onGo(it.id)}>
           <span className="bni">{it.icon}</span>
           {it.label}

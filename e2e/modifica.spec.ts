@@ -131,11 +131,22 @@ test('Gioca: Crea partita salva squadre e previsione', async ({ page }) => {
   await noOverflow(page);
 });
 
-test('Gioca: da membro Crea partita spiega cosa fare', async ({ page }) => {
+test('Gioca: da membro la scheda non c’è, nemmeno aprendo il suo indirizzo', async ({ page }) => {
   await login(page, 'member');
-  const res = await generateTeams(page);
-  await res.locator('button', { hasText: 'Crea partita' }).click();
-  await expect(page.locator('#toast')).toContainText('serve essere amministratore della lega');
+  await page.goto('/l/san-marcello/gioca');
+  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await expect(page.locator('.bottom-nav').getByText('Gioca', { exact: true })).toHaveCount(0);
+  await expect(page.locator('#page-partita')).toHaveCount(0);
+  await expect(page.locator('#page-classifiche')).toHaveClass(/active/); // si torna alla pagina iniziale
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/l/san-marcello/classifiche');
+});
+
+test('Gioca: l’amministratore la vede, anche aprendo il suo indirizzo', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/l/san-marcello/gioca');
+  await expect(page.locator('#page-partita')).toHaveClass(/active/, { timeout: 20_000 });
+  await expect(page.locator('.bottom-nav').getByText('Gioca', { exact: true })).toBeVisible();
+  await expect(page.locator('.bnav-item.active')).toHaveText('Gioca');
 });
 
 test('WhatsApp: si incolla il messaggio, si controllano gli abbinamenti e si assegnano titolo e descrizione', async ({ page }) => {

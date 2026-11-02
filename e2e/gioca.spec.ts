@@ -2,9 +2,9 @@
 import { expect, test, type Page } from '@playwright/test';
 import { setup } from './helpers';
 
-// l'app si apre solo con l'accesso: la prova entra come membro della lega pubblica vera (accesso simulato, letture vere)
+// «Gioca» c'è solo per gli amministratori: la prova entra come amministratore di San Marcello (accesso simulato, letture vere)
 test.beforeEach(async ({ page }) => {
-  await setup(page, { publicRole: 'member' });
+  await setup(page, { publicRole: 'admin' });
 });
 
 async function openGioca(page: Page) {

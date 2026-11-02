@@ -40,10 +40,10 @@ test('aprendo la lega si parte da Classifiche (e il logo ci riporta)', async ({ 
   await expect(page.locator('#page-classifiche')).toHaveClass(/active/);
 });
 
-test('le 4 schede in basso cambiano pagina', async ({ page }) => {
+test('le 3 schede in basso (da membro) cambiano pagina', async ({ page }) => {
   await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#page-rosa')).toHaveClass(/active/);
-  for (const [label, id] of [['Gioca', 'partita'], ['Partite', 'partite'], ['Classifiche', 'classifiche'], ['Rosa', 'rosa']] as const) {
+  for (const [label, id] of [['Partite', 'partite'], ['Classifiche', 'classifiche'], ['Rosa', 'rosa']] as const) {
     await page.locator('.bottom-nav').getByText(label, { exact: true }).click();
     await expect(page.locator(`#page-${id}`)).toHaveClass(/active/);
     await expect(page.locator('.bnav-item.active')).toHaveText(label);
@@ -134,7 +134,7 @@ test('la guida «Installa sul telefono» si vede in ogni pagina finché non si c
   await page.goto('/');
   const hint = page.locator('#install-hint');
   await expect(hint).toBeVisible(); // si parte da Classifiche: la guida non è più solo nella Rosa
-  for (const label of ['Gioca', 'Partite', 'Rosa']) {
+  for (const label of ['Partite', 'Rosa']) {
     await page.locator('.bottom-nav').getByText(label, { exact: true }).click();
     await expect(hint).toBeVisible();
   }
