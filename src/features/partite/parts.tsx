@@ -97,7 +97,7 @@ export function LastMatchCard({ data, m, act, title = '🏆 Ultima partita', id,
   const res = has && mine ? getPlayerMatchResult(m, mine.id, mine.name) : null; // 'W' vinta · 'D' pareggio · 'L' persa · null non ho giocato
   return (
     <div
-      className={`card fx-card${res === 'L' ? ' fx-rain' : ''}`} id={id} data-result={res ?? undefined}
+      className={`card fx-card${res === 'L' ? ' fx-rain' : res === 'W' ? ' fx-win' : ''}`} id={id} data-result={res ?? undefined}
       style={{ borderLeft: '4px solid var(--green)', cursor: 'pointer', position: 'relative' }} onClick={() => act.openMatch(m.id)}
     >
       {active && res === 'W' ? <Confetti /> : null}

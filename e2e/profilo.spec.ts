@@ -147,7 +147,7 @@ test('Titolo e logo riportano al profilo', async ({ browser }, testInfo) => {
   await page.locator('.app-title').click();
   await expect(page.locator('#page-profilo.active')).toBeVisible();
   await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
-  await page.locator('.app-logo img').click();
+  await page.locator('.app-logo').click();
   await expect(page.locator('#page-profilo.active')).toBeVisible();
 });
 
