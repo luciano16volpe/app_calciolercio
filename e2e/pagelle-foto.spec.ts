@@ -147,8 +147,8 @@ test('Foto: dentro il pallino in Rosa, in Gioca, nel menu e nell’intestazione 
   expect(await urlOf(page.locator('#players-list .avatar.has-photo'))).toContain('foto-di-prova.jpg');
   expect(await page.locator('#players-list .avatar.has-photo').evaluate((el) => getComputedStyle(el).color)).toMatch(/rgba\(0, 0, 0, 0\)|transparent/); // le iniziali restano nella pagina ma non si vedono
   await expect(page.locator('#players-list .avatar:not(.has-photo)').first()).not.toHaveText('');
-  // intestazione: la mia foto
-  expect(await urlOf(page.locator('#menu-button .hf-av'))).toContain('foto-di-prova.jpg');
+  // footer: la mia foto
+  expect(await urlOf(page.locator('.bottom-nav .bn-face'))).toContain('foto-di-prova.jpg');
   // Gioca (amministratore): il pallino della lista di convocazione
   await page.locator('.bottom-nav').getByRole('button', { name: 'Gioca', exact: true }).click();
   await expect(page.locator('#page-partita .conv-avatar.has-photo')).toHaveCount(1);

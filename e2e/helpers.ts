@@ -175,9 +175,8 @@ export async function openPanel(page: Page, itemId: string, sheetId: string) {
   await expect(page.locator(sheetId)).toBeVisible();
 }
 
-/** Apre «Il mio profilo» dal menu ☰ (è una pagina, come Rosa e Partite). */
+/** Apre «Il mio profilo» dal footer (è una pagina, come Rosa e Partite). */
 export async function openProfile(page: Page) {
-  await openMenu(page);
-  await page.locator('#menu-profile').click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Il mio profilo', exact: true }).click();
   await expect(page.locator('#page-profilo.active')).toBeVisible();
 }
