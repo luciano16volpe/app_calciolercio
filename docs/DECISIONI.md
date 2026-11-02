@@ -160,3 +160,15 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - **Regole di gioco** (formazioni, forma recente, pesi dell'OVR): uniche per tutte le leghe, salvate nel database (`app_settings`); le vede chi è amministratore di lega (sola lettura), le cambia **solo il superadmin** (funzione `admin_set_setting`, registrata nel registro attività); nascoste ai membri nell'interfaccia (i valori restano leggibili dall'app perché l'OVR e le squadre si calcolano sul telefono). Le formazioni salvate sui singoli telefoni non valgono più (decisione del 1/11).
 - **Nessuna lega pubblica**: ogni lega si vede solo su invito (link personale o codice); il database rifiuta leghe pubbliche (vincolo `leagues_solo_invito`) e chi non è in nessuna lega vede una schermata di benvenuto (decisione del 1/11). Chi non è loggato vede solo la pagina d'ingresso.
 - Eliminare una lega: **ogni amministratore** può farlo (serve scriverne il nome), non solo il creatore (decisione del 1/11).
+
+
+## Panchina, ora e luogo, leghe, notifiche (novembre 2026)
+- **Niente archiviazione dei giocatori.** Un giocatore si toglie da una **lega**: esce dalla Rosa, ma partite, pagelle e statistiche restano nella storia di quella lega (nelle classifiche e nelle partite vecchie compare ancora). Senza altre leghe finisce in **Panchina**.
+- **Panchina:** la vede ogni amministratore di lega e può portare un giocatore nella sua lega; non si «ruba» chi gioca già in un'altra lega. Se il giocatore ha un account collegato, uscendo dalla lega la persona non vede più quella lega (il collegamento giocatore-account resta); rientrando in una lega riottiene l'accesso. Un giocatore collegato a un amministratore della lega non si toglie finché non si toglie il ruolo.
+- **Cancellare un giocatore per sempre:** solo l'amministratore supremo, solo dalla Panchina e solo se non ha mai giocato. Chi ha storia resta in Panchina.
+- **Giocatore collegato:** cambia la **sua foto** e il **suo nome** (se libero nelle sue leghe: stesso giocatore, cronologia intatta; il vecchio nome resta come «altro nome» per le vecchie pagelle da WhatsApp). Non può scollegarsi: collegare e scollegare lo decide l'amministratore.
+- **Leghe:** non esistono leghe pubbliche; per ora le leghe le crea **solo l'amministratore supremo** (regola del database, allargabile più avanti).
+- **Gioca:** la scheda c'è solo per gli amministratori della lega. **Pagina iniziale:** Classifiche (Rosa se la lega è vuota).
+- **Ora e luogo della partita:** obbligatori per le partite nuove, modificabili dall'amministratore; si propongono quelli dell'ultima partita che li ha.
+- **Notifiche:** solo push (web push). Primo passo: promemoria alle 7 (ora italiana) del giorno della partita, solo ai giocatori in squadra, con ora, luogo e colore della squadra. Su iPhone funzionano solo con l'app installata nella schermata Home.
+- **Ricaricare i dati:** tirando la pagina verso il basso (telefono) o con F5 (computer); niente pulsante in alto.

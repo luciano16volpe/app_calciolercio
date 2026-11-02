@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import { lastWrite, mineAs, noOverflow, openApp, openMenu, openPanel, setup } from './helpers';
 
 test('Crea lega: controlli sul nome, poi codice d\'invito e lega scelta', async ({ page }) => {
-  const writes = await setup(page);
+  const writes = await setup(page, { rpc: { is_super_admin: true } }); // per ora le leghe le crea solo l'amministratore supremo
   await openApp(page);
   await openPanel(page, '#menu-create', '#sheet-create-league');
   await page.locator('#cl-name').fill('Ab');
@@ -116,4 +116,25 @@ test('Esci da una lega dal profilo', async ({ page }) => {
   await page.locator('#app-modal-ok').click();
   await expect(page.locator('#toast')).toContainText('Sei uscito dalla lega', { timeout: 15_000 });
   expect(writes.some((x) => x.table === 'league_members' && x.method === 'DELETE')).toBe(true);
+});
+
+test('Crea lega: un utente normale non vede il pulsante nel menu', async ({ page }) => {
+  await setup(page);
+  await openApp(page);
+  await openMenu(page);
+  await expect(page.locator('#menu-create')).toHaveCount(0);
+  await expect(page.locator('#menu-join')).toBeVisible();
+});
+
+test('Senza leghe: il benvenuto offre solo «Entra con un codice»; l’amministratore supremo può anche creare', async ({ browser }) => {
+  for (const sup of [false, true]) {
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    await setup(page, { publicRole: false, rpc: { is_super_admin: sup } });
+    await page.goto('/');
+    await expect(page.locator('.page.active #no-league')).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator('.page.active #no-league-join')).toBeVisible();
+    await expect(page.locator('.page.active #no-league-create')).toHaveCount(sup ? 1 : 0);
+    await ctx.close();
+  }
 });

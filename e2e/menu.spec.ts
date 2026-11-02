@@ -36,7 +36,7 @@ test('Menu: chi è dentro ma senza ruolo nella lega vede solo Le mie leghe e le 
   await expect(page.locator('.menu-nm')).toHaveText('Luciano');
   await expectSections(page, ['Le mie leghe', 'App']);
   await expect(page.locator('.menu-lgrow:not(.add)')).toHaveCount(1);
-  await expect(page.locator('#menu-create')).toBeVisible();
+  await expect(page.locator('#menu-create')).toHaveCount(0); // per ora le leghe le crea solo l'amministratore supremo
   await expect(page.locator('#menu-join')).toBeVisible();
   await expect(page.locator('#menu-signout')).toBeVisible();
   await expect(page.locator('#menu-login')).toHaveCount(0);

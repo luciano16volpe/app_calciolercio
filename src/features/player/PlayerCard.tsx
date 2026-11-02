@@ -14,6 +14,7 @@ import { FireChip } from '../rosa/RosaList';
 import { FutMini } from './FutMini';
 import { PagelleSection } from './PagelleSection';
 import { PlayerEditTop } from './PlayerEditTop';
+import { PlayerBenchRow } from './PlayerBenchRow';
 import { PlayerLinkRow } from './PlayerLinkRow';
 import { PlayerPagelleDialog } from './PlayerPagelleDialog';
 
@@ -207,6 +208,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
               </>
             )}
             {canEdit ? <PlayerLinkRow leagueId={data.league.id} player={player} /> : null}
+            {canEdit ? <PlayerBenchRow data={data} player={player} onRemoved={onClose} /> : null}
             <div id="modal-pagelle" style={{ marginTop: 4, paddingTop: 6, borderTop: '1px solid var(--gray2)' }}>
               <PagelleSection data={data} player={player} onOpenAll={(focus) => setPagelleOpen({ focus })} onOpenMatch={onOpenMatch} />
             </div>

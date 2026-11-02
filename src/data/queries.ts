@@ -21,8 +21,10 @@ export const gazzettaThumbUrl = (path: string): string => gazzettaUrl(gazzettaTh
 
 export interface LeagueData {
   league: { id: string; name: string; is_public: boolean; slug: string; owner_id: string | null };
-  /** Rosa, partite con squadre e pagelle, nel formato della logica (src/domain). */
+  /** Giocatori della lega, partite con squadre e pagelle, nel formato della logica (src/domain). Include anche chi è uscito dalla Rosa ma ha giocato partite della lega (storia). */
   dataset: Dataset;
+  /** Id dei giocatori che sono in Rosa adesso (gli altri compaiono solo nella storia). Assente = tutti. */
+  rosterIds?: string[];
   /** Pesi dell'OVR (11 valori, uguali per tutte le leghe). */
   weights: number[];
   /** «Forma recente» nel bilanciamento (impostazione unica dell'app; assente = acceso) */
@@ -37,6 +39,13 @@ export interface LeagueData {
   gazzette: Record<string, string>;
   /** soprannomi dei giocatori nella lega (id giocatore → altri nomi), per l'importazione da WhatsApp */
   aliases?: Record<string, string[]>;
+}
+
+/** Solo i giocatori in Rosa: per Rosa, Gioca e nuova partita (chi è uscito resta nella storia delle partite, non qui). */
+export function rosterView(data: LeagueData): LeagueData {
+  if (!data.rosterIds) return data;
+  const ids = new Set(data.rosterIds);
+  return { ...data, dataset: { ...data.dataset, players: data.dataset.players.filter((p) => ids.has(p.id)) } };
 }
 
 const PAGE = 1000; // Supabase restituisce al massimo 1000 righe per richiesta
@@ -83,7 +92,7 @@ export async function fetchLeagueData(slug: string | null = null): Promise<Leagu
   const ids = lp.map((x) => x.player_id);
   const [players, matches, settings, albo, gaz] = await Promise.all([
     fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path').in('id', ids).order('id').range(a, b), 'giocatori'),
-    fetchAll((a, b) => supabase.from('matches').select('id, date, notes, score_a, score_b, pred, pred_rank').eq('league_id', league.id).order('id').range(a, b), 'partite'),
+    fetchAll((a, b) => supabase.from('matches').select('id, date, play_time, place, notes, score_a, score_b, pred, pred_rank').eq('league_id', league.id).order('id').range(a, b), 'partite'),
     supabase.from('app_settings').select('key, value').in('key', ['ovr_weights', 'use_form', 'game_modules']),
     supabase.from('albo').select('rows').eq('league_id', league.id),
     fetchAll((a, b) => supabase.from('gazzette').select('match_id, file_path').order('match_id').range(a, b), 'Gazzette'),
@@ -107,6 +116,13 @@ export async function fetchLeagueData(slug: string | null = null): Promise<Leagu
       )),
     );
   }
+  // chi è uscito dalla Rosa ma ha partite in questa lega resta nella storia (nome, foto, statistiche)
+  const inRoster = new Set(ids);
+  const exIds = [...new Set(mp.map((x) => x.player_id))].filter((id) => !inRoster.has(id));
+  const exPlayers = exIds.length
+    ? await fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path').in('id', exIds).order('id').range(a, b), 'giocatori usciti dalla lega')
+    : [];
+  const everyone = [...players, ...exPlayers];
   if (settings.error) throw new Error(`impostazioni: ${settings.error.message}`);
   if (albo.error) throw new Error(`albo: ${albo.error.message}`);
 
@@ -116,11 +132,12 @@ export async function fetchLeagueData(slug: string | null = null): Promise<Leagu
   const matchSet = new Set(matchIds);
   return {
     league,
-    dataset: dbToDataset({ players, matches, matchPlayers: mp }),
+    dataset: dbToDataset({ players: everyone, matches, matchPlayers: mp }),
+    rosterIds: ids,
     weights,
     useForm: setting('use_form') !== false,
     ...(typeof setting('game_modules') === 'string' ? { modulesText: setting('game_modules') as string } : {}),
-    photos: Object.fromEntries(players.map((p) => [p.id, p.photo_path])),
+    photos: Object.fromEntries(everyone.map((p) => [p.id, p.photo_path])),
     albo: (albo.data ?? []).flatMap((r) => r.rows as unknown as AlboRow[]),
     aliases: Object.fromEntries(lp.filter((x) => x.aliases?.length).map((x) => [x.player_id, x.aliases])),
     gazzette: Object.fromEntries(gaz.filter((g) => matchSet.has(g.match_id)).map((g) => [g.match_id, g.file_path])),

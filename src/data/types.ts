@@ -220,7 +220,6 @@ export type Database = {
       league_players: {
         Row: {
           aliases: string[]
-          archived: boolean
           joined_at: string
           league_id: string
           nickname: string | null
@@ -228,7 +227,6 @@ export type Database = {
         }
         Insert: {
           aliases?: string[]
-          archived?: boolean
           joined_at?: string
           league_id: string
           nickname?: string | null
@@ -236,7 +234,6 @@ export type Database = {
         }
         Update: {
           aliases?: string[]
-          archived?: boolean
           joined_at?: string
           league_id?: string
           nickname?: string | null
@@ -364,6 +361,8 @@ export type Database = {
           league_id: string
           legacy_id: string | null
           notes: string | null
+          place: string | null
+          play_time: string | null
           pred: number | null
           pred_rank: number | null
           score_a: number | null
@@ -377,6 +376,8 @@ export type Database = {
           league_id: string
           legacy_id?: string | null
           notes?: string | null
+          place?: string | null
+          play_time?: string | null
           pred?: number | null
           pred_rank?: number | null
           score_a?: number | null
@@ -390,6 +391,8 @@ export type Database = {
           league_id?: string
           legacy_id?: string | null
           notes?: string | null
+          place?: string | null
+          play_time?: string | null
           pred?: number | null
           pred_rank?: number | null
           score_a?: number | null
@@ -596,6 +599,21 @@ export type Database = {
         }
         Relationships: []
       }
+      private_config: {
+        Row: {
+          key: string
+          value: string
+        }
+        Insert: {
+          key: string
+          value: string
+        }
+        Update: {
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -614,6 +632,68 @@ export type Database = {
         }
         Relationships: []
       }
+      push_sent: {
+        Row: {
+          kind: string
+          match_id: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          kind: string
+          match_id: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          kind?: string
+          match_id?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_sent_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          last_ok_at: string | null
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          last_ok_at?: string | null
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          last_ok_at?: string | null
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -628,6 +708,10 @@ export type Database = {
           player_id: string
           player_name: string
         }[]
+      }
+      add_player_to_league: {
+        Args: { p_league: string; p_player: string }
+        Returns: undefined
       }
       admin_assign_owner: {
         Args: { l: string; new_owner: string }
@@ -702,6 +786,17 @@ export type Database = {
       audit_match_label: { Args: { mid: string }; Returns: string }
       audit_player_name: { Args: { pid: string }; Returns: string }
       audit_user_name: { Args: { uid: string }; Returns: string }
+      bench_players: {
+        Args: never
+        Returns: {
+          linked: boolean
+          matches_played: number
+          name: string
+          photo_path: string
+          player_id: string
+          roles: string[]
+        }[]
+      }
       can_delete_player: { Args: { p: string }; Returns: boolean }
       can_edit_player: { Args: { p: string }; Returns: boolean }
       cancel_admin_request: { Args: { c: string }; Returns: undefined }
@@ -722,6 +817,7 @@ export type Database = {
         Args: { approve: boolean; c: string }
         Returns: undefined
       }
+      delete_bench_player: { Args: { p_player: string }; Returns: undefined }
       delete_my_account: { Args: never; Returns: undefined }
       has_league_role: {
         Args: { l: string; r: Database["public"]["Enums"]["league_role"][] }
@@ -795,12 +891,45 @@ export type Database = {
         }[]
       }
       propose_admin: { Args: { l: string; u: string }; Returns: string }
+      push_reminder_run: { Args: never; Returns: undefined }
+      push_reminders_due: {
+        Args: { p_today?: string }
+        Returns: {
+          auth: string
+          endpoint: string
+          league_name: string
+          league_slug: string
+          match_id: string
+          p256dh: string
+          place: string
+          play_time: string
+          team: string
+          user_id: string
+        }[]
+      }
       regenerate_invite_code: { Args: { l: string }; Returns: string }
       remove_member: { Args: { l: string; u: string }; Returns: undefined }
+      remove_player_from_league: {
+        Args: { p_league: string; p_player: string }
+        Returns: boolean
+      }
+      remove_push_subscription: {
+        Args: { p_endpoint: string }
+        Returns: undefined
+      }
       rename_my_player: { Args: { p_name: string }; Returns: string }
       request_claim: { Args: { l: string; p: string }; Returns: undefined }
       review_claim: {
         Args: { approve: boolean; c: string }
+        Returns: undefined
+      }
+      save_push_subscription: {
+        Args: {
+          p_auth: string
+          p_endpoint: string
+          p_p256dh: string
+          p_ua?: string
+        }
         Returns: undefined
       }
       set_member_role: {

@@ -35,8 +35,13 @@ begin
 
   -- preparazione: l'admin apre la lega 1 con 3 giocatori e una partita; Steppata e Marco sono collegati
   perform pg_temp.as_user(u_a);
+  -- (per ora le leghe le crea solo l'amministratore supremo: il creatore lo è solo per il tempo di questa riga)
+  perform pg_temp.as_user(null); insert into platform_admins(user_id) values (u_a);
+  perform pg_temp.as_user(u_a);
   insert into leagues(id, name, is_public) values (l1, 'Lega 1 profilo', false);
   insert into leagues(id, name, is_public) values (l2, 'Lega 2 profilo', false);
+  perform pg_temp.as_user(null); delete from platform_admins where user_id = u_a; delete from audit_log where entity = 'platform_admins';
+  perform pg_temp.as_user(u_a);
   insert into players(id, name) values (p[1], 'Steppata'), (p[2], 'Marco'), (p[3], 'Luca'), (p[4], 'Gigi');
   insert into league_players(league_id, player_id, aliases) values (l1, p[1], '{}'), (l1, p[2], '{}'), (l1, p[3], '{Lucone}'), (l2, p[1], '{}'), (l2, p[4], '{}');
   insert into matches(id, league_id, date) values (m1, l1, '2026-10-28');

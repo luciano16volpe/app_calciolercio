@@ -52,6 +52,8 @@ test('Amministratore: modifica voto, gol e risultato e salva', async ({ page }) 
   await goal.locator('.rate-btn-plus').click();
   await expect(goal.locator('input')).toHaveValue(String(before + 1));
   await modal.locator('#sc-a').fill('9');
+  await modal.locator('#edit-time').fill('20:30');
+  await modal.locator('#edit-place').fill('Campo Luna');
   await modal.locator('button', { hasText: 'Salva partita' }).click();
   await expect(page.locator('#toast')).toContainText('Salvato:', { timeout: 15_000 });
   const rows = writes.filter((w) => w.table === 'match_players' && w.method === 'PATCH');
@@ -59,6 +61,7 @@ test('Amministratore: modifica voto, gol e risultato e salva', async ({ page }) 
   expect(rows.some((w) => (w.body as { rating: number }).rating === 7 && (w.body as { goals: number }).goals === before + 1)).toBe(true);
   const head = writes.find((w) => w.table === 'matches' && w.method === 'PATCH');
   expect((head?.body as { score_a: number }).score_a).toBe(9);
+  expect(head?.body).toMatchObject({ play_time: '20:30', place: 'Campo Luna' });
   await expect(page.locator('#match-modal')).toHaveCount(0); // si chiude da sola
   await noOverflow(page);
 });
@@ -117,12 +120,21 @@ test('Gioca: Crea partita salva squadre e previsione', async ({ page }) => {
   await expect(dlg).toContainText('1ª proposta');
   await dlg.locator('#nm-scoreA').fill('4');
   await dlg.locator('#nm-scoreB').fill('3');
+  // ora e luogo sono obbligatori
+  await dlg.locator('button', { hasText: 'Crea partita' }).click();
+  await expect(page.locator('#toast')).toContainText('Scegli l’ora');
+  await dlg.locator('#nm-time').fill('21:00');
+  await dlg.locator('button', { hasText: 'Crea partita' }).click();
+  await expect(page.locator('#toast')).toContainText('dove si gioca');
+  expect(writes.some((w) => w.table === 'matches')).toBe(false);
+  await dlg.locator('#nm-place').fill('  Campo Sole ');
   await dlg.locator('button', { hasText: 'Crea partita' }).click();
   await expect(page.locator('#toast')).toContainText('Partita creata!', { timeout: 15_000 });
   const m = writes.find((w) => w.table === 'matches') as Write;
   expect(m.method).toBe('POST');
-  const body = m.body as { score_a: number; score_b: number; pred_rank: number; pred: number };
+  const body = m.body as { score_a: number; score_b: number; pred_rank: number; pred: number; play_time: string; place: string };
   expect([body.score_a, body.score_b, body.pred_rank]).toEqual([4, 3, 1]);
+  expect([body.play_time, body.place]).toEqual(['21:00', 'Campo Sole']);
   expect(typeof body.pred).toBe('number');
   const rows = (writes.find((w) => w.table === 'match_players') as Write).body as Array<{ team: string; match_id: string }>;
   expect(rows.length).toBe(10);
@@ -296,4 +308,12 @@ test('Gazzetta: carica (file + miniatura) e rimuovi', async ({ page }) => {
     expect(writes.some((w) => w.table === 'gazzette' && w.method === 'DELETE')).toBe(true);
   }
   await noOverflow(page);
+});
+
+test('Partita: ora e luogo si vedono nella scheda e nell’elenco (da membro, in sola lettura)', async ({ page }) => {
+  await login(page, 'member');
+  const modal = await openLastMatch(page);
+  // le partite importate non hanno ora né luogo: niente riga vuota, e nessun campo da compilare
+  await expect(modal.locator('#edit-time')).toHaveCount(0);
+  await expect(modal.locator('#match-when')).toHaveCount(0);
 });

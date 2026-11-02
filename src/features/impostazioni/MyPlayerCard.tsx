@@ -78,7 +78,7 @@ export function MyPlayerCard({ data, onOpenMatch, bottom = false }: { data: Leag
       ) : null}
     </div>
     ) : null}
-    {!bottom && s?.linked && data && data.dataset.players.some((p) => p.id === s.linked?.id) ? (
+    {!bottom && s?.linked && data && data.dataset.players.some((p) => p.id === s.linked?.id && (!data.rosterIds || data.rosterIds.includes(p.id))) ? (
       <div style={{ marginBottom: 12 }}>
         {viewId && viewId !== s.linked.id ? (
           <button type="button" id="profile-back" className="btn btn-secondary btn-sm" style={{ marginBottom: 8 }} onClick={() => setViewId(null)}>↩ Torna alla mia scheda</button>

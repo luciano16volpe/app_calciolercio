@@ -33,3 +33,16 @@ export const esc = (v: unknown): string =>
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
+
+/** Ora del database (hh:mm:ss) → hh:mm. Senza ora: "". */
+export function formatTime(t: unknown): string {
+  const m = String(t ?? '').match(/^(\d{1,2}):(\d{2})/);
+  return m ? `${m[1]?.padStart(2, '0')}:${m[2]}` : '';
+}
+
+/** «alle 21:00 · Campo Sole» (le parti mancanti si saltano; senza niente: ""). */
+export function whenWhere(m: Record<string, unknown>): string {
+  const t = formatTime(m.time);
+  const p = String(m.place ?? '').trim();
+  return [t ? `alle ${t}` : '', p].filter(Boolean).join(' · ');
+}

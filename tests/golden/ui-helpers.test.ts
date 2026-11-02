@@ -1,7 +1,7 @@
 // Test golden: iniziali, colore dell'avatar e badge PAG — stessi risultati di legacy sulla rosa vera.
 import { describe, expect, it } from 'vitest';
 import { pagInfo, playerRatingAvg } from '../../src/domain/form';
-import { avatarClass, initials } from '../../src/domain/format';
+import { avatarClass, formatTime, initials, whenWhere } from '../../src/domain/format';
 import { playerSeason, seasonStats } from '../../src/domain/stats';
 import type { Dataset } from '../../src/domain/types';
 import { real } from './data';
@@ -54,5 +54,20 @@ describe('iniziali, colore e badge PAG', () => {
     expect(pagInfo(5.49).cls).toBe('pag-bad');
     expect(pagInfo(null)).toEqual({ label: 'PAG —', cls: 'pag-none', avg: null });
     expect(pagInfo(7.04).label).toBe('PAG 7.0');
+  });
+});
+
+describe('ora e luogo della partita', () => {
+  it('formatTime: hh:mm:ss → hh:mm, vuoto se manca', () => {
+    expect(formatTime('21:00:00')).toBe('21:00');
+    expect(formatTime('9:05')).toBe('09:05');
+    expect(formatTime(null)).toBe('');
+    expect(formatTime('')).toBe('');
+  });
+  it('whenWhere: «alle 21:00 · Campo», parti mancanti saltate', () => {
+    expect(whenWhere({ time: '21:00', place: 'Campo Sole' })).toBe('alle 21:00 · Campo Sole');
+    expect(whenWhere({ time: '', place: ' Campo ' })).toBe('Campo');
+    expect(whenWhere({ time: '08:30:00', place: '' })).toBe('alle 08:30');
+    expect(whenWhere({})).toBe('');
   });
 });

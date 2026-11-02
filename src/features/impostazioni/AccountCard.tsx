@@ -78,7 +78,7 @@ export function AccountCard({ leagueId }: { leagueId: string | undefined }) {
             <button type="button" id="mode-up" className={mode === 'up' ? 'on' : ''} onClick={() => { setMode('up'); setMsg(null); }}>Registrati</button>
           </div>
           <div style={{ fontSize: 13, marginBottom: 8 }}>
-            {mode === 'in' ? "Per modificare partite e voti serve l'accesso. Per guardare no." : 'Crea il tuo account: poi potrai creare leghe, entrare con un codice o con il link che ti manda un amministratore.'}
+            {mode === 'in' ? "Per modificare partite e voti serve l'accesso. Per guardare no." : 'Crea il tuo account: poi potrai entrare in una lega con un codice o con il link che ti manda un amministratore.'}
           </div>
           {mode === 'up' ? <input type="text" autoComplete="name" placeholder="Il tuo nome" value={name} onChange={(e) => setName(e.target.value)} style={field} /> : null}
           <input type="email" autoComplete="username" inputMode="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={field} />
