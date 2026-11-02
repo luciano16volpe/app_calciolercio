@@ -471,23 +471,19 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
           </div>
           <div id="match-fields" style={{ opacity: editing ? 1 : 0.92 }}>
             {full ? (
-              <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
-                <div style={{ flex: '0 0 40%' }}>
-                  <div style={{ ...LABEL, marginBottom: 6 }}>⏰ Ora</div>
-                  <input
-                    type="time" id="edit-time" value={draft ? draft.time : String(m.time ?? '')} disabled={!full} readOnly={!full}
-                    onChange={(e) => upd({ time: e.target.value })}
-                    style={{ width: '100%', padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', fontSize: 16, boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ ...LABEL, marginBottom: 6 }}>📍 Luogo</div>
-                  <input
-                    type="text" id="edit-place" maxLength={80} value={draft ? draft.place : String(m.place ?? '')} placeholder="es. Campo Sole" disabled={!full} readOnly={!full}
-                    onChange={(e) => upd({ place: e.target.value })}
-                    style={{ width: '100%', padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', fontSize: 16, boxSizing: 'border-box' }}
-                  />
-                </div>
+              <div style={{ marginBottom: 8 }}>
+                <div style={{ ...LABEL, marginBottom: 6 }}>⏰ Ora</div>
+                <input
+                  type="time" id="edit-time" className="dt-inp" value={draft ? draft.time : String(m.time ?? '')} disabled={!full} readOnly={!full}
+                  onChange={(e) => upd({ time: e.target.value })}
+                  style={{ padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', fontSize: 16, marginBottom: 8 }}
+                />
+                <div style={{ ...LABEL, marginBottom: 6 }}>📍 Luogo</div>
+                <input
+                  type="text" id="edit-place" maxLength={80} value={draft ? draft.place : String(m.place ?? '')} placeholder="es. Campo Sole" disabled={!full} readOnly={!full}
+                  onChange={(e) => upd({ place: e.target.value })}
+                  style={{ width: '100%', padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', fontSize: 16, boxSizing: 'border-box' }}
+                />
               </div>
             ) : whenWhere(m) ? (
               <div id="match-when" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text2)', marginBottom: 8 }}>⏰ {whenWhere(m)}</div>

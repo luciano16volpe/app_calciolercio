@@ -1,7 +1,7 @@
 // Schermate in un telefono emulato (iPhone, Android e uno schermo piccolo da 360 px).
 // Leggono i dati veri dalla lega pubblica su Supabase: serve la rete.
 import { expect, test } from '@playwright/test';
-import { setup } from './helpers';
+import { fixturePlayer, noOverflow, openMenu, setup } from './helpers';
 
 // l'app si apre solo con l'accesso: la prova entra come membro della lega pubblica vera (accesso simulato, letture vere)
 test.beforeEach(async ({ page }) => {
@@ -36,7 +36,7 @@ test('aprendo la lega si parte da Classifiche (e il logo ci riporta)', async ({ 
   await expect.poll(() => new URL(page.url()).pathname).toBe('/l/san-marcello/classifiche');
   await page.locator('.bottom-nav').getByText('Rosa', { exact: true }).click();
   await expect(page.locator('#page-rosa')).toHaveClass(/active/);
-  await page.locator('.logo').click();
+  await page.locator('.app-title').click();
   await expect(page.locator('#page-classifiche')).toHaveClass(/active/);
 });
 
@@ -174,4 +174,42 @@ test('Ricaricare: niente rotellina in alto; si tira la pagina verso il basso e i
   await expect(page.locator('#toast')).toContainText('Aggiornato', { timeout: 10_000 });
   expect(reads).toBeGreaterThan(0);
   await expect(page.locator('#ptr')).toHaveCount(0);
+});
+
+test('Intestazione: faccia con OVR e forma a sinistra (apre il menu), CALCIO LERCIO al centro, logo con la lega sotto', async ({ page }) => {
+  await setup(page, { mePlayer: fixturePlayer() });
+  await page.goto('/');
+  const btn = page.locator('#menu-button');
+  await expect(btn).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('#header-ovr')).toHaveText(/^\d\.\d$/);
+  await expect(page.locator('.app-title')).toHaveText('CALCIO LERCIO');
+  // il carattere sportivo è caricato dall'app (non da siti esterni)
+  expect(await page.evaluate(() => document.fonts.check('26px "Bebas Neue"'))).toBe(true);
+  // la lega sta sotto il logo, a destra
+  const logo = await page.locator('.app-right img').boundingBox();
+  const pill = await page.locator('#league-pill').boundingBox();
+  const face = await btn.boundingBox();
+  expect(pill!.y).toBeGreaterThan(logo!.y + logo!.height - 2);
+  expect(logo!.x).toBeGreaterThan(face!.x + face!.width);
+  await expect(page.locator('#league-pill')).toContainText('San Marcello');
+  // nessun elemento fuori dallo schermo, nemmeno a 320 px
+  await page.setViewportSize({ width: 320, height: 700 });
+  await noOverflow(page);
+  const head = await page.locator('header').boundingBox();
+  for (const sel of ['#menu-button', '.app-title', '.app-right']) {
+    const b = await page.locator(sel).boundingBox();
+    expect(b!.x).toBeGreaterThanOrEqual(-0.5);
+    expect(b!.x + b!.width).toBeLessThanOrEqual(head!.width + 0.5);
+  }
+  // toccando la faccia si apre il menu
+  await openMenu(page);
+});
+
+test('Intestazione: senza un giocatore collegato resta il pulsante ☰ (niente faccia)', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#menu-button')).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('#menu-button')).toHaveText('☰');
+  await expect(page.locator('#header-ovr')).toHaveCount(0);
+  await expect(page.locator('.app-title')).toHaveText('CALCIO LERCIO');
+  await openMenu(page);
 });
