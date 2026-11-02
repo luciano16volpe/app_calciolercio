@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { getTheme, setTheme, type Theme } from '../../app/theme';
 import { AccountCard } from './AccountCard';
 import { PasswordCard } from './PasswordCard';
+import { PushCard } from './PushCard';
 
 /** Cerca una nuova versione e la carica (il service worker la scarica, poi si ricarica la pagina). */
 async function updateApp(toast: (m: string) => void): Promise<void> {
@@ -70,6 +71,7 @@ export function SettingsPage({ data }: { data: LeagueData | undefined }) {
       <ThemeCard />
       <AccountCard leagueId={data?.league.id} />
       <PasswordCard />
+      <PushCard />
     </>
   );
 }
