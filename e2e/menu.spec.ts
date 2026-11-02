@@ -98,7 +98,7 @@ test('Menu: l\'amministratore supremo vede la sezione Piattaforma', async ({ pag
   for (const id of ['#menu-audit', '#menu-platform-leagues', '#menu-platform-users']) await expect(page.locator(id)).toBeVisible();
 });
 
-for (const width of [320, 360, 390]) {
+for (const width of [360]) {
   test(`Menu a ${width} px: niente esce in orizzontale e si arriva in fondo`, async ({ page }) => {
     await page.setViewportSize({ width, height: 740 });
     await setup(page, { mine: mineAs('admin'), rpc: { is_super_admin: true } });

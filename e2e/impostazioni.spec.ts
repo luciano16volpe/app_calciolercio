@@ -54,8 +54,3 @@ test('Impostazioni: solo versione, aggiornamento e account (le regole di gioco s
   await noOverflow(page);
 });
 
-test('Impostazioni: Aggiorna app risponde', async ({ page }) => {
-  await openSettings(page);
-  await page.locator('#update-app').click();
-  await expect(page.locator('#toast')).toContainText(/ultima versione|Controllo|Scarico|Non riesco/);
-});

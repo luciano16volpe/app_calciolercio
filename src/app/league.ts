@@ -7,6 +7,8 @@ const EVENT = 'calciolercio-league-change';
 /** Pagine dell'app e loro nome nell'indirizzo. */
 export const PAGE_PATHS = { rosa: 'rosa', partita: 'gioca', partite: 'partite', classifiche: 'classifiche', settings: 'impostazioni' } as const;
 export type PageKey = keyof typeof PAGE_PATHS;
+/** Pagina da cui si parte quando si apre una lega (anche toccando il logo). */
+export const HOME_PAGE: PageKey = 'classifiche';
 
 export interface Route {
   slug: string | null;
@@ -51,7 +53,7 @@ export function setSelectedLeague(slug: string | null): void {
   // l'indirizzo vince sulla memoria: va aggiornato anche lui, altrimenti la lega non cambia
   const cur = parsePath(window.location.pathname);
   if (cur.slug !== null || cur.invite !== null) {
-    const next = slug ? buildPath(slug, cur.page ?? 'rosa') : '/';
+    const next = slug ? buildPath(slug, cur.page ?? HOME_PAGE) : '/';
     if (window.location.pathname !== next) window.history.replaceState(null, '', next);
   }
   window.dispatchEvent(new Event(EVENT));

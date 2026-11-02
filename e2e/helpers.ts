@@ -147,6 +147,12 @@ export const noOverflow = async (page: Page) =>
 export async function openApp(page: Page, path = '/', players = 22) {
   await page.goto(path);
   if (players > 0) await expect(page.locator('#players-list .card-compact')).toHaveCount(players, { timeout: 20_000 });
+  // aprendo la lega senza dire la pagina si parte da Classifiche: i test della Rosa ci vanno col tasto in basso
+  if (players > 0 && !/\/l\/[^/]+\/[a-z]+/.test(path)) {
+    await expect(page.locator('#page-classifiche.active')).toBeVisible();
+    await page.locator('.bottom-nav .bnav-item').first().click();
+    await expect(page.locator('#page-rosa.active')).toBeVisible();
+  }
 }
 
 export async function openMenu(page: Page) {

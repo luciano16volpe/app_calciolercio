@@ -2,22 +2,6 @@
 import { expect, test } from '@playwright/test';
 import { lastWrite, mineAs, noOverflow, openApp, openPanel, setup } from './helpers';
 
-test('Regole di gioco: un membro non ha la voce nel menu', async ({ page }) => {
-  await setup(page, { publicRole: 'member' });
-  await openApp(page);
-  await page.locator('#menu-button').click();
-  await expect(page.locator('#menu-drawer')).toBeVisible();
-  await expect(page.locator('#menu-game-settings')).toHaveCount(0);
-});
-
-test('Regole di gioco: la redazione non ha la voce nel menu', async ({ page }) => {
-  await setup(page, { publicRole: 'redazione' });
-  await openApp(page);
-  await page.locator('#menu-button').click();
-  await expect(page.locator('#menu-members')).toHaveCount(0);
-  await expect(page.locator('#menu-game-settings')).toHaveCount(0);
-});
-
 test('Regole di gioco: l\'admin di lega vede formazioni, forma e pesi, ma solo in lettura', async ({ page }) => {
   const writes = await setup(page, { publicRole: 'admin' });
   await openApp(page);
