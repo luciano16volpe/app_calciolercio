@@ -49,7 +49,6 @@ export function PullToRefresh() {
       }
       const d = Math.min(MAX, dy * 0.5);
       s.d = d;
-      if (e.cancelable) e.preventDefault(); // niente rimbalzo del browser mentre si tira
       setDist(d);
       setPhase(d >= TRIGGER ? 'ready' : 'pull');
     };
@@ -78,7 +77,8 @@ export function PullToRefresh() {
       }
     };
     document.addEventListener('touchstart', start, { passive: true });
-    document.addEventListener('touchmove', move, { passive: false });
+    // passivo e senza preventDefault: su iPhone un controllo del tocco che può bloccare lo scroll rallenta la pagina e sposta il footer fisso
+    document.addEventListener('touchmove', move, { passive: true });
     document.addEventListener('touchend', end);
     document.addEventListener('touchcancel', end);
     return () => {
