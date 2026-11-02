@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react';
 import { BottomNav, type PageName } from './app/BottomNav';
 import { AuthProvider, useAuth, useRole } from './app/auth';
 import { useIsSuperAdmin } from './data/leagues';
@@ -29,6 +29,7 @@ import { PartitePage } from './features/partite/PartitePage';
 import { GazArchive, GazViewer, PagelleTextDialog, type MatchActions } from './features/partite/parts';
 import { PlayerCard } from './features/player/PlayerCard';
 import { InstallHint } from './app/InstallHint';
+import { PullToRefresh } from './app/PullToRefresh';
 import { RosaList } from './features/rosa/RosaList';
 
 /** Gioca e scheda partita con i permessi di chi è entrato: la modifica si offre solo a chi può farla (il database la controlla comunque). */
@@ -109,10 +110,11 @@ function Loading({ q, onPanel }: { q: { isError: boolean; error?: unknown; refet
 /** Cosa c'è nella finestra aperta sopra la pagina (una sola per volta, come in legacy). */
 type View = { kind: 'player'; id: string; fromRosa?: boolean } | { kind: 'match'; id: string; text?: boolean } | { kind: 'gazArchive' } | null;
 
-const pageFromPath = (): PageName => (parsePath(window.location.pathname).page as PageKey | null) ?? HOME_PAGE;
+/** La pagina scritta nell'indirizzo, se c'è. */
+const pageFromPath = (): PageName | null => parsePath(window.location.pathname).page as PageKey | null;
 
 function Shell() {
-  const [page, setPage] = useState<PageName>(pageFromPath);
+  const [chosen, setChosen] = useState<PageName | null>(pageFromPath); // null = nessuna scelta: si parte dalla pagina iniziale
   const [view, setView] = useState<View>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
@@ -122,24 +124,16 @@ function Shell() {
   // la Bacheca resta aperta (o chiusa) passando da un giocatore all'altro, come in legacy
   const [bachecaOpen, setBachecaOpen] = useState(false);
   const q = useLeagueData();
-  const qc = useQueryClient();
   const data = q.data;
   // «Gioca» (nuova partita) è solo per gli amministratori della lega: agli altri la scheda non c'è, e l'indirizzo /gioca li porta alla pagina iniziale
   const { isAdmin, ready } = useRole(data?.league.id);
-  useEffect(() => {
-    if (data && ready && !isAdmin && page === 'partita') setPage(HOME_PAGE);
-  }, [data, ready, isAdmin, page]);
+  // pagina iniziale: Classifiche; una lega ancora vuota si apre sulla Rosa (lì c'è la guida «Aggiungi i giocatori»)
+  const wanted: PageName = chosen ?? (data && !data.dataset.players.length ? 'rosa' : HOME_PAGE);
+  const page: PageName = wanted === 'partita' && ready && !isAdmin ? HOME_PAGE : wanted;
   const go = (p: PageName) => {
-    setPage(p);
+    setChosen(p);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-  // una lega ancora vuota si apre sulla Rosa (lì c'è la guida «Aggiungi i giocatori»); le altre su Classifiche
-  const homeChecked = useRef<string | null>(null);
-  useEffect(() => {
-    if (!data || inviteToken || homeChecked.current === data.league.slug) return;
-    homeChecked.current = data.league.slug;
-    if (!data.dataset.players.length && !parsePath(window.location.pathname).page && page === HOME_PAGE) setPage('rosa');
-  }, [data, inviteToken, page]);
   // la lega e la pagina stanno nell'indirizzo (/l/<slug>/<pagina>): i link condivisi aprono la lega giusta
   useEffect(() => {
     if (data && !inviteToken) {
@@ -174,23 +168,9 @@ function Shell() {
           CalcioLercio
         </div>
         {data ? <button type="button" className="lg-pill" id="league-pill" onClick={() => setMenuOpen(true)} aria-label={`Lega attiva: ${data.league.name}. Cambia lega`}>{data.league.name} ▾</button> : null}
-        <button
-          id="header-refresh"
-          onClick={(e) => {
-            e.stopPropagation();
-            void qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
-          }}
-          title="Aggiorna dati storico"
-          style={{
-            marginLeft: 'auto', background: 'rgba(255,255,255,0.18)', border: 'none', color: '#fff', width: 32, height: 32,
-            borderRadius: '50%', cursor: 'pointer', fontSize: 15, alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            display: page === 'partite' || page === 'classifiche' ? 'flex' : 'none',
-          }}
-        >
-          🔄
-        </button>
       </header>
 
+      <PullToRefresh />
       <InstallHint />
       <div id="page-rosa" className={`page${page === 'rosa' ? ' active' : ''}`}>
         {data ? <RosaGate data={data} onOpen={openPlayerFromRosa} /> : <Loading q={q} onPanel={setPanel} />}

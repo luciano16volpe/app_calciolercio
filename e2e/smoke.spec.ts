@@ -145,3 +145,33 @@ test('la guida «Installa sul telefono» si vede in ogni pagina finché non si c
   await page.locator('.bottom-nav').getByText('Classifiche', { exact: true }).click();
   await expect(hint).toHaveCount(0);
 });
+
+test('Ricaricare: niente rotellina in alto; si tira la pagina verso il basso e i dati si aggiornano', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#page-classifiche')).toHaveClass(/active/);
+  await expect(page.locator('#header-refresh')).toHaveCount(0);
+  await expect(page.locator('header')).not.toContainText('🔄');
+  await page.waitForLoadState('networkidle'); // finito il caricamento iniziale: da qui si contano solo le letture causate dal gesto
+  let reads = 0;
+  page.on('request', (r) => { if (/league_players|\/matches/.test(r.url()) && r.method() === 'GET') reads++; });
+  // gesto di trascinamento verso il basso dalla cima della pagina (eventi di tocco simulati: valgono in ogni browser)
+  const touch = (type: string, y: number) =>
+    page.evaluate(([t, yy]) => {
+      const ev = new Event(t as string, { bubbles: true, cancelable: true }) as Event & { touches?: unknown[] };
+      ev.touches = t === 'touchend' ? [] : [{ clientX: 180, clientY: yy as number }];
+      (document.querySelector('#page-classifiche') as Element).dispatchEvent(ev);
+    }, [type, y] as const);
+  // tirata corta: non succede niente
+  await touch('touchstart', 100); await touch('touchmove', 140); await touch('touchmove', 170);
+  await expect(page.locator('#ptr')).toContainText('Tira per aggiornare');
+  await touch('touchend', 170);
+  await expect(page.locator('#ptr')).toHaveCount(0);
+  expect(reads).toBe(0);
+  // tirata lunga: compare l'avviso, al rilascio si aggiorna
+  await touch('touchstart', 100); await touch('touchmove', 160); await touch('touchmove', 300);
+  await expect(page.locator('#ptr')).toContainText('Rilascia per aggiornare');
+  await touch('touchend', 300);
+  await expect(page.locator('#toast')).toContainText('Aggiornato', { timeout: 10_000 });
+  expect(reads).toBeGreaterThan(0);
+  await expect(page.locator('#ptr')).toHaveCount(0);
+});

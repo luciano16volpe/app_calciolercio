@@ -41,8 +41,8 @@ begin
   who_ids := array[null, u_mem, u_red, u_adm, u_own, u_adm2, u_sup]::uuid[];
   insert into auth.users(id, email, aud, role, instance_id, raw_user_meta_data)
     select x, 'perm-' || substr(x::text, 1, 8) || '@example.invalid', 'authenticated', 'authenticated', '00000000-0000-0000-0000-000000000000', '{}'::jsonb from unnest(u) x;
-  -- lega privata L1 (creatore u_own), lega di un altro gruppo L2, lega pubblica LP
-  insert into leagues(id, name, is_public, owner_id, created_by) values (l1, 'Perm L1', false, u_own, u_own), (l2, 'Perm L2', false, u_adm2, u_adm2), (lp, 'Perm Pub', true, u_own, u_own);
+  -- lega privata L1 (creatore u_own), lega di un altro gruppo L2, altra lega privata LP
+  insert into leagues(id, name, is_public, owner_id, created_by) values (l1, 'Perm L1', false, u_own, u_own), (l2, 'Perm L2', false, u_adm2, u_adm2), (lp, 'Perm Privata 2', false, u_own, u_own);
   insert into league_members(league_id, user_id, role) values
     (l1, u_own, 'admin'), (l1, u_adm, 'admin'), (l1, u_red, 'redazione'), (l1, u_mem, 'member'), (l2, u_adm2, 'admin'), (lp, u_own, 'admin');
   insert into players(id, name, created_by) values (p[1], 'P1', null), (p[2], 'P2', null), (p[3], 'P3', null), (p[4], 'P4', null), (p[5], 'P5', null), (p[9], 'P9', u_mem);
@@ -60,7 +60,7 @@ begin
   create temp table acts(n int, descr text, expect text, sql text, solo text) on commit drop;
   insert into acts values
    (1,  'leggere le partite di una lega privata',                 '0111100', 'select 1 from matches where league_id = ''{L1}''', null),
-   (2,  'leggere le partite di una lega pubblica',                '1111111', 'select 1 from matches where league_id = ''{LP}''', null),
+   (2,  'leggere le partite di una lega (non esistono leghe pubbliche)', '0111100', 'select 1 from matches where league_id = ''{L1}''', null),
    (3,  'cambiare un voto',                                       '0001100', 'update match_players set rating = 7 where match_id = ''{M1}'' and player_id = ''{P1}''', null),
    (4,  'cambiare titolo e descrizione di una pagella',           '0011100', 'update match_players set titolo = ''X'', descrizione = ''Y'' where match_id = ''{M1}'' and player_id = ''{P1}''', null),
    (5,  'creare una partita',                                     '0001100', 'insert into matches(league_id, date) values (''{L1}'', ''2026-01-01'')', null),
@@ -86,7 +86,7 @@ begin
    (25, 'vedere l''anteprima di un invito (anche senza accesso)', '1111111', 'select 1 from public.invite_preview(''qualunque'')', null),
    (26, 'chiedere «questo sono io» (giocatore libero della lega)', '0111100', 'select public.request_claim(''{L1}'', ''{P5}'')', 'nolink'),
    (27, 'confermare o rifiutare una richiesta «sono io»',         '0001100', 'select public.review_claim(''{C1}'', false)', null),
-   (28, 'scollegare un giocatore dal suo account (la redazione di prova è il giocatore stesso: può scollegare sé)', '0011100', 'select public.unlink_player(''{P3}'')', null),
+   (28, 'scollegare un giocatore dal suo account (solo l''amministratore: la redazione di prova è il giocatore stesso e non può scollegarsi)', '0001100', 'select public.unlink_player(''{P3}'')', null),
    (29, 'unire due giocatori',                                    '0001100', 'select public.merge_players(''{P1}'', ''{P4}'')', null),
    (30, 'aggiungere un giocatore alla lega',                      '0001100', 'insert into league_players(league_id, player_id) values (''{L1}'', ''{P9}'')', 'newlp'),
    (31, 'scrivere la riga della Gazzetta di una partita',         '0011100', 'insert into gazzette(match_id, file_path) values (''{M1}'', ''x/y.jpg'')', null),
