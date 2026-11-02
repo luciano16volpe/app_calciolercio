@@ -5,7 +5,23 @@ import { join } from 'node:path';
 import vm from 'node:vm';
 import { recorderSource } from './canvasRecorder';
 
-const html = readFileSync(join(process.cwd(), 'legacy', 'index.html'), 'utf8');
+/**
+ * Cambiamenti VOLUTI rispetto alla vecchia app (decisioni di novembre 2026). Il confronto con la vecchia app resta fedele su tutto il resto:
+ * si applicano al suo testo prima di caricarla, così i test provano che il nuovo codice fa esattamente quello che ha deciso Luciano.
+ */
+const DELIBERATE: Array<[string, string]> = [
+  // fasce della figurina: Bronzo 51–59, Cacca 41–50, sotto: MARCIO VOMITO
+  ["r>=55?'bronze':r>=40?'cacca':'marcia'", "r>=51?'bronze':r>=41?'cacca':'marcia'"],
+  ["marcia:{label:'MARCIA',", "marcia:{label:'MARCIO VOMITO',"],
+  // stato di forma: ultime 2 pagelle (non 3)
+  ['a.votes.slice(-3).reduce((s,x)=>s+x.v,0)/3 - a.voteAvg', 'a.votes.slice(-2).reduce((s,x)=>s+x.v,0)/2 - a.voteAvg'],
+  // riquadri del voto: rosso sotto 5,5 come il badge PAG
+  ["if(v<5){ bg='#fde8e8'", "if(v<5.5){ bg='#fde8e8'"],
+];
+const html = DELIBERATE.reduce((h, [from, to]) => {
+  if (!h.includes(from)) throw new Error(`Cambiamento voluto non applicabile (legacy cambiato?): ${from}`);
+  return h.replace(from, to);
+}, readFileSync(join(process.cwd(), 'legacy', 'index.html'), 'utf8'));
 
 /** Salta una stringa tra apici e restituisce l'indice dopo la chiusura. */
 function skipQuoted(s: string, i: number): number {

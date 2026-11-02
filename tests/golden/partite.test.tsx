@@ -146,10 +146,10 @@ describe.each(datasets)('%s', (_label, raw) => {
 
 describe('casi particolari', () => {
   it('colore del riquadro del voto come rateColor', () => {
-    for (const v of ['', 4, 4.5, 5, 6, 6.5, 8, 10, 'x', null]) {
+    for (const v of ['', 4, 4.5, 5, 5.4, 5.5, 6, 6.5, 8, 10, 'x', null]) {
       const { background } = rateColors(v);
       const bg = parseFloat(v as string);
-      expect(background).toBe(isNaN(bg) ? 'var(--gray)' : bg < 5 ? '#fde8e8' : bg < 6.5 ? '#fff4d6' : '#e4f7ec');
+      expect(background).toBe(isNaN(bg) ? 'var(--gray)' : bg < 5.5 ? '#fde8e8' : bg < 6.5 ? '#fff4d6' : '#e4f7ec');
     }
   });
   it('nessuna partita: messaggio come legacy', () => {

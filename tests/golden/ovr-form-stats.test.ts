@@ -43,13 +43,15 @@ describe('ovr', () => {
     expect(futTier(p.stats, real.weights)).toBe(legacy.futTier(p));
   });
 
-  it('fasce ai confini (73/74, 67/68, 59/60, 54/55, 39/40)', () => {
+  it('fasce ai confini (73/74, 67/68, 59/60, 50/51, 40/41): Bronzo 51–59, Cacca 41–50, sotto MARCIO VOMITO', () => {
     // pesi uguali e statistiche uguali: OVR = valore → valutazione = valore × 10
     const w = real.weights.map(() => 1);
     const tier = (v: number) => futTier(w.map(() => v), w);
-    expect([7.3, 7.4, 6.7, 6.8, 5.9, 6.0, 5.4, 5.5, 3.9, 4.0].map(tier)).toEqual([
+    expect([7.3, 7.4, 6.7, 6.8, 5.9, 6.0, 5.0, 5.1, 4.0, 4.1].map(tier)).toEqual([
       'gold', 'top', 'silver', 'gold', 'bronze', 'silver', 'cacca', 'bronze', 'marcia', 'cacca',
     ]);
+    // gli estremi: 50 è ancora Cacca, 41 è la Cacca più bassa, 40 e meno è MARCIO VOMITO
+    expect([5.0, 4.1, 4.0, 0].map(tier)).toEqual(['cacca', 'cacca', 'marcia', 'marcia']);
   });
 });
 
@@ -148,5 +150,32 @@ describe('stato di forma', () => {
     const old = mk([7, 7, 7, 7], ['2026-01-01', '2026-01-08', '2026-01-15', '2026-01-22']);
     old.matches.push(...d5.map((d, i) => ({ id: 'n' + i, date: d, teamA: [], teamB: [] })));
     expect(formState(old, p)).toBeNull();
+  });
+});
+
+describe('stato di forma: contano le ultime 2 pagelle', () => {
+  /** Un giocatore con questi voti, uno per partita, in 5 partite consecutive (le più recenti del gruppo). */
+  const withVotes = (votes: number[]) => {
+    const player = { id: 'p', name: 'P', roles: ['MED'], stats: Array(11).fill(6) };
+    const matches = votes.map((_, i) => ({ id: `m${i}`, date: `2026-10-${String(i + 1).padStart(2, '0')}`, teamA: [{ id: 'p', name: 'P' }], teamB: [], scoreA: 5, scoreB: 3 }));
+    const ratings = votes.map((v, i) => ({ matchId: `m${i}`, player: 'P', playerId: 'p', rating: v }));
+    const ds = { players: [player], matches, ratings } as unknown as Dataset;
+    return formState(ds, player as never, seasonStats(ds));
+  };
+  it('le ultime 2 pagelle sopra la media di sempre di almeno 0,2 → in forma (con 3 non lo sarebbe)', () => {
+    // media 6,2; ultime 2 = 6,5 (+0,3) → su; ultime 3 = 6,33 (+0,13) → costante
+    expect(withVotes([6, 6, 6, 5, 8])).toBe('up');
+  });
+  it('le ultime 2 sotto di almeno 0,2 → in calo', () => {
+    // media 6,4; ultime 2 = 5,5 (−0,9)
+    expect(withVotes([7, 7, 7, 6, 5])).toBe('down');
+  });
+  it('vicine alla media → costante; la terzultima non conta', () => {
+    expect(withVotes([6, 6, 6, 6, 6])).toBe('flat');
+    // la terzultima (2) non pesa: ultime 2 = 6,5, media 5,5 → in forma
+    expect(withVotes([5, 5, 2, 7, 6])).toBe('up');
+  });
+  it('servono almeno 4 pagelle', () => {
+    expect(withVotes([6, 6, 9])).toBeNull();
   });
 });

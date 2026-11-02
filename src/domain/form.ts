@@ -8,6 +8,7 @@ export const FORM_MAX_WEIGHT = 0.25;
 export const FORM_MIN_RATINGS = 2;
 export const FORM_FULL_RATINGS = 18;
 export const FORM_DELTA = 0.2; // ± margine sulla media di sempre
+export const FORM_WINDOW = 2; // quante ultime pagelle (consecutive) si confrontano con la media di sempre
 
 /** Peso della media pagelle: 0 fino a 2 pagelle, poi cresce in linea retta fino al 25% con 18 o più. */
 export function formWeight(count: number): number {
@@ -43,7 +44,7 @@ export function effectiveScore(
 export type FormState = 'up' | 'flat' | 'down';
 
 /**
- * Stato di forma: media delle ultime 3 pagelle contro la media di sempre.
+ * Stato di forma: media delle ultime 2 pagelle (le più recenti, consecutive) contro la media di sempre.
  * ≥ +0,2 → 'up' (In forma) · ≤ −0,2 → 'down' (In calo) · altrimenti 'flat' (Costante).
  * Servono almeno 4 pagelle e l'ultima deve essere tra le 5 partite più recenti del gruppo.
  */
@@ -53,7 +54,7 @@ export function formState(data: Dataset, p: Player, all = seasonStats(data)): Fo
   const since = data.matches.map((m) => m.date).filter(Boolean).sort().slice(-5)[0];
   const last = a.votes[a.votes.length - 1] as { date: string };
   if (since && last.date < since) return null;
-  const d = a.votes.slice(-3).reduce((s, x) => s + x.v, 0) / 3 - (a.voteAvg as number);
+  const d = a.votes.slice(-FORM_WINDOW).reduce((s, x) => s + x.v, 0) / FORM_WINDOW - (a.voteAvg as number);
   return d >= FORM_DELTA - 1e-9 ? 'up' : d <= -FORM_DELTA + 1e-9 ? 'down' : 'flat';
 }
 

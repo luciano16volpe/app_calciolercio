@@ -40,7 +40,7 @@ il **nome della funzione legacy** da leggere per i dettagli esatti: in caso di d
   assist (>0) (`matchHighlights`). Stessa formula per "Re degli MVP" nell'albo.
 
 ## 5. Stato di forma (unico in tutta l'app)
-- Media delle **ultime 3 pagelle** confrontata con la **media di sempre** del giocatore:
+- Media delle **ultime 2 pagelle** (le più recenti, consecutive) confrontata con la **media di sempre** del giocatore (era: ultime 3, cambiato a novembre 2026):
   ≥ +0,2 → **↗ In forma**, ≤ −0,2 → **↘ In calo**, altrimenti **→ Costante** (`FORM_DELTA=0.2`).
 - Serve almeno **4 pagelle**, e l'ultima deve essere tra le **5 partite più recenti del gruppo**;
   altrimenti nessuno stato (`formState`).
@@ -54,9 +54,10 @@ il **nome della funzione legacy** da leggere per i dettagli esatti: in caso di d
 | ≥ 74 | Top player (viola, olografica) |
 | 68–73 | Oro |
 | 60–67 | Argento |
-| 55–59 | Bronzo |
-| 40–54 | Cacca (marrone, 💩 al posto delle scintille) |
-| < 40 | Marcia (verde muffa, mosche 🪰) |
+| 51–59 | Bronzo |
+| 41–50 | Cacca (marrone, 💩 al posto delle scintille) |
+| ≤ 40 | **MARCIO VOMITO** (verde muffa, mosche 🪰) |
+(Novembre 2026: prima era Bronzo 55–59, Cacca 40–54, Marcia < 40.)
 (`futTier`, `FUT_TIERS`)
 
 ## 7. Sorteggio delle squadre (Gioca)

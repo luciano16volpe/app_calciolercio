@@ -13,9 +13,9 @@ export function futRating(stats: number[], weights: number[]): number {
 
 export type FutTier = 'top' | 'gold' | 'silver' | 'bronze' | 'cacca' | 'marcia';
 
-/** Fascia della carta: ≥74 Top player · 68–73 Oro · 60–67 Argento · 55–59 Bronzo · 40–54 Cacca · <40 Marcia. */
+/** Fascia della carta: ≥74 Top player · 68–73 Oro · 60–67 Argento · 51–59 Bronzo · 41–50 Cacca · ≤40 Marcio Vomito (chiave `marcia`). */
 export function futTierOfRating(r: number): FutTier {
-  return r >= 74 ? 'top' : r >= 68 ? 'gold' : r >= 60 ? 'silver' : r >= 55 ? 'bronze' : r >= 40 ? 'cacca' : 'marcia';
+  return r >= 74 ? 'top' : r >= 68 ? 'gold' : r >= 60 ? 'silver' : r >= 51 ? 'bronze' : r >= 41 ? 'cacca' : 'marcia';
 }
 
 export function futTier(stats: number[], weights: number[]): FutTier {

@@ -317,11 +317,11 @@ export function matchBalance(data: Dataset, weights: number[], m: Match, useForm
   };
 }
 
-/** Colore del voto nei riquadri del voto (rateColor): < 5 rosso · < 6,5 giallo · altrimenti verde · vuoto neutro. */
+/** Colore del voto nei riquadri del voto (rateColor): < 5,5 rosso · < 6,5 giallo · altrimenti verde · vuoto neutro (stessi limiti del badge PAG). */
 export function rateColors(v: unknown): { background: string; color: string; borderColor: string } {
   const n = parseFloat(v as string);
   if (isNaN(n)) return { background: 'var(--gray)', color: 'var(--text)', borderColor: 'var(--gray3)' };
-  if (n < 5) return { background: '#fde8e8', color: '#a82020', borderColor: '#e05c5c' };
+  if (n < 5.5) return { background: '#fde8e8', color: '#a82020', borderColor: '#e05c5c' };
   if (n < 6.5) return { background: '#fff4d6', color: '#7a4a00', borderColor: '#c4a040' };
   return { background: '#e4f7ec', color: '#1a5a2a', borderColor: '#3aad5e' };
 }
