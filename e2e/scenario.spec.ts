@@ -39,8 +39,7 @@ test('Scenario completo: lega, invito, collegamento, codice, ruoli, pagelle, reg
     await page.locator('#jl-code').fill(code);
     await page.locator('#jl-submit').click();
     await expect(page.locator('#toast')).toContainText('Sei dentro la lega', { timeout: 15_000 });
-    await expect(page.locator('#sheet-profile')).toBeVisible();
-    await page.getByRole('button', { name: 'Indietro' }).click();
+    await expect(page.locator('#page-profilo.active')).toBeVisible();
   };
   const createLeague = async (page: Page, name: string): Promise<string> => {
     await openMenu(page);
@@ -92,7 +91,7 @@ test('Scenario completo: lega, invito, collegamento, codice, ruoli, pagelle, reg
   await card.locator('button.btn-primary').click();
   await expect(friend.locator('#invite-ok')).toContainText('Benvenuto Fabio', { timeout: 20_000 });
   await friend.locator('#invite-go').click();
-  await expect(friend.locator('#sheet-profile')).toBeVisible();
+  await expect(friend.locator('#page-profilo.active')).toBeVisible();
   await expect(friend.locator('#myplayer-name')).toHaveText('Fabio');
   const fabio = be.players.find((p) => p.name === 'Fabio')!;
   const F = fabio.user_id as string;
@@ -100,7 +99,6 @@ test('Scenario completo: lega, invito, collegamento, codice, ruoli, pagelle, reg
   expect(be.userName(F)).toBe('Fabio Amico');
   expect(be.members.some((m) => m.league_id === l1.id && m.user_id === F && m.role === 'member')).toBe(true);
   await noOverflow(friend);
-  await friend.getByRole('button', { name: 'Indietro' }).click();
 
   // 4 · il creatore apre una seconda lega; l'amico entra con il codice portando il suo giocatore (niente doppioni)
   const code2 = await createLeague(owner, 'Seconda Lega');
@@ -187,7 +185,7 @@ test('Scenario completo: lega, invito, collegamento, codice, ruoli, pagelle, reg
   // 10 · l'admin (Xena) salva la partita: risultato 5-3 e un voto
   await xena.reload();
   await expect(xena.locator('#league-pill')).toContainText('Calcetto Scenario', { timeout: 20_000 });
-  await xena.locator('.bottom-nav').getByText('Partite', { exact: true }).click();
+  await xena.locator('.bottom-nav').getByRole('button', { name: 'Partite', exact: true }).click();
   await xena.locator('#last-match .card').click();
   const xm = xena.locator('#match-modal');
   await xm.locator('#edit-toggle-btn').click();

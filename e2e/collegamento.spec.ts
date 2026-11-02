@@ -1,7 +1,7 @@
 // Collegamento account: invito personale (/invito/<token>), Inviti giocatori, Unisci giocatori,
 // «Questo sono io», richieste dell'amministratore, profilo, privacy.
 import { expect, test, type Page } from '@playwright/test';
-import { fixturePlayer, lastWrite, mineAs, noOverflow, openApp, openPanel, setup } from './helpers';
+import { fixturePlayer, lastWrite, mineAs, noOverflow, openApp, openPanel, setup, openProfile } from './helpers';
 
 const status = (player_id: string, name: string, over: Record<string, unknown> = {}) => ({
   player_id, name, linked: false, linked_name: null, invite_token: null, invite_created: null, invite_expires: null, ...over,
@@ -42,8 +42,8 @@ test('Invito: con l\'accesso il link si accetta da solo e si arriva al profilo',
   expect(lastWrite(writes, 'accept_player_invite').body).toEqual({ tok: 'tok123' });
   await page.locator('#invite-go').click();
   await expect(page.locator('#invite-page')).toHaveCount(0);
-  expect(new URL(page.url()).pathname).toBe('/l/lega-di-prova/classifiche');
-  await expect(page.locator('#sheet-profile')).toBeVisible();
+  expect(new URL(page.url()).pathname).toBe('/l/lega-di-prova/profilo');
+  await expect(page.locator('#page-profilo.active')).toBeVisible();
   await expect(page.locator('#myplayer-name')).toHaveText('Marco');
 });
 
@@ -119,7 +119,7 @@ test('Unisci giocatori: se il database rifiuta si vede il motivo', async ({ page
 test('Questo sono io: scelgo il mio nome e mando la richiesta', async ({ page }) => {
   const writes = await setup(page, { rpc: { players_unclaimed: [{ player_id: 'p1', name: 'Luca' }, { player_id: 'p2', name: 'Marco' }] } });
   await openApp(page);
-  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await openProfile(page);
   await expect(page.locator('#myplayer-card')).toBeVisible();
   await page.locator('#myplayer-send').click();
   await expect(page.locator('#toast')).toContainText('Scegli il tuo nome');
@@ -135,7 +135,7 @@ test('Questo sono io: scelgo il mio nome e mando la richiesta', async ({ page })
 test('Questo sono io: richiesta in attesa', async ({ page }) => {
   await setup(page, { claims: [{ player_id: 'p1', league_id: 'x', status: 'pending', created_at: '2026-11-01', players: { name: 'Marco' } }] });
   await openApp(page);
-  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await openProfile(page);
   await expect(page.locator('#myplayer-pending')).toContainText('Marco');
   await expect(page.locator('#myplayer-select')).toHaveCount(0);
 });
@@ -145,7 +145,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
 test('Il mio profilo: da collegato non ci si può scollegare (lo fa solo l’amministratore)', async ({ page }) => {
   const writes = await setup(page, { mePlayer: fixturePlayer() });
   await openApp(page);
-  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await openProfile(page);
   await expect(page.locator('#myplayer-name')).toHaveText(fixturePlayer().name);
   await expect(page.locator('#myplayer-locked')).toContainText('amministratore');
   await expect(page.getByRole('button', { name: 'Scollega' })).toHaveCount(0);
@@ -155,7 +155,7 @@ test('Il mio profilo: da collegato non ci si può scollegare (lo fa solo l’amm
 test('Il mio profilo: cambio il mio nome', async ({ page }) => {
   const writes = await setup(page, { mePlayer: fixturePlayer(), rpc: { rename_my_player: 'Marco Rossi' } });
   await openApp(page);
-  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await openProfile(page);
   await page.locator('#my-rename').click();
   await page.locator('#app-modal-input').fill('Marco Rossi');
   await page.locator('#app-modal-ok').click();
@@ -167,7 +167,7 @@ test('Il mio profilo: cambio il mio nome', async ({ page }) => {
 test('Il mio profilo: se il nome è già usato si vede il motivo', async ({ page }) => {
   await setup(page, { mePlayer: fixturePlayer(), rpcError: { rename_my_player: 'Il nome «Caputo» è già usato da un altro giocatore (lega San Marcello)' } });
   await openApp(page);
-  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await openProfile(page);
   await page.locator('#my-rename').click();
   await page.locator('#app-modal-input').fill('Caputo');
   await page.locator('#app-modal-ok').click();
@@ -177,7 +177,7 @@ test('Il mio profilo: se il nome è già usato si vede il motivo', async ({ page
 test('Il mio profilo: cambio la mia foto (file e collegamento passano dalle funzioni sicure)', async ({ page }) => {
   const writes = await setup(page, { mePlayer: fixturePlayer() });
   await openApp(page);
-  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await openProfile(page);
   await page.locator('#my-photo-file').setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: PNG });
   await expect(page.locator('#toast')).toContainText('Foto aggiornata', { timeout: 15_000 });
   const me = fixturePlayer();
@@ -190,7 +190,7 @@ test('Il mio profilo: si vede la scheda del giocatore, uguale a quella della Ros
   const me = fixturePlayer();
   await setup(page, { mePlayer: me });
   await openApp(page);
-  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await openProfile(page);
   const card = page.locator('#profile-player-card');
   await expect(card).toBeVisible();
   await expect(card).toContainText(me.name);
@@ -212,7 +212,7 @@ test('Il mio profilo: si vede la scheda del giocatore, uguale a quella della Ros
 test('Questo sono io: se la tabella manca si spiega cosa fare', async ({ page }) => {
   await setup(page, { claims: 'missing' });
   await openApp(page);
-  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await openProfile(page);
   await expect(page.locator('#myplayer-error')).toContainText('20261102000000_questo_sono_io.sql');
 });
 
@@ -245,7 +245,7 @@ test('Profilo: riepilogo per lega, ultime partite e storico', async ({ page }) =
   const history = [{ changed_by_name: 'Luciano', changed_at: '2026-10-20T10:00:00Z', old_stats: [5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5], new_stats: [5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5], old_roles: ['MED'], new_roles: ['MED'] }];
   await setup(page, { mePlayer: { id: 'p1', name: 'Marco' }, profileRows, history });
   await openApp(page);
-  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await openProfile(page);
   await expect(page.locator('#profile-card')).toContainText('Marco');
   await expect(page.locator('.profile-league')).toHaveCount(2);
   await expect(page.locator('.profile-league').first()).toContainText('CalcioLercio');
@@ -261,7 +261,7 @@ test('Profilo: riepilogo per lega, ultime partite e storico', async ({ page }) =
 test('Profilo: senza partite', async ({ page }) => {
   await setup(page, { mePlayer: { id: 'p1', name: 'Marco' } });
   await openApp(page);
-  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await openProfile(page);
   await expect(page.locator('#profile-empty')).toBeVisible();
 });
 

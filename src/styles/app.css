@@ -59,9 +59,9 @@ header{background:linear-gradient(120deg,var(--green) 0%,var(--green-mid) 100%);
 .bottom-nav{display:flex;background:#fff;border-top:1px solid var(--gray2);position:fixed;left:0;right:0;bottom:0;z-index:200;padding-bottom:env(safe-area-inset-bottom,0)}
 @media(prefers-color-scheme:dark){html:not([data-theme="light"]) .bottom-nav{background:#181c24}}
 html[data-theme="dark"] .bottom-nav{background:#181c24}
-.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px 8px;cursor:pointer;border:none;background:transparent;color:var(--text3);font-size:10px;font-weight:600;border-top:2px solid transparent;transition:color var(--tr),border-color var(--tr)}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 4px 11px;cursor:pointer;border:none;background:transparent;color:var(--text3);border-top:2px solid transparent;transition:color var(--tr),border-color var(--tr)}
 .bnav-item .bni{display:flex;align-items:center;justify-content:center;line-height:1}
-.bnav-item .bni svg{width:24px;height:24px;transition:transform var(--tr),stroke-width var(--tr)}
+.bnav-item .bni svg{width:27px;height:27px;transition:transform var(--tr),stroke-width var(--tr)}
 .bnav-item.active{color:var(--green);border-top-color:var(--green)}
 .bnav-item.active .bni svg{transform:translateY(-1px) scale(1.08);stroke-width:2.4}
 

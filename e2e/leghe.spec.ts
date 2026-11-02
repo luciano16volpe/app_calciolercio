@@ -1,6 +1,6 @@
 // Leghe dal menu ☰: crea lega, entra con il codice, cambio lega (anche dall'indirizzo /l/<slug>), lega vuota con guida, esci.
 import { expect, test } from '@playwright/test';
-import { lastWrite, mineAs, noOverflow, openApp, openMenu, openPanel, setup } from './helpers';
+import { lastWrite, mineAs, noOverflow, openApp, openMenu, openPanel, setup, openProfile } from './helpers';
 
 test('Crea lega: controlli sul nome, poi codice d\'invito e lega scelta', async ({ page }) => {
   const writes = await setup(page, { rpc: { is_super_admin: true } }); // per ora le leghe le crea solo l'amministratore supremo
@@ -39,7 +39,7 @@ test('Entra con il codice: scrive il codice senza spazi e apre il profilo', asyn
   await page.locator('#jl-submit').click();
   await expect(page.locator('#toast')).toContainText('Sei dentro la lega', { timeout: 15_000 });
   expect(lastWrite(writes, 'join_league').body).toEqual({ code: 'abc12345' });
-  await expect(page.locator('#sheet-profile')).toBeVisible(); // si sceglie subito chi si è
+  await expect(page.locator('#page-profilo.active')).toBeVisible(); // si sceglie subito chi si è
 });
 
 test('Entra con il codice: un codice sbagliato mostra l\'errore del database', async ({ page }) => {
@@ -61,7 +61,7 @@ test('Cambio lega: dal menu e con l\'indirizzo /l/<slug>', async ({ page }) => {
   expect(await page.evaluate(() => localStorage.getItem('calciolercio-league'))).toBe('lega-di-prova');
   // le altre pagine non rompono la lega vuota e restano nell'indirizzo
   for (const [tab, path] of [['Partite', 'partite'], ['Classifiche', 'classifiche'], ['Rosa', 'rosa']] as const) {
-    await page.locator('.bottom-nav').getByText(tab, { exact: true }).click();
+    await page.locator('.bottom-nav').getByRole('button', { name: tab, exact: true }).click();
     await expect(page.getByText('Non riesco a caricare i dati')).toHaveCount(0);
     expect(new URL(page.url()).pathname).toBe(`/l/lega-di-prova/${path}`);
   }
@@ -111,7 +111,7 @@ test('Lega vuota: chi non è amministratore non vede la guida', async ({ page })
 test('Esci da una lega dal profilo', async ({ page }) => {
   const writes = await setup(page, { mine: mineAs('member', { owner_id: 'altro' }) });
   await openApp(page, '/l/lega-di-prova/rosa', 0);
-  await openPanel(page, '#menu-profile', '#sheet-profile');
+  await openProfile(page);
   await page.getByRole('button', { name: 'Esci da Lega di prova' }).click();
   await page.locator('#app-modal-ok').click();
   await expect(page.locator('#toast')).toContainText('Sei uscito dalla lega', { timeout: 15_000 });

@@ -1,7 +1,7 @@
 // Redazione: modifica solo titoli e descrizioni delle pagelle e carica la Gazzetta (voci del menu, scheda partita in «solo testo»).
 // Scheda giocatore (amministratore): stato del collegamento e invito. «Questo sono io»: solo i giocatori liberi.
 import { expect, test } from '@playwright/test';
-import { fixturePlayer, lastWrite, noOverflow, openApp, openMenu, setup } from './helpers';
+import { fixturePlayer, lastWrite, noOverflow, openApp, openMenu, setup, openProfile } from './helpers';
 
 test('Redazione: le voci del menu aprono la scheda della partita pronta per scrivere', async ({ page }) => {
   await setup(page, { publicRole: 'redazione' });
@@ -49,7 +49,7 @@ test('Redazione: salva solo titolo e descrizione (nessun voto nella richiesta)',
 test('Redazione: dalla scheda di una partita c\'è «Scrivi le pagelle»; l\'amministratore ha la modifica completa', async ({ page }) => {
   await setup(page, { publicRole: 'redazione' });
   await openApp(page);
-  await page.locator('.bottom-nav').getByText('Partite', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Partite', exact: true }).click();
   await page.locator('#last-match .card').click();
   const modal = page.locator('#match-modal');
   await expect(modal.locator('#edit-toggle-btn')).toHaveCount(0);
@@ -60,7 +60,7 @@ test('Redazione: dalla scheda di una partita c\'è «Scrivi le pagelle»; l\'amm
 test('Redazione: un membro semplice non vede né modifica né «Scrivi le pagelle»', async ({ page }) => {
   await setup(page, { publicRole: 'member' });
   await openApp(page);
-  await page.locator('.bottom-nav').getByText('Partite', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Partite', exact: true }).click();
   await page.locator('#last-match .card').click();
   const modal = page.locator('#match-modal');
   await expect(modal).toBeVisible();
@@ -71,8 +71,7 @@ test('Redazione: un membro semplice non vede né modifica né «Scrivi le pagell
 test('Questo sono io: si sceglie solo tra i giocatori liberi (elenco dal database)', async ({ page }) => {
   const writes = await setup(page, { rpc: { players_unclaimed: [{ player_id: 'p1', name: 'Luca' }, { player_id: 'p2', name: 'Marco' }] } });
   await openApp(page);
-  await openMenu(page);
-  await page.locator('#menu-profile').click();
+  await openProfile(page);
   await expect(page.locator('#myplayer-select option')).toHaveText(['— scegli —', 'Luca', 'Marco']);
   await page.locator('#myplayer-select').selectOption({ label: 'Marco' });
   await page.locator('#myplayer-send').click();
@@ -83,8 +82,7 @@ test('Questo sono io: si sceglie solo tra i giocatori liberi (elenco dal databas
 test('Questo sono io: se sono tutti collegati si spiega', async ({ page }) => {
   await setup(page, { rpc: { players_unclaimed: [] } });
   await openApp(page);
-  await openMenu(page);
-  await page.locator('#menu-profile').click();
+  await openProfile(page);
   await expect(page.locator('#myplayer-none')).toContainText('già un account collegato');
 });
 

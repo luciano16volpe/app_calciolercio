@@ -77,10 +77,10 @@ describe('costanti', () => {
     expect(FORM_STATES).toEqual(legacy.FORM_STATES);
     expect(PG_CHART_MAX).toBe(legacy.PG_CHART_MAX);
   });
-  it('colore del voto, stagione abbreviata, formato data', () => {
+  it('colore del voto, stagione (per intero, senza sigle), formato data', () => {
     for (const v of [1, 5, 5.49, 5.5, 6, 6.49, 6.5, 8, 10]) expect(voteColor(v)).toBe(legacy.pgVoteCol(v));
-    for (const s of ['Estate 2026', 'Autunno 2026', 'Inverno 2026/27', 'Primavera 2025', 'boh']) expect(shortSeason(s)).toBe(legacy.shortSeason(s));
-    expect(shortSeason('Estate 2026')).toBe('Est 26');
+    for (const s of ['Estate 26', 'Autunno 26', 'Inverno 26', 'Primavera 25', 'boh']) expect(shortSeason(s)).toBe(legacy.shortSeason(s));
+    expect(shortSeason('Estate 26')).toBe('Estate 26'); // niente più sigle («Est 26»): la stagione si scrive per intero
   });
 });
 

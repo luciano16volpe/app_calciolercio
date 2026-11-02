@@ -9,17 +9,24 @@ import { recorderSource } from './canvasRecorder';
  * Cambiamenti VOLUTI rispetto alla vecchia app (decisioni di novembre 2026). Il confronto con la vecchia app resta fedele su tutto il resto:
  * si applicano al suo testo prima di caricarla, così i test provano che il nuovo codice fa esattamente quello che ha deciso Luciano.
  */
-const DELIBERATE: Array<[string, string]> = [
+const DELIBERATE: Array<[string | RegExp, string]> = [
   // fasce della figurina: Bronzo 51–59, Cacca 41–50, sotto: MARCIO VOMITO
   ["r>=55?'bronze':r>=40?'cacca':'marcia'", "r>=51?'bronze':r>=41?'cacca':'marcia'"],
   ["marcia:{label:'MARCIA',", "marcia:{label:'MARCIO VOMITO',"],
   // stato di forma: ultime 2 pagelle (non 3)
   ['a.votes.slice(-3).reduce((s,x)=>s+x.v,0)/3 - a.voteAvg', 'a.votes.slice(-2).reduce((s,x)=>s+x.v,0)/2 - a.voteAvg'],
+  // stagioni scritte «Estate 26» (anno a due cifre; l'inverno con l'anno di inizio), senza sigle («Est 26»)
+  ["label:'Primavera '+y,", "label:'Primavera '+String(y).slice(2),"],
+  ["label:'Estate '+y,", "label:'Estate '+String(y).slice(2),"],
+  ["label:'Autunno '+y,", "label:'Autunno '+String(y).slice(2),"],
+  ['label:`Inverno ${sy}/${String(sy+1).slice(2)}`', 'label:`Inverno ${String(sy).slice(2)}`'],
+  [/const seasonShort=label=>label\.replace\(.*\);/, 'const seasonShort=label=>label;'],
+  [/const shortSeason=s=>String\(s\)\.replace\(.*\);/, 'const shortSeason=s=>String(s);'],
   // riquadri del voto: rosso sotto 5,5 come il badge PAG
   ["if(v<5){ bg='#fde8e8'", "if(v<5.5){ bg='#fde8e8'"],
 ];
 const html = DELIBERATE.reduce((h, [from, to]) => {
-  if (!h.includes(from)) throw new Error(`Cambiamento voluto non applicabile (legacy cambiato?): ${from}`);
+  if (typeof from === 'string' ? !h.includes(from) : !from.test(h)) throw new Error(`Cambiamento voluto non applicabile (legacy cambiato?): ${String(from)}`);
   return h.replace(from, to);
 }, readFileSync(join(process.cwd(), 'legacy', 'index.html'), 'utf8'));
 

@@ -1,55 +1,14 @@
-// Pannelli del menu: Il mio profilo, Privacy (con cancellazione dell'account), Aiuto, guida "Aggiungi i giocatori".
+// Pannelli del menu: Privacy (con cancellazione dell'account), Aiuto, guida "Aggiungi i giocatori".
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useAuth } from '../../app/auth';
-import { useConfirm, usePrompt } from '../../app/Dialogs';
-import { setSelectedLeague } from '../../app/league';
+import { usePrompt } from '../../app/Dialogs';
 import { Sheet } from '../../app/Sheet';
 import { useToast } from '../../app/Toast';
 import { deleteMyAccount } from '../../data/account';
-import { addPlayersFromMyLeagues, leaveLeague, MY_LEAGUES_KEY, useMyLeagues } from '../../data/leagues';
+import { addPlayersFromMyLeagues, useMyLeagues } from '../../data/leagues';
 import { LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
-import { MyPlayerCard } from '../impostazioni/MyPlayerCard';
 import { PRIVACY_SECTIONS } from './privacyText';
-
-export function ProfilePanel({ data, onClose, onOpenMatch }: { data: LeagueData; onClose: () => void; onOpenMatch: (matchId: string) => void }) {
-  const { user } = useAuth();
-  const toast = useToast();
-  const confirm = useConfirm();
-  const qc = useQueryClient();
-  const leagues = useMyLeagues(user?.id ?? null);
-  const mine = (leagues.data ?? []).filter((l) => l.role);
-  const leave = async (id: string, slug: string, name: string) => {
-    if (!user) return;
-    const ok = await confirm({ icon: '🚪', title: 'Uscire dalla lega?', lines: [`Non vedrai più "${name}", a meno che ti invitino di nuovo.`], okLabel: 'Esci', danger: true });
-    if (!ok) return;
-    try {
-      await leaveLeague(id, user.id);
-      if (slug === data.league.slug) setSelectedLeague(null);
-      await Promise.all([qc.invalidateQueries({ queryKey: MY_LEAGUES_KEY }), qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY })]);
-      toast('Sei uscito dalla lega');
-    } catch (e) {
-      toast('Errore: ' + (e as Error).message);
-    }
-  };
-  return (
-    <Sheet title="Il mio profilo" onClose={onClose} id="sheet-profile">
-      <MyPlayerCard data={data} onOpenMatch={(id) => { onClose(); onOpenMatch(id); }} />
-      <MyPlayerCard data={data} bottom />
-      {mine.length ? (
-        <div className="card" id="leave-card" style={{ marginTop: 12 }}>
-          <div className="section-header">🚪 Uscire da una lega</div>
-          {mine.map((l) => (
-            <div key={l.id} className="row-line">
-              <div style={{ flex: 1, fontSize: 13, fontWeight: 700 }}>{l.name}</div>
-              <button type="button" className="mini-btn danger" onClick={() => void leave(l.id, l.slug, l.name)} aria-label={`Esci da ${l.name}`}>Esci</button>
-            </div>
-          ))}
-        </div>
-      ) : null}
-    </Sheet>
-  );
-}
 
 export function PrivacyPanel({ onClose, onDeleted }: { onClose: () => void; onDeleted: () => void }) {
   const { user } = useAuth();

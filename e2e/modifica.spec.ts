@@ -14,7 +14,7 @@ async function login(page: Page, role: 'admin' | 'member' = 'admin') {
 async function openLastMatch(page: Page) {
   await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
-  await page.locator('.bottom-nav').getByText('Partite', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Partite', exact: true }).click();
   await page.locator('#last-match .card').click();
   return page.locator('#match-modal');
 }
@@ -25,7 +25,7 @@ async function generateTeams(page: Page) {
   await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   await page.evaluate(() => localStorage.removeItem('calciolercio-format'));
-  await page.locator('.bottom-nav').getByText('Gioca', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Gioca', exact: true }).click();
   const g = page.locator('#page-partita');
   await g.locator('button', { hasText: 'Seleziona i primi' }).click();
   await g.locator('button', { hasText: 'Genera squadre bilanciate' }).click();
@@ -147,18 +147,18 @@ test('Gioca: da membro la scheda non c’è, nemmeno aprendo il suo indirizzo', 
   await login(page, 'member');
   await page.goto('/l/san-marcello/gioca');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
-  await expect(page.locator('.bottom-nav').getByText('Gioca', { exact: true })).toHaveCount(0);
+  await expect(page.locator('.bottom-nav').getByRole('button', { name: 'Gioca', exact: true })).toHaveCount(0);
   await expect(page.locator('#page-partita')).toHaveCount(0);
-  await expect(page.locator('#page-classifiche')).toHaveClass(/active/); // si torna alla pagina iniziale
-  await expect.poll(() => new URL(page.url()).pathname).toBe('/l/san-marcello/classifiche');
+  await expect(page.locator('#page-profilo')).toHaveClass(/active/); // si torna alla pagina iniziale
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/l/san-marcello/profilo');
 });
 
 test('Gioca: l’amministratore la vede, anche aprendo il suo indirizzo', async ({ page }) => {
   await login(page, 'admin');
   await page.goto('/l/san-marcello/gioca');
   await expect(page.locator('#page-partita')).toHaveClass(/active/, { timeout: 20_000 });
-  await expect(page.locator('.bottom-nav').getByText('Gioca', { exact: true })).toBeVisible();
-  await expect(page.locator('.bnav-item.active')).toHaveText('Gioca');
+  await expect(page.locator('.bottom-nav').getByRole('button', { name: 'Gioca', exact: true })).toBeVisible();
+  await expect(page.locator('.bnav-item.active')).toHaveAttribute('aria-label', 'Gioca');
 });
 
 test('WhatsApp: si incolla il messaggio, si controllano gli abbinamenti e si assegnano titolo e descrizione', async ({ page }) => {

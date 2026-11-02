@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
 async function openPartite(page: Page) {
   await page.goto('/');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
-  await page.locator('.bottom-nav').getByText('Partite', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Partite', exact: true }).click();
   return page.locator('#page-partite');
 }
 
@@ -95,13 +95,13 @@ test('Collegamenti verso la partita: dai record e dalle pagelle del giocatore', 
   await page.goto('/');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   // dai Record
-  await page.locator('.bottom-nav').getByText('Classifiche', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Classifiche', exact: true }).click();
   await page.locator('#cl-tabs .chip', { hasText: 'Record' }).click();
   await page.locator('#scorers-list .cl-date').first().click();
   await expect(page.locator('#match-modal-title')).toContainText('📅');
   await page.locator('#match-modal button', { hasText: '✕' }).first().click();
   // dalla scheda giocatore → "Le pagelle di…" → "Apri la partita"
-  await page.locator('.bottom-nav').getByText('Rosa', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
   await page.locator('.player-header', { hasText: /^.*Peppe/ }).first().click();
   await page.locator('.pg-last').click();
   await page.locator('#pl-dialog .pl-item').first().click(); // il pulsante compare quando la pagella è aperta

@@ -19,9 +19,8 @@ export const FUT_SHORT: Record<string, string> = {
   coppia: 'Coppia', flop: 'Flop media', cucchiaio: 'Cucchiaio', rigori: 'Rigori', autogol: 'Autogol',
   occMedia: 'Top occas.', occBomber: 'Gettone', occFortuna: 'Portafortuna', occPendolare: 'Pendolare',
 };
-/** "Estate 2026" → "Est 26". */
-export const seasonShort = (label: string): string =>
-  label.replace('Primavera', 'Pri').replace('Estate', 'Est').replace('Autunno', 'Aut').replace('Inverno', 'Inv').replace(/ 20(\d\d)/, ' $1').replace(/\/(\d\d)$/, '/$1');
+/** La stagione si scrive sempre per intero e con l'anno a due cifre («Estate 26»): niente più sigle. */
+export const seasonShort = (label: string): string => label;
 
 /** Tutto ciò che serve a disegnare la figurina di un giocatore. */
 export interface FutCardModel {

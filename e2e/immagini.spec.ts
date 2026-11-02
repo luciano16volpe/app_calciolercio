@@ -16,7 +16,7 @@ async function openApp(page: Page) {
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   await page.evaluate(() => localStorage.removeItem('calciolercio-format'));
 }
-const nav = (page: Page, name: string) => page.locator('.bottom-nav').getByText(name, { exact: true }).click();
+const nav = (page: Page, name: string) => page.locator('.bottom-nav').getByRole('button', { name: name, exact: true }).click();
 
 /** L'immagine mostrata nel visualizzatore: misure vere e, se richiesto, file salvato. */
 async function viewerImage(page: Page, label: string, testInfo: { project: { name: string } }) {

@@ -13,7 +13,7 @@ async function openGioca(page: Page) {
   await page.evaluate(() => localStorage.removeItem('calciolercio-format'));
   await page.reload();
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
-  await page.locator('.bottom-nav').getByText('Gioca', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Gioca', exact: true }).click();
   return page.locator('#page-partita');
 }
 
@@ -52,7 +52,7 @@ test('Gioca: formato, convocati e contatore', async ({ page }) => {
   await noOverflow(page);
   // il formato resta ricordato
   await page.reload();
-  await page.locator('.bottom-nav').getByText('Gioca', { exact: true }).click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Gioca', exact: true }).click();
   await expect(page.locator('#sz-a')).toHaveText('7');
 });
 

@@ -9,7 +9,7 @@ import { createPlayer } from './data/mutations';
 import { useQueryClient } from '@tanstack/react-query';
 import { ImageProvider } from './app/ImageViewer';
 import { ToastProvider } from './app/Toast';
-import { LEAGUE_QUERY_KEY, NoLeagueError, rosterView, useLeagueData, type LeagueData } from './data/queries';
+import { LEAGUE_QUERY_KEY, NoLeagueError, photoUrl, rosterView, useLeagueData, type LeagueData } from './data/queries';
 import { ClassifichePage } from './features/classifiche/ClassifichePage';
 import { GiocaPage } from './features/gioca/GiocaPage';
 import { SettingsPage } from './features/impostazioni/SettingsPage';
@@ -25,9 +25,11 @@ import { LeagueSettingsPanel } from './features/menu/LeagueSettingsPanel';
 import { ClaimsPanel, InvitesPanel, MergePanel } from './features/menu/LinkPanels';
 import { MembersPanel } from './features/menu/MembersPanel';
 import { MenuDrawer, type Panel } from './features/menu/MenuDrawer';
-import { EmptyLeagueGuide, HelpPanel, PrivacyPanel, ProfilePanel } from './features/menu/OtherPanels';
+import { EmptyLeagueGuide, HelpPanel, PrivacyPanel } from './features/menu/OtherPanels';
 import { MatchCard } from './features/partite/MatchCard';
 import { PartitePage } from './features/partite/PartitePage';
+import { useMyPlayerIn } from './features/partite/parts';
+import { ProfiloPage } from './features/profilo/ProfiloPage';
 import { GazArchive, GazViewer, PagelleTextDialog, type MatchActions } from './features/partite/parts';
 import { PlayerCard } from './features/player/PlayerCard';
 import { AppHeader } from './app/AppHeader';
@@ -135,8 +137,11 @@ function Shell() {
   const data = q.data;
   // «Gioca» (nuova partita) è solo per gli amministratori della lega: agli altri la scheda non c'è, e l'indirizzo /gioca li porta alla pagina iniziale
   const { isAdmin, ready } = useRole(data?.league.id);
+  const me = useMyPlayerIn(data); // la mia faccia (o foto) nel footer
   // pagina iniziale: Classifiche; una lega ancora vuota si apre sulla Rosa (lì c'è la guida «Aggiungi i giocatori»)
-  const wanted: PageName = chosen ?? (data && !rosterView(data).dataset.players.length ? 'rosa' : HOME_PAGE);
+  const [autoPage, setAutoPage] = useState<PageName | null>(null); // scelta automatica fatta una volta sola, all'apertura
+  if (data && !chosen && autoPage === null) setAutoPage(!rosterView(data).dataset.players.length ? 'rosa' : HOME_PAGE);
+  const wanted: PageName = chosen ?? autoPage ?? HOME_PAGE;
   const page: PageName = wanted === 'partita' && ready && !isAdmin ? HOME_PAGE : wanted;
   const go = (p: PageName) => {
     setChosen(p);
@@ -174,6 +179,9 @@ function Shell() {
       <PullToRefresh />
       <InstallHint />
       <PushPrompt />
+      <div id="page-profilo" className={`page${page === 'profilo' ? ' active' : ''}`}>
+        {data ? <ProfiloPage data={data} active={page === 'profilo'} act={act} /> : <Loading q={q} onPanel={setPanel} />}
+      </div>
       <div id="page-rosa" className={`page${page === 'rosa' ? ' active' : ''}`}>
         {data ? <RosaGate data={data} onOpen={openPlayerFromRosa} /> : <Loading q={q} onPanel={setPanel} />}
       </div>
@@ -183,14 +191,14 @@ function Shell() {
         </div>
       ) : null}
       <div id="page-partite" className={`page${page === 'partite' ? ' active' : ''}`}>
-        {data ? <PartitePage data={data} act={act} onArchive={() => setView({ kind: 'gazArchive' })} /> : <Loading q={q} onPanel={setPanel} />}
+        {data ? <PartitePage data={data} act={act} active={page === 'partite'} onArchive={() => setView({ kind: 'gazArchive' })} /> : <Loading q={q} onPanel={setPanel} />}
       </div>
       <div id="page-classifiche" className={`page${page === 'classifiche' ? ' active' : ''}`}>
         {data ? <ClassifichePage data={data} onOpenPlayer={openPlayer} onOpenMatch={openMatch} /> : <Loading q={q} onPanel={setPanel} />}
       </div>
       <div id="page-settings" className={`page${page === 'settings' ? ' active' : ''}`}><SettingsPage data={data} /></div>
 
-      <BottomNav page={page} onGo={go} canPlay={isAdmin} />
+      <BottomNav page={page} onGo={go} canPlay={isAdmin} me={me ? { photo: photoUrl(data?.photos[me.id]), initial: me.name.slice(0, 1).toUpperCase() } : null} />
 
       {data && view?.kind === 'player' ? (
         <PlayerCardGate
@@ -212,16 +220,15 @@ function Shell() {
       ) : null}
       {data && ptDialog ? <PagelleTextDialog data={data} matchId={ptDialog} onClose={() => setPtDialog(null)} /> : null}
 
-      {menuOpen ? <MenuDrawer data={data} onClose={closeMenu} onOpenPanel={setPanel} onGoSettings={() => go('settings')} onOpenMatch={openMatch} /> : null}
+      {menuOpen ? <MenuDrawer data={data} onClose={closeMenu} onOpenPanel={(p) => (p === 'profile' ? go('profilo') : setPanel(p))} onGoSettings={() => go('settings')} onOpenMatch={openMatch} /> : null}
       {panel === 'create-league' ? <CreateLeagueSheet onClose={closePanel} /> : null}
-      {panel === 'join-league' ? <JoinLeagueSheet onClose={closePanel} onJoined={() => setPanel('profile')} /> : null}
+      {panel === 'join-league' ? <JoinLeagueSheet onClose={closePanel} onJoined={() => go('profilo')} /> : null}
       {panel === 'privacy' ? <PrivacyPanel onClose={closePanel} onDeleted={() => { setSelectedLeague(null); closePanel(); }} /> : null}
       {panel === 'help' ? <HelpPanel onClose={closePanel} /> : null}
       {data && panel === 'game-settings' ? <GameSettingsGate data={data} onClose={closePanel} /> : null}
       {panel === 'audit' ? <AuditPanel onClose={closePanel} /> : null}
       {panel === 'platform-leagues' ? <PlatformLeaguesPanel onClose={closePanel} /> : null}
       {panel === 'platform-users' ? <PlatformUsersPanel onClose={closePanel} /> : null}
-      {data && panel === 'profile' ? <ProfilePanel data={data} onClose={closePanel} onOpenMatch={openMatch} /> : null}
       {data && panel === 'members' ? <MembersPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'invites' ? <InvitesPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'claims' ? <ClaimsPanel data={data} onClose={closePanel} /> : null}
@@ -238,7 +245,7 @@ function Shell() {
             if (a) setSelectedLeague(a.leagueSlug);
             setInviteToken(null);
             navigate(a ? buildPath(a.leagueSlug, HOME_PAGE) : '/', true);
-            if (a) setPanel('profile');
+            if (a) go('profilo');
           }}
         />
       ) : null}

@@ -50,8 +50,8 @@ export function playerTrophies(
   return { awards, feats };
 }
 
-/** "Estate 2026" → "Est 26". */
-export const shortSeason = (s: string): string => String(s).replace(/^(\S{3})\S*\s+20(\d{2})/, '$1 $2');
+/** La stagione si scrive sempre per intero e con l'anno a due cifre («Estate 26»): niente più sigle. */
+export const shortSeason = (s: string): string => String(s);
 
 export interface BachecaView {
   /** nessun trofeo, nessuna impresa */
