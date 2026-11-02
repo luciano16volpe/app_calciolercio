@@ -1,7 +1,7 @@
 // Schermate in un telefono emulato (iPhone, Android e uno schermo piccolo da 360 px).
 // Leggono i dati veri dalla lega pubblica su Supabase: serve la rete.
 import { expect, test } from '@playwright/test';
-import { fixturePlayer, noOverflow, openMenu, setup } from './helpers';
+import { fixturePlayer, noOverflow, setup } from './helpers';
 
 // l'app si apre solo con l'accesso: la prova entra come membro della lega pubblica vera (accesso simulato, letture vere)
 test.beforeEach(async ({ page }) => {
@@ -176,41 +176,38 @@ test('Ricaricare: niente rotellina in alto; si tira la pagina verso il basso e i
   await expect(page.locator('#ptr')).toHaveCount(0);
 });
 
-test('Intestazione: ☰ e logo (con la lega sotto) a sinistra, CALCIO LERCIO accanto, niente faccia', async ({ page }) => {
+test('Intestazione: logo e ☰ a sinistra, CALCIO LERCIO al centro, nome della lega a destra', async ({ page }) => {
   await setup(page, { mePlayer: fixturePlayer() });
   await page.goto('/');
   const btn = page.locator('#menu-button');
   await expect(btn).toBeVisible({ timeout: 20_000 });
-  await expect(btn).toHaveText('☰'); // anche con un giocatore collegato: la faccia sta solo nel footer
+  await expect(btn).toHaveText('☰');
   await expect(page.locator('#header-ovr, .hf-av, .hf')).toHaveCount(0);
   await expect(page.locator('.app-title')).toHaveText('CALCIO LERCIO');
-  // il carattere sportivo è caricato dall'app (non da siti esterni)
   expect(await page.evaluate(() => document.fonts.check('26px "Bebas Neue"'))).toBe(true);
-  // il logo viene dopo il ☰, la lega sta sotto il logo, il titolo viene dopo
-  await expect(page.locator('#league-pill')).toBeVisible();
-  const logo = await page.locator('.app-logo img').boundingBox();
-  const pill = await page.locator('#league-pill').boundingBox();
-  const menu = await btn.boundingBox();
-  const title = await page.locator('.app-title').boundingBox();
-  const vw = page.viewportSize()!.width;
-  expect(logo!.x).toBeGreaterThan(menu!.x + menu!.width - 1);
-  expect(pill!.y).toBeGreaterThan(logo!.y + logo!.height - 2);
   await expect(page.locator('#league-pill')).toContainText('San Marcello');
-  expect(title!.x).toBeGreaterThan(logo!.x + logo!.width); // il titolo sta tra il logo e il bordo destro
-  expect(title!.x + title!.width).toBeLessThanOrEqual(vw);
+  const logo = (await page.locator('.app-logo').boundingBox())!;
+  const menu = (await btn.boundingBox())!;
+  const title = (await page.locator('.app-title').boundingBox())!;
+  const pill = (await page.locator('#league-pill').boundingBox())!;
+  expect(logo.x).toBeLessThan(20); // il logo è tutto a sinistra
+  expect(menu.x).toBeGreaterThan(logo.x + logo.width - 1); // il ☰ gli sta accanto
+  expect(title.x).toBeGreaterThan(menu.x + menu.width);
+  expect(pill.x).toBeGreaterThan(title.x); // la lega è a destra
+  expect(pill.x + pill.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   // nessun elemento fuori dallo schermo, nemmeno a 320 px
   await page.setViewportSize({ width: 320, height: 700 });
   await noOverflow(page);
-  const head = await page.locator('header').boundingBox();
-  for (const sel of ['#menu-button', '.app-logo', '.app-title']) {
-    const b = await page.locator(sel).boundingBox();
-    expect(b!.x).toBeGreaterThanOrEqual(-0.5);
-    expect(b!.x + b!.width).toBeLessThanOrEqual(head!.width + 0.5);
+  const head = (await page.locator('header').boundingBox())!;
+  for (const sel of ['.app-logo', '#menu-button', '.app-title', '#league-pill']) {
+    const b = (await page.locator(sel).boundingBox())!;
+    expect(b.x).toBeGreaterThanOrEqual(-0.5);
+    expect(b.x + b.width).toBeLessThanOrEqual(head.width + 0.5);
   }
-  // il logo e il titolo riportano al profilo; ☰ apre il menu e non c'è più «Il mio profilo» dentro
+  // il logo riporta al profilo; il nome della lega apre il menu per cambiarla
   await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
-  await page.locator('.app-logo img').click();
+  await page.locator('.app-logo').click();
   await expect(page.locator('#page-profilo.active')).toBeVisible();
-  await openMenu(page);
-  await expect(page.locator('#menu-profile')).toHaveCount(0);
+  await page.locator('#league-pill').click();
+  await expect(page.locator('#menu-drawer')).toBeVisible();
 });
