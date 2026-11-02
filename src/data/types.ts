@@ -352,6 +352,32 @@ export type Database = {
           },
         ]
       }
+      match_stamps: {
+        Row: {
+          match_id: string
+          ratings_text_at: string | null
+          result_at: string | null
+        }
+        Insert: {
+          match_id: string
+          ratings_text_at?: string | null
+          result_at?: string | null
+        }
+        Update: {
+          match_id?: string
+          ratings_text_at?: string | null
+          result_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_stamps_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           created_at: string
@@ -632,6 +658,30 @@ export type Database = {
         }
         Relationships: []
       }
+      push_prefs: {
+        Row: {
+          gazzetta: boolean
+          ratings: boolean
+          reminder: boolean
+          result: boolean
+          user_id: string
+        }
+        Insert: {
+          gazzetta?: boolean
+          ratings?: boolean
+          reminder?: boolean
+          result?: boolean
+          user_id: string
+        }
+        Update: {
+          gazzetta?: boolean
+          ratings?: boolean
+          reminder?: boolean
+          result?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       push_sent: {
         Row: {
           kind: string
@@ -870,6 +920,15 @@ export type Database = {
         Returns: undefined
       }
       my_player_id: { Args: never; Returns: string }
+      my_push_prefs: {
+        Args: never
+        Returns: {
+          gazzetta: boolean
+          ratings: boolean
+          reminder: boolean
+          result: boolean
+        }[]
+      }
       norm_name: { Args: { t: string }; Returns: string }
       player_history: {
         Args: { p: string }
@@ -891,6 +950,26 @@ export type Database = {
         }[]
       }
       propose_admin: { Args: { l: string; u: string }; Returns: string }
+      push_due: {
+        Args: { p_today?: string }
+        Returns: {
+          auth: string
+          endpoint: string
+          kind: string
+          league_name: string
+          league_slug: string
+          match_date: string
+          match_id: string
+          p256dh: string
+          place: string
+          play_time: string
+          score_a: number
+          score_b: number
+          team: string
+          user_id: string
+        }[]
+      }
+      push_events_run: { Args: never; Returns: undefined }
       push_public_key: { Args: never; Returns: string }
       push_reminder_run: { Args: never; Returns: undefined }
       push_reminders_due: {
@@ -942,6 +1021,10 @@ export type Database = {
         Returns: undefined
       }
       set_my_photo: { Args: { p_path: string }; Returns: undefined }
+      set_push_pref: {
+        Args: { p_kind: string; p_on: boolean }
+        Returns: undefined
+      }
       slugify: { Args: { t: string }; Returns: string }
       transfer_league_ownership: {
         Args: { l: string; new_owner: string }

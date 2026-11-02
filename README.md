@@ -15,6 +15,8 @@ classifiche, albo d'oro, Gazzette. Nuova versione multi-lega su Supabase.
 
 ## Notifiche push (promemoria della mattina della partita)
 - Alle 7 (ora italiana) del giorno della partita, `pg_cron` sveglia la funzione `push` (`supabase/functions/push`), che manda a chi è in squadra ora, luogo e colore della squadra.
+- Ogni minuto `pg_cron` controlla se c'è altro da mandare (`push_due()`): **risultato inserito** (1 min dopo), **pagelle pronte** (2 min dopo l'ultima modifica, solo se tutte le pagelle con voto hanno testo), **Gazzetta caricata** (30 s dopo). Solo ai giocatori in quella partita, solo per partite degli ultimi 3 giorni, mai per le importazioni, una volta sola per persona e partita. Ognuno ha un interruttore per tipo (Impostazioni → Notifiche).
+- Dopo aver modificato la funzione: `npm run push:deploy` (da un terminale normale, chiede conferma).
 - **Configurazione, una volta sola:** `npm run push:setup` (genera le chiavi, le mette nei «Secrets» di Supabase e nel database, pubblica la funzione). Le chiavi non vanno mai nel codice.
 - Ognuno le attiva da ☰ → Impostazioni app → Notifiche (su iPhone serve l'app installata nella schermata Home); lì c'è anche «Invia una notifica di prova».
-- Prove: `tests/push-reminder.test.ts` (testo), `supabase/tests/push.sql` (database), `e2e/impostazioni.spec.ts` (scheda Notifiche).
+- Prove: `tests/push-reminder.test.ts` (testi), `supabase/tests/push.sql` e `supabase/tests/push_eventi.sql` (database), `e2e/impostazioni.spec.ts` (scheda Notifiche).
