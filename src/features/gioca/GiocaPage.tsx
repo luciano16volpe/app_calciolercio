@@ -315,11 +315,12 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
             const p = dataset.players[i]!;
             const sel = live.includes(p.id);
             const pag = pagInfo(playerRatingAvg(playerSeason(dataset, p, all)).avg);
+            const photo = photoUrl(data.photos[p.id]);
             return (
               <div key={p.id} className={`conv-item${sel ? ' sel' : ''}`} onClick={() => setSelected(sel ? live.filter((x) => x !== p.id) : [...live, p.id])}>
                 <div className="conv-avatar-stack">
                   <span className={`pag-badge ${pag.cls}`} title="Media pagelle">{pag.label}</span>
-                  <div className={`conv-avatar avatar-ini ${avatarClass(p.roles)}`}>{initials(p.name)}</div>
+                  <div className={`conv-avatar avatar-ini ${avatarClass(p.roles)}${photo ? ' has-photo' : ''}`} style={photo ? { backgroundImage: `url('${photo}')` } : undefined}>{initials(p.name)}</div>
                   <span className="ovr-badge">OVR {calcOvr(p.stats, weights).toFixed(1)}</span>
                 </div>
                 <div className="conv-info">

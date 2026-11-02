@@ -391,6 +391,7 @@ export type Database = {
           play_time: string | null
           pred: number | null
           pred_rank: number | null
+          ratings_skipped: boolean
           score_a: number | null
           score_b: number | null
         }
@@ -406,6 +407,7 @@ export type Database = {
           play_time?: string | null
           pred?: number | null
           pred_rank?: number | null
+          ratings_skipped?: boolean
           score_a?: number | null
           score_b?: number | null
         }
@@ -421,6 +423,7 @@ export type Database = {
           play_time?: string | null
           pred?: number | null
           pred_rank?: number | null
+          ratings_skipped?: boolean
           score_a?: number | null
           score_b?: number | null
         }
@@ -1023,6 +1026,10 @@ export type Database = {
       set_my_photo: { Args: { p_path: string }; Returns: undefined }
       set_push_pref: {
         Args: { p_kind: string; p_on: boolean }
+        Returns: undefined
+      }
+      set_ratings_skipped: {
+        Args: { p_match: string; p_skip: boolean }
         Returns: undefined
       }
       slugify: { Args: { t: string }; Returns: string }

@@ -163,3 +163,9 @@ export async function removeGazzetta(matchId: string, path: string): Promise<voi
   if (error) throw fail('Gazzetta', error);
   await supabase.storage.from('gazzette').remove([path, path.replace(/\.jpg$/, '-t.jpg')]);
 }
+
+/** Salta (o rimette) le pagelle di una partita: esce dall'elenco «Pagelle da scrivere». Lo fanno amministratore e redazione. */
+export async function setRatingsSkipped(matchId: string, skip: boolean): Promise<void> {
+  const { error } = await supabase.rpc('set_ratings_skipped', { p_match: matchId, p_skip: skip });
+  if (error) throw fail('pagelle saltate', error);
+}

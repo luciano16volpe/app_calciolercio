@@ -165,6 +165,10 @@ export function describeRow(row: AuditRow): string[] {
       if (pair(ch, 'notes')) out.push(`ha cambiato la descrizione della ${label}`);
       const dt = pair(ch, 'date');
       if (dt) out.push(`ha cambiato la data della partita da ${String(dt[0])} a ${String(dt[1])}`);
+      if (pair(ch, 'play_time')) out.push(`ha cambiato l’ora della ${label}`);
+      if (pair(ch, 'place')) out.push(`ha cambiato il luogo della ${label}`);
+      const sk = pair(ch, 'ratings_skipped');
+      if (sk) out.push(sk[1] ? `ha saltato le pagelle della ${label}` : `ha rimesso da scrivere le pagelle della ${label}`);
       return list(out);
     }
     case 'match_players.insert': { const s = splitLabel(label); return [`ha aggiunto ${s.first} alla ${s.rest}`]; }
@@ -197,7 +201,7 @@ function splitArrow(label: string): { player: string; who: string } {
 const FIELD_NAME: Record<string, string> = {
   rating: 'voto', goals: 'gol', assist: 'assist', autogol: 'autogol', meta: 'meta', rigori_sbagliati: 'rigori sbagliati', titolo: 'titolo',
   descrizione: 'descrizione', team: 'squadra', position: 'posizione', name: 'nome', roles: 'ruoli', stats: 'statistiche', photo_path: 'foto',
-  score_a: 'gol Blu', score_b: 'gol Bianchi', notes: 'descrizione', date: 'data', play_time: 'ora', place: 'luogo', is_public: 'pubblica', invite_code: 'codice d’invito',
+  score_a: 'gol Blu', score_b: 'gol Bianchi', notes: 'descrizione', date: 'data', play_time: 'ora', place: 'luogo', ratings_skipped: 'pagelle saltate', is_public: 'pubblica', invite_code: 'codice d’invito',
   owner_id: 'creatore', role: 'ruolo', status: 'stato', aliases: 'soprannomi', nickname: 'soprannome', user_id: 'account',
   settings: 'impostazioni', season_key: 'stagione', file_path: 'file', slug: 'indirizzo',
 };

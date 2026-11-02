@@ -8,7 +8,7 @@ type Tables = Database['public']['Tables'];
 
 export interface DbRows {
   players: Pick<Tables['players']['Row'], 'id' | 'name' | 'roles' | 'stats'>[];
-  matches: (Pick<Tables['matches']['Row'], 'id' | 'date' | 'notes' | 'score_a' | 'score_b' | 'pred' | 'pred_rank'> & Partial<Pick<Tables['matches']['Row'], 'play_time' | 'place'>>)[];
+  matches: (Pick<Tables['matches']['Row'], 'id' | 'date' | 'notes' | 'score_a' | 'score_b' | 'pred' | 'pred_rank'> & Partial<Pick<Tables['matches']['Row'], 'play_time' | 'place' | 'ratings_skipped'>>)[];
   matchPlayers: Pick<
     Tables['match_players']['Row'],
     'match_id' | 'player_id' | 'team' | 'position' | 'rating' | 'goals' | 'assist' | 'autogol' | 'meta' | 'rigori_sbagliati' | 'titolo' | 'descrizione'
@@ -45,6 +45,7 @@ export function dbToDataset(rows: DbRows): Dataset {
       notes: m.notes ?? '',
       time: formatTime(m.play_time),
       place: m.place ?? '',
+      ratingsSkipped: m.ratings_skipped === true,
       teamA: team('A'),
       teamB: team('B'),
       scoreA: m.score_a,

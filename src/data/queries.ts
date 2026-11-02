@@ -92,7 +92,7 @@ export async function fetchLeagueData(slug: string | null = null): Promise<Leagu
   const ids = lp.map((x) => x.player_id);
   const [players, matches, settings, albo, gaz] = await Promise.all([
     fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path').in('id', ids).order('id').range(a, b), 'giocatori'),
-    fetchAll((a, b) => supabase.from('matches').select('id, date, play_time, place, notes, score_a, score_b, pred, pred_rank').eq('league_id', league.id).order('id').range(a, b), 'partite'),
+    fetchAll((a, b) => supabase.from('matches').select('id, date, play_time, place, ratings_skipped, notes, score_a, score_b, pred, pred_rank').eq('league_id', league.id).order('id').range(a, b), 'partite'),
     supabase.from('app_settings').select('key, value').in('key', ['ovr_weights', 'use_form', 'game_modules']),
     supabase.from('albo').select('rows').eq('league_id', league.id),
     fetchAll((a, b) => supabase.from('gazzette').select('match_id, file_path').order('match_id').range(a, b), 'Gazzette'),

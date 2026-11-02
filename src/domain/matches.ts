@@ -62,6 +62,14 @@ export const lastMatch = (data: Dataset): Match | null => ([...data.matches].sor
 export const matchHasDesc = (data: Dataset, matchId: string): boolean =>
   data.ratings.some((r) => r.matchId === matchId && (String(r.notes || '').trim() || String(r.titolo || '').trim()));
 
+/** Partite con risultato ancora senza titoli o descrizioni, escluse quelle «saltate» (non si vogliono pagellare). Dalla più recente. */
+export const pendingRatings = (data: Dataset): Match[] =>
+  [...data.matches].filter((m) => hasScore(m) && !m.ratingsSkipped && !matchHasDesc(data, m.id)).sort(byDateDesc);
+
+/** Partite con risultato, senza descrizioni, che si è scelto di saltare. Dalla più recente. */
+export const skippedRatings = (data: Dataset): Match[] =>
+  [...data.matches].filter((m) => hasScore(m) && !!m.ratingsSkipped && !matchHasDesc(data, m.id)).sort(byDateDesc);
+
 // ── Gazzette ───────────────────────────────────────────────────────────────
 export interface GazItem {
   matchId: string;

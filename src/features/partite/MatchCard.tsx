@@ -7,11 +7,11 @@ import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { formOn } from '../../data/gameSettings';
 import { useToast } from '../../app/Toast';
 import { compressGazzetta, makeGazzettaThumb } from '../../canvas/gazzetta';
-import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, updateMatchHeader } from '../../data/mutations';
+import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, setRatingsSkipped, updateMatchHeader } from '../../data/mutations';
 import { gazzettaUrl, LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
 import { formatDate, whenWhere } from '../../domain/format';
-import { matchBalance, matchHighlights, rateColors, type MatchBalance } from '../../domain/matches';
+import { hasScore, matchBalance, matchHasDesc, matchHighlights, rateColors, type MatchBalance } from '../../domain/matches';
 import { clampRating, normalizeTeam } from '../../domain/stats';
 import type { Match, Rating } from '../../domain/types';
 import { waHTML } from '../../domain/whatsapp';
@@ -417,6 +417,18 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
       toast('❌ Non riuscito: ' + (e as Error).message);
     }
   };
+  /** «Salta le pagelle»: la partita esce dall'elenco delle pagelle da scrivere (amministratore e redazione). */
+  const toggleSkip = async () => {
+    if (!m) return;
+    const skip = !m.ratingsSkipped;
+    try {
+      await setRatingsSkipped(matchId, skip);
+      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      toast(skip ? 'Pagelle saltate: la partita non compare più tra quelle da scrivere' : 'Pagelle rimesse tra quelle da scrivere');
+    } catch (e) {
+      toast('Errore: ' + (e as Error).message);
+    }
+  };
   const remove = async () => {
     const ok = await confirm({
       icon: '🗑️', title: 'Eliminare la partita?', lines: ["Verranno eliminate anche tutte le pagelle e i gol di questa partita. L'operazione non è reversibile."], okLabel: 'Elimina', danger: true,
@@ -469,6 +481,13 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
               </button>
             ) : null}
           </div>
+          {(canEdit || canEditText) && !editing && m && hasScore(m) && (m.ratingsSkipped || !matchHasDesc(data.dataset, m.id)) ? (
+            <div style={{ marginBottom: 10 }}>
+              <button type="button" id="skip-ratings" className="btn btn-secondary btn-full btn-sm" style={{ whiteSpace: 'normal' }} onClick={() => void toggleSkip()}>
+                {m.ratingsSkipped ? '↩ Rimetti tra le pagelle da scrivere' : '⏭️ Non scrivere le pagelle di questa partita'}
+              </button>
+            </div>
+          ) : null}
           <div id="match-fields" style={{ opacity: editing ? 1 : 0.92 }}>
             {full ? (
               <div style={{ marginBottom: 8 }}>
