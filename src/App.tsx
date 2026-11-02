@@ -174,7 +174,7 @@ function Shell() {
 
   return (
     <>
-      <AppHeader data={data} onMenu={() => setMenuOpen(true)} onHome={() => go(HOME_PAGE)} />
+      <AppHeader data={data} onMenu={() => setMenuOpen(true)} />
 
       <PullToRefresh />
       <InstallHint />

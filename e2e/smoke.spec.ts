@@ -176,38 +176,36 @@ test('Ricaricare: niente rotellina in alto; si tira la pagina verso il basso e i
   await expect(page.locator('#ptr')).toHaveCount(0);
 });
 
-test('Intestazione: logo e ☰ a sinistra, CALCIO LERCIO al centro, nome della lega a destra', async ({ page }) => {
+test('Intestazione: solo ☰ a sinistra, CALCIO LERCIO al centro, nome della lega a destra', async ({ page }) => {
   await setup(page, { mePlayer: fixturePlayer() });
   await page.goto('/');
   const btn = page.locator('#menu-button');
   await expect(btn).toBeVisible({ timeout: 20_000 });
   await expect(btn).toHaveText('☰');
-  await expect(page.locator('#header-ovr, .hf-av, .hf')).toHaveCount(0);
+  await expect(page.locator('#header-ovr, .hf-av, .hf, .app-logo, header img')).toHaveCount(0); // niente faccia né logo
   await expect(page.locator('.app-title')).toHaveText('CALCIO LERCIO');
   expect(await page.evaluate(() => document.fonts.check('26px "Bebas Neue"'))).toBe(true);
   await expect(page.locator('#league-pill')).toContainText('San Marcello');
-  const logo = (await page.locator('.app-logo').boundingBox())!;
   const menu = (await btn.boundingBox())!;
   const title = (await page.locator('.app-title').boundingBox())!;
   const pill = (await page.locator('#league-pill').boundingBox())!;
-  expect(logo.x).toBeLessThan(20); // il logo è tutto a sinistra
-  expect(menu.x).toBeGreaterThan(logo.x + logo.width - 1); // il ☰ gli sta accanto
+  expect(menu.x).toBeLessThan(20);
   expect(title.x).toBeGreaterThan(menu.x + menu.width);
-  expect(pill.x).toBeGreaterThan(title.x); // la lega è a destra
+  expect(pill.x).toBeGreaterThan(title.x);
   expect(pill.x + pill.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   // nessun elemento fuori dallo schermo, nemmeno a 320 px
   await page.setViewportSize({ width: 320, height: 700 });
   await noOverflow(page);
   const head = (await page.locator('header').boundingBox())!;
-  for (const sel of ['.app-logo', '#menu-button', '.app-title', '#league-pill']) {
+  for (const sel of ['#menu-button', '.app-title', '#league-pill']) {
     const b = (await page.locator(sel).boundingBox())!;
     expect(b.x).toBeGreaterThanOrEqual(-0.5);
     expect(b.x + b.width).toBeLessThanOrEqual(head.width + 0.5);
   }
-  // il logo riporta al profilo; il nome della lega apre il menu per cambiarla
+  // toccare la scritta non fa nulla; il nome della lega apre il menu per cambiarla
   await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
-  await page.locator('.app-logo').click();
-  await expect(page.locator('#page-profilo.active')).toBeVisible();
+  await page.locator('.app-title').click();
+  await expect(page.locator('#page-profilo.active')).toHaveCount(0);
   await page.locator('#league-pill').click();
   await expect(page.locator('#menu-drawer')).toBeVisible();
 });
