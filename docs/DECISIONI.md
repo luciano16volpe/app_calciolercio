@@ -34,7 +34,7 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - ON FIRE: **anello incandescente con scintille** + bordo carta arancione + tinta calda. Scartati:
   fiamme a raggiera ("sembra un sole"), fiamme che salgono dalla foto.
 - IN CRISI: **leggera**, foto a colori. Scartati: foto in bianco e nero, carta molto scura.
-- Didascalia senza nome del pagellista (Peppe Rella firma solo le pagelle).
+- Didascalia senza nome del pagellista. (Novembre 2026: la firma delle pagelle non è più «Redazione Avv. Peppe Rella» fissa, ma «Redazione <nome di chi ha scritto le pagelle>»; senza autore noto, nessuna firma.)
 - Prima si **apre** a schermo intero, poi Condividi / Salva. Scartato il suggerimento iPhone
   "tieni premuto → Aggiungi a Foto" (inutile).
 
@@ -174,3 +174,6 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - **Ricaricare i dati:** tirando la pagina verso il basso (telefono) o con F5 (computer); niente pulsante in alto.
 
 - **Intestazione (novembre 2026):** a sinistra la faccia del proprio giocatore con OVR e stato di forma (toccandola si apre il menu, con un piccolo ☰ sul bordo); al centro CALCIO LERCIO in Bebas Neue (incluso nell'app); a destra il logo con la lega sotto. Senza giocatore collegato resta il pulsante ☰. Anteprime in `docs/specifiche/img/header_alternative_*.png` (scelto il disegno 2).
+
+- **Pagelle da scrivere (novembre 2026):** una partita con risultato è «senza pagelle» se **meno della metà** dei giocatori ha titolo o descrizione (non basta che ne manchino un paio). Si può «saltare» (una per una o a gruppi: più vecchie di 7/30 giorni, tutte) e rimettere. Lo fanno amministratore e redazione. Le notifiche «pagelle pronte» restano a «tutte le pagelle con voto hanno testo».
+- **Firma delle pagelle:** «Redazione <nome>» è di chi ha scritto per primo titolo o descrizione della partita (nome del profilo, o parte prima della @). Le partite vecchie senza autore noto non hanno firma; niente impostazione a mano.

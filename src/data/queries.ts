@@ -37,6 +37,8 @@ export interface LeagueData {
   albo: AlboRow[];
   /** Gazzette: id partita → percorso del file. */
   gazzette: Record<string, string>;
+  /** Chi ha scritto le pagelle di ogni partita (id partita → nome), per la firma «Redazione …». Assente = non si sa. */
+  editors?: Record<string, string>;
   /** soprannomi dei giocatori nella lega (id giocatore → altri nomi), per l'importazione da WhatsApp */
   aliases?: Record<string, string[]>;
 }
@@ -90,12 +92,13 @@ export async function fetchLeagueData(slug: string | null = null): Promise<Leagu
 
   const lp = await fetchAll((a, b) => supabase.from('league_players').select('player_id, aliases').eq('league_id', league.id).order('player_id').range(a, b), 'giocatori della lega');
   const ids = lp.map((x) => x.player_id);
-  const [players, matches, settings, albo, gaz] = await Promise.all([
+  const [players, matches, settings, albo, gaz, editorsRes] = await Promise.all([
     fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path').in('id', ids).order('id').range(a, b), 'giocatori'),
     fetchAll((a, b) => supabase.from('matches').select('id, date, play_time, place, ratings_skipped, notes, score_a, score_b, pred, pred_rank').eq('league_id', league.id).order('id').range(a, b), 'partite'),
     supabase.from('app_settings').select('key, value').in('key', ['ovr_weights', 'use_form', 'game_modules']),
     supabase.from('albo').select('rows').eq('league_id', league.id),
     fetchAll((a, b) => supabase.from('gazzette').select('match_id, file_path').order('match_id').range(a, b), 'Gazzette'),
+    supabase.from('match_editors').select('match_id, name').eq('league_id', league.id), // la firma delle pagelle: se non si legge, si omette
   ]);
   const matchIds = matches.map((m) => m.id);
   // le pagelle si leggono a gruppi di partite (l'elenco degli id sta nell'indirizzo della richiesta)
@@ -139,6 +142,7 @@ export async function fetchLeagueData(slug: string | null = null): Promise<Leagu
     ...(typeof setting('game_modules') === 'string' ? { modulesText: setting('game_modules') as string } : {}),
     photos: Object.fromEntries(everyone.map((p) => [p.id, p.photo_path])),
     albo: (albo.data ?? []).flatMap((r) => r.rows as unknown as AlboRow[]),
+    editors: Object.fromEntries((editorsRes.data ?? []).map((x) => [x.match_id, x.name])),
     aliases: Object.fromEntries(lp.filter((x) => x.aliases?.length).map((x) => [x.player_id, x.aliases])),
     gazzette: Object.fromEntries(gaz.filter((g) => matchSet.has(g.match_id)).map((g) => [g.match_id, g.file_path])),
   };

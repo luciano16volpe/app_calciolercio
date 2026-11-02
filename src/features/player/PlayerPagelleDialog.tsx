@@ -53,6 +53,7 @@ export function PlayerPagelleDialog({ data, player, focusId, onClose, onOpenMatc
                   </div>
                   {x.tit ? <div className="pl-tit">«{x.tit}»</div> : null}
                   {x.desc ? <div className="pl-desc" dangerouslySetInnerHTML={{ __html: waHTML(x.desc) }} /> : null}
+                  {data.editors?.[x.m.id] && (x.tit || x.desc) ? <div className="pl-ed">✒️ Redazione {data.editors[x.m.id]}</div> : null}
                   <button
                     type="button"
                     className="pl-go"
@@ -70,7 +71,6 @@ export function PlayerPagelleDialog({ data, player, focusId, onClose, onOpenMatc
             <div className="mb-note" style={{ textAlign: 'center', padding: 16 }}>Nessuna pagella ancora</div>
           )}
         </div>
-        <div className="pl-by">✒️ a cura della Redazione Avv. Peppe Rella</div>
       </div>
     </div>
   );

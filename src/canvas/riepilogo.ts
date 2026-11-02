@@ -26,10 +26,12 @@ export interface SummaryInput {
   h: MatchHighlights;
   tA: SummaryRow[];
   tB: SummaryRow[];
+  /** chi ha scritto le pagelle (firma in fondo); vuoto = nessuna firma */
+  editor: string;
 }
 
 /** Le righe delle pagelle per squadra (migliori voti per primi) e i momenti chiave, pronti da disegnare. */
-export function summaryInput(data: Dataset, m: Match): SummaryInput {
+export function summaryInput(data: Dataset, m: Match, editor?: string): SummaryInput {
   const ratings = data.ratings.filter((r) => r.matchId === m.id);
   const rowsFor = (team: Match['teamA']): SummaryRow[] =>
     normalizeTeam(team)
@@ -57,6 +59,7 @@ export function summaryInput(data: Dataset, m: Match): SummaryInput {
     h: matchHighlights(data, m),
     tA: rowsFor(m.teamA),
     tB: rowsFor(m.teamB),
+    editor: editor?.trim() || '',
   };
 }
 
@@ -191,6 +194,6 @@ export function drawSummary(s: SummaryInput): HTMLCanvasElement {
   ctx.textAlign = 'center';
   ctx.fillStyle = C.SUB;
   ctx.font = SHARE_FONT('italic 500 14px');
-  ctx.fillText('✒️ pagelle a cura della Redazione Avv. Peppe Rella', W / 2, H - 22);
+  if (s.editor) ctx.fillText(`✒️ pagelle a cura della Redazione ${s.editor}`, W / 2, H - 22);
   return canvas;
 }

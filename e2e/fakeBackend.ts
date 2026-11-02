@@ -29,6 +29,8 @@ export class FakeBackend {
   albo: Row[] = [];
   settings: Row[] = [];
   gaz: Row[] = [];
+  /** firma della redazione: partita → chi ha scritto le pagelle */
+  editors: Row[] = [];
   invites: Row[] = [];
   requests: Row[] = [];
   supers = new Set<string>();
@@ -106,7 +108,7 @@ export class FakeBackend {
 
   // ── lettura (GET) ────────────────────────────────────────────────────────
   private table(name: string): Row[] {
-    const t: Record<string, Row[]> = { leagues: this.leagues, league_members: this.members, players: this.players, league_players: this.lplayers, matches: this.matches, match_players: this.mplayers, audit_log: this.audit, albo: this.albo, gazzette: this.gaz, app_settings: this.settings, player_claims: [] };
+    const t: Record<string, Row[]> = { leagues: this.leagues, league_members: this.members, players: this.players, league_players: this.lplayers, matches: this.matches, match_players: this.mplayers, audit_log: this.audit, albo: this.albo, gazzette: this.gaz, match_editors: this.editors, app_settings: this.settings, player_claims: [] };
     return t[name] ?? [];
   }
   private matchesFilter(row: Row, key: string, expr: string): boolean {
@@ -265,6 +267,22 @@ export class FakeBackend {
         if (this.mplayers.some((x) => x.player_id === pid)) return err(400, 'Il giocatore ha partite e pagelle nella storia delle leghe: non si cancella (resta in Panchina)', 'P0001');
         this.players.splice(this.players.findIndex((p) => p.id === pid), 1);
         return { status: 200, body: null };
+      }
+      case 'set_ratings_skipped_many': {
+        const e = need(); if (e) return e;
+        const ids = (a.p_matches as string[]) ?? [];
+        for (const id of ids) {
+          const m = this.matches.find((x) => x.id === id);
+          if (!m) return err(400, 'Partita non trovata', 'P0001');
+          const r = this.role(m.league_id as string, actor);
+          if (r !== 'admin' && r !== 'redazione') return err(400, 'Permesso negato: solo l’amministratore o la redazione della lega', 'P0001');
+        }
+        let n = 0;
+        for (const id of ids) {
+          const m = this.matches.find((x) => x.id === id)!;
+          if (m.ratings_skipped !== !!a.p_skip) { m.ratings_skipped = !!a.p_skip; n++; }
+        }
+        return { status: 200, body: n };
       }
       case 'set_ratings_skipped': {
         const e = need(); if (e) return e;

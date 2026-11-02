@@ -169,3 +169,11 @@ export async function setRatingsSkipped(matchId: string, skip: boolean): Promise
   const { error } = await supabase.rpc('set_ratings_skipped', { p_match: matchId, p_skip: skip });
   if (error) throw fail('pagelle saltate', error);
 }
+
+/** Salta (o rimette) le pagelle di molte partite in una volta. Restituisce quante partite sono cambiate. */
+export async function setRatingsSkippedMany(matchIds: string[], skip: boolean): Promise<number> {
+  if (!matchIds.length) return 0;
+  const { data, error } = await supabase.rpc('set_ratings_skipped_many', { p_matches: matchIds, p_skip: skip });
+  if (error) throw fail('pagelle saltate', error);
+  return Number(data ?? 0);
+}

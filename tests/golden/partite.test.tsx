@@ -101,9 +101,9 @@ describe.each(datasets)('%s', (_label, raw) => {
   it('testo unico delle pagelle e highlights di ogni partita: identici', () => {
     let withText = 0;
     for (const m of data.matches) {
-      expect(pagelleText(data, m)).toBe(legacy.pagelleText(m));
+      expect(pagelleText(data, m, 'Avv. Peppe Rella')).toBe(legacy.pagelleText(m)); // la firma ora è di chi ha scritto: con lo stesso nome di una volta il testo è identico
       expect(matchHighlights(data, m)).toEqual(legacy.matchHighlights(m));
-      if (/«/.test(pagelleText(data, m))) withText++;
+      if (/«/.test(pagelleText(data, m, 'Avv. Peppe Rella'))) withText++;
     }
     expect(data.matches.length).toBeGreaterThan(5);
     if (_label.startsWith('dati reali')) expect(withText).toBeGreaterThan(2); // le partite con titoli
@@ -165,5 +165,21 @@ describe('casi particolari', () => {
     const m = { ...(d.matches[0] as Dataset['matches'][number]), teamA: [{ id: 'fantasma', name: 'Nessuno' }], teamB: [{ id: 'f2', name: 'Altro' }] };
     expect(matchBalance(d, real.weights, m).kind).toBe('unavailable');
     expect(plain(renderToStaticMarkup(<BalanceBody b={matchBalance(d, real.weights, m)} />))).toContain('Squadre non disponibili');
+  });
+});
+
+describe('firma della redazione', () => {
+  const data = toLd(datasets[0]![1]).dataset;
+  const m = data.matches.find((x) => data.ratings.some((r) => r.matchId === x.id && r.titolo)) ?? data.matches[0]!;
+  it('senza sapere chi ha scritto non c\u2019è nessuna firma (né quella fissa di una volta)', () => {
+    const t = pagelleText(data, m);
+    expect(t).not.toContain('a cura della Redazione');
+    expect(t).not.toContain('Avv. Peppe Rella');
+    expect(t.trimEnd().endsWith('\n')).toBe(false);
+  });
+  it('con il nome di chi ha scritto la firma è quella persona', () => {
+    const t = pagelleText(data, m, 'Luca Rossi');
+    expect(t.trimEnd().endsWith('✒️ _a cura della Redazione Luca Rossi_')).toBe(true);
+    expect(t).not.toContain('Avv. Peppe Rella');
   });
 });

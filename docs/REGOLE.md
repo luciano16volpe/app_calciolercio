@@ -154,7 +154,7 @@ il **nome della funzione legacy** da leggere per i dettagli esatti: in caso di d
 - **🌧️ IN CRISI**: foto **a colori** con luce leggermente fredda e pioggia; anello grigio temporale
   con nuvoletta e fulmine; carta spenta ma leggibile (desaturazione 0,55, velo in alto 0,28),
   bordo grigio-blu, nuvole e fulmine attorno, fascia "IN CRISI".
-- Didascalia: "CalcioLercio · figurina ufficiale" (+ versione). Peppe Rella firma **solo** le pagelle.
+- Didascalia: "CalcioLercio · figurina ufficiale" (+ versione). La firma «Redazione <nome>» compare **solo** sulle pagelle ed è di chi le ha scritte (non più un nome fisso).
 - Si apre a schermo intero prima di condividere / salvare (`openFutCard`, `openImageViewer`).
 
 ## 14. Ruoli nella nuova app (multi-lega)
