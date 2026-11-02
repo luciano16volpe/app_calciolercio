@@ -100,7 +100,7 @@ export function useAuth(): AuthTools {
 }
 
 /** Ruolo di chi è entrato nella lega (null = non è un membro, oppure non ha fatto l'accesso). */
-export function useRole(leagueId: string | undefined): { role: Role; isAdmin: boolean; canEditText: boolean } {
+export function useRole(leagueId: string | undefined): { role: Role; isAdmin: boolean; canEditText: boolean; /** il ruolo è stato letto (finché non lo è, `role` è vuoto) */ ready: boolean } {
   const { user } = useAuth();
   const q = useQuery({
     queryKey: ['role', leagueId, user?.id],
@@ -112,5 +112,6 @@ export function useRole(leagueId: string | undefined): { role: Role; isAdmin: bo
     },
   });
   const role = user ? (q.data ?? null) : null;
-  return { role, isAdmin: role === 'admin', canEditText: role === 'admin' || role === 'redazione' };
+  const ready = !user || !leagueId || q.isSuccess || q.isError;
+  return { role, isAdmin: role === 'admin', canEditText: role === 'admin' || role === 'redazione', ready };
 }
