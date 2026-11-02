@@ -78,7 +78,7 @@ export const FUT_TIERS: Record<FutTier, TierStyle> = {
     critter: "💩",
   },
   marcia: {
-    label: "MARCIA",
+    label: "MARCIO VOMITO",
     metal: ["#a9bd72", "#71863a", "#3f4c18", "#8ca252", "#212a0a"],
     text: "#f4ffdb",
     sub: "#e2eec2",
