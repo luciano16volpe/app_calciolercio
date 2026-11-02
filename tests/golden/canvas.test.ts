@@ -97,7 +97,7 @@ describe.each(datasets)('%s', (_label, raw) => {
       legacy.__setLogo(withLogo ? logo : null);
       const theirs = legacy.drawFutCard(p, withPhoto ? photo : null) as Rec;
       const model = futCardModel(data, ld.weights, ld.albo, p, TODAY);
-      const mine = drawFutCard(model, withPhoto ? (photo as unknown as HTMLImageElement) : null, withLogo ? (logo as unknown as HTMLImageElement) : null) as unknown as Rec;
+      const mine = drawFutCard(model, withPhoto ? (photo as unknown as HTMLImageElement) : null) as unknown as Rec;
       sameCanvas(mine, theirs, `figurina di ${p.name}`);
       if (model.form) seen[model.form]++;
       else seen.none++;
@@ -115,7 +115,7 @@ describe.each(datasets)('%s', (_label, raw) => {
     const v = legacy.__viewerGet();
     expect(v?.title).toBe('🃏 La figurina di ' + p.name);
     expect(v?.name).toBe('figurina_' + p.name.replace(/\s+/g, '_') + '.png');
-    sameCanvas(drawFutCard(futCardModel(data, ld.weights, ld.albo, p, TODAY), null, null) as unknown as Rec, v?.canvas as Rec, 'figurina aperta');
+    sameCanvas(drawFutCard(futCardModel(data, ld.weights, ld.albo, p, TODAY), null) as unknown as Rec, v?.canvas as Rec, 'figurina aperta');
   });
 
   it('formazioni della proposta di Gioca e foglio da stampare', () => {

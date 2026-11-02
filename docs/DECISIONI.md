@@ -185,3 +185,7 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - **Intestazione (novembre 2026):** a sinistra il pulsante ☰ e il logo con il nome della lega sotto; poi CALCIO LERCIO. Niente più faccia/OVR/forma in alto (la faccia sta nel footer). Toccando logo o titolo si torna al profilo. «Il mio profilo» non c'è più nel menu ☰ (era un doppione del footer).
 - **Intestazione, versione finale (novembre 2026):** a sinistra il logo e, accanto, il pulsante ☰; al centro CALCIO LERCIO; a destra il nome della lega (tocco = menu per cambiare lega). Sostituisce la versione con la lega sotto il logo.
 - **Coriandoli sullo sfondo:** nell'ultima partita vinta i coriandoli cadono in continuazione sullo sfondo del riquadro (dietro al contenuto, dentro il riquadro), come la pioggia della sconfitta. Prima esplodevano una volta sola a tutto schermo.
+- **Intestazione su una riga (novembre 2026):** ☰, CALCIO LERCIO (esattamente al centro) e nome della lega stanno sulla stessa riga.
+- **Classifiche senza il riquadro dei totali** (Partite, Gol totali, Gol/partita, Miglior media): tolto dalla schermata; il calcolo resta testato.
+- **ON FIRE / IN CRISI scadono dopo un mese:** se l'ultima pagella del giocatore ha più di un mese, nessuno stato di forma (si somma alla regola delle 5 partite recenti).
+- **Figurina senza logo** sotto il ruolo del giocatore.

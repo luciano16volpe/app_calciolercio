@@ -59,8 +59,8 @@ export function futCardModel(data: Dataset, weights: number[], albo: AlboRow[], 
 
 type Img = Pick<HTMLImageElement, 'naturalWidth' | 'naturalHeight' | 'complete'> & CanvasImageSource;
 
-/** `photoImg` = foto già caricata (o null: si disegnano le iniziali); `logo` = logo dell'app in alto (o null). */
-export function drawFutCard(p: FutCardModel, photoImg: Img | null, logo: Img | null): HTMLCanvasElement {
+/** `photoImg` = foto già caricata (o null: si disegnano le iniziali); (il logo sotto il ruolo non c'è più, novembre 2026). */
+export function drawFutCard(p: FutCardModel, photoImg: Img | null): HTMLCanvasElement {
   const t = FUT_TIERS[p.tier], tr = p.trophies;
   const fire = p.form === 'up', crisi = p.form === 'down';
   const W = 720, H = 1140, { canvas, ctx } = newShareCanvas(W, H);
@@ -480,7 +480,7 @@ export function drawFutCard(p: FutCardModel, photoImg: Img | null, logo: Img | n
     bolt(ox + S * 0.1, oy + 34, 0.5);
   } // un piccolo temporale sull'anello
 
-  // ── fascia in alto, poi valutazione + badge PAGELLE (stessi colori dell'app), ruoli, logo ──
+  // ── fascia in alto, poi valutazione + badge PAGELLE (stessi colori dell'app), ruoli ──
   etext(t.label.split('').join(' '), cx, y + 40, F('800 17px'), t.sub);
   const lx = x + 128;
   etext(String(p.rating), lx, y + 176, F('900 118px'), t.text);
@@ -560,13 +560,6 @@ export function drawFutCard(p: FutCardModel, photoImg: Img | null, logo: Img | n
   const roles = [main, ...p.roles.filter((r) => r !== main)];
   etext(roles[0] as string, lx, y + 320, F('800 38px'), t.text);
   if (roles.length > 1) etext(roles.slice(1).join(' · '), lx, y + 350, F('700 22px'), t.sub);
-  if (logo && logo.complete && logo.naturalWidth) {
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.35)';
-    ctx.shadowBlur = 8;
-    ctx.drawImage(logo, lx - 28, y + 364, 56, 56);
-    ctx.restore();
-  }
 
   // ── nome ──
   ctx.font = F('900 52px');

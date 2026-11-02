@@ -11,7 +11,7 @@ import { compareInput, drawCompare } from './confronto';
 import { drawFutCard, futCardModel } from './figurina';
 import { drawFormations, type FormationPlayer } from './formazioni';
 import { drawSheet, sheetInput, type SheetMatch } from './foglio';
-import { loadImage, loadLogo } from './images';
+import { loadImage } from './images';
 import { drawSummary, summaryInput } from './riepilogo';
 
 const ROLE_ORDER: Record<string, number> = { ATT: 0, MED: 1, DIF: 2 };
@@ -67,8 +67,8 @@ export function comboSheet(ld: LeagueData, c: Combo, now = new Date()): { canvas
 }
 
 export async function figurinaCanvas(ld: LeagueData, p: Player): Promise<HTMLCanvasElement> {
-  const [photo, logo] = await Promise.all([loadImage(photoUrl(ld.photos[p.id])), loadLogo()]);
-  return drawFutCard(futCardModel(ld.dataset, ld.weights, ld.albo, p), photo, logo);
+  const photo = await loadImage(photoUrl(ld.photos[p.id]));
+  return drawFutCard(futCardModel(ld.dataset, ld.weights, ld.albo, p), photo);
 }
 
 export async function compareCanvas(ld: LeagueData, pa: Player, pb: Player, scope: string): Promise<HTMLCanvasElement> {

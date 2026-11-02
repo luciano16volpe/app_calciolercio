@@ -3,7 +3,9 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import vm from 'node:vm';
+import { oneMonthBefore } from '../../src/domain/form';
 import { recorderSource } from './canvasRecorder';
+import { TEST_TODAY } from '../today';
 
 /**
  * Cambiamenti VOLUTI rispetto alla vecchia app (decisioni di novembre 2026). Il confronto con la vecchia app resta fedele su tutto il resto:
@@ -15,6 +17,10 @@ const DELIBERATE: Array<[string | RegExp, string]> = [
   ["marcia:{label:'MARCIA',", "marcia:{label:'MARCIO VOMITO',"],
   // stato di forma: ultime 2 pagelle (non 3)
   ['a.votes.slice(-3).reduce((s,x)=>s+x.v,0)/3 - a.voteAvg', 'a.votes.slice(-2).reduce((s,x)=>s+x.v,0)/2 - a.voteAvg'],
+  // stato di forma: se l'ultima pagella ha più di un mese non vale
+  ["if(since && a.votes[a.votes.length-1].date<since) return null;", `if(since && a.votes[a.votes.length-1].date<since) return null; if(a.votes[a.votes.length-1].date<'${oneMonthBefore(TEST_TODAY)}') return null;`],
+  // figurina: niente logo sotto il ruolo
+  ["if(logo && logo.complete && logo.naturalWidth){ ctx.save(); ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowBlur=8; ctx.drawImage(logo,lx-28,y+364,56,56); ctx.restore(); }", ''],
   // stagioni scritte «Estate 26» (anno a due cifre; l'inverno con l'anno di inizio), senza sigle («Est 26»)
   ["label:'Primavera '+y,", "label:'Primavera '+String(y).slice(2),"],
   ["label:'Estate '+y,", "label:'Estate '+String(y).slice(2),"],

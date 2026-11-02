@@ -194,3 +194,18 @@ describe('nome della stagione: «Estate 26» (anno a due cifre)', () => {
     expect(seasonOf('2026-01-20')).toMatchObject({ key: '2025-INV', start: '2025-12-01', end: '2026-02-28' });
   });
 });
+
+describe('stato di forma: dopo più di un mese dall\'ultima pagella non vale', () => {
+  const player = { id: 'p', name: 'P', roles: ['MED'], stats: Array(11).fill(6) };
+  const votes = [6, 6, 6, 5, 8];
+  const ds = {
+    players: [player],
+    matches: votes.map((_, i) => ({ id: `m${i}`, date: `2026-10-${String(i + 1).padStart(2, '0')}`, teamA: [{ id: 'p', name: 'P' }], teamB: [], scoreA: 5, scoreB: 3 })),
+    ratings: votes.map((v, i) => ({ matchId: `m${i}`, player: 'P', playerId: 'p', rating: v })),
+  } as unknown as Dataset; // ultima pagella: 5 ottobre 2026
+  it('entro un mese c\'è lo stato, oltre no', () => {
+    const all = seasonStats(ds);
+    expect(formState(ds, player as never, all, '2026-11-05')).toBe('up'); // esattamente un mese: vale ancora
+    expect(formState(ds, player as never, all, '2026-11-06')).toBeNull(); // un giorno in più: non vale
+  });
+});
