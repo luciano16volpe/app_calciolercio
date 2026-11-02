@@ -35,6 +35,7 @@ export function ProfilePanel({ data, onClose, onOpenMatch }: { data: LeagueData;
   return (
     <Sheet title="Il mio profilo" onClose={onClose} id="sheet-profile">
       <MyPlayerCard data={data} onOpenMatch={(id) => { onClose(); onOpenMatch(id); }} />
+      <MyPlayerCard data={data} bottom />
       {mine.length ? (
         <div className="card" id="leave-card" style={{ marginTop: 12 }}>
           <div className="section-header">🚪 Uscire da una lega</div>

@@ -161,6 +161,13 @@ test('Il mio profilo: si vede la scheda del giocatore, uguale a quella della Ros
   await expect(card.locator('#match-modal-body')).toBeVisible();
   await expect(card.getByText('✕')).toHaveCount(0);
   await expect(page.locator('#profile-card')).toBeVisible(); // sotto, il riepilogo
+  // «Sei collegato a…» sta in fondo alla pagina, sotto la scheda e il riepilogo
+  await expect(page.locator('#myplayer-card')).toContainText('Sei collegato a');
+  const y = async (sel: string) => (await page.locator(sel).boundingBox())!.y;
+  expect(await y('#myplayer-card')).toBeGreaterThan(await y('#profile-card'));
+  expect(await y('#myplayer-card')).toBeGreaterThan(await y('#profile-player-card'));
+  await expect(page.locator('#leave-card')).toBeVisible();
+  expect(await y('#leave-card')).toBeGreaterThan(await y('#myplayer-card'));
   await noOverflow(page);
 });
 

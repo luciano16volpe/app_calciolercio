@@ -9,7 +9,11 @@ import type { LeagueData } from '../../data/queries';
 import { PlayerCard } from '../player/PlayerCard';
 import { ProfileCard } from './ProfileCard';
 
-export function MyPlayerCard({ data, onOpenMatch }: { data: LeagueData | undefined; onOpenMatch?: (matchId: string) => void }) {
+/**
+ * «Il mio giocatore». In cima alla pagina il collegamento si vede solo finché non sono collegato (scelta del nome, richiesta in attesa),
+ * insieme alla scheda e al riepilogo; da collegato lo stato («Sei collegato a…», Scollega) va in fondo (`bottom`).
+ */
+export function MyPlayerCard({ data, onOpenMatch, bottom = false }: { data: LeagueData | undefined; onOpenMatch?: (matchId: string) => void; bottom?: boolean }) {
   const { user } = useAuth();
   const toast = useToast();
   const confirm = useConfirm();
@@ -54,7 +58,8 @@ export function MyPlayerCard({ data, onOpenMatch }: { data: LeagueData | undefin
 
   return (
     <>
-    <div className="card" id="myplayer-card">
+    {(s?.linked ? bottom : !bottom) ? (
+    <div className="card" id="myplayer-card" style={bottom ? { marginTop: 12 } : undefined}>
       <div className="section-header">⚽ Il mio giocatore</div>
       {q.isLoading ? <div style={{ fontSize: 12, color: 'var(--text3)' }}>⏳ Caricamento…</div> : null}
       {q.isError ? <div id="myplayer-error" style={{ fontSize: 12, color: 'var(--red)', fontWeight: 700 }}>{(q.error as Error).message}</div> : null}
@@ -85,7 +90,8 @@ export function MyPlayerCard({ data, onOpenMatch }: { data: LeagueData | undefin
         </div>
       ) : null}
     </div>
-    {s?.linked && data && data.dataset.players.some((p) => p.id === s.linked?.id) ? (
+    ) : null}
+    {!bottom && s?.linked && data && data.dataset.players.some((p) => p.id === s.linked?.id) ? (
       <div style={{ marginBottom: 12 }}>
         {viewId && viewId !== s.linked.id ? (
           <button type="button" id="profile-back" className="btn btn-secondary btn-sm" style={{ marginBottom: 8 }} onClick={() => setViewId(null)}>↩ Torna alla mia scheda</button>
@@ -103,7 +109,7 @@ export function MyPlayerCard({ data, onOpenMatch }: { data: LeagueData | undefin
         />
       </div>
     ) : null}
-    {s?.linked ? <ProfileCard playerId={s.linked.id} name={s.linked.name} /> : null}
+    {!bottom && s?.linked ? <ProfileCard playerId={s.linked.id} name={s.linked.name} /> : null}
     </>
   );
 }
