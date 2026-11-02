@@ -2,7 +2,7 @@
 .hb{width:34px;height:34px;border-radius:10px;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-right:8px;position:relative}
 .hb .dot{position:absolute;top:-3px;right:-3px;min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:var(--red);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
 .lg-pill{font-size:11px;opacity:.9;font-weight:700;margin-left:8px;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.16);border:none;color:#fff;cursor:pointer;max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.menu-dim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600}
+.menu-dim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;touch-action:none}
 .menu-drawer{position:fixed;top:0;bottom:0;left:0;width:84%;max-width:330px;background:#fff;color:var(--text);box-shadow:8px 0 30px rgba(0,0,0,.5);display:flex;flex-direction:column;z-index:601;padding-left:env(safe-area-inset-left,0);animation:menuIn .18s ease-out;overscroll-behavior:contain}
 @keyframes menuIn{from{transform:translateX(-100%)}to{transform:none}}
 @media(prefers-color-scheme:dark){html:not([data-theme="light"]) .menu-drawer{background:#141920}}
@@ -41,7 +41,7 @@ html[data-theme="dark"] .menu-drawer{background:#141920}
 .menu-code b{font-family:ui-monospace,Menlo,monospace;color:var(--text);letter-spacing:1px;background:var(--gray2);padding:3px 7px;border-radius:6px}
 .menu-code button{color:var(--green);font-weight:800;background:none;border:none;cursor:pointer;font-size:12px}
 .menu-foot{padding:10px 16px calc(14px + env(safe-area-inset-bottom,0px));font-size:10px;color:var(--text3);border-top:1px solid var(--gray2);flex-shrink:0}
-html.menu-open,html.menu-open body{overflow:hidden}
+/* niente blocco dello scroll con overflow:hidden su html/body: su iPhone sposta il footer fisso a metà schermo. Lo scuro non fa scorrere la pagina (touch-action) e il menu non trasmette lo scroll (overscroll-behavior) */
 /* pannelli a tutto schermo e "Crea nuova lega" */
 .sheet{position:fixed;inset:0;background:#eef1f6;z-index:650;display:flex;flex-direction:column;color:var(--text)}
 @media(prefers-color-scheme:dark){html:not([data-theme="light"]) .sheet{background:#0f131a}}

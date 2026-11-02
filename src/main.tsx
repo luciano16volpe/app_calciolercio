@@ -6,9 +6,15 @@ import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persist
 import './styles/app.css';
 import './styles/menu.css';
 import { App } from './App';
+import { repairViewport } from './app/Dialogs';
 import { applyTheme, getTheme } from './app/theme';
 
 applyTheme(getTheme());
+
+// Su iPhone, dopo aver scritto in un campo la tastiera si chiude ma il footer fisso può restare a metà schermo: si rimette a posto la pagina
+document.addEventListener('focusout', (e) => {
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target as HTMLElement | null)?.tagName ?? '')) window.setTimeout(repairViewport, 150);
+});
 
 // I dati restano sul telefono: la prossima volta si vede subito l'ultima versione, poi si aggiorna.
 const queryClient = new QueryClient({ defaultOptions: { queries: { gcTime: 1000 * 60 * 60 * 24 * 7, retry: 1 } } });
