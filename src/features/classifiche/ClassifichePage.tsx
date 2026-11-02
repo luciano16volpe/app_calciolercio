@@ -17,6 +17,7 @@ export const CL_TABS = [
 ] as const;
 type Tab = (typeof CL_TABS)[number][0];
 
+// Non è più mostrato nelle Classifiche (scelta di novembre 2026); resta testato contro legacy nel caso si voglia riusarlo.
 export function SeasonDash({ data, scope }: { data: LeagueData; scope: string }) {
   const d = seasonDash(data.dataset, scope);
   if (!d) return null;
@@ -79,7 +80,6 @@ export function ClassifichePage({ data, onOpenPlayer, onOpenMatch }: { data: Lea
         ))}
       </div>
       </div>
-      <div id="season-dash"><SeasonDash data={data} scope={scope} /></div>
       {/* come in legacy: tre schede (carte) diverse, una sola visibile */}
       {tab !== 'statistiche' && tab !== 'albo' ? (
         <div className="card cl-sec" id="cl-list-card">

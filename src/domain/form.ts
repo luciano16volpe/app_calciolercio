@@ -41,19 +41,31 @@ export function effectiveScore(
   return ovr * (1 - w) + info.avg * w;
 }
 
+/** Oggi (ora italiana) come AAAA-MM-GG. */
+export const todayRome = (): string => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' });
+
+/** La data di un mese prima (AAAA-MM-GG). */
+export function oneMonthBefore(iso: string): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCMonth(d.getUTCMonth() - 1);
+  return d.toISOString().substring(0, 10);
+}
+
 export type FormState = 'up' | 'flat' | 'down';
 
 /**
  * Stato di forma: media delle ultime 2 pagelle (le più recenti, consecutive) contro la media di sempre.
  * ≥ +0,2 → 'up' (In forma) · ≤ −0,2 → 'down' (In calo) · altrimenti 'flat' (Costante).
- * Servono almeno 4 pagelle e l'ultima deve essere tra le 5 partite più recenti del gruppo.
+ * Servono almeno 4 pagelle, l'ultima deve essere tra le 5 partite più recenti del gruppo
+ * e non può essere più vecchia di un mese rispetto a `today` (novembre 2026: dopo una lunga pausa la forma non vale).
  */
-export function formState(data: Dataset, p: Player, all = seasonStats(data)): FormState | null {
+export function formState(data: Dataset, p: Player, all = seasonStats(data), today = todayRome()): FormState | null {
   const a = playerSeason(data, p, all);
   if (!a || a.votes.length < 4) return null;
   const since = data.matches.map((m) => m.date).filter(Boolean).sort().slice(-5)[0];
   const last = a.votes[a.votes.length - 1] as { date: string };
   if (since && last.date < since) return null;
+  if (last.date < oneMonthBefore(today)) return null;
   const d = a.votes.slice(-FORM_WINDOW).reduce((s, x) => s + x.v, 0) / FORM_WINDOW - (a.voteAvg as number);
   return d >= FORM_DELTA - 1e-9 ? 'up' : d <= -FORM_DELTA + 1e-9 ? 'down' : 'flat';
 }

@@ -42,8 +42,8 @@ il **nome della funzione legacy** da leggere per i dettagli esatti: in caso di d
 ## 5. Stato di forma (unico in tutta l'app)
 - Media delle **ultime 2 pagelle** (le più recenti, consecutive) confrontata con la **media di sempre** del giocatore (era: ultime 3, cambiato a novembre 2026):
   ≥ +0,2 → **↗ In forma**, ≤ −0,2 → **↘ In calo**, altrimenti **→ Costante** (`FORM_DELTA=0.2`).
-- Serve almeno **4 pagelle**, e l'ultima deve essere tra le **5 partite più recenti del gruppo**;
-  altrimenti nessuno stato (`formState`).
+- Serve almeno **4 pagelle**, l'ultima deve essere tra le **5 partite più recenti del gruppo** e **non più vecchia di un mese** da oggi
+  (aggiunto a novembre 2026: dopo una pausa lunga ON FIRE / IN CRISI non valgono); altrimenti nessuno stato (`formState`).
 - **🔥 ON FIRE** = In forma (`onFire`). **🌧️ IN CRISI** = In calo (`inCrisi`).
 - Visibile: scheda giocatore (intestazione + "📈 Pagelle"), figurina (etichetta sotto PAG), miniatura
   (freccia nel PAG), 🔥/🌧️ accanto al nome in Rosa.

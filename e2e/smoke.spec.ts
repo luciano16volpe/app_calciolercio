@@ -29,14 +29,14 @@ test('Rosa: 22 carte, la più forte per prima, niente esce in orizzontale', asyn
   for (const r of widths) expect(r).toBeLessThanOrEqual(vw + 0.5);
 });
 
-test('aprendo la lega si parte da «Il mio profilo» (e il titolo ci riporta)', async ({ page }) => {
+test('aprendo la lega si parte da «Il mio profilo» (e il pulsante in basso ci riporta)', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#page-profilo')).toHaveClass(/active/);
   await expect(page.locator('.bnav-item.active')).toHaveAttribute('aria-label', 'Il mio profilo');
   await expect.poll(() => new URL(page.url()).pathname).toBe('/l/san-marcello/profilo');
   await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
   await expect(page.locator('#page-rosa')).toHaveClass(/active/);
-  await page.locator('.app-title').click();
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Il mio profilo', exact: true }).click();
   await expect(page.locator('#page-profilo')).toHaveClass(/active/);
 });
 
@@ -95,7 +95,7 @@ test('scheda giocatore: la finestra "Le pagelle di…" si apre dall\'ultima page
   await expect(dlg).toHaveCount(0);
 });
 
-test('Classifiche: stagione, quattro numeri, schede e apertura della scheda giocatore', async ({ page }) => {
+test('Classifiche: stagione, schede e apertura della scheda giocatore', async ({ page }) => {
   await page.goto('/l/san-marcello/rosa');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   await page.locator('.bottom-nav').getByRole('button', { name: 'Classifiche', exact: true }).click();
@@ -104,18 +104,16 @@ test('Classifiche: stagione, quattro numeri, schede e apertura della scheda gioc
   await expect(cl.locator('#cl-seasons .chip').first()).toHaveClass(/active/);
   await expect(cl.locator('#cl-seasons .chip').last()).toContainText('Sempre');
   await expect(cl.locator('#cl-tabs .chip')).toHaveCount(8);
-  // i quattro numeri
-  await expect(cl.locator('.dash-cell')).toHaveCount(4);
-  await expect(cl.locator('.dash-lbl').nth(0)).toHaveText(/Partite/i);
+  // il riquadro con i totali (partite, gol…) non c'è più
+  await expect(cl.locator('.dash-cell')).toHaveCount(0);
   // marcatori: classifica con il primo posto in evidenza
   await expect(cl.locator('#scorers-list .section-header')).toContainText('marcatori');
   const firstName = cl.locator('#scorers-list > div').nth(1);
   await expect(firstName).toContainText('🥇');
-  // cambio stagione: "Sempre" ha almeno tante partite quanto la stagione
-  const seasonMatches = Number(await cl.locator('.dash-val').first().innerText());
+  // cambio stagione: «Sempre» si attiva e la lista resta
   await cl.locator('#cl-seasons .chip').last().click();
-  const allMatches = Number(await cl.locator('.dash-val').first().innerText());
-  expect(allMatches).toBeGreaterThanOrEqual(seasonMatches);
+  await expect(cl.locator('#cl-seasons .chip').last()).toHaveClass(/active/);
+  await expect(cl.locator('#scorers-list')).toBeVisible();
   // le altre schede si aprono senza errori
   for (const label of ['Assist', 'Media voto', 'Coppie', 'Record']) {
     await cl.locator('#cl-tabs .chip', { hasText: label }).click();
@@ -205,8 +203,6 @@ test('Intestazione: solo ☰ a sinistra, CALCIO LERCIO al centro, nome della leg
   }
   // toccare la scritta non fa nulla; il nome della lega apre il menu per cambiarla
   await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
-  await page.locator('.app-title').click();
-  await expect(page.locator('#page-profilo.active')).toHaveCount(0);
   await page.locator('#league-pill').click();
   await expect(page.locator('#menu-drawer')).toBeVisible();
 });

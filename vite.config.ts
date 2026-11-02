@@ -32,6 +32,7 @@ export default defineConfig({
   ],
   test: {
     environment: 'node',
+    setupFiles: ['tests/setup.ts'],
     include: ['tests/**/*.test.{ts,tsx}', 'src/**/*.test.{ts,tsx}'],
     testTimeout: 60_000, // i test del sorteggio provano migliaia di combinazioni
   },
