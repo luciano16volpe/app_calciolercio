@@ -53,7 +53,7 @@ export function matchFormations(ld: LeagueData, m: Match): HTMLCanvasElement {
   return drawFormations({ tA, tB, sA, sB, modA: '', modB: '', diff: sA != null && sB != null ? Math.abs(sA - sB) : null, subtitle: 'Formazioni del ' + formatDate(m.date) });
 }
 
-export const matchSummary = (ld: LeagueData, m: Match): HTMLCanvasElement => drawSummary(summaryInput(ld.dataset, m));
+export const matchSummary = (ld: LeagueData, m: Match): HTMLCanvasElement => drawSummary(summaryInput(ld.dataset, m, ld.editors?.[m.id]));
 
 export const matchSheet = (ld: LeagueData, m: SheetMatch): HTMLCanvasElement => drawSheet(sheetInput(ld.dataset, m));
 

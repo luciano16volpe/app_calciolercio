@@ -292,6 +292,45 @@ export type Database = {
         }
         Relationships: []
       }
+      match_editors: {
+        Row: {
+          league_id: string
+          match_id: string
+          name: string
+          user_id: string | null
+          written_at: string
+        }
+        Insert: {
+          league_id: string
+          match_id: string
+          name: string
+          user_id?: string | null
+          written_at?: string
+        }
+        Update: {
+          league_id?: string
+          match_id?: string
+          name?: string
+          user_id?: string | null
+          written_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_editors_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_editors_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_players: {
         Row: {
           assist: number
@@ -1031,6 +1070,10 @@ export type Database = {
       set_ratings_skipped: {
         Args: { p_match: string; p_skip: boolean }
         Returns: undefined
+      }
+      set_ratings_skipped_many: {
+        Args: { p_matches: string[]; p_skip: boolean }
+        Returns: number
       }
       slugify: { Args: { t: string }; Returns: string }
       transfer_league_ownership: {

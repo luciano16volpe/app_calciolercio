@@ -11,7 +11,7 @@ import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazze
 import { gazzettaUrl, LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
 import { formatDate, whenWhere } from '../../domain/format';
-import { hasScore, matchBalance, matchHasDesc, matchHighlights, rateColors, type MatchBalance } from '../../domain/matches';
+import { matchBalance, matchHighlights, needsRatings, rateColors, type MatchBalance } from '../../domain/matches';
 import { clampRating, normalizeTeam } from '../../domain/stats';
 import type { Match, Rating } from '../../domain/types';
 import { waHTML } from '../../domain/whatsapp';
@@ -481,7 +481,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
               </button>
             ) : null}
           </div>
-          {(canEdit || canEditText) && !editing && m && hasScore(m) && (m.ratingsSkipped || !matchHasDesc(data.dataset, m.id)) ? (
+          {(canEdit || canEditText) && !editing && m && (m.ratingsSkipped || needsRatings(data.dataset, m)) ? (
             <div style={{ marginBottom: 10 }}>
               <button type="button" id="skip-ratings" className="btn btn-secondary btn-full btn-sm" style={{ whiteSpace: 'normal' }} onClick={() => void toggleSkip()}>
                 {m.ratingsSkipped ? '↩ Rimetti tra le pagelle da scrivere' : '⏭️ Non scrivere le pagelle di questa partita'}

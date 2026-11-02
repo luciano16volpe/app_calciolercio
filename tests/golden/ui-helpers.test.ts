@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { pagInfo, playerRatingAvg } from '../../src/domain/form';
 import { avatarClass, formatTime, initials, whenWhere } from '../../src/domain/format';
-import { pendingRatings, skippedRatings } from '../../src/domain/matches';
+import { needsRatings, pendingRatings, ratingsCoverage, skippedRatings } from '../../src/domain/matches';
 import { playerSeason, seasonStats } from '../../src/domain/stats';
 import type { Dataset } from '../../src/domain/types';
 import { real } from './data';
@@ -73,23 +73,41 @@ describe('ora e luogo della partita', () => {
   });
 });
 
-describe('pagelle da scrivere e pagelle saltate', () => {
-  const m = (id: string, date: string, over: Record<string, unknown> = {}) => ({ id, date, scoreA: 5, scoreB: 3, ...over });
+describe('pagelle da scrivere e pagelle saltate (meno della metà delle descrizioni)', () => {
+  const team = (id: string, side: string) => Array.from({ length: 5 }, (_, i) => ({ id: `${id}${side}${i}`, name: `${side}${i}` }));
+  const m = (id: string, date: string, over: Record<string, unknown> = {}) => ({ id, date, scoreA: 5, scoreB: 3, teamA: team(id, 'A'), teamB: team(id, 'B'), ...over });
+  /** n giocatori della partita con una descrizione */
+  const written = (id: string, n: number) => Array.from({ length: n }, (_, i) => ({ matchId: id, player: `A${i}`, rating: 6, notes: 'bravo' }));
   const ds = {
     players: [],
     matches: [
-      m('a', '2026-10-01'),                                  // risultato, nessuna descrizione → da scrivere
-      m('b', '2026-10-08'),                                  // risultato e descrizione → niente
-      m('c', '2026-10-15', { ratingsSkipped: true }),        // saltata
-      m('d', '2026-10-22', { scoreA: null, scoreB: null }),  // non giocata → niente
-      m('e', '2026-10-29', { ratingsSkipped: true }),        // saltata ma poi qualcuno ha scritto → non compare più tra le saltate
+      m('a', '2026-10-01'),                                  // 0 descrizioni su 10 → da scrivere
+      m('b', '2026-10-08'),                                  // 5 su 10 = esattamente la metà → a posto
+      m('c', '2026-10-15'),                                  // 4 su 10 → meno della metà → da scrivere
+      m('d', '2026-10-22'),                                  // 8 su 10: ne mancano un paio → a posto
+      m('e', '2026-10-29', { ratingsSkipped: true }),        // saltata, 0 su 10 → tra le saltate
+      m('f', '2026-11-05', { ratingsSkipped: true }),        // saltata ma poi ne hanno scritte 6 su 10 → non è più tra le saltate
+      m('g', '2026-11-12', { scoreA: null, scoreB: null }),  // non giocata → niente
+      m('h', '2026-11-19', { ratingsSkipped: true }),        // saltata, 4 su 10 → ancora tra le saltate
     ],
-    ratings: [{ matchId: 'b', player: 'X', notes: 'bravo' }, { matchId: 'e', player: 'Y', titolo: 'IL MURO' }],
+    ratings: [...written('b', 5), ...written('c', 4), ...written('d', 8), ...written('f', 6), ...written('h', 4)],
   } as unknown as Dataset;
-  it('da scrivere: solo partite con risultato, senza testi e non saltate', () => {
-    expect(pendingRatings(ds).map((x) => x.id)).toEqual(['a']);
+
+  it('copertura: giocatori in squadra e descrizioni scritte', () => {
+    expect(ratingsCoverage(ds, ds.matches[3] as never)).toEqual({ written: 8, total: 10 });
+    expect(ratingsCoverage(ds, ds.matches[0] as never)).toEqual({ written: 0, total: 10 });
   });
-  it('saltate: con risultato, senza testi, segnate come saltate (dalla più recente)', () => {
-    expect(skippedRatings(ds).map((x) => x.id)).toEqual(['c']);
+  it('da scrivere: meno della metà delle descrizioni, non saltate (dalla più recente)', () => {
+    expect(pendingRatings(ds).map((x) => x.id)).toEqual(['c', 'a']);
+  });
+  it('a metà esatta o con solo un paio di mancanti la partita è a posto', () => {
+    expect(needsRatings(ds, ds.matches[1] as never)).toBe(false);
+    expect(needsRatings(ds, ds.matches[3] as never)).toBe(false);
+  });
+  it('saltate: segnate come saltate e ancora sotto la metà (dalla più recente)', () => {
+    expect(skippedRatings(ds).map((x) => x.id)).toEqual(['h', 'e']);
+  });
+  it('una partita non giocata non è mai «da scrivere»', () => {
+    expect(needsRatings(ds, ds.matches[6] as never)).toBe(false);
   });
 });

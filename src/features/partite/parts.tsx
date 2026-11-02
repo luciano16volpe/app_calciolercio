@@ -246,7 +246,7 @@ export function PagelleTextDialog({ data, matchId, onClose }: { data: LeagueData
   const toast = useToast();
   const m = data.dataset.matches.find((x) => x.id === matchId);
   if (!m) return null;
-  const txt = pagelleText(data.dataset, m);
+  const txt = pagelleText(data.dataset, m, data.editors?.[m.id]);
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(txt);

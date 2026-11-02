@@ -63,7 +63,9 @@ test('Testo delle pagelle: si apre dall\'ultima partita e si chiude', async ({ p
   await expect(dlg).toBeVisible();
   await expect(dlg.locator('.pt-text')).toContainText('LE PAGELLE DI CALCIOLERCIO');
   await expect(dlg.locator('.pt-text')).toContainText('MVP');
-  await expect(dlg.locator('.pt-text')).toContainText('Redazione Avv. Peppe Rella');
+  // nessuna firma fissa: compare solo il nome di chi ha scritto le pagelle (qui non si sa)
+  await expect(dlg.locator('.pt-text')).not.toContainText('a cura della Redazione');
+  await expect(dlg.locator('.pt-text')).not.toContainText('Avv. Peppe Rella');
   await dlg.locator('button', { hasText: 'Chiudi' }).click();
   await expect(dlg).toHaveCount(0);
 });

@@ -25,12 +25,18 @@ async function open(browser: Browser, testInfo: TestInfo, be: FakeBackend, user:
 
 /** Toglie titoli e descrizioni alle due partite giocate più recenti (sono «da scrivere») e dice quante partite da scrivere ci sono in tutto
  *  (i dati di prova ne hanno già alcune senza descrizioni). */
+/** Come l'app: una partita con risultato è «da scrivere» se meno della METÀ dei giocatori ha titolo o descrizione. */
+function needs(be: FakeBackend, id: string): boolean {
+  const rows = be.mplayers.filter((r) => r.match_id === id);
+  const written = rows.filter((r) => String(r.titolo ?? '').trim() || String(r.descrizione ?? '').trim()).length;
+  return rows.length === 0 || written * 2 < rows.length;
+}
+
 function strip(be: FakeBackend): number {
   const played = [...be.matches].filter((x) => x.score_a != null && x.score_b != null).sort((a, b) => String(b.date).localeCompare(String(a.date)));
   const ids = played.slice(0, 2).map((x) => String(x.id));
   for (const r of be.mplayers) if (ids.includes(String(r.match_id))) { r.titolo = null; r.descrizione = null; }
-  const hasText = (id: string) => be.mplayers.some((r) => r.match_id === id && (String(r.titolo ?? '').trim() || String(r.descrizione ?? '').trim()));
-  return played.filter((x) => !hasText(String(x.id))).length;
+  return played.filter((x) => needs(be, String(x.id))).length;
 }
 
 test('Pagelle: elenco «senza pagelle», Salta e Rimetti; il conteggio nel menu segue', async ({ browser }, testInfo) => {
@@ -57,6 +63,54 @@ test('Pagelle: elenco «senza pagelle», Salta e Rimetti; il conteggio nel menu 
   await expect(sheet.locator('.pending-row')).toHaveCount(n);
   await expect(sheet.locator('#pending-skipped')).toHaveCount(0);
   expect(be.matches.some((x) => x.ratings_skipped === true)).toBe(false);
+});
+
+test('Pagelle: la redazione salta a gruppi (le più vecchie di 7 giorni, poi tutte) e rimette tutte insieme', async ({ browser }, testInfo) => {
+  const be = new FakeBackend();
+  const u = league(be, 'redazione');
+  const n = strip(be);
+  // partite senza testi, con risultato (come le calcola l'app) e quante sono più vecchie di 7 giorni
+  const pending = be.matches.filter((x) => x.score_a != null && x.score_b != null && needs(be, String(x.id)));
+  const cut = new Date();
+  cut.setDate(cut.getDate() - 7);
+  const older7 = pending.filter((x) => String(x.date) < cut.toLocaleDateString('sv-SE')).length;
+  expect(pending.length).toBe(n);
+  expect(older7).toBeGreaterThan(0);
+  expect(older7).toBeLessThan(n); // le due partite più recenti dei dati di prova hanno meno di... (se no il test non distingue)
+
+  const page = await open(browser, testInfo, be, u);
+  await openMenu(page);
+  await page.locator('#menu-red-list').click();
+  const sheet = page.locator('#sheet-pending');
+  await expect(sheet.locator('#skip-all')).toContainText(`Salta tutte e ${n}`);
+  // le più vecchie di 7 giorni
+  await expect(sheet.locator('#skip-older-7')).toContainText(`Salta le ${older7} più vecchie di 7 giorni`);
+  await sheet.locator('#skip-older-7').click();
+  await expect(page.locator('#app-modal-msg')).toContainText(`${older7} partite`);
+  await page.locator('#app-modal-ok').click();
+  await expect(page.locator('#toast')).toContainText(`${older7} partite saltate`);
+  expect(be.matches.filter((x) => x.ratings_skipped === true).length).toBe(older7);
+  await expect(sheet.locator('#pending-skipped')).toContainText(`Saltate (${older7})`);
+  // tutte
+  if (n - older7 > 1) {
+    await sheet.locator('#skip-all').click();
+    await page.locator('#app-modal-ok').click();
+    await expect(page.locator('#toast')).toContainText('partite saltate');
+  } else {
+    await sheet.locator('.pending-row').first().getByRole('button', { name: /^Salta/ }).click();
+  }
+  await expect(sheet.locator('#pending-empty')).toBeVisible();
+  await expect(sheet.locator('#pending-skipped')).toContainText(`Saltate (${n})`);
+  // rimetti tutte
+  await sheet.locator('#restore-all').click();
+  await page.locator('#app-modal-ok').click();
+  await expect(page.locator('#toast')).toContainText('rimesse da scrivere');
+  await expect(sheet.locator('#pending-skipped')).toHaveCount(0);
+  expect(be.matches.some((x) => x.ratings_skipped === true)).toBe(false);
+  // il menu della redazione torna al conteggio di prima
+  await page.getByRole('button', { name: 'Indietro' }).click();
+  await openMenu(page);
+  await expect(page.locator('#menu-red-pending .menu-bd')).toHaveText(String(n));
 });
 
 test('Pagelle: la redazione vede il conteggio senza le saltate, e salta dalla scheda della partita', async ({ browser }, testInfo) => {
@@ -102,4 +156,32 @@ test('Foto: dentro il pallino in Rosa, in Gioca, nel menu e nell’intestazione 
   // menu: il cerchio in alto mostra la foto, non l'iniziale
   await openMenu(page);
   await expect(page.locator('#menu-avatar img')).toHaveAttribute('src', /foto-di-prova\.jpg/);
+});
+
+test('Firma: «Redazione <nome>» è di chi ha scritto le pagelle; senza autore noto non c\u2019è nessuna firma', async ({ browser }, testInfo) => {
+  const be = new FakeBackend();
+  const u = league(be, 'admin');
+  const last = [...be.matches].filter((x) => x.score_a != null).sort((a, b) => String(b.date).localeCompare(String(a.date)))[0] as { id: string };
+  const page = await open(browser, testInfo, be, u);
+  const pagelle = async () => {
+    await page.locator('.bottom-nav').getByText('Partite', { exact: true }).click();
+    await page.locator('#last-match .mbar-btn', { hasText: 'Pagelle' }).click();
+    const t = page.locator('#pt-dialog .pt-text');
+    await expect(t).toContainText('LE PAGELLE DI CALCIOLERCIO');
+    return t;
+  };
+  // autore non registrato: nessuna firma (né quella fissa di una volta)
+  const t0 = await pagelle();
+  await expect(t0).not.toContainText('a cura della Redazione');
+  await expect(t0).not.toContainText('Avv. Peppe Rella');
+  await page.locator('#pt-dialog button', { hasText: 'Chiudi' }).click();
+  // autore registrato: compare il suo nome
+  be.editors.push({ match_id: last.id, league_id: 'SM', name: 'Luca Rossi' });
+  await page.reload(); // si riapre sulle Partite (l'indirizzo ricorda la pagina)
+  await expect(page.locator('#last-match')).toBeVisible({ timeout: 20_000 });
+  await page.locator('#last-match .mbar-btn', { hasText: 'Pagelle' }).click();
+  const t1 = page.locator('#pt-dialog .pt-text');
+  await expect(t1).toContainText('LE PAGELLE DI CALCIOLERCIO');
+  await expect(t1).toContainText('a cura della Redazione Luca Rossi');
+  await expect(t1).not.toContainText('Avv. Peppe Rella');
 });

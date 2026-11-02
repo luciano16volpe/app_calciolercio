@@ -62,13 +62,31 @@ export const lastMatch = (data: Dataset): Match | null => ([...data.matches].sor
 export const matchHasDesc = (data: Dataset, matchId: string): boolean =>
   data.ratings.some((r) => r.matchId === matchId && (String(r.notes || '').trim() || String(r.titolo || '').trim()));
 
-/** Partite con risultato ancora senza titoli o descrizioni, escluse quelle «saltate» (non si vogliono pagellare). Dalla più recente. */
-export const pendingRatings = (data: Dataset): Match[] =>
-  [...data.matches].filter((m) => hasScore(m) && !m.ratingsSkipped && !matchHasDesc(data, m.id)).sort(byDateDesc);
+/**
+ * Quanto è «pagellata» una partita: quanti giocatori hanno titolo o descrizione su quanti ne giocano.
+ * (Giocatori della partita = quelli in squadra; se la partita non ha squadre, le pagelle che ci sono.)
+ */
+export function ratingsCoverage(data: Dataset, m: Match): { written: number; total: number } {
+  const rs = data.ratings.filter((r) => r.matchId === m.id);
+  const written = rs.filter((r) => String(r.notes || '').trim() || String(r.titolo || '').trim()).length;
+  const total = (m.teamA?.length || 0) + (m.teamB?.length || 0) || rs.length;
+  return { written, total };
+}
 
-/** Partite con risultato, senza descrizioni, che si è scelto di saltare. Dalla più recente. */
+/** Una partita con risultato «senza pagelle»: meno della METÀ dei giocatori ha titolo o descrizione (non basta che ne manchino un paio). */
+export const needsRatings = (data: Dataset, m: Match): boolean => {
+  if (!hasScore(m)) return false;
+  const { written, total } = ratingsCoverage(data, m);
+  return total === 0 || written * 2 < total;
+};
+
+/** Partite senza pagelle (meno della metà delle descrizioni), escluse quelle «saltate». Dalla più recente. */
+export const pendingRatings = (data: Dataset): Match[] =>
+  [...data.matches].filter((m) => !m.ratingsSkipped && needsRatings(data, m)).sort(byDateDesc);
+
+/** Partite che si è scelto di saltare e che hanno ancora meno della metà delle descrizioni. Dalla più recente. */
 export const skippedRatings = (data: Dataset): Match[] =>
-  [...data.matches].filter((m) => hasScore(m) && !!m.ratingsSkipped && !matchHasDesc(data, m.id)).sort(byDateDesc);
+  [...data.matches].filter((m) => !!m.ratingsSkipped && needsRatings(data, m)).sort(byDateDesc);
 
 // ── Gazzette ───────────────────────────────────────────────────────────────
 export interface GazItem {
@@ -145,7 +163,7 @@ export function matchHighlights(data: Dataset, m: Match): MatchHighlights {
 
 // ── testo delle pagelle (formato WhatsApp) ─────────────────────────────────
 /** Tutte le pagelle di una partita in UN testo, con il formato di WhatsApp (*grassetto*, _corsivo_), da leggere e condividere. */
-export function pagelleText(data: Dataset, m: Match): string {
+export function pagelleText(data: Dataset, m: Match, editor?: string): string {
   const ratings = data.ratings.filter((r) => r.matchId === m.id);
   const sa = num(m.scoreA);
   const sb = num(m.scoreB);
@@ -185,7 +203,7 @@ export function pagelleText(data: Dataset, m: Match): string {
   const foot: string[] = [];
   if (h.mvp) foot.push(`⭐ MVP: *${h.mvp.name}*`);
   if (h.worst && (!h.mvp || h.worst.name !== h.mvp.name)) foot.push(`🥴 Peggiore: *${h.worst.name}*`);
-  return [head.join('\n'), block('🔵 *BLU*', m.teamA), block('⚪ *BIANCHI*', m.teamB), [...foot, '', '✒️ _a cura della Redazione Avv. Peppe Rella_'].join('\n')].join('\n\n');
+  return [head.join('\n'), block('🔵 *BLU*', m.teamA), block('⚪ *BIANCHI*', m.teamB), (editor ? [...foot, '', `✒️ _a cura della Redazione ${editor}_`] : foot).join('\n')].join('\n\n');
 }
 
 // ── equilibrio squadre di una partita salvata ──────────────────────────────

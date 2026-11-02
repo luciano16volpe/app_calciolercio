@@ -150,7 +150,9 @@ describe.each(datasets)('%s', (_label, raw) => {
       sameCanvas(matchFormations(ld, m) as unknown as Rec, f?.canvas as Rec, `formazioni della partita ${m.date}`);
       legacy.shareMatchSummary(m.id);
       const r = legacy.__viewerGet();
-      sameCanvas(matchSummary(ld, m) as unknown as Rec, r?.canvas as Rec, `riepilogo della partita ${m.date}`);
+      // la firma ora è di chi ha scritto le pagelle: con lo stesso nome di una volta l'immagine è identica a quella della vecchia app
+      const ldFirma = { ...ld, editors: Object.fromEntries(data.matches.map((x) => [x.id, 'Avv. Peppe Rella'])) };
+      sameCanvas(matchSummary(ldFirma, m) as unknown as Rec, r?.canvas as Rec, `riepilogo della partita ${m.date}`);
       legacy.shareMatchSheet(m.id);
       const s = legacy.__viewerGet();
       sameCanvas(matchSheet(ld, m) as unknown as Rec, s?.canvas as Rec, `foglio della partita ${m.date}`);
