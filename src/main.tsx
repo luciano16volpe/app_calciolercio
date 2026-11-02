@@ -6,6 +6,9 @@ import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persist
 import './styles/app.css';
 import './styles/menu.css';
 import { App } from './App';
+import { applyTheme, getTheme } from './app/theme';
+
+applyTheme(getTheme());
 
 // I dati restano sul telefono: la prossima volta si vede subito l'ultima versione, poi si aggiorna.
 const queryClient = new QueryClient({ defaultOptions: { queries: { gcTime: 1000 * 60 * 60 * 24 * 7, retry: 1 } } });
