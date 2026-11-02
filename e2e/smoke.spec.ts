@@ -192,6 +192,7 @@ test('Intestazione: solo ☰ a sinistra, CALCIO LERCIO al centro, nome della leg
   expect(menu.x).toBeLessThan(20);
   expect(title.x).toBeGreaterThan(menu.x + menu.width);
   expect(pill.x).toBeGreaterThan(title.x);
+  expect(Math.abs(title.x + title.width / 2 - page.viewportSize()!.width / 2)).toBeLessThan(2); // la scritta è esattamente al centro
   expect(pill.x + pill.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   // nessun elemento fuori dallo schermo, nemmeno a 320 px
   await page.setViewportSize({ width: 320, height: 700 });

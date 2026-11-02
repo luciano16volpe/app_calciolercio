@@ -52,7 +52,7 @@ test('Amministratore: modifica voto, gol e risultato e salva', async ({ page }) 
   await goal.locator('.rate-btn-plus').click();
   await expect(goal.locator('input')).toHaveValue(String(before + 1));
   await modal.locator('#sc-a').fill('9');
-  await modal.locator('#edit-time').fill('20:30');
+  await modal.locator('#edit-time').selectOption('20:00');
   await modal.locator('#edit-place').fill('Campo Luna');
   await modal.locator('button', { hasText: 'Salva partita' }).click();
   await expect(page.locator('#toast')).toContainText('Salvato:', { timeout: 15_000 });
@@ -61,7 +61,7 @@ test('Amministratore: modifica voto, gol e risultato e salva', async ({ page }) 
   expect(rows.some((w) => (w.body as { rating: number }).rating === 7 && (w.body as { goals: number }).goals === before + 1)).toBe(true);
   const head = writes.find((w) => w.table === 'matches' && w.method === 'PATCH');
   expect((head?.body as { score_a: number }).score_a).toBe(9);
-  expect(head?.body).toMatchObject({ play_time: '20:30', place: 'Campo Luna' });
+  expect(head?.body).toMatchObject({ play_time: '20:00', place: 'Campo Luna' });
   await expect(page.locator('#match-modal')).toHaveCount(0); // si chiude da sola
   await noOverflow(page);
 });
@@ -123,7 +123,7 @@ test('Gioca: Crea partita salva squadre e previsione', async ({ page }) => {
   // ora e luogo sono obbligatori
   await dlg.locator('button', { hasText: 'Crea partita' }).click();
   await expect(page.locator('#toast')).toContainText('Scegli l’ora');
-  await dlg.locator('#nm-time').fill('21:00');
+  await dlg.locator('#nm-time').selectOption('21:00');
   await dlg.locator('button', { hasText: 'Crea partita' }).click();
   await expect(page.locator('#toast')).toContainText('dove si gioca');
   expect(writes.some((w) => w.table === 'matches')).toBe(false);

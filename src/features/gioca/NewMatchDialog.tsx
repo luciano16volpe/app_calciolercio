@@ -1,6 +1,7 @@
 // Finestra "📅 Nuova partita": salva le squadre appena sorteggiate (con la previsione, per misurare la precisione del bilanciamento).
 // Fonte: newMatch, saveNewMatch in legacy/index.html.
 import { useQueryClient } from '@tanstack/react-query';
+import { HourSelect } from '../../app/HourSelect';
 import { useState } from 'react';
 import { releaseKeyboard, repairViewport } from '../../app/Dialogs';
 import { useToast } from '../../app/Toast';
@@ -70,7 +71,7 @@ export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData
           </div>
           <div>
             <label style={lbl} htmlFor="nm-time">⏰ Ora</label>
-            <input type="time" id="nm-time" className="dt-inp" value={time} onChange={(e) => setTime(e.target.value)} style={{ ...input, fontSize: 16 }} />
+            <HourSelect id="nm-time" value={time} onChange={setTime} style={input} />
           </div>
           <div>
             <label style={lbl} htmlFor="nm-place">📍 Luogo</label>

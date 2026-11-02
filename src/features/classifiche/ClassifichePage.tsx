@@ -46,6 +46,14 @@ export function ClassifichePage({ data, onOpenPlayer, onOpenMatch }: { data: Lea
   // le scelte attive restano visibili nelle righe scorrevoli
   const seasonsRef = useRef<HTMLDivElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
+  // la fascia fissa si ferma subito sotto l'intestazione (che è alta in modo diverso su ogni telefono)
+  useEffect(() => {
+    const set = () => stickyRef.current?.style.setProperty('--hdr-h', `${document.querySelector('header')?.getBoundingClientRect().height ?? 50}px`);
+    set();
+    window.addEventListener('resize', set);
+    return () => window.removeEventListener('resize', set);
+  }, []);
   useEffect(() => {
     [seasonsRef.current, tabsRef.current].forEach((row) => {
       const a = row?.querySelector('.chip.active');
@@ -55,6 +63,8 @@ export function ClassifichePage({ data, onOpenPlayer, onOpenMatch }: { data: Lea
 
   return (
     <div id="cl-content">
+      {/* stagione e classifica restano fissi sotto l'intestazione: scorre solo la lista */}
+      <div className="cl-sticky" ref={stickyRef}>
       <div className="chips-row" id="cl-seasons" ref={seasonsRef}>
         {seasons.map((s) => (
           <button key={s.key} className={`chip${s.key === scope ? ' active' : ''}`} onClick={() => setScopeSel(s.key)}>
@@ -63,12 +73,13 @@ export function ClassifichePage({ data, onOpenPlayer, onOpenMatch }: { data: Lea
         ))}
         <button className={`chip${scope === 'all' ? ' active' : ''}`} onClick={() => setScopeSel('all')}>♾️ Sempre</button>
       </div>
-      <div id="season-dash"><SeasonDash data={data} scope={scope} /></div>
       <div className="chips-row" id="cl-tabs" ref={tabsRef}>
         {CL_TABS.map(([k, l]) => (
           <button key={k} className={`chip tab${k === tab ? ' active' : ''}`} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
+      </div>
+      <div id="season-dash"><SeasonDash data={data} scope={scope} /></div>
       {/* come in legacy: tre schede (carte) diverse, una sola visibile */}
       {tab !== 'statistiche' && tab !== 'albo' ? (
         <div className="card cl-sec" id="cl-list-card">

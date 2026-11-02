@@ -1,5 +1,5 @@
 /* Menu laterale, pannelli e pillola della lega (anteprime approvate: docs/specifiche/img). */
-.hb{width:34px;height:34px;border-radius:10px;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-right:8px;position:relative}
+.hb{width:34px;height:34px;border-radius:10px;border:none;background:none;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-right:8px;position:relative}
 .hb .dot{position:absolute;top:-3px;right:-3px;min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:var(--red);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
 .lg-pill{font-size:11px;opacity:.9;font-weight:700;margin-left:8px;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.16);border:none;color:#fff;cursor:pointer;max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .menu-dim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;touch-action:none}
@@ -77,8 +77,8 @@ html[data-theme="light"]{color-scheme:light}
 
 /* intestazione: ☰ (menu) · CALCIO LERCIO · nome della lega */
 header.app-header{gap:8px;min-height:50px}
-.app-title{flex:1;min-width:0;text-align:center;font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;font-weight:400;font-size:clamp(18px,6vw,26px);letter-spacing:1.6px;line-height:1;white-space:nowrap}
-header.app-header .lg-pill{margin:0;flex-shrink:0;max-width:30vw}
+.app-title{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;text-align:center;font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;font-weight:400;font-size:clamp(18px,6vw,26px);letter-spacing:1.6px;line-height:1;white-space:nowrap}
+header.app-header .lg-pill{margin:0 0 0 auto;flex-shrink:0;max-width:calc(50vw - 78px)}
 /* pallini dei giocatori in Rosa e Gioca: la foto, se c'è */
 .conv-avatar.has-photo{background-size:cover;background-position:center;color:transparent}
 /* firma della redazione sotto la pagella */
@@ -99,4 +99,8 @@ header.app-header .lg-pill{margin:0;flex-shrink:0;max-width:30vw}
 /* la mia faccia (o foto) al posto dell'icona del profilo nel footer */
 .bn-face{width:29px;height:29px;border-radius:50%;background:#e8eef8 center/cover no-repeat;color:#1a4a8f;font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center;border:2px solid var(--gray3);transition:border-color var(--tr),transform var(--tr)}
 .bnav-item.active .bn-face{border-color:var(--green);transform:translateY(-1px) scale(1.06)}
-
+/* classifiche: stagione e scheda sempre visibili mentre scorre la lista */
+.cl-sticky{position:sticky;top:var(--hdr-h,50px);z-index:150;background:#eef1f6;margin:0 -8px 6px;padding:6px 8px 0}
+@media(prefers-color-scheme:dark){html:not([data-theme="light"]) .cl-sticky{background:#151a24}}
+html[data-theme="dark"] .cl-sticky{background:#151a24}
+.cl-sticky .chips-row{margin-bottom:0}
