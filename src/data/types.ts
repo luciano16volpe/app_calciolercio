@@ -904,6 +904,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      create_match_with_teams: {
+        Args: { p_match: Json; p_team_a: string[]; p_team_b: string[] }
+        Returns: string
+      }
+      create_player_in_league: {
+        Args: { p_league: string; p_name: string }
+        Returns: string
+      }
       create_player_invite: { Args: { l: string; p: string }; Returns: string }
       decide_admin_request: {
         Args: { approve: boolean; c: string }
@@ -1043,6 +1051,19 @@ export type Database = {
       request_claim: { Args: { l: string; p: string }; Returns: undefined }
       review_claim: {
         Args: { approve: boolean; c: string }
+        Returns: undefined
+      }
+      save_match_ratings: {
+        Args: {
+          p_header?: Json
+          p_match: string
+          p_rows: Json
+          p_untouched_texts?: string[]
+        }
+        Returns: undefined
+      }
+      save_match_texts: {
+        Args: { p_match: string; p_rows: Json }
         Returns: undefined
       }
       save_push_subscription: {

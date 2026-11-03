@@ -8,7 +8,7 @@ import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { formOn } from '../../data/gameSettings';
 import { useToast } from '../../app/Toast';
 import { compressGazzetta, makeGazzettaThumb } from '../../canvas/gazzetta';
-import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, setRatingsSkipped, updateMatchHeader } from '../../data/mutations';
+import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, setRatingsSkipped } from '../../data/mutations';
 import { gazzettaUrl, LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
 import { formatDate, whenWhere } from '../../domain/format';
@@ -373,14 +373,11 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
     try {
       toast('⏳ Salvataggio...');
       const untouched = new Set(Object.entries(draft.fields).filter(([k, f]) => f.id && f.tit === draft.base[k]?.tit && f.desc === draft.base[k]?.desc).map(([, f]) => f.id as string));
-      await saveMatchRatings(matchId, plan.rows, untouched);
-      if (headerChanged) {
-        try {
-          await updateMatchHeader(matchId, plan.scoreA, plan.scoreB, notes, draft.time, draft.place);
-        } catch {
-          toast('Voti salvati, ma errore su punteggio, ora, luogo o note');
-        }
-      }
+      await saveMatchRatings(matchId, plan.rows, untouched, headerChanged ? {
+        score_a: plan.scoreA === '' ? null : plan.scoreA,
+        score_b: plan.scoreB === '' ? null : plan.scoreB,
+        notes: notes || null, play_time: draft.time || null, place: draft.place.trim() || null,
+      } : undefined);
       releaseKeyboard();
       await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
       toast(`Salvato: ${plan.rows.length} pagelle`);

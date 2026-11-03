@@ -189,3 +189,9 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - **Classifiche senza il riquadro dei totali** (Partite, Gol totali, Gol/partita, Miglior media): tolto dalla schermata; il calcolo resta testato.
 - **ON FIRE / IN CRISI scadono dopo un mese:** se l'ultima pagella del giocatore ha più di un mese, nessuno stato di forma (si somma alla regola delle 5 partite recenti).
 - **Figurina senza logo** sotto il ruolo del giocatore.
+
+## Salvataggi atomici
+- Partita e squadre, nuovo giocatore e appartenenza alla lega, pagelle e intestazione, testi della redazione: ogni comando usa una sola transazione PostgreSQL tramite RPC SECURITY INVOKER, mantenendo RLS e trigger.
+- Sostituisce la precedente scelta di aggiornare separatamente ogni giocatore e salvare il risultato in un secondo momento: un errore annulla il comando intero.
+- I testi non toccati dall'amministratore e l'intestazione non modificata vengono conservati. Gli upload Storage restano separati.
+- Test locali con tutte le migrazioni in PostgreSQL in memoria (PGlite), compresi errori intermedi, audit e permessi. Dettagli e ordine di pubblicazione in `docs/SALVATAGGI_ATOMICI.md`.

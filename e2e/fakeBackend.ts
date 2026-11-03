@@ -219,6 +219,41 @@ export class FakeBackend {
     const need = (): Reply | null => (actor ? null : err(401, 'Devi prima accedere'));
     const l = a.l as string;
     switch (fn) {
+      case 'create_player_in_league': {
+        const e = need(); if (e) return e;
+        if (!this.isAdmin(String(a.p_league), actor)) return err(403, 'Permesso negato');
+        const name = String(a.p_name ?? '').trim();
+        if (!name) return err(400, 'Nome non valido');
+        const made = this.write('POST', 'players', new URLSearchParams(), { name }, actor, ua, true);
+        if (made.status >= 400) return made;
+        const id = (made.body as Row).id;
+        this.write('POST', 'league_players', new URLSearchParams(), { league_id: a.p_league, player_id: id }, actor, ua, false);
+        return { status: 200, body: id };
+      }
+      case 'save_match_ratings':
+      case 'save_match_texts': {
+        const e = need(); if (e) return e;
+        const m = this.matches.find((x) => x.id === a.p_match);
+        const role = m ? this.role(String(m.league_id), actor) : null;
+        if (role !== 'admin' && !(fn === 'save_match_texts' && role === 'redazione')) return err(403, 'Permesso negato');
+        const rows = a.p_rows as Row[];
+        const current = this.mplayers.filter((x) => x.match_id === a.p_match);
+        if (new Set(rows.map((r) => r.player_id)).size !== rows.length || rows.some((r) => !current.some((c) => c.player_id === r.player_id))) return err(400, 'Giocatore non presente o duplicato');
+        for (const c of current) {
+          const r = rows.find((x) => x.player_id === c.player_id);
+          if (!r && fn === 'save_match_texts') continue;
+          const patch: Row = fn === 'save_match_texts' ? { titolo: r!.titolo, descrizione: r!.descrizione } : r
+            ? Object.fromEntries(['rating', 'goals', 'assist', 'autogol', 'meta', 'rigori_sbagliati'].map((k) => [k, r[k]]))
+            : { rating: null, goals: 0, assist: 0, autogol: 0, meta: 0, rigori_sbagliati: 0 };
+          if (fn === 'save_match_ratings' && (r ? r.write_text : !(a.p_untouched_texts as string[]).includes(String(c.player_id)))) {
+            patch.titolo = r?.titolo ?? null;
+            patch.descrizione = r?.descrizione ?? null;
+          }
+          this.write('PATCH', 'match_players', new URLSearchParams({ match_id: 'eq.' + String(a.p_match), player_id: 'eq.' + String(c.player_id) }), patch, actor, ua, false);
+        }
+        if (fn === 'save_match_ratings' && a.p_header) this.write('PATCH', 'matches', new URLSearchParams({ id: 'eq.' + String(a.p_match) }), a.p_header, actor, ua, false);
+        return { status: 200, body: null };
+      }
       case 'is_super_admin': return { status: 200, body: !!actor && this.supers.has(actor) };
       case 'log_event': return { status: 200, body: null };
       case 'player_history': return { status: 200, body: [] };

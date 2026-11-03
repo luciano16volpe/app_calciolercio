@@ -120,6 +120,8 @@ export async function setup(page: Page, opts: Opts = {}): Promise<Write[]> {
     }
     if (req.method() === 'POST' && (table === 'matches' || table === 'players')) return json(r, { id: table === 'players' ? 'nuovo-giocatore' : 'nuova-partita' }, 201);
     if (table in rpc) return json(r, rpc[table]);
+    if (table === 'create_match_with_teams') return json(r, 'nuova-partita');
+    if (table === 'create_player_in_league') return json(r, 'nuovo-giocatore');
     if (table === 'join_league') return json(r, 'L2');
     return r.fulfill({ status: req.method() === 'POST' ? 201 : 204, headers: CORS, contentType: 'application/json', body: '' });
   });
