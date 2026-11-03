@@ -227,3 +227,34 @@ test('Profilo: statistiche e ultime dieci partite seguono la lega scelta', async
   await expect(page.locator('#league-pill')).toContainText('San Marcello');
   await expect(page.locator('#profile-recent-matches')).not.toContainText('99 - 0');
 });
+
+test('Forma: stesso stato in Rosa e profilo, distinto per lega', async ({ browser }, testInfo) => {
+  const { be, u, me } = world();
+  const removed = new Set(be.matches.filter((m) => m.league_id === 'SM').map((m) => m.id));
+  be.matches = be.matches.filter((m) => m.league_id !== 'SM');
+  be.mplayers = be.mplayers.filter((r) => !removed.has(r.match_id));
+  be.lplayers.push({ league_id: 'L2', player_id: me.id, aliases: [] });
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' });
+  const old = `${Number(today.slice(0, 4)) - 1}-01-01`;
+  const add = (league: string, votes: number[]) => votes.forEach((rating, i) => {
+    const id = `${league}-form-${i}`;
+    be.matches.push({ id, league_id: league, date: league === 'SM' && i < 4 ? old : today, score_a: 2, score_b: 1 });
+    be.mplayers.push({ match_id: id, player_id: me.id, team: 'A', position: 0, rating, goals: 0, assist: 0, autogol: 0, meta: 0, rigori_sbagliati: 0 });
+  });
+  add('SM', [5, 5, 5, 5, 8, 8, 7, 6, 6]);
+  add('L2', [5, 5, 5, 8, 8]);
+  const page = await open(browser, testInfo, be, u);
+  const card = page.locator('#profile-player-card');
+  await expect(card.locator('.fut-mini')).not.toHaveClass(/crisi|fire/);
+  await expect(card.locator('.pg-head')).toContainText('Costante');
+  await expect(card.locator('.pg-cell').filter({ hasText: 'Media voto' }).locator('.pg-val')).toHaveText('7.00');
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
+  await expect(page.locator('#players-list .card-compact', { hasText: String(me.name) }).locator('.fire-chip')).toHaveCount(0);
+  await openProfile(page);
+  await page.locator('#profilo-leghe .pf-league', { hasText: 'Calcetto del' }).click();
+  await expect(page.locator('#league-pill')).toContainText('Calcetto del');
+  await expect(card.locator('.fut-mini')).toHaveClass(/fire/);
+  await expect(card.locator('.pg-head')).toContainText('In forma');
+  await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
+  await expect(page.locator('#players-list .card-compact', { hasText: String(me.name) }).locator('.fire-chip')).toHaveText('🔥');
+});

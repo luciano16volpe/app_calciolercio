@@ -4,7 +4,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { setup } from './helpers';
+import { openPanel, setup } from './helpers';
 
 // «Gioca» c'è solo per gli amministratori: la prova entra come amministratore di San Marcello (accesso simulato, letture vere)
 test.beforeEach(async ({ page }) => {
@@ -104,9 +104,8 @@ test('Partite: il riepilogo della partita si apre a schermo intero', async ({ pa
 
 test('Confronto: l\'immagine si genera e si scarica', async ({ page }) => {
   await openApp(page);
-  await nav(page, 'Classifiche');
-  await page.locator('#cl-tabs .chip', { hasText: 'Confronto' }).click();
-  const box = page.locator('#scorers-list');
+  await openPanel(page, '#menu-compare', '#sheet-compare');
+  const box = page.locator('#cmp-box');
   await expect(box.locator('.vs-cards .fut-mini')).toHaveCount(2);
   const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 20_000 }), box.locator('button', { hasText: 'Condividi il confronto' }).click()]);
   expect(dl.suggestedFilename()).toMatch(/^confronto_.+_vs_.+\.png$/);

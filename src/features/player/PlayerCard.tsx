@@ -2,7 +2,6 @@
 // Fonte: openPlayerCardByIdx, bachecaHTML, playerExtrasHTML in legacy/index.html. Le modifiche arrivano con l'accesso admin.
 import { useEffect, useMemo, useState } from 'react';
 import { formOn } from '../../data/gameSettings';
-import { useToast } from '../../app/Toast';
 import { photoUrl, type LeagueData } from '../../data/queries';
 import { formState } from '../../domain/form';
 import { profileSeasonData } from '../../domain/profile';
@@ -94,7 +93,6 @@ function PairLine({ ico, lbl, c, kind, targetId, onOpenPlayer }: {
 }
 
 function Pairs({ data, player, onOpenPlayer }: { data: LeagueData; player: Player; onOpenPlayer: (id: string) => void }) {
-  const toast = useToast();
   const q = useMemo(() => playerPairs(data.dataset, player), [data, player]);
   const idOf = (c: PairMate | null) => (c ? data.dataset.players.find((p) => p.name === c.name)?.id : undefined);
   const any = q.friend || q.cursed || q.nemesis || q.victim;
@@ -102,7 +100,6 @@ function Pairs({ data, player, onOpenPlayer }: { data: LeagueData; player: Playe
     <div className="pe-sec">
       <div className="pe-title">
         🤝 Compagni e avversari
-        <button className="pe-cmp" onClick={() => toast('Il confronto arriva con le Classifiche (passo 3.3)')}>⚔️ Confronta</button>
       </div>
       <PairLine ico="🤝" lbl="Compagno d'oro" c={q.friend} kind="v" targetId={idOf(q.friend)} onOpenPlayer={onOpenPlayer} />
       <PairLine ico="💔" lbl="Compagno maledetto" c={q.cursed} kind="p" targetId={idOf(q.cursed)} onOpenPlayer={onOpenPlayer} />
@@ -132,7 +129,6 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   const all = useMemo(() => seasonStats(dataset), [dataset]);
   const period = useMemo(() => inline && player ? profileSeasonData(dataset, player.id, player.name) : null, [dataset, inline, player]);
   const statsData = useMemo(() => period ? { ...data, dataset: period.dataset } : data, [data, period]);
-  const statsAll = useMemo(() => period ? seasonStats(period.dataset) : all, [period, all]);
   const useForm = formOn(data);
 
   // Esc chiude la scheda (passando a un altro giocatore la scheda riparte da capo: vedi key in App)
@@ -144,7 +140,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   }, [onClose, inline]);
 
   if (!player) return null;
-  const state = formState(statsData.dataset, player, statsAll);
+  const state = formState(dataset, player, all);
   const w = formWeightView(dataset, player, useForm, all);
   const weightRow = (
     <div className="stat-row stat-row-ro" title={formWeightTip}>
@@ -214,7 +210,8 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
             {canEdit ? <PlayerBenchRow data={data} player={player} onRemoved={onClose} /> : null}
             <div id="modal-pagelle" style={{ marginTop: 4, paddingTop: 6, borderTop: '1px solid var(--gray2)' }}>
               {period ? <div style={{ fontSize: 11, color: 'var(--text2)', marginBottom: 4 }}>{period.label}</div> : null}
-              <PagelleSection data={statsData} player={player} showResultsWithoutRatings={!!period} onOpenAll={(focus) => setPagelleOpen({ focus })} onOpenMatch={onOpenMatch} />
+              {period ? <div style={{ fontSize: 11, color: 'var(--text2)', marginBottom: 4 }}>Stato di forma calcolato sullo storico della lega</div> : null}
+              <PagelleSection data={statsData} player={player} formDataset={dataset} showResultsWithoutRatings={!!period} onOpenAll={(focus) => setPagelleOpen({ focus })} onOpenMatch={onOpenMatch} />
             </div>
             <Bacheca data={data} player={player} open={bachecaOpen} onToggle={onToggleBacheca} />
             <Pairs data={data} player={player} onOpenPlayer={onOpenPlayer} />

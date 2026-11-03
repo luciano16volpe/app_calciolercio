@@ -213,9 +213,7 @@ function checkPagelle(v: PagelleView, html: string) {
     return;
   }
   const c = v.chart;
-  // intestazione: stato di forma (freccia, etichetta, colore)
-  const head = html.match(/<span style="font-size:11px;font-weight:800;color:([^"]*)">([^<]*)<\/span>/) as RegExpMatchArray;
-  expect([head[1], (head[2] as string).trim()]).toEqual([v.trend.col, `${v.trend.arrow} ${v.trend.label}`.trim()]);
+  // Lo stato di forma segue la regola attuale, verificata in form-league.test.ts.
   // barre
   const bars = [...html.matchAll(/<rect class="pg-bar" data-j="(\d+)" x="([\d.-]+)" y="([\d.-]+)" width="([\d.-]+)" height="([\d.-]+)" rx="2.5" fill="(#[0-9a-f]{6})"/g)];
   expect(bars.map((m) => [Number(m[1]), m[2], m[3], m[4], m[5], m[6]])).toEqual(

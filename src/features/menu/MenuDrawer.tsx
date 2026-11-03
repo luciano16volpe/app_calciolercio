@@ -13,7 +13,7 @@ import { formatDate } from '../../domain/format';
 
 export type Panel =
   | 'create-league' | 'join-league' | 'members' | 'invites' | 'claims' | 'merge' | 'league-settings' | 'admin-proposals'
-  | 'game-settings' | 'bench' | 'pending' | 'audit' | 'platform-leagues' | 'platform-users' | 'privacy' | 'help' | 'account';
+  | 'compare' | 'game-settings' | 'bench' | 'pending' | 'audit' | 'platform-leagues' | 'platform-users' | 'privacy' | 'help' | 'account';
 
 const ROLE_LABEL = { admin: 'Admin', redazione: 'Redazione', member: 'Membro' } as const;
 
@@ -151,6 +151,13 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
               </>
             ) : null}
           </div>
+
+          {data ? (
+            <>
+              <div className="menu-sec">Giocatori</div>
+              <Item icon="⚔️" title="Confronto" sub="due giocatori testa a testa" onClick={() => open('compare')} id="menu-compare" />
+            </>
+          ) : null}
 
           {canEditText && !isAdmin && data ? (
             <>

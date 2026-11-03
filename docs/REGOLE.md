@@ -40,11 +40,12 @@ il **nome della funzione legacy** da leggere per i dettagli esatti: in caso di d
   assist (>0) (`matchHighlights`). Stessa formula per "Re degli MVP" nell'albo.
 
 ## 5. Stato di forma (unico in tutta l'app)
-- Media delle **ultime 2 pagelle** (le più recenti, consecutive) confrontata con la **media di sempre** del giocatore (era: ultime 3, cambiato a novembre 2026):
+- Media delle **ultime 2 pagelle valide** confrontata con la **media di sempre nella lega selezionata**; contano soltanto partite con risultato non future:
   ≥ +0,2 → **↗ In forma**, ≤ −0,2 → **↘ In calo**, altrimenti **→ Costante** (`FORM_DELTA=0.2`).
-- Serve almeno **4 pagelle**, l'ultima deve essere tra le **5 partite più recenti del gruppo** e **non più vecchia di un mese** da oggi
+- Servono almeno **4 pagelle**, l'ultima deve essere tra le **5 partite giocate più recenti della lega** e **non più vecchia di un mese** da oggi
   (aggiunto a novembre 2026: dopo una pausa lunga ON FIRE / IN CRISI non valgono); altrimenti nessuno stato (`formState`).
 - **🔥 ON FIRE** = In forma (`onFire`). **🌧️ IN CRISI** = In calo (`inCrisi`).
+- Il risultato usa sempre lo storico della lega, anche nel profilo dove le pagelle mostrate seguono la stagione o le ultime cinque partite.
 - Visibile: scheda giocatore (intestazione + "📈 Pagelle"), figurina (etichetta sotto PAG), miniatura
   (freccia nel PAG), 🔥/🌧️ accanto al nome in Rosa.
 

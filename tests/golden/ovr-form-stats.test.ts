@@ -137,7 +137,7 @@ describe('stato di forma', () => {
   it('stato di forma: soglie ±0,2 e regola delle 5 partite recenti', () => {
     const mk = (votes: number[], dates: string[]): Dataset => ({
       players: [{ id: 'p1', name: 'Test', stats: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5] }],
-      matches: dates.map((d, i) => ({ id: 'm' + i, date: d, teamA: [{ id: 'p1', name: 'Test' }], teamB: [] })),
+      matches: dates.map((d, i) => ({ id: 'm' + i, date: d, scoreA: 1, scoreB: 0, teamA: [{ id: 'p1', name: 'Test' }], teamB: [] })),
       ratings: votes.map((v, i) => ({ matchId: 'm' + i, playerId: 'p1', player: 'Test', rating: v })),
     });
     const d5 = ['2026-10-01', '2026-10-08', '2026-10-15', '2026-10-22', '2026-10-29'];
@@ -148,7 +148,7 @@ describe('stato di forma', () => {
     expect(formState(mk([6, 6, 6], d5.slice(0, 3)), p)).toBeNull(); // meno di 4 pagelle
     // ultima pagella fuori dalle 5 partite più recenti del gruppo → nessuno stato
     const old = mk([7, 7, 7, 7], ['2026-01-01', '2026-01-08', '2026-01-15', '2026-01-22']);
-    old.matches.push(...d5.map((d, i) => ({ id: 'n' + i, date: d, teamA: [], teamB: [] })));
+    old.matches.push(...d5.map((d, i) => ({ id: 'n' + i, date: d, scoreA: 1, scoreB: 0, teamA: [], teamB: [] })));
     expect(formState(old, p)).toBeNull();
   });
 });

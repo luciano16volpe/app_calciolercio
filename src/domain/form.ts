@@ -60,13 +60,18 @@ export type FormState = 'up' | 'flat' | 'down';
  * e non può essere più vecchia di un mese rispetto a `today` (novembre 2026: dopo una lunga pausa la forma non vale).
  */
 export function formState(data: Dataset, p: Player, all = seasonStats(data), today = todayRome()): FormState | null {
-  const a = playerSeason(data, p, all);
+  const played = data.matches.filter((m) => m.date && m.date <= today && m.scoreA !== '' && m.scoreA != null && m.scoreB !== '' && m.scoreB != null);
+  const playedIds = new Set(played.map((m) => m.id));
+  const validRatings = data.ratings.filter((r) => playedIds.has(r.matchId));
+  const eligible = validRatings.length === data.ratings.length ? all : seasonStats({ ...data, matches: played, ratings: validRatings });
+  const a = playerSeason(data, p, eligible);
   if (!a || a.votes.length < 4) return null;
-  const since = data.matches.map((m) => m.date).filter(Boolean).sort().slice(-5)[0];
-  const last = a.votes[a.votes.length - 1] as { date: string };
-  if (since && last.date < since) return null;
+  const recent = played.slice().sort((a, b) => (a.date ?? '').localeCompare(b.date ?? '') || a.id.localeCompare(b.id)).slice(-5);
+  const votes = a.votes.slice().sort((a, b) => a.date.localeCompare(b.date) || a.matchId.localeCompare(b.matchId));
+  const last = votes[votes.length - 1]!;
+  if (!recent.some((m) => m.id === last.matchId)) return null;
   if (last.date < oneMonthBefore(today)) return null;
-  const d = a.votes.slice(-FORM_WINDOW).reduce((s, x) => s + x.v, 0) / FORM_WINDOW - (a.voteAvg as number);
+  const d = votes.slice(-FORM_WINDOW).reduce((s, x) => s + x.v, 0) / FORM_WINDOW - (a.voteAvg as number);
   return d >= FORM_DELTA - 1e-9 ? 'up' : d <= -FORM_DELTA + 1e-9 ? 'down' : 'flat';
 }
 

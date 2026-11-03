@@ -5,15 +5,14 @@ import type { LeagueData } from '../../data/queries';
 import { nextStatsSort, seasonDash, STATS_SORT_DEFAULT, type StatsCol, type StatsFilter } from '../../domain/rankings';
 import { seasonsList } from '../../domain/seasons';
 import { AlboList } from './Albo';
-import { Confronto } from './Confronto';
 import { CoppieList, MediaList, RecordList, ScorersList } from './lists';
 import { StatsTable } from './StatsTable';
 
-const SEASON_ICON: Record<string, string> = { PRI: '🌸', EST: '☀️', AUT: '🍂', INV: '❄️' };
+export const SEASON_ICON: Record<string, string> = { PRI: '🌸', EST: '☀️', AUT: '🍂', INV: '❄️' };
 
 export const CL_TABS = [
   ['marcatori', '⚽ Marcatori'], ['assist', '🅰️ Assist'], ['media', '⭐ Media voto'], ['statistiche', '📈 Statistiche'],
-  ['coppie', '🤝 Coppie'], ['confronto', '⚔️ Confronto'], ['albo', "🏆 Albo d'oro"], ['record', '🏅 Record'],
+  ['coppie', '🤝 Coppie'], ['albo', "🏆 Albo d'oro"], ['record', '🏅 Record'],
 ] as const;
 type Tab = (typeof CL_TABS)[number][0];
 
@@ -40,9 +39,18 @@ export function ClassifichePage({ data, onOpenPlayer, onOpenMatch }: { data: Lea
   const [tab, setTab] = useState<Tab>('marcatori');
   const [statsFilter, setStatsFilter] = useState<StatsFilter>('regulars');
   const [statsSort, setStatsSort] = useState(STATS_SORT_DEFAULT);
-  const [cmp, setCmp] = useState<{ a: string | null; b: string | null }>({ a: null, b: null });
   const seasons = useMemo(() => seasonsList(data.dataset.matches, data.albo).slice().reverse(), [data]);
   const scope = scopeSel ?? (seasons.length ? (seasons[0] as { key: string }).key : 'all');
+  const selectScope = (next: string) => {
+    if (next === scope) return;
+    setScopeSel(next);
+    window.scrollTo(0, 0);
+  };
+  const selectTab = (next: Tab) => {
+    if (next === tab) return;
+    setTab(next);
+    window.scrollTo(0, 0);
+  };
 
   // le scelte attive restano visibili nelle righe scorrevoli
   const seasonsRef = useRef<HTMLDivElement>(null);
@@ -68,15 +76,15 @@ export function ClassifichePage({ data, onOpenPlayer, onOpenMatch }: { data: Lea
       <div className="cl-sticky" ref={stickyRef}>
       <div className="chips-row" id="cl-seasons" ref={seasonsRef}>
         {seasons.map((s) => (
-          <button key={s.key} className={`chip${s.key === scope ? ' active' : ''}`} onClick={() => setScopeSel(s.key)}>
+          <button key={s.key} className={`chip${s.key === scope ? ' active' : ''}`} onClick={() => selectScope(s.key)}>
             {SEASON_ICON[s.key.slice(-3)] ?? ''} {s.label}
           </button>
         ))}
-        <button className={`chip${scope === 'all' ? ' active' : ''}`} onClick={() => setScopeSel('all')}>♾️ Sempre</button>
+        <button className={`chip${scope === 'all' ? ' active' : ''}`} onClick={() => selectScope('all')}>♾️ Sempre</button>
       </div>
       <div className="chips-row" id="cl-tabs" ref={tabsRef}>
         {CL_TABS.map(([k, l]) => (
-          <button key={k} className={`chip tab${k === tab ? ' active' : ''}`} onClick={() => setTab(k)}>{l}</button>
+          <button key={k} className={`chip tab${k === tab ? ' active' : ''}`} onClick={() => selectTab(k)}>{l}</button>
         ))}
       </div>
       </div>
@@ -89,7 +97,6 @@ export function ClassifichePage({ data, onOpenPlayer, onOpenMatch }: { data: Lea
             {tab === 'media' ? <MediaList data={data} scope={scope} onOpenPlayer={onOpenPlayer} /> : null}
             {tab === 'coppie' ? <CoppieList data={data} scope={scope} onOpenPlayer={onOpenPlayer} /> : null}
             {tab === 'record' ? <RecordList data={data} scope={scope} onOpenPlayer={onOpenPlayer} onOpenMatch={onOpenMatch} /> : null}
-            {tab === 'confronto' ? <Confronto data={data} scope={scope} a={cmp.a} b={cmp.b} onChange={(a, b) => setCmp({ a, b })} /> : null}
           </div>
         </div>
       ) : null}
