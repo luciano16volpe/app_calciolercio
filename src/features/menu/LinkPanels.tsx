@@ -8,6 +8,7 @@ import { CLAIMS_KEY, reviewClaim, usePendingClaims } from '../../data/claims';
 import { createInvite, inviteUrl, mergePlayers, PLAYERS_STATUS_KEY, unlinkPlayer, usePlayersStatus, type PlayerStatus } from '../../data/invites';
 import { LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';
+import { LeagueInviteBox } from './LeagueInviteBox';
 import { shareText } from './LeagueSheets';
 
 export function InvitesPanel({ data, onClose }: { data: LeagueData; onClose: () => void }) {
@@ -49,6 +50,7 @@ export function InvitesPanel({ data, onClose }: { data: LeagueData; onClose: () 
   };
   return (
     <Sheet title="Inviti giocatori" onClose={onClose} id="sheet-invites">
+      <LeagueInviteBox data={data} />
       <div className="card">
         <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 8, lineHeight: 1.4 }}>
           Manda a ogni amico il suo <b>link personale</b>: valido 7 giorni, lo collega alla sua scheda e lo fa entrare nella lega.

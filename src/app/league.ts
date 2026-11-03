@@ -13,18 +13,21 @@ export const HOME_PAGE: PageKey = 'profilo';
 export interface Route {
   slug: string | null;
   page: PageKey | null;
-  /** token di un invito personale (/invito/<token>) */
+  /** codice di un invito: personale a un giocatore (/invito/<codice>) o libero alla lega (/unisciti/<codice>) */
   invite: string | null;
+  inviteKind: 'player' | 'league' | null;
 }
 
 /** Legge l'indirizzo: /l/<slug>/<pagina> oppure /invito/<token>. */
 export function parsePath(path: string): Route {
   const inv = path.match(/^\/invito\/([A-Za-z0-9_-]+)\/?$/);
-  if (inv) return { slug: null, page: null, invite: inv[1] as string };
+  if (inv) return { slug: null, page: null, invite: inv[1] as string, inviteKind: 'player' };
+  const join = path.match(/^\/unisciti\/([A-Za-z0-9_-]+)\/?$/);
+  if (join) return { slug: null, page: null, invite: join[1] as string, inviteKind: 'league' };
   const m = path.match(/^\/l\/([a-z0-9-]+)(?:\/([a-z]+))?\/?$/);
-  if (!m) return { slug: null, page: null, invite: null };
+  if (!m) return { slug: null, page: null, invite: null, inviteKind: null };
   const page = (Object.keys(PAGE_PATHS) as PageKey[]).find((k) => PAGE_PATHS[k] === m[2]) ?? null;
-  return { slug: m[1] as string, page, invite: null };
+  return { slug: m[1] as string, page, invite: null, inviteKind: null };
 }
 
 export const buildPath = (slug: string, page: PageKey): string => `/l/${slug}/${PAGE_PATHS[page]}`;
