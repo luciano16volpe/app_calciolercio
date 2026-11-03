@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useToast } from '../../app/Toast';
 import { saveAliases } from '../../data/mutations';
 import { LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
-import { analyzePagelle, waApply, waAssign, waRemember, type AliasMap, type WaAnalysis } from '../../domain/whatsapp';
+import { analyzePagelle, waApply, waAssign, waRemember, whatsappProblem, type AliasMap, type WaAnalysis } from '../../domain/whatsapp';
 import type { Match } from '../../domain/types';
 import { normalizeTeam } from '../../domain/stats';
 
@@ -36,12 +36,15 @@ export function WhatsAppImport({ data, m, hasRating, onAssign }: {
   const [text, setText] = useState('');
   const [an, setAn] = useState<WaAnalysis | null>(null);
   const [on, setOn] = useState<Record<number, boolean>>({});
+  const [problem, setProblem] = useState<string | null>(null);
   const sizeA = normalizeTeam(m.teamA).length;
 
   const analyze = () => {
     if (!text.trim()) return toast('Incolla prima il messaggio delle pagelle');
     setOn({});
-    setAn(analyzePagelle(text, m as Pick<Match, 'id' | 'teamA' | 'teamB'>, data.dataset, readAliasMap(), data.aliases ?? {}));
+    const result = analyzePagelle(text, m as Pick<Match, 'id' | 'teamA' | 'teamB'>, data.dataset, readAliasMap(), data.aliases ?? {});
+    setAn(result);
+    setProblem(whatsappProblem(text, result)); // se il messaggio non è chiaro, spiega perché e come correggerlo
   };
   const apply = () => {
     if (!an) return;
@@ -83,7 +86,7 @@ export function WhatsAppImport({ data, m, hasRating, onAssign }: {
       <textarea id="wa-text" rows={5} placeholder="Incolla il messaggio di WhatsApp…" value={text} onChange={(e) => setText(e.target.value)} />
       <button type="button" className="btn btn-secondary btn-full" onClick={analyze}>🔍 Analizza il messaggio</button>
       <div id="wa-preview">
-        {an && !blocks.length ? <div className="mb-note">Non ho trovato pagelle: controlla di aver incollato tutto il messaggio.</div> : null}
+        {an && problem ? <div id="wa-problem" className="mb-note" style={{ color: 'var(--red)', fontWeight: 700, lineHeight: 1.45 }}>⚠️ {problem}</div> : null}
         {an && blocks.length ? (
           <>
             <div className="wa-sum">

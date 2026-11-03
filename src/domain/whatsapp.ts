@@ -124,6 +124,8 @@ export function parseWhatsAppPagelle(text: string, slots: WaSlot[], map: AliasMa
   };
   String(text)
     .replace(/\r/g, '')
+    // WhatsApp mette a volte segni invisibili (direzione del testo, BOM) davanti alle righe: non sono testo
+    .replace(/[\u200e\u200f\u202a-\u202e\ufeff]/g, '')
     .split('\n')
     .forEach((raw) => {
       const line = raw.trim();
@@ -281,3 +283,50 @@ export const waHTML = (s: unknown): string =>
   esc(s)
     .replace(/\*([^*\n]+)\*/g, '<b>$1</b>')
     .replace(/(^|[\s(])_([^_\n]+)_(?=$|[\s.,;:!?)])/gm, '$1<i>$2</i>');
+
+// ── Perché il messaggio non è stato capito ─────────────────────────────────
+
+const EXAMPLE = 'Il formato giusto è «*Peppe 6,5*» (nome e voto insieme, dentro gli asterischi) oppure «Peppe 6,5» su una riga sua, poi la descrizione e, a fine pagella, il titolo in MAIUSCOLO.';
+const NAME = String.raw`[\p{L}'’.]+(?:\s+[\p{L}'’.]+){0,2}`;
+const VOTE = String.raw`(?:10|[1-9](?:[.,]\d{1,2})?)`;
+/** "[28/10/26, 21:30] Luciano: …" oppure "28/10/2026, 21:30 - Luciano: …" (esportazione della chat). */
+const CHAT_EXPORT = /^[\s[]*\d{1,2}[/.]\d{1,2}[/.]\d{2,4},?\s+\d{1,2}[:.]\d{2}/mu;
+/** "*Peppe* 6,5" / "*Peppe*: 6,5": il voto è fuori dagli asterischi. */
+const VOTE_OUTSIDE = new RegExp(String.raw`^[\s*_~]*${NAME}[*_~]+\s*[-–:]?\s*(?:voto\s*)?${VOTE}(?!\d)`, 'mu');
+/** "*Peppe (6,5)*" / "Peppe [6,5]": voto tra parentesi. */
+const VOTE_BRACKETS = new RegExp(String.raw`^[\s*_~]*${NAME}\s*[([]\s*${VOTE}\s*[)\]]`, 'mu');
+/** Un "nome e voto" (per contare quanti ce ne sono nel testo). */
+const VOTE_ANYWHERE = new RegExp(String.raw`(?:^|\s)[*_~]*${NAME}\s*[-–:]?\s*(?:voto\s*)?${VOTE}(?!\d)`, 'gu');
+
+/**
+ * Se il messaggio non è stato letto bene, spiega in italiano semplice perché e come correggerlo.
+ * Restituisce null se tutto è a posto (pagelle trovate e almeno un giocatore riconosciuto).
+ * Non cambia mai il modo in cui il messaggio viene letto: serve solo a spiegare.
+ */
+export function whatsappProblem(text: string, a: WaAnalysis | null): string | null {
+  const t = String(text).replace(/[\u200e\u200f\u202a-\u202e\ufeff]/g, '');
+  if (!t.trim() || !a) return 'Incolla prima il messaggio delle pagelle.';
+  const blocks = a.res.blocks;
+  if (blocks.some((b) => b.assign)) return null;
+  const lines = t.split('\n').filter((l) => l.trim());
+  if (lines.length <= 2 && t.length > 200 && (t.match(VOTE_ANYWHERE) ?? []).length >= 2) {
+    return 'Il messaggio è tutto su una riga: manca l\'a capo tra una pagella e l\'altra, quindi non so dove inizia ognuna. Incollalo dal messaggio originale mantenendo gli a capo. ' + EXAMPLE;
+  }
+  if (CHAT_EXPORT.test(t)) {
+    return 'Il messaggio sembra copiato dall\'esportazione della chat, con data e ora davanti a ogni riga. Incolla solo il testo delle pagelle, senza data, ora e nome di chi scrive. ' + EXAMPLE;
+  }
+  if (VOTE_OUTSIDE.test(t)) {
+    return 'Ho trovato righe come «*Peppe* 6,5»: il voto è fuori dagli asterischi e non riesco a leggerlo. Scrivilo dentro, come «*Peppe 6,5*». ' + EXAMPLE;
+  }
+  if (VOTE_BRACKETS.test(t)) {
+    return 'Ho trovato voti tra parentesi, come «Peppe (6,5)»: non riesco a leggerli. Scrivili senza parentesi, come «*Peppe 6,5*». ' + EXAMPLE;
+  }
+  if (blocks.length) {
+    const read = blocks.slice(0, 4).map((b) => `«${b.written}»`).join(', ');
+    return `Ho letto ${blocks.length} ${blocks.length === 1 ? 'pagella' : 'pagelle'} (${read}) ma nessun nome corrisponde ai giocatori di questa partita. Hai aperto la partita giusta? Altrimenti scegli a mano il giocatore dall'elenco accanto a ogni nome.`;
+  }
+  if (!/\d/.test(t)) {
+    return 'Nel messaggio non c\'è nessun voto (un numero come 6 o 6,5 accanto al nome). ' + EXAMPLE;
+  }
+  return 'Non riesco a trovare le pagelle: non vedo righe con nome e voto, come «*Peppe 6,5*». Controlla di aver incollato tutto il messaggio. ' + EXAMPLE;
+}
