@@ -210,18 +210,3 @@ export async function assignOwner(leagueId: string, newOwner: string): Promise<v
   const { error } = await supabase.rpc('admin_assign_owner', { l: leagueId, new_owner: newOwner });
   if (error) throw plain(error);
 }
-
-/** Aggiunge alla lega i giocatori che ho nelle altre leghe di cui sono amministratore (niente doppioni). Restituisce quanti ne ha aggiunti. */
-export async function addPlayersFromMyLeagues(targetLeagueId: string, fromLeagueIds: string[]): Promise<number> {
-  if (!fromLeagueIds.length) return 0;
-  const src = await supabase.from('league_players').select('player_id').in('league_id', fromLeagueIds);
-  if (src.error) throw fail('giocatori', src.error);
-  const have = await supabase.from('league_players').select('player_id').eq('league_id', targetLeagueId);
-  if (have.error) throw fail('giocatori', have.error);
-  const present = new Set((have.data ?? []).map((x) => x.player_id));
-  const ids = [...new Set((src.data ?? []).map((x) => x.player_id))].filter((id) => !present.has(id));
-  if (!ids.length) return 0;
-  const { error } = await supabase.from('league_players').insert(ids.map((player_id) => ({ league_id: targetLeagueId, player_id })));
-  if (error) throw fail('giocatori', error);
-  return ids.length;
-}
