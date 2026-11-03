@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';
 import { pagelleView, playerPagelleList, voteColor, type PagCell } from '../../domain/playerCard';
-import type { Player } from '../../domain/types';
+import type { Dataset, Player } from '../../domain/types';
 import { waHTML } from '../../domain/whatsapp';
 
 const NOTE = { fontSize: 12, color: 'var(--text3)', textAlign: 'center' as const };
@@ -35,15 +35,16 @@ function Cell({ c }: { c: PagCell }) {
   );
 }
 
-export function PagelleSection({ data, player, onOpenAll, onOpenMatch, showResultsWithoutRatings = false }: {
+export function PagelleSection({ data, player, formDataset, onOpenAll, onOpenMatch, showResultsWithoutRatings = false }: {
   data: LeagueData;
   player: Player;
+  formDataset?: Dataset;
   showResultsWithoutRatings?: boolean;
   /** apre la finestra con tutte le pagelle (eventualmente su una partita) */
   onOpenAll: (matchId?: string) => void;
   onOpenMatch: (matchId: string) => void;
 }) {
-  const v = pagelleView(data.dataset, data.weights, player, undefined, showResultsWithoutRatings);
+  const v = pagelleView(data.dataset, data.weights, player, undefined, showResultsWithoutRatings, formDataset);
   // barra toccata e posizione del riquadro (calcolata al tocco, sotto la barra e dentro il grafico)
   const [pop, setPop] = useState<{ j: number; left: number; width: number } | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);

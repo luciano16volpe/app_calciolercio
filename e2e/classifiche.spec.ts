@@ -1,6 +1,6 @@
 // Classifiche (passo 3.3b): tabella Statistiche, Confronto testa a testa, Albo d'oro — su iPhone, Android e 360 px.
 import { expect, test, type Page } from '@playwright/test';
-import { setup } from './helpers';
+import { openPanel, setup } from './helpers';
 
 // l'app si apre solo con l'accesso: la prova entra come membro della lega pubblica vera (accesso simulato, letture vere)
 test.beforeEach(async ({ page }) => {
@@ -50,8 +50,10 @@ test('Statistiche: filtri Titolari/Occasionali/Tutti e ordinamento toccando le i
 });
 
 test('Confronto: due giocatori, scambio, scelta dall\'elenco e righe con barre', async ({ page }) => {
-  const cl = await openClassifiche(page, 'Confronto');
-  const box = cl.locator('#scorers-list');
+  await page.goto('/');
+  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await openPanel(page, '#menu-compare', '#sheet-compare');
+  const box = page.locator('#cmp-box');
   await expect(box.locator('.section-header')).toContainText('Confronto testa a testa');
   await expect(box.locator('.vs-sel')).toHaveCount(2);
   await expect(box.locator('.vs-cards .fut-mini')).toHaveCount(2);

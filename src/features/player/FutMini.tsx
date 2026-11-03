@@ -18,7 +18,7 @@ export function FutMini({ data, player, statsDataset }: { data: LeagueData; play
   const all = seasonStats(statsData);
   const t = FUT_TIERS[futTierOfRating(futRating(player.stats, weights))];
   const n = playerTrophies(dataset, player, data.albo).awards.filter((a) => !a.shame).length;
-  const state = formState(statsData, player, all);
+  const state = formState(dataset, player);
   const fire = state === 'up';
   const crisi = state === 'down';
   const pag = pagInfo(playerRatingAvg(playerSeason(statsData, player, all)).avg);

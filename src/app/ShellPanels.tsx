@@ -9,6 +9,7 @@ import { CreateLeagueSheet, JoinLeagueSheet } from '../features/menu/LeagueSheet
 import { LeagueSettingsPanel } from '../features/menu/LeagueSettingsPanel';
 import { ClaimsPanel, InvitesPanel, MergePanel } from '../features/menu/LinkPanels';
 import { MembersPanel } from '../features/menu/MembersPanel';
+import { ComparePanel } from '../features/menu/ComparePanel';
 import { BenchPanel } from '../features/menu/BenchPanel';
 import { PendingPanel } from '../features/menu/PendingPanel';
 import { HelpPanel, PrivacyPanel } from '../features/menu/OtherPanels';
@@ -51,6 +52,7 @@ export function ShellPanels({ panel, data, closePanel, go, openMatch }: {
       {data && panel === 'invites' ? <InvitesPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'claims' ? <ClaimsPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'merge' ? <MergePanel data={data} onClose={closePanel} /> : null}
+      {data && panel === 'compare' ? <ComparePanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'bench' ? <BenchPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'pending' ? <PendingPanel data={data} onClose={closePanel} onOpenMatch={openMatch} /> : null}
       {data && panel === 'league-settings' ? <LeagueSettingsPanel data={data} onClose={closePanel} /> : null}

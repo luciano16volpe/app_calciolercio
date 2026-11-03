@@ -185,7 +185,7 @@ const barColor = (v: number) => (v >= 6.5 ? '#3aad5e' : v >= 5.5 ? '#d9a300' : '
 const shortD = (d: string) => formatDate(d).slice(0, 5);
 
 /** Numeri e grafico della sezione "📈 Pagelle" di un giocatore (tutto dalle statistiche di stagione). */
-export function pagelleView(data: Dataset, weights: number[], p: Player, all = seasonStats(data), includeResultsWithoutRatings = false): PagelleView {
+export function pagelleView(data: Dataset, weights: number[], p: Player, all = seasonStats(data), includeResultsWithoutRatings = false, formDataset: Dataset = data): PagelleView {
   const a = playerSeason(data, p, all);
   if (!a || (!a.rows && !(includeResultsWithoutRatings && a.pres))) return { kind: 'none' };
   const { goals: totGoals, assist: totAssist, autogol: totAutogol, rigori: totRigori, meta: totMeta } = a;
@@ -247,7 +247,7 @@ export function pagelleView(data: Dataset, weights: number[], p: Player, all = s
   const trendStart = intercept;
   const trendEnd = intercept + slope * (n - 1);
   // intestazione: lo stato di forma dell'app (come la figurina); linea tratteggiata: tendenza di lungo periodo
-  const fsKey = formState(data, p, all);
+  const fsKey = formState(formDataset, p, formDataset === data ? all : undefined);
   const FS = fsKey ? FORM_STATES[fsKey] : null;
   const trend = { arrow: FS ? FS.arrow : '', label: FS ? FS.label : '', col: FS ? FS.col : 'var(--text3)' };
 
