@@ -53,12 +53,13 @@ test('Profilo: è la pagina iniziale e le sezioni sono nell’ordine voluto', as
   await expect(page.locator('#page-profilo.active')).toBeVisible({ timeout: 20_000 });
   await expect.poll(() => new URL(page.url()).pathname).toBe('/l/san-marcello/profilo');
   await expect(page.locator('#profile-player-card')).toBeVisible();
-  const order = ['#profilo-leghe', '#profile-player-card', '#next-match', '#my-last-match', '#profile-card', '#myplayer-card', '#my-tools', '#leave-card'];
+  const order = ['#profilo-leghe', '#profile-player-card', '#next-match', '#my-last-match', '#profile-recent-matches', '#myplayer-card', '#my-tools', '#leave-card'];
   const ys: number[] = [];
   for (const sel of order) {
     await expect(page.locator(sel).first(), sel).toBeVisible();
     ys.push(await y(page, sel));
   }
+  await expect(page.locator('#profile-card')).toHaveCount(0);
   expect(ys).toEqual([...ys].sort((a, b) => a - b)); // dall'alto verso il basso, nell'ordine dato
   await noOverflow(page);
 });
@@ -190,4 +191,39 @@ test('Profilo senza un giocatore collegato: le leghe, «Questo sono io» e l’u
   await expect(page.locator('#profile-player-card, #my-last-match, #next-match, #profile-card')).toHaveCount(0);
   await expect(page.locator('.bn-face')).toHaveCount(0);
   await expect(page.locator('.bottom-nav .bnav-item').first().locator('svg')).toBeVisible();
+});
+
+
+test('Profilo: statistiche e ultime dieci partite seguono la lega scelta', async ({ browser }, testInfo) => {
+  const { be, u, me } = world();
+  be.lplayers.push({ league_id: 'L2', player_id: me.id, aliases: [] });
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' });
+  for (let i = 1; i <= 12; i++) {
+    const id = 'l2-match-' + i;
+    be.matches.push({ id, league_id: 'L2', date: today, score_a: 99, score_b: 0, notes: null, pred: null, pred_rank: null });
+    be.mplayers.push({ match_id: id, player_id: me.id, team: 'A', position: 0, rating: 10, goals: 0, assist: 0, autogol: 0, meta: 0, rigori_sbagliati: 0, titolo: 'Ottimo', descrizione: null });
+  }
+  const page = await open(browser, testInfo, be, u);
+  const card = page.locator('#profile-player-card');
+  await expect(card).toBeVisible();
+  const overall = await card.locator('.fut-mini-ovr').innerText();
+  await expect(page.locator('#profile-card')).toHaveCount(0);
+  await page.locator('#profilo-leghe .pf-league', { hasText: 'Calcetto del' }).click();
+  await expect(page.locator('#league-pill')).toContainText('Calcetto del');
+  await expect(page.locator('#profile-recent-matches .profile-match')).toHaveCount(10);
+  await expect(page.locator('#profile-recent-matches')).toContainText('99 - 0');
+  await expect(card.locator('.fut-mini-ovr')).toHaveText(overall);
+  await expect(card).toContainText('Stagione in corso');
+  await expect(card.locator('.pg-cell').filter({ hasText: 'Media voto' }).locator('.pg-val')).toHaveText('10.00');
+  await card.locator('.pg-last').click();
+  await expect(page.locator('#pl-dialog')).toContainText('Stagione in corso');
+  await expect(page.locator('#pl-dialog .pl-item')).toHaveCount(12);
+  await page.locator('#pl-dialog').getByRole('button', { name: 'Chiudi' }).click();
+  await page.locator('#profile-recent-matches .profile-match').first().click();
+  await expect(page.locator('#match-modal')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#match-modal')).toHaveCount(0);
+  await page.locator('#profilo-leghe .pf-league', { hasText: 'San Marcello' }).click();
+  await expect(page.locator('#league-pill')).toContainText('San Marcello');
+  await expect(page.locator('#profile-recent-matches')).not.toContainText('99 - 0');
 });

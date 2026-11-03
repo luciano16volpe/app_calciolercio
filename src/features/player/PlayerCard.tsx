@@ -5,6 +5,7 @@ import { formOn } from '../../data/gameSettings';
 import { useToast } from '../../app/Toast';
 import { photoUrl, type LeagueData } from '../../data/queries';
 import { formState } from '../../domain/form';
+import { profileSeasonData } from '../../domain/profile';
 import { avatarClass, initials } from '../../domain/format';
 import { playerPairs, type PairMate } from '../../domain/pairs';
 import { bachecaView, formWeightTip, formWeightView, playerTrophies } from '../../domain/playerCard';
@@ -130,6 +131,9 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   const player = dataset.players.find((p) => p.id === playerId);
   const [pagelleOpen, setPagelleOpen] = useState<{ focus?: string } | null>(null);
   const all = useMemo(() => seasonStats(dataset), [dataset]);
+  const period = useMemo(() => inline && player ? profileSeasonData(dataset, player.id, player.name) : null, [dataset, inline, player]);
+  const statsData = useMemo(() => period ? { ...data, dataset: period.dataset } : data, [data, period]);
+  const statsAll = useMemo(() => period ? seasonStats(period.dataset) : all, [period, all]);
   const useForm = formOn(data);
 
   // Esc chiude la scheda (passando a un altro giocatore la scheda riparte da capo: vedi key in App)
@@ -141,7 +145,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   }, [onClose, inline]);
 
   if (!player) return null;
-  const state = formState(dataset, player, all);
+  const state = formState(statsData.dataset, player, statsAll);
   const w = formWeightView(dataset, player, useForm, all);
   const weightRow = (
     <div className="stat-row stat-row-ro" title={formWeightTip}>
@@ -192,7 +196,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
               <>
                 <div className="photo-row" style={{ margin: '2px 0 8px', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 16 }}>
                   <Avatar player={player} photo={photoUrl(data.photos[player.id])} />
-                  <div style={{ width: 84 }}><FutMini data={data} player={player} /></div>
+                  <div style={{ width: 84 }}><FutMini data={data} player={player} statsDataset={period?.dataset} /></div>
                 </div>
                 <div className="stats-grid">
                   {STATS.map((s, j) => (
@@ -210,7 +214,8 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
             {canEdit ? <PlayerLinkRow leagueId={data.league.id} player={player} /> : null}
             {canEdit ? <PlayerBenchRow data={data} player={player} onRemoved={onClose} /> : null}
             <div id="modal-pagelle" style={{ marginTop: 4, paddingTop: 6, borderTop: '1px solid var(--gray2)' }}>
-              <PagelleSection data={data} player={player} onOpenAll={(focus) => setPagelleOpen({ focus })} onOpenMatch={onOpenMatch} />
+              {period ? <div style={{ fontSize: 11, color: 'var(--text2)', marginBottom: 4 }}>{period.label}</div> : null}
+              <PagelleSection data={statsData} player={player} showResultsWithoutRatings={!!period} onOpenAll={(focus) => setPagelleOpen({ focus })} onOpenMatch={onOpenMatch} />
             </div>
             <Bacheca data={data} player={player} open={bachecaOpen} onToggle={onToggleBacheca} />
             <Pairs data={data} player={player} onOpenPlayer={onOpenPlayer} />
@@ -218,7 +223,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
         </div>
       </div>
       {pagelleOpen ? (
-        <PlayerPagelleDialog data={data} player={player} focusId={pagelleOpen.focus} onClose={() => setPagelleOpen(null)} onOpenMatch={onOpenMatch} />
+        <PlayerPagelleDialog data={statsData} player={player} scopeLabel={period?.label} focusId={pagelleOpen.focus} onClose={() => setPagelleOpen(null)} onOpenMatch={onOpenMatch} />
       ) : null}
     </>
   );

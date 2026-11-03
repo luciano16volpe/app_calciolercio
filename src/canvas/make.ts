@@ -6,7 +6,7 @@ import { balanceScores } from '../domain/balancing';
 import { primaryRole, teamPlayers } from '../domain/gioca';
 import { formatDate } from '../domain/format';
 import { normalizeTeam } from '../domain/stats';
-import type { Match, Player } from '../domain/types';
+import type { Dataset, Match, Player } from '../domain/types';
 import { compareInput, drawCompare } from './confronto';
 import { drawFutCard, futCardModel } from './figurina';
 import { drawFormations, type FormationPlayer } from './formazioni';
@@ -66,9 +66,9 @@ export function comboSheet(ld: LeagueData, c: Combo, now = new Date()): { canvas
   return { canvas: matchSheet(ld, m), date };
 }
 
-export async function figurinaCanvas(ld: LeagueData, p: Player): Promise<HTMLCanvasElement> {
+export async function figurinaCanvas(ld: LeagueData, p: Player, statsDataset?: Dataset): Promise<HTMLCanvasElement> {
   const photo = await loadImage(photoUrl(ld.photos[p.id]));
-  return drawFutCard(futCardModel(ld.dataset, ld.weights, ld.albo, p), photo);
+  return drawFutCard(futCardModel(ld.dataset, ld.weights, ld.albo, p, undefined, statsDataset), photo);
 }
 
 export async function compareCanvas(ld: LeagueData, pa: Player, pb: Player, scope: string): Promise<HTMLCanvasElement> {

@@ -186,7 +186,7 @@ test('Il mio profilo: cambio la mia foto (file e collegamento passano dalle funz
   expect(writes.some((w) => w.table === 'players')).toBe(false);
 });
 
-test('Il mio profilo: si vede la scheda del giocatore, uguale a quella della Rosa ma senza modifiche', async ({ page }) => {
+test('Il mio profilo: si vede la scheda del giocatore senza campi modificabili', async ({ page }) => {
   const me = fixturePlayer();
   await setup(page, { mePlayer: me });
   await openApp(page);
@@ -198,11 +198,10 @@ test('Il mio profilo: si vede la scheda del giocatore, uguale a quella della Ros
   await expect(card.locator('input, textarea')).toHaveCount(0);
   await expect(card.locator('#match-modal-body')).toBeVisible();
   await expect(card.getByText('✕')).toHaveCount(0);
-  await expect(page.locator('#profile-card')).toBeVisible(); // sotto, il riepilogo
+  await expect(page.locator('#profile-card')).toHaveCount(0);
   // «Sei collegato a…» sta in fondo alla pagina, sotto la scheda e il riepilogo
   await expect(page.locator('#myplayer-card')).toContainText('Sei collegato a');
   const y = async (sel: string) => (await page.locator(sel).boundingBox())!.y;
-  expect(await y('#myplayer-card')).toBeGreaterThan(await y('#profile-card'));
   expect(await y('#myplayer-card')).toBeGreaterThan(await y('#profile-player-card'));
   await expect(page.locator('#leave-card')).toBeVisible();
   expect(await y('#leave-card')).toBeGreaterThan(await y('#myplayer-card'));
@@ -233,36 +232,6 @@ test('Richieste «sono io»: l\'amministratore conferma e rifiuta', async ({ pag
   await page.getByRole('button', { name: 'Rifiuta l@example.com' }).click();
   await expect(page.locator('#toast')).toContainText('Richiesta rifiutata');
   expect(lastWrite(writes, 'review_claim').body).toEqual({ c: 'c2', approve: false });
-});
-
-test('Profilo: riepilogo per lega, ultime partite e storico', async ({ page }) => {
-  const m = (date: string, a: number, b: number, lid: string, lname: string) => ({ date, score_a: a, score_b: b, league_id: lid, leagues: { name: lname } });
-  const profileRows = [
-    { match_id: 'm1', team: 'A', rating: 7.5, goals: 2, assist: 1, matches: m('2026-10-01', 5, 3, 'L1', 'CalcioLercio') },
-    { match_id: 'm2', team: 'B', rating: 6, goals: 0, assist: 0, matches: m('2026-10-08', 5, 3, 'L1', 'CalcioLercio') },
-    { match_id: 'm3', team: 'A', rating: null, goals: 1, assist: 0, matches: m('2026-10-15', 2, 2, 'L2', 'Altra lega') },
-  ];
-  const history = [{ changed_by_name: 'Luciano', changed_at: '2026-10-20T10:00:00Z', old_stats: [5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5], new_stats: [5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5], old_roles: ['MED'], new_roles: ['MED'] }];
-  await setup(page, { mePlayer: { id: 'p1', name: 'Marco' }, profileRows, history });
-  await openApp(page);
-  await openProfile(page);
-  await expect(page.locator('#profile-card')).toContainText('Marco');
-  await expect(page.locator('.profile-league')).toHaveCount(2);
-  await expect(page.locator('.profile-league').first()).toContainText('CalcioLercio');
-  await expect(page.locator('.profile-league').first()).toContainText('1-0-1');
-  await expect(page.locator('.profile-league').first()).toContainText('6.75');
-  await expect(page.locator('.profile-match')).toHaveCount(3);
-  await expect(page.locator('.profile-match').first()).toContainText('15/10/2026');
-  await expect(page.locator('.profile-history')).toContainText('tiro 6 → 7');
-  await expect(page.locator('.profile-history-when')).toContainText('20/10/2026 · modificato da Luciano');
-  await noOverflow(page);
-});
-
-test('Profilo: senza partite', async ({ page }) => {
-  await setup(page, { mePlayer: { id: 'p1', name: 'Marco' } });
-  await openApp(page);
-  await openProfile(page);
-  await expect(page.locator('#profile-empty')).toBeVisible();
 });
 
 test('Privacy: informativa con le righe sul registro; la cancellazione chiede di scrivere CANCELLA', async ({ page }) => {

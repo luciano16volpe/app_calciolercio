@@ -39,9 +39,9 @@ export interface FutCardModel {
   season: { pres: number; w: number; goals: number; assist: number } | null;
 }
 
-export function futCardModel(data: Dataset, weights: number[], albo: AlboRow[], p: Player, today?: string): FutCardModel {
-  const all = seasonStats(data);
-  const a = playerSeason(data, p, all);
+export function futCardModel(data: Dataset, weights: number[], albo: AlboRow[], p: Player, today?: string, statsDataset: Dataset = data): FutCardModel {
+  const all = seasonStats(statsDataset);
+  const a = playerSeason(statsDataset, p, all);
   const rating = futRating(p.stats, weights);
   return {
     name: p.name,
@@ -50,7 +50,7 @@ export function futCardModel(data: Dataset, weights: number[], albo: AlboRow[], 
     tier: futTierOfRating(rating),
     rating,
     pag: playerRatingAvg(a).avg,
-    form: formState(data, p, all),
+    form: formState(statsDataset, p, all),
     stats: FUT_STATS.map(([l, idx]) => [l, futStat(p.stats, idx)] as [string, number]),
     trophies: playerTrophies(data, p, albo, today),
     season: a && a.pres ? { pres: a.pres, w: a.w, goals: a.goals, assist: a.assist } : null,

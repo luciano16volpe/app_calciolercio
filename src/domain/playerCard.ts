@@ -185,9 +185,9 @@ const barColor = (v: number) => (v >= 6.5 ? '#3aad5e' : v >= 5.5 ? '#d9a300' : '
 const shortD = (d: string) => formatDate(d).slice(0, 5);
 
 /** Numeri e grafico della sezione "📈 Pagelle" di un giocatore (tutto dalle statistiche di stagione). */
-export function pagelleView(data: Dataset, weights: number[], p: Player, all = seasonStats(data)): PagelleView {
+export function pagelleView(data: Dataset, weights: number[], p: Player, all = seasonStats(data), includeResultsWithoutRatings = false): PagelleView {
   const a = playerSeason(data, p, all);
-  if (!a || !a.rows) return { kind: 'none' };
+  if (!a || (!a.rows && !(includeResultsWithoutRatings && a.pres))) return { kind: 'none' };
   const { goals: totGoals, assist: totAssist, autogol: totAutogol, rigori: totRigori, meta: totMeta } = a;
   const matchesPlayed = a.pres || a.rows;
   const goalsPerMatch = matchesPlayed ? totGoals / matchesPlayed : 0;
