@@ -56,6 +56,7 @@ export function ScorersList({ data, scope, field, onOpenPlayer }: { data: League
         return (
           <div
             key={s.key}
+            className={`ranking-row${i < 3 ? ` podium podium-${i + 1}` : ''}`}
             onClick={id ? () => onOpenPlayer(id) : undefined}
             style={{
               ...(id ? { cursor: 'pointer' } : {}),

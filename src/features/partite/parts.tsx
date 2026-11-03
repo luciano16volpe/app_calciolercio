@@ -97,8 +97,8 @@ export function LastMatchCard({ data, m, act, title = '🏆 Ultima partita', id,
   const res = has && mine ? getPlayerMatchResult(m, mine.id, mine.name) : null; // 'W' vinta · 'D' pareggio · 'L' persa · null non ho giocato
   return (
     <div
-      className={`card fx-card${res === 'L' ? ' fx-rain' : res === 'W' ? ' fx-win' : ''}`} id={id} data-result={res ?? undefined}
-      style={{ borderLeft: '4px solid var(--green)', cursor: 'pointer', position: 'relative' }} onClick={() => act.openMatch(m.id)}
+      className={`card last-match-card fx-card${res === 'L' ? ' fx-rain' : res === 'W' ? ' fx-win' : ''}`} id={id} data-result={res ?? undefined}
+      style={{ cursor: 'pointer', position: 'relative' }} onClick={() => act.openMatch(m.id)}
     >
       {active && res === 'W' ? <Confetti /> : null}
       {active && res === 'L' ? <Rain /> : null}
@@ -106,9 +106,9 @@ export function LastMatchCard({ data, m, act, title = '🏆 Ultima partita', id,
         <span className="section-header" style={{ margin: 0 }}>{title}</span>
         <span style={{ fontSize: 11, color: 'var(--text3)' }}>{formatDate(m.date)}{whenWhere(m) ? ` · ${whenWhere(m)}` : ''} ›</span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, margin: '4px 0' }}>
+      <div className="last-match-score">
         <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--blue)' }}>🔵 Blu</span>
-        <span style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)' }}>{has ? `${m.scoreA} - ${m.scoreB}` : '– : –'}</span>
+        <span className="last-match-score-value">{has ? `${m.scoreA} - ${m.scoreB}` : '– : –'}</span>
         <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--teamb)' }}>⚪ Bianchi</span>
       </div>
       <div style={{ textAlign: 'center', fontSize: 12, marginTop: 4 }}>{win}</div>
