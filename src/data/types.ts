@@ -943,7 +943,7 @@ export type Database = {
       audit_player_name: { Args: { pid: string }; Returns: string }
       audit_user_name: { Args: { uid: string }; Returns: string }
       bench_players: {
-        Args: never
+        Args: { p_league: string }
         Returns: {
           linked: boolean
           matches_played: number

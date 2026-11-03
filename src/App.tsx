@@ -60,7 +60,7 @@ function RosaGate({ data, onOpen }: { data: LeagueData; onOpen: (id: string) => 
   };
   return (
     <>
-      {isAdmin && !roster.dataset.players.length ? <EmptyLeagueGuide data={data} onAddNew={() => void add()} /> : null}
+      {isAdmin && !roster.dataset.players.length ? <EmptyLeagueGuide onAddNew={() => void add()} /> : null}
       <RosaList data={roster} onOpen={onOpen} onAdd={isAdmin ? () => void add() : undefined} />
     </>
   );

@@ -207,7 +207,6 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
               </>
             )}
             {canEdit ? <PlayerLinkRow leagueId={data.league.id} player={player} /> : null}
-            {canEdit ? <PlayerBenchRow data={data} player={player} onRemoved={onClose} /> : null}
             <div id="modal-pagelle" style={{ marginTop: 4, paddingTop: 6, borderTop: '1px solid var(--gray2)' }}>
               {period ? <div style={{ fontSize: 11, color: 'var(--text2)', marginBottom: 4 }}>{period.label}</div> : null}
               {period ? <div style={{ fontSize: 11, color: 'var(--text2)', marginBottom: 4 }}>Stato di forma calcolato sullo storico della lega</div> : null}
@@ -215,6 +214,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
             </div>
             <Bacheca data={data} player={player} open={bachecaOpen} onToggle={onToggleBacheca} />
             <Pairs data={data} player={player} onOpenPlayer={onOpenPlayer} />
+            {canEdit ? <PlayerBenchRow data={data} player={player} onRemoved={onClose} /> : null}
           </div>
         </div>
       </div>

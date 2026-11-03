@@ -163,6 +163,7 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 
 
 ## Panchina, ora e luogo, leghe, notifiche (novembre 2026)
+- **Aggiornamento:** la Panchina è separata per lega; gli amministratori recuperano solo i giocatori rimossi dalla propria lega. I vecchi rimossi sono ricostruiti dalle partite storiche: se non esiste alcuna traccia, non si può stabilire la lega. I trasferimenti e gli inviti tra leghe saranno affrontati separatamente.
 - **Niente archiviazione dei giocatori.** Un giocatore si toglie da una **lega**: esce dalla Rosa, ma partite, pagelle e statistiche restano nella storia di quella lega (nelle classifiche e nelle partite vecchie compare ancora). Senza altre leghe finisce in **Panchina**.
 - **Panchina:** la vede ogni amministratore di lega e può portare un giocatore nella sua lega; non si «ruba» chi gioca già in un'altra lega. Se il giocatore ha un account collegato, uscendo dalla lega la persona non vede più quella lega (il collegamento giocatore-account resta); rientrando in una lega riottiene l'accesso. Un giocatore collegato a un amministratore della lega non si toglie finché non si toglie il ruolo.
 - **Cancellare un giocatore per sempre:** solo l'amministratore supremo, solo dalla Panchina e solo se non ha mai giocato. Chi ha storia resta in Panchina.
