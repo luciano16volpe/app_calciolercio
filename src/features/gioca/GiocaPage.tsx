@@ -10,7 +10,8 @@ import { useToast } from '../../app/Toast';
 import { photoUrl, type LeagueData } from '../../data/queries';
 import { balanceScores, generateTeams, type Combo } from '../../domain/balancing';
 import { pagInfo, playerRatingAvg } from '../../domain/form';
-import { avatarClass, formatDate, initials } from '../../domain/format';
+import { formatDate } from '../../domain/format';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 import { balancePrecision, comboSummary, swapPlayers, teamPlayers, type TeamPlayer } from '../../domain/gioca';
 import { calcOvr, rosaOrder } from '../../domain/ovr';
 import { pitchSvg } from '../../domain/pitch';
@@ -320,7 +321,7 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
               <div key={p.id} className={`conv-item${sel ? ' sel' : ''}`} onClick={() => setSelected(sel ? live.filter((x) => x !== p.id) : [...live, p.id])}>
                 <div className="conv-avatar-stack">
                   <span className={`pag-badge ${pag.cls}`} title="Media pagelle">{pag.label}</span>
-                  <div className={`conv-avatar avatar-ini ${avatarClass(p.roles)}${photo ? ' has-photo' : ''}`} style={photo ? { backgroundImage: `url('${photo}')` } : undefined}>{initials(p.name)}</div>
+                  <PlayerAvatar key={`${p.id}:${photo}`} className="conv-avatar" name={p.name} roles={p.roles ?? []} photo={photo} />
                   <span className="ovr-badge">OVR {calcOvr(p.stats, weights).toFixed(1)}</span>
                 </div>
                 <div className="conv-info">
