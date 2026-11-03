@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react';
 import { BottomNav, type PageName } from './app/BottomNav';
-import { AuthProvider, useAuth, useRole } from './app/auth';
+import { useAuth, useRole } from './app/auth';
 import { useIsSuperAdmin } from './data/leagues';
 import { DialogProvider, usePrompt } from './app/Dialogs';
 import { buildPath, HOME_PAGE, navigate, parsePath, rememberLeague, setSelectedLeague, type PageKey } from './app/league';
@@ -8,7 +8,6 @@ import { useToast } from './app/Toast';
 import { createPlayer } from './data/mutations';
 import { useQueryClient } from '@tanstack/react-query';
 import { ImageProvider } from './app/ImageViewer';
-import { ToastProvider } from './app/Toast';
 import { LEAGUE_QUERY_KEY, NoLeagueError, photoUrl, rosterView, useLeagueData, type LeagueData } from './data/queries';
 import { ClassifichePage } from './features/classifiche/ClassifichePage';
 import { GiocaPage } from './features/gioca/GiocaPage';
@@ -264,14 +263,10 @@ function Gate() {
 
 export function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <ImageProvider>
-          <DialogProvider>
-            <Gate />
-          </DialogProvider>
-        </ImageProvider>
-      </ToastProvider>
-    </AuthProvider>
+    <ImageProvider>
+      <DialogProvider>
+        <Gate />
+      </DialogProvider>
+    </ImageProvider>
   );
 }
