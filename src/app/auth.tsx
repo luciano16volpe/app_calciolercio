@@ -5,6 +5,7 @@ import type { Session, User } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { logEvent } from '../data/audit';
 import { supabase } from '../data/supabase';
+import { changeCacheOwner } from './accountCache';
 
 export type Role = 'admin' | 'redazione' | 'member' | null;
 
@@ -40,18 +41,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [recovery, setRecovery] = useState(false);
 
   useEffect(() => {
+    let changed = false;
+    let mounted = true;
     void supabase.auth.getSession().then(({ data }) => {
+      if (changed || !mounted) return;
+      changeCacheOwner(data.session?.user.id ?? null);
       setSession(data.session);
       setLoading(false);
     });
     const { data } = supabase.auth.onAuthStateChange((event, s) => {
+      changed = true;
+      changeCacheOwner(s?.user.id ?? null);
+      setLoading(false);
       setSession(s);
       if (event === 'PASSWORD_RECOVERY') setRecovery(true);
       // chi conferma l'email dal link arriva già con l'accesso: la registrazione si registra ora
       if (event === 'SIGNED_IN' && /type=signup/.test(window.location.hash)) void logEvent('auth.signup');
       if (event === 'SIGNED_OUT') setRecovery(false);
     });
-    return () => data.subscription.unsubscribe();
+    return () => { mounted = false; data.subscription.unsubscribe(); };
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {

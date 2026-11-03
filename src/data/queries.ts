@@ -2,6 +2,7 @@
 // la schermata mostra subito quello che c'era l'ultima volta, poi si aggiorna.
 import { useQuery } from '@tanstack/react-query';
 import { useSelectedLeague } from '../app/league';
+import { useAuth } from '../app/auth';
 import type { AlboRow } from '../domain/awards';
 import type { Dataset } from '../domain/types';
 import { dbToDataset, type DbRows } from './dataset';
@@ -153,8 +154,10 @@ export const LEAGUE_QUERY_KEY = ['league-data'] as const;
 /** Dati della lega: dalla cache subito, poi aggiornati in rete. */
 export function useLeagueData() {
   const leagueId = useSelectedLeague();
+  const { user } = useAuth();
   return useQuery({
-    queryKey: [...LEAGUE_QUERY_KEY, leagueId],
+    queryKey: [...LEAGUE_QUERY_KEY, user?.id, leagueId],
+    enabled: !!user,
     queryFn: () => fetchLeagueData(leagueId),
     retry: (n, e) => !(e instanceof NoLeagueError) && n < 1, // «nessuna lega» non cambia riprovando
     staleTime: 60_000, // come legacy: i dati valgono 1 minuto
