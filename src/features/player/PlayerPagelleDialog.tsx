@@ -7,10 +7,11 @@ import { playerPagelleList, voteColor } from '../../domain/playerCard';
 import type { Player } from '../../domain/types';
 import { waHTML } from '../../domain/whatsapp';
 
-export function PlayerPagelleDialog({ data, player, focusId, onClose, onOpenMatch }: {
+export function PlayerPagelleDialog({ data, player, focusId, onClose, onOpenMatch, scopeLabel }: {
   data: LeagueData;
   player: Player;
   focusId?: string;
+  scopeLabel?: string;
   onClose: () => void;
   onOpenMatch: (matchId: string) => void;
 }) {
@@ -35,6 +36,7 @@ export function PlayerPagelleDialog({ data, player, focusId, onClose, onOpenMatc
           <span>📝 Le pagelle di <b>{player.name}</b></span>
           <button type="button" onClick={onClose} aria-label="Chiudi">✕</button>
         </div>
+        {scopeLabel ? <div style={{ fontSize: 12, color: 'var(--text2)', padding: '0 0 8px' }}>{scopeLabel}</div> : null}
         <div className="pl-list">
           {list.length ? (
             list.map((x) => {

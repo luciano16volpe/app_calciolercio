@@ -162,3 +162,9 @@ il **nome della funzione legacy** da leggere per i dettagli esatti: in caso di d
 - **admin** (gestisce la lega), **redazione** (solo titoli/descrizioni pagelle + Gazzetta),
   **member** (vede). Iscrizione con codice d'invito. Lega "pubblica" = visibile senza account
   (serve nella Fase 1 perché gli amici vedano tutto come oggi).
+
+## Profilo: periodo e lega
+- Il profilo mostra i dati della lega selezionata. Le 11 statistiche, i ruoli e l'OVR del giocatore restano comuni alle leghe; il peso dei voti e calcolato sulla lega selezionata.
+- Nella scheda del profilo pagelle, media, forma e vittorie considerano la stagione in corso quando il giocatore ha almeno 5 partite con risultato; altrimenti le sue ultime 5 partite con risultato della lega, anche di una stagione precedente. Il periodo e indicato nella scheda e nella finestra delle pagelle.
+- Nel profilo le ultime partite sono al massimo 10 della lega selezionata, ordinate dalla piu recente. Il riepilogo complessivo per tutte le leghe e stato rimosso.
+- La bacheca e i calcoli delle altre schermate mantengono le regole precedenti.

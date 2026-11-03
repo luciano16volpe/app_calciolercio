@@ -1,6 +1,4 @@
-// «Il mio profilo» = la pagina iniziale. Dall'alto: le mie leghe (con quella scelta) · la scheda del mio giocatore ·
-// la prossima partita in cui gioco · la mia ultima partita (con i coriandoli se l'ho vinta) · il mio profilo (riepilogo) ·
-// il mio giocatore (collegamento, foto e nome) · uscire da una lega.
+// Pagina iniziale: lega selezionata, scheda, partite recenti e gestione del giocatore.
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useAuth } from '../../app/auth';
@@ -11,12 +9,11 @@ import { MY_PLAYER_KEY, useMyPlayer } from '../../data/claims';
 import { leaveLeague, MY_LEAGUES_KEY, useMyLeagues } from '../../data/leagues';
 import { LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { formatDate, formatTime } from '../../domain/format';
-import { myLastMatch, myNextMatch } from '../../domain/profile';
-import { normalizeTeam } from '../../domain/stats';
+import { myLastMatch, myNextMatch, myRecentMatches } from '../../domain/profile';
+import { getPlayerMatchResult, normalizeTeam } from '../../domain/stats';
 import type { Match } from '../../domain/types';
 import { MyPlayerCard } from '../impostazioni/MyPlayerCard';
 import { MyProfileTools } from '../impostazioni/MyProfileTools';
-import { ProfileCard } from '../impostazioni/ProfileCard';
 import { LastMatchCard, type MatchActions } from '../partite/parts';
 import { PlayerCard } from '../player/PlayerCard';
 
@@ -73,6 +70,30 @@ function NextMatch({ data, m, team, myId }: { data: LeagueData; m: Match; team: 
       <div style={{ fontSize: 13, fontWeight: 800, marginTop: 6, color: team === 'A' ? 'var(--blue)' : 'var(--teamb)' }}>Giochi con i {TEAM_NAME[team]}</div>
       {mates.length ? <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 3 }}><b>Con te:</b> {mates.join(', ')}</div> : null}
       {rivals.length ? <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}><b>Contro:</b> {rivals.join(', ')}</div> : null}
+    </div>
+  );
+}
+
+/** Ultime partite del giocatore nella lega attiva. */
+function RecentMatches({ data, player, onOpen }: { data: LeagueData; player: { id: string; name: string }; onOpen: (id: string) => void }) {
+  const matches = myRecentMatches(data.dataset, player.id, player.name);
+  if (!matches.length) return null;
+  return (
+    <div className="card" id="profile-recent-matches">
+      <div className="section-header">Ultime partite</div>
+      {matches.map((m) => {
+        const result = getPlayerMatchResult(m, player.id, player.name);
+        const label = result === 'W' ? 'V' : result === 'L' ? 'S' : result === 'D' ? 'P' : String.fromCharCode(8212);
+        const color = result === 'W' ? 'var(--green)' : result === 'L' ? 'var(--red)' : 'var(--text3)';
+        const rating = data.dataset.ratings.find((r) => r.matchId === m.id && (r.playerId === player.id || (!r.playerId && r.player === player.name)))?.rating;
+        return <button key={m.id} type="button" className="profile-match" onClick={() => onOpen(m.id)}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', border: 0, borderBottom: '1px solid var(--gray2)', background: 'transparent', color: 'var(--text)', width: '100%', textAlign: 'left', fontSize: 12 }}>
+          <span style={{ width: 16, fontWeight: 800, color }}>{label}</span>
+          <span style={{ flex: 1 }}>{formatDate(m.date)}</span>
+          <span>{m.scoreA} - {m.scoreB}</span>
+          <span style={{ width: 34, textAlign: 'right', fontWeight: 700 }}>{rating ?? String.fromCharCode(8212)}</span>
+        </button>;
+      })}
     </div>
   );
 }
@@ -147,7 +168,7 @@ export function ProfiloPage({ data, active, act }: { data: LeagueData; active: b
 
       {last && me ? <LastMatchCard data={data} m={last.m} act={act} title="🏆 La mia ultima partita" id="my-last-match" mine={{ id: me.id, name: me.name }} active={active} /> : null}
 
-      {linked ? <ProfileCard playerId={linked.id} name={linked.name} /> : null}
+      {me ? <RecentMatches data={data} player={me} onOpen={act.openMatch} /> : null}
 
       <MyPlayerCard data={data} />
       {linked ? <MyProfileTools data={data} playerId={linked.id} name={linked.name} /> : null}

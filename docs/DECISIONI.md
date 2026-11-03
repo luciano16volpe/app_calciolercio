@@ -195,3 +195,7 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Sostituisce la precedente scelta di aggiornare separatamente ogni giocatore e salvare il risultato in un secondo momento: un errore annulla il comando intero.
 - I testi non toccati dall'amministratore e l'intestazione non modificata vengono conservati. Gli upload Storage restano separati.
 - Test locali con tutte le migrazioni in PostgreSQL in memoria (PGlite), compresi errori intermedi, audit e permessi. Dettagli e ordine di pubblicazione in `docs/SALVATAGGI_ATOMICI.md`.
+
+## Profilo per lega e periodo
+- Nel profilo personale, pagelle, media, forma e vittorie si riferiscono alla stagione attuale della lega selezionata, oppure alle ultime 5 partite con risultato del giocatore se nella stagione ne ha meno di 5. Anche il dettaglio pagelle aperto dal profilo usa lo stesso periodo.
+- Le ultime partite nel profilo sono al massimo 10 della lega corrente. Rimosso il riquadro complessivo per tutte le leghe. Le statistiche base e l'OVR del giocatore restano comuni; il peso dei voti resta calcolato sulla lega selezionata.

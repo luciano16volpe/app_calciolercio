@@ -35,14 +35,15 @@ function Cell({ c }: { c: PagCell }) {
   );
 }
 
-export function PagelleSection({ data, player, onOpenAll, onOpenMatch }: {
+export function PagelleSection({ data, player, onOpenAll, onOpenMatch, showResultsWithoutRatings = false }: {
   data: LeagueData;
   player: Player;
+  showResultsWithoutRatings?: boolean;
   /** apre la finestra con tutte le pagelle (eventualmente su una partita) */
   onOpenAll: (matchId?: string) => void;
   onOpenMatch: (matchId: string) => void;
 }) {
-  const v = pagelleView(data.dataset, data.weights, player);
+  const v = pagelleView(data.dataset, data.weights, player, undefined, showResultsWithoutRatings);
   // barra toccata e posizione del riquadro (calcolata al tocco, sotto la barra e dentro il grafico)
   const [pop, setPop] = useState<{ j: number; left: number; width: number } | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
