@@ -38,6 +38,7 @@ export function StatsTable({ data, scope, filter, sort, onFilter, onSort, onOpen
   const th = (c: StatsCol, label: string, tip: string, left?: boolean) => (
     <th
       onClick={() => onSort(c)} title={tip}
+      aria-sort={sort.col === c ? (sort.dir < 0 ? 'descending' : 'ascending') : 'none'}
       style={{
         padding: '6px 8px', textAlign: left ? 'left' : 'center', cursor: 'pointer', userSelect: 'none',
         ...(left ? { position: 'sticky', left: 0, background: 'var(--gray)' } : {}), ...(sort.col === c ? { color: 'var(--green)' } : {}),
@@ -50,8 +51,9 @@ export function StatsTable({ data, scope, filter, sort, onFilter, onSort, onOpen
     <>
       {title}
       <FilterTabs filter={filter} minPres={minPres} onFilter={onFilter} />
-      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 480 }}>
+      <div className="stats-table-hint">Scorri la tabella ↔ · tocca una colonna per ordinare</div>
+      <div className="stats-table-scroll" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <table className="stats-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: 480 }}>
           <thead>
             <tr style={{ fontSize: 10, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '.3px' }}>
               {th('name', 'Giocatore', 'Nome', true)}
@@ -91,7 +93,7 @@ export function StatsTable({ data, scope, filter, sort, onFilter, onSort, onOpen
                   <td style={td()}>
                     {last.length ? (
                       last.map((x, k) => (
-                        <span key={k} style={{ display: 'inline-block', width: 9, height: 9, borderRadius: '50%', background: x.res === 'W' ? '#3aad5e' : x.res === 'L' ? '#e05c5c' : '#e0a92e', margin: '0 1px' }} />
+                        <span key={k} title={x.res === 'W' ? 'Vittoria' : x.res === 'L' ? 'Sconfitta' : 'Pareggio'} aria-label={x.res === 'W' ? 'Vittoria' : x.res === 'L' ? 'Sconfitta' : 'Pareggio'} style={{ display: 'inline-block', width: 9, height: 9, borderRadius: '50%', background: x.res === 'W' ? '#3aad5e' : x.res === 'L' ? '#e05c5c' : '#e0a92e', margin: '0 1px' }} />
                       ))
                     ) : (
                       <span style={{ color: 'var(--text3)' }}>—</span>
@@ -105,8 +107,8 @@ export function StatsTable({ data, scope, filter, sort, onFilter, onSort, onOpen
           </tbody>
         </table>
       </div>
-      <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 8 }}>
-        Tocca un'intestazione per riordinare · PG presenze · V/N/P vittorie/pareggi/sconfitte · % vittorie · Forma = ultime 5 (🟢 vinta 🟡 pari 🔴 persa)
+      <div className="stats-table-legend">
+        PG presenze · V/N/P vittorie/pareggi/sconfitte · % vittorie<br />Forma: ultime 5 partite · 🟢 vinta · 🟡 pari · 🔴 persa
       </div>
     </>
   );
