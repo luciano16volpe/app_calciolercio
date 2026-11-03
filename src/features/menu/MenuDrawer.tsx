@@ -13,7 +13,7 @@ import { formatDate } from '../../domain/format';
 
 export type Panel =
   | 'create-league' | 'join-league' | 'members' | 'invites' | 'claims' | 'merge' | 'league-settings' | 'admin-proposals'
-  | 'compare' | 'game-settings' | 'bench' | 'pending' | 'audit' | 'platform-leagues' | 'platform-users' | 'privacy' | 'help' | 'account';
+  | 'compare' | 'couples' | 'albo' | 'records' | 'game-settings' | 'bench' | 'pending' | 'audit' | 'platform-leagues' | 'platform-users' | 'privacy' | 'help' | 'account';
 
 const ROLE_LABEL = { admin: 'Admin', redazione: 'Redazione', member: 'Membro' } as const;
 
@@ -156,6 +156,9 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
             <>
               <div className="menu-sec">Giocatori</div>
               <Item icon="⚔️" title="Confronto" sub="due giocatori testa a testa" onClick={() => open('compare')} id="menu-compare" />
+              <Item icon="🤝" title="Coppie" sub="chi vince (e perde) insieme" onClick={() => open('couples')} id="menu-couples" />
+              <Item icon="🏆" title="Albo d'oro" sub="i premi di ogni stagione" onClick={() => open('albo')} id="menu-albo" />
+              <Item icon="🏅" title="Record" sub="le imprese più grandi" onClick={() => open('records')} id="menu-records" />
             </>
           ) : null}
 

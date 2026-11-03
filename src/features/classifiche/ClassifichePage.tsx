@@ -4,15 +4,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { LeagueData } from '../../data/queries';
 import { nextStatsSort, seasonDash, STATS_SORT_DEFAULT, type StatsCol, type StatsFilter } from '../../domain/rankings';
 import { seasonsList } from '../../domain/seasons';
-import { AlboList } from './Albo';
-import { CoppieList, MediaList, RecordList, ScorersList } from './lists';
+import { MediaList, ScorersList } from './lists';
 import { StatsTable } from './StatsTable';
 
 export const SEASON_ICON: Record<string, string> = { PRI: '🌸', EST: '☀️', AUT: '🍂', INV: '❄️' };
 
 export const CL_TABS = [
   ['marcatori', '⚽ Marcatori'], ['assist', '🅰️ Assist'], ['media', '⭐ Media voto'], ['statistiche', '📈 Statistiche'],
-  ['coppie', '🤝 Coppie'], ['albo', "🏆 Albo d'oro"], ['record', '🏅 Record'],
 ] as const;
 type Tab = (typeof CL_TABS)[number][0];
 
@@ -33,7 +31,7 @@ export function SeasonDash({ data, scope }: { data: LeagueData; scope: string })
   );
 }
 
-export function ClassifichePage({ data, onOpenPlayer, onOpenMatch }: { data: LeagueData; onOpenPlayer: (playerId: string) => void; onOpenMatch: (matchId: string) => void }) {
+export function ClassifichePage({ data, onOpenPlayer }: { data: LeagueData; onOpenPlayer: (playerId: string) => void }) {
   // stagione scelta (null = la più recente) e scheda: restano come scelti finché l'app è aperta
   const [scopeSel, setScopeSel] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('marcatori');
@@ -89,14 +87,12 @@ export function ClassifichePage({ data, onOpenPlayer, onOpenMatch }: { data: Lea
       </div>
       </div>
       {/* come in legacy: tre schede (carte) diverse, una sola visibile */}
-      {tab !== 'statistiche' && tab !== 'albo' ? (
+      {tab !== 'statistiche' ? (
         <div className="card cl-sec" id="cl-list-card">
           <div id="scorers-list">
             {tab === 'marcatori' ? <ScorersList data={data} scope={scope} field="goals" onOpenPlayer={onOpenPlayer} /> : null}
             {tab === 'assist' ? <ScorersList data={data} scope={scope} field="assist" onOpenPlayer={onOpenPlayer} /> : null}
             {tab === 'media' ? <MediaList data={data} scope={scope} onOpenPlayer={onOpenPlayer} /> : null}
-            {tab === 'coppie' ? <CoppieList data={data} scope={scope} onOpenPlayer={onOpenPlayer} /> : null}
-            {tab === 'record' ? <RecordList data={data} scope={scope} onOpenPlayer={onOpenPlayer} onOpenMatch={onOpenMatch} /> : null}
           </div>
         </div>
       ) : null}
@@ -108,11 +104,6 @@ export function ClassifichePage({ data, onOpenPlayer, onOpenMatch }: { data: Lea
               onFilter={setStatsFilter} onSort={(c: StatsCol) => setStatsSort((s) => nextStatsSort(s, c))}
             />
           </div>
-        </div>
-      ) : null}
-      {tab === 'albo' ? (
-        <div className="card cl-sec" id="albo-card">
-          <div id="albo-list"><AlboList data={data} scope={scope} onOpenPlayer={onOpenPlayer} /></div>
         </div>
       ) : null}
     </div>

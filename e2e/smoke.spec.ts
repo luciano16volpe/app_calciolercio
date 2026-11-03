@@ -95,10 +95,10 @@ test('Classifiche: stagione, schede e apertura della scheda giocatore', async ({
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   await page.locator('.bottom-nav').getByRole('button', { name: 'Classifiche', exact: true }).click();
   const cl = page.locator('#page-classifiche');
-  // stagioni (la più recente è scelta) + "Sempre"; otto schede
+  // stagioni (la più recente è scelta) + "Sempre"; quattro schede
   await expect(cl.locator('#cl-seasons .chip').first()).toHaveClass(/active/);
   await expect(cl.locator('#cl-seasons .chip').last()).toContainText('Sempre');
-  await expect(cl.locator('#cl-tabs .chip')).toHaveCount(8);
+  await expect(cl.locator('#cl-tabs .chip')).toHaveCount(4);
   // il riquadro con i totali (partite, gol…) non c'è più
   await expect(cl.locator('.dash-cell')).toHaveCount(0);
   // marcatori: classifica con il primo posto in evidenza
@@ -110,7 +110,7 @@ test('Classifiche: stagione, schede e apertura della scheda giocatore', async ({
   await expect(cl.locator('#cl-seasons .chip').last()).toHaveClass(/active/);
   await expect(cl.locator('#scorers-list')).toBeVisible();
   // le altre schede si aprono senza errori
-  for (const label of ['Assist', 'Media voto', 'Coppie', 'Record']) {
+  for (const label of ['Assist', 'Media voto']) {
     await cl.locator('#cl-tabs .chip', { hasText: label }).click();
     await expect(cl.locator('#scorers-list .section-header').first()).toBeVisible();
   }

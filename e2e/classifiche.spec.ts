@@ -1,4 +1,4 @@
-// Classifiche (passo 3.3b): tabella Statistiche, Confronto testa a testa, Albo d'oro — su iPhone, Android e 360 px.
+// Classifiche (passo 3.3b): tabella Statistiche, Confronto testa a testa e Albo d'oro (questi ultimi dal menu laterale) — su iPhone, Android e 360 px.
 import { expect, test, type Page } from '@playwright/test';
 import { openPanel, setup } from './helpers';
 
@@ -81,10 +81,12 @@ test('Confronto: due giocatori, scambio, scelta dall\'elenco e righe con barre',
 });
 
 test('Albo d\'oro: stagioni con premi, Occasionali, vergogna e imprese', async ({ page }) => {
-  const cl = await openClassifiche(page, 'Albo');
+  await page.goto('/');
+  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await openPanel(page, '#menu-albo', '#sheet-albo');
   // "Sempre": tutte le stagioni
-  await cl.locator('#cl-seasons .chip').last().click();
-  const albo = cl.locator('#albo-list');
+  await page.locator('#panel-seasons .chip').last().click();
+  const albo = page.locator('#extra-list');
   await expect(albo.locator('.section-header')).toContainText("Albo d'oro");
   expect(await albo.locator('.albo-season').count()).toBeGreaterThanOrEqual(3);
   await expect(albo.locator('.albo-chip.done').first()).toContainText('chiusa'); // stagione chiusa e congelata
