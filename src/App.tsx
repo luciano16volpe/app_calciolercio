@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react';
-import { BottomNav, type PageName } from './app/BottomNav';
+import { useMemo, type ComponentProps } from 'react';
+import { BottomNav } from './app/BottomNav';
+import { useShellNavigation } from './app/useShellNavigation';
+import { useShellWindows } from './app/useShellWindows';
 import { useAuth, useRole } from './app/auth';
 import { useIsSuperAdmin } from './data/leagues';
 import { DialogProvider, usePrompt } from './app/Dialogs';
-import { buildPath, HOME_PAGE, navigate, parsePath, rememberLeague, setSelectedLeague, type PageKey } from './app/league';
+import { buildPath, HOME_PAGE, navigate, parsePath, setSelectedLeague } from './app/league';
 import { useToast } from './app/Toast';
 import { createPlayer } from './data/mutations';
 import { useQueryClient } from '@tanstack/react-query';
@@ -12,30 +14,23 @@ import { LEAGUE_QUERY_KEY, NoLeagueError, photoUrl, rosterView, useLeagueData, t
 import { ClassifichePage } from './features/classifiche/ClassifichePage';
 import { GiocaPage } from './features/gioca/GiocaPage';
 import { SettingsPage } from './features/impostazioni/SettingsPage';
-import { AuditPanel } from './features/menu/AuditPanel';
 import { LoginPage } from './features/auth/LoginPage';
-import { GameSettingsPanel } from './features/menu/GameSettingsPanel';
-import { AdminProposalsPanel, PlatformLeaguesPanel, PlatformUsersPanel } from './features/menu/AdminPanels';
 import { InvitePage } from './features/menu/InvitePage';
-import { BenchPanel } from './features/menu/BenchPanel';
-import { PendingPanel } from './features/menu/PendingPanel';
-import { CreateLeagueSheet, JoinLeagueSheet } from './features/menu/LeagueSheets';
-import { LeagueSettingsPanel } from './features/menu/LeagueSettingsPanel';
-import { ClaimsPanel, InvitesPanel, MergePanel } from './features/menu/LinkPanels';
-import { MembersPanel } from './features/menu/MembersPanel';
 import { MenuDrawer, type Panel } from './features/menu/MenuDrawer';
-import { EmptyLeagueGuide, HelpPanel, PrivacyPanel } from './features/menu/OtherPanels';
+import { EmptyLeagueGuide } from './features/menu/OtherPanels';
+import { ShellPanels } from './app/ShellPanels';
 import { MatchCard } from './features/partite/MatchCard';
 import { PartitePage } from './features/partite/PartitePage';
 import { useMyPlayerIn } from './features/partite/parts';
 import { ProfiloPage } from './features/profilo/ProfiloPage';
-import { GazArchive, GazViewer, PagelleTextDialog, type MatchActions } from './features/partite/parts';
+import { GazArchive, GazViewer, PagelleTextDialog } from './features/partite/parts';
 import { PlayerCard } from './features/player/PlayerCard';
 import { AppHeader } from './app/AppHeader';
 import { InstallHint } from './app/InstallHint';
 import { PullToRefresh } from './app/PullToRefresh';
 import { PushPrompt } from './app/PushPrompt';
 import { RosaList } from './features/rosa/RosaList';
+
 
 /** Gioca e scheda partita con i permessi di chi è entrato: la modifica si offre solo a chi può farla (il database la controlla comunque). */
 function GiocaGate({ data }: { data: LeagueData }) {
@@ -78,13 +73,6 @@ function MatchCardGate(props: ComponentProps<typeof MatchCard>) {
   return <MatchCard {...props} canEdit={isAdmin} canEditText={canEditText && !isAdmin} />;
 }
 
-/** Regole di gioco: le cambia solo l'amministratore supremo, gli amministratori di lega le vedono. */
-function GameSettingsGate({ data, onClose }: { data: LeagueData; onClose: () => void }) {
-  const { user } = useAuth();
-  const sup = useIsSuperAdmin(user?.id ?? null);
-  return <GameSettingsPanel data={data} editable={sup.data === true} onClose={onClose} />;
-}
-
 /** Messaggio al posto di una pagina mentre i dati si caricano o se non arrivano; senza leghe, come entrare. */
 function Loading({ q, onPanel }: { q: { isError: boolean; error?: unknown; refetch: () => unknown }; onPanel: (p: Panel) => void }) {
   const { user } = useAuth();
@@ -116,60 +104,16 @@ function Loading({ q, onPanel }: { q: { isError: boolean; error?: unknown; refet
   return <div style={{ textAlign: 'center', padding: 30, color: 'var(--text3)', fontSize: 13 }}>⏳ Caricamento…</div>;
 }
 
-/** Cosa c'è nella finestra aperta sopra la pagina (una sola per volta, come in legacy). */
-type View = { kind: 'player'; id: string; fromRosa?: boolean } | { kind: 'match'; id: string; text?: boolean } | { kind: 'gazArchive' } | null;
-
-/** La pagina scritta nell'indirizzo, se c'è. */
-const pageFromPath = (): PageName | null => parsePath(window.location.pathname).page as PageKey | null;
-
 function Shell() {
-  const [chosen, setChosen] = useState<PageName | null>(pageFromPath); // null = nessuna scelta: si parte dalla pagina iniziale
-  const [view, setView] = useState<View>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [panel, setPanel] = useState<Panel | null>(null);
-  const [inviteToken, setInviteToken] = useState<string | null>(() => parsePath(window.location.pathname).invite);
-  const [gazViewer, setGazViewer] = useState<{ id: string; fromArchive: boolean } | null>(null);
-  const [ptDialog, setPtDialog] = useState<string | null>(null);
-  // la Bacheca resta aperta (o chiusa) passando da un giocatore all'altro, come in legacy
-  const [bachecaOpen, setBachecaOpen] = useState(false);
+  const { view, setView, menuOpen, setMenuOpen, panel, setPanel, inviteToken, setInviteToken,
+    gazViewer, setGazViewer, ptDialog, setPtDialog, bachecaOpen, setBachecaOpen,
+    close, openPlayer, openPlayerFromRosa, openMatch, act, closePanel, closeMenu } = useShellWindows();
   const q = useLeagueData();
   const data = q.data;
   // «Gioca» (nuova partita) è solo per gli amministratori della lega: agli altri la scheda non c'è, e l'indirizzo /gioca li porta alla pagina iniziale
   const { isAdmin, ready } = useRole(data?.league.id);
   const me = useMyPlayerIn(data); // la mia faccia (o foto) nel footer
-  // pagina iniziale: Classifiche; una lega ancora vuota si apre sulla Rosa (lì c'è la guida «Aggiungi i giocatori»)
-  const [autoPage, setAutoPage] = useState<PageName | null>(null); // scelta automatica fatta una volta sola, all'apertura
-  if (data && !chosen && autoPage === null) setAutoPage(!rosterView(data).dataset.players.length ? 'rosa' : HOME_PAGE);
-  const wanted: PageName = chosen ?? autoPage ?? HOME_PAGE;
-  const page: PageName = wanted === 'partita' && ready && !isAdmin ? HOME_PAGE : wanted;
-  const go = (p: PageName) => {
-    setChosen(p);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-  // la lega e la pagina stanno nell'indirizzo (/l/<slug>/<pagina>): i link condivisi aprono la lega giusta
-  useEffect(() => {
-    if (data && !inviteToken) {
-      navigate(buildPath(data.league.slug, page), true);
-      rememberLeague(data.league.slug);
-    }
-  }, [data?.league.slug, page, inviteToken]); // eslint-disable-line react-hooks/exhaustive-deps
-  const close = useCallback(() => setView(null), []);
-  const openPlayer = useCallback((id: string) => setView({ kind: 'player', id }), []);
-  const openPlayerFromRosa = useCallback((id: string) => setView({ kind: 'player', id, fromRosa: true }), []);
-  const openMatch = useCallback((id: string, text?: boolean) => {
-    setGazViewer(null);
-    setView({ kind: 'match', id, text });
-  }, []);
-  const act: MatchActions = useMemo(
-    () => ({
-      openMatch,
-      openGazzetta: (id, fromArchive) => setGazViewer({ id, fromArchive: !!fromArchive }),
-      openPagelleText: setPtDialog,
-    }),
-    [openMatch],
-  );
-  const closePanel = useCallback(() => setPanel(null), []);
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const { page, go } = useShellNavigation(data, isAdmin, ready, inviteToken);
 
   return (
     <>
@@ -220,22 +164,7 @@ function Shell() {
       {data && ptDialog ? <PagelleTextDialog data={data} matchId={ptDialog} onClose={() => setPtDialog(null)} /> : null}
 
       {menuOpen ? <MenuDrawer data={data} onClose={closeMenu} onOpenPanel={setPanel} onGoSettings={() => go('settings')} onOpenMatch={openMatch} /> : null}
-      {panel === 'create-league' ? <CreateLeagueSheet onClose={closePanel} /> : null}
-      {panel === 'join-league' ? <JoinLeagueSheet onClose={closePanel} onJoined={() => go('profilo')} /> : null}
-      {panel === 'privacy' ? <PrivacyPanel onClose={closePanel} onDeleted={() => { setSelectedLeague(null); closePanel(); }} /> : null}
-      {panel === 'help' ? <HelpPanel onClose={closePanel} /> : null}
-      {data && panel === 'game-settings' ? <GameSettingsGate data={data} onClose={closePanel} /> : null}
-      {panel === 'audit' ? <AuditPanel onClose={closePanel} /> : null}
-      {panel === 'platform-leagues' ? <PlatformLeaguesPanel onClose={closePanel} /> : null}
-      {panel === 'platform-users' ? <PlatformUsersPanel onClose={closePanel} /> : null}
-      {data && panel === 'members' ? <MembersPanel data={data} onClose={closePanel} /> : null}
-      {data && panel === 'invites' ? <InvitesPanel data={data} onClose={closePanel} /> : null}
-      {data && panel === 'claims' ? <ClaimsPanel data={data} onClose={closePanel} /> : null}
-      {data && panel === 'merge' ? <MergePanel data={data} onClose={closePanel} /> : null}
-      {data && panel === 'bench' ? <BenchPanel data={data} onClose={closePanel} /> : null}
-      {data && panel === 'pending' ? <PendingPanel data={data} onClose={closePanel} onOpenMatch={openMatch} /> : null}
-      {data && panel === 'league-settings' ? <LeagueSettingsPanel data={data} onClose={closePanel} /> : null}
-      {data && panel === 'admin-proposals' ? <AdminProposalsPanel data={data} onClose={closePanel} /> : null}
+      <ShellPanels panel={panel} data={data} closePanel={closePanel} go={go} openMatch={openMatch} />
 
       {inviteToken ? (
         <InvitePage
