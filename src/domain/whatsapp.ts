@@ -101,6 +101,12 @@ export function waBest(name: string, slots: WaSlot[], map: AliasMap): WaMatch {
 // eslint-disable-next-line no-misleading-character-class
 const WA_EMO = /[\p{Extended_Pictographic}\ufe0f\u200d\u20e3]/gu;
 
+/**
+ * Emoji (e spazi) all'inizio della riga, ma SOLO se subito dopo c'è un * o un _ : è la pallina della squadra davanti a «*NOME 7*».
+ * Una riga di descrizione che inizia con un'emoji («⚽ Peppe 2 gol») non viene toccata.
+ */
+const WA_LEAD_EMO = new RegExp('^[\\s\\p{Extended_Pictographic}' + String.fromCharCode(0xfe0f, 0x200d) + ']+(?=[*_])', 'u');
+
 /** Un titolo è corto e (quasi) tutto maiuscolo: "RISPARMIO ENERGETICO", "SI’, CHEF!", "IN(PS)FERNALE". */
 export function waIsTitle(s: string): boolean {
   const t = String(s).replace(WA_EMO, '').replace(/[*_~]/g, '').trim();
@@ -128,7 +134,8 @@ export function parseWhatsAppPagelle(text: string, slots: WaSlot[], map: AliasMa
     .replace(/[\u200e\u200f\u202a-\u202e\ufeff]/g, '')
     .split('\n')
     .forEach((raw) => {
-      const line = raw.trim();
+      // «🔵*VITO 7,5* …» / «⚪*FABIO 7,5* …»: la pallina della squadra davanti al nome si ignora
+      const line = raw.trim().replace(WA_LEAD_EMO, '');
       const tm = line.match(TEAM);
       if (tm) {
         close();
