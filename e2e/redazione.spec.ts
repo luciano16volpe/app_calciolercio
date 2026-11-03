@@ -40,10 +40,11 @@ test('Redazione: salva solo titolo e descrizione (nessun voto nella richiesta)',
   await page.locator('#pgt-dialog').getByRole('button', { name: 'Fatto' }).click();
   await modal.locator('button', { hasText: 'Salva pagelle' }).click();
   await expect(page.locator('#toast')).toContainText('Salvati titoli e descrizioni: 1');
-  const patches = writes.filter((w) => w.table === 'match_players' && w.method === 'PATCH');
-  expect(patches.length).toBe(1);
-  expect(patches[0]?.body).toEqual({ titolo: 'LEADER', descrizione: 'Partita di sostanza.' });
-  expect(writes.some((w) => w.table === 'matches')).toBe(false);
+  expect(writes).toHaveLength(1);
+  expect(writes[0]?.table).toBe('save_match_texts');
+  expect(writes[0]?.body).toEqual({ p_match: expect.any(String), p_rows: [
+    { player_id: expect.any(String), titolo: 'LEADER', descrizione: 'Partita di sostanza.' },
+  ] });
 });
 
 test('Redazione: dalla scheda di una partita c\'è «Scrivi le pagelle»; l\'amministratore ha la modifica completa', async ({ page }) => {

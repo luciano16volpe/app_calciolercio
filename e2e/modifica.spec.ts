@@ -56,12 +56,12 @@ test('Amministratore: modifica voto, gol e risultato e salva', async ({ page }) 
   await modal.locator('#edit-place').fill('Campo Luna');
   await modal.locator('button', { hasText: 'Salva partita' }).click();
   await expect(page.locator('#toast')).toContainText('Salvato:', { timeout: 15_000 });
-  const rows = writes.filter((w) => w.table === 'match_players' && w.method === 'PATCH');
-  expect(rows.length).toBe(10);
-  expect(rows.some((w) => (w.body as { rating: number }).rating === 7 && (w.body as { goals: number }).goals === before + 1)).toBe(true);
-  const head = writes.find((w) => w.table === 'matches' && w.method === 'PATCH');
-  expect((head?.body as { score_a: number }).score_a).toBe(9);
-  expect(head?.body).toMatchObject({ play_time: '20:00', place: 'Campo Luna' });
+  expect(writes).toHaveLength(1);
+  expect(writes[0]?.table).toBe('save_match_ratings');
+  const body = writes[0]?.body as { p_rows: Array<{ rating: number; goals: number }>; p_header: Record<string, unknown> };
+  expect(body.p_rows).toHaveLength(10);
+  expect(body.p_rows.some((r) => r.rating === 7 && r.goals === before + 1)).toBe(true);
+  expect(body.p_header).toMatchObject({ score_a: 9, play_time: '20:00', place: 'Campo Luna' });
   await expect(page.locator('#match-modal')).toHaveCount(0); // si chiude da sola
   await noOverflow(page);
 });
@@ -94,7 +94,8 @@ test('Pagella: titolo e descrizione dalla finestra, poi salvati', async ({ page 
   await expect(dlg).toHaveCount(0);
   await modal.locator('button', { hasText: 'Salva partita' }).click();
   await expect(page.locator('#toast')).toContainText('Salvato:', { timeout: 15_000 });
-  expect(writes.some((w) => (w.body as { titolo?: string })?.titolo === 'Il Muro' && (w.body as { descrizione?: string }).descrizione === 'Una *roccia*')).toBe(true);
+  const saved = writes.find((w) => w.table === 'save_match_ratings')?.body as { p_rows: Array<{ titolo: string; descrizione: string; write_text: boolean }> };
+  expect(saved.p_rows.some((r) => r.titolo === 'Il Muro' && r.descrizione === 'Una *roccia*' && r.write_text)).toBe(true);
 });
 
 test('Elimina partita: chiede conferma e poi cancella', async ({ page }) => {
@@ -126,20 +127,18 @@ test('Gioca: Crea partita salva squadre e previsione', async ({ page }) => {
   await dlg.locator('#nm-time').selectOption('21:00');
   await dlg.locator('button', { hasText: 'Crea partita' }).click();
   await expect(page.locator('#toast')).toContainText('dove si gioca');
-  expect(writes.some((w) => w.table === 'matches')).toBe(false);
+  expect(writes).toHaveLength(0);
   await dlg.locator('#nm-place').fill('  Campo Sole ');
   await dlg.locator('button', { hasText: 'Crea partita' }).click();
   await expect(page.locator('#toast')).toContainText('Partita creata!', { timeout: 15_000 });
-  const m = writes.find((w) => w.table === 'matches') as Write;
-  expect(m.method).toBe('POST');
-  const body = m.body as { score_a: number; score_b: number; pred_rank: number; pred: number; play_time: string; place: string };
-  expect([body.score_a, body.score_b, body.pred_rank]).toEqual([4, 3, 1]);
-  expect([body.play_time, body.place]).toEqual(['21:00', 'Campo Sole']);
-  expect(typeof body.pred).toBe('number');
-  const rows = (writes.find((w) => w.table === 'match_players') as Write).body as Array<{ team: string; match_id: string }>;
-  expect(rows.length).toBe(10);
-  expect(rows.filter((r) => r.team === 'A').length).toBe(5);
-  expect(rows.every((r) => r.match_id === 'nuova-partita')).toBe(true);
+  expect(writes).toHaveLength(1);
+  expect(writes[0]?.table).toBe('create_match_with_teams');
+  const saved = writes[0]?.body as { p_match: { score_a: number; score_b: number; pred_rank: number; pred: number; play_time: string; place: string }; p_team_a: string[]; p_team_b: string[] };
+  expect(saved.p_match).toMatchObject({ score_a: 4, score_b: 3, pred_rank: 1, play_time: '21:00', place: 'Campo Sole' });
+  expect(typeof saved.p_match.pred).toBe('number');
+  expect(saved.p_team_a).toHaveLength(5);
+  expect(saved.p_team_b).toHaveLength(5);
+  expect(new Set([...saved.p_team_a, ...saved.p_team_b]).size).toBe(10);
   await noOverflow(page);
 });
 
@@ -185,7 +184,8 @@ test('WhatsApp: si incolla il messaggio, si controllano gli abbinamenti e si ass
   await modal.locator('.rate-stepper input').first().fill('7');
   await modal.locator('button', { hasText: 'Salva partita' }).click();
   await expect(page.locator('#toast')).toContainText('Salvato:', { timeout: 15_000 });
-  expect(writes.some((w) => (w.body as { titolo?: string })?.titolo === 'IL MURO' && /Sempre al posto giusto/.test((w.body as { descrizione?: string }).descrizione ?? ''))).toBe(true);
+  const saved = writes.find((w) => w.table === 'save_match_ratings')?.body as { p_rows: Array<{ titolo: string; descrizione: string; write_text: boolean }> };
+  expect(saved.p_rows.some((r) => r.titolo === 'IL MURO' && /Sempre al posto giusto/.test(r.descrizione) && r.write_text)).toBe(true);
 });
 
 test('WhatsApp: messaggio senza pagelle', async ({ page }) => {
@@ -272,11 +272,9 @@ test('Rosa: + Aggiungi giocatore', async ({ page }) => {
   await page.locator('#app-modal-input').fill('  Marco ');
   await page.locator('#app-modal-ok').click();
   await expect(page.locator('#toast')).toContainText('Giocatore aggiunto', { timeout: 15_000 });
-  const p = writes.find((w) => w.table === 'players') as Write;
-  expect(p.method).toBe('POST');
-  expect(p.body).toEqual({ name: 'Marco', roles: ['MED'], stats: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5] });
-  const lp = writes.find((w) => w.table === 'league_players') as Write;
-  expect((lp.body as { player_id: string }).player_id).toBe('nuovo-giocatore');
+  expect(writes).toHaveLength(1);
+  expect(writes[0]?.table).toBe('create_player_in_league');
+  expect(writes[0]?.body).toEqual({ p_league: expect.any(String), p_name: 'Marco' });
 });
 
 test('Gazzetta: da membro non ci sono i pulsanti', async ({ page }) => {
@@ -316,4 +314,20 @@ test('Partita: ora e luogo si vedono nella scheda e nell’elenco (da membro, in
   // le partite importate non hanno ora né luogo: niente riga vuota, e nessun campo da compilare
   await expect(modal.locator('#edit-time')).toHaveCount(0);
   await expect(modal.locator('#match-when')).toHaveCount(0);
+});
+
+
+test('Salvataggio fallito: conserva la modifica e non annuncia un successo parziale', async ({ page }) => {
+  const writes = await setup(page, { publicRole: 'admin', rpcError: { save_match_ratings: 'Errore transazione simulato' } });
+  const modal = await openLastMatch(page);
+  await modal.locator('#edit-toggle-btn').click();
+  await modal.locator('.rate-stepper input').first().fill('8');
+  await modal.locator('#sc-a').fill('9');
+  await modal.locator('button', { hasText: 'Salva partita' }).click();
+  await expect(page.locator('#toast')).toContainText('Errore transazione simulato');
+  await expect(modal).toBeVisible();
+  await expect(modal.locator('.rate-stepper input').first()).toHaveValue('8');
+  await expect(modal.locator('#sc-a')).toHaveValue('9');
+  expect(writes).toHaveLength(1);
+  expect(writes[0]?.table).toBe('save_match_ratings');
 });

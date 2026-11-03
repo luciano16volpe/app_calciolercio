@@ -4,47 +4,38 @@ import { supabase } from './supabase';
 
 const fail = (what: string, e: { message: string }) => new Error(`${what}: ${e.message}`);
 
+export interface MatchHeader {
+  score_a: number | null;
+  score_b: number | null;
+  notes: string | null;
+  play_time: string | null;
+  place: string | null;
+}
+
 /**
  * Salva voti, gol, assist e pagelle di una partita. Chi non ha un voto torna senza pagella.
  * `untouchedTexts`: giocatori di cui titolo e descrizione non sono stati toccati: non si riscrivono
  * (se nel frattempo la redazione li ha scritti, restano).
  */
-export async function saveMatchRatings(matchId: string, rows: RatingRow[], untouchedTexts: Set<string> = new Set()): Promise<void> {
-  const byPlayer = new Map(rows.map((r) => [r.playerId, r]));
-  const { data: current, error } = await supabase.from('match_players').select('player_id').eq('match_id', matchId);
-  if (error) throw fail('squadre', error);
-  const results = await Promise.all(
-    (current ?? []).map((c) => {
-      const r = byPlayer.get(c.player_id);
-      const texts = untouchedTexts.has(c.player_id) ? {} : r ? { titolo: r.titolo || null, descrizione: r.notes || null } : { titolo: null, descrizione: null };
-      return supabase
-        .from('match_players')
-        .update(
-          r
-            ? { rating: r.rating, goals: r.goals, assist: r.assist, autogol: r.autogol, meta: r.meta, rigori_sbagliati: r.rigoriSbagliati, ...texts }
-            : { rating: null, goals: 0, assist: 0, autogol: 0, meta: 0, rigori_sbagliati: 0, ...texts },
-        )
-        .eq('match_id', matchId)
-        .eq('player_id', c.player_id);
-    }),
-  );
-  const bad = results.find((x) => x.error);
-  if (bad?.error) throw fail('pagelle', bad.error);
+export async function saveMatchRatings(matchId: string, rows: RatingRow[], untouchedTexts: Set<string> = new Set(), header?: MatchHeader): Promise<void> {
+  const { error } = await supabase.rpc('save_match_ratings', {
+    p_match: matchId,
+    p_rows: rows.map((r) => ({ player_id: r.playerId, rating: r.rating, goals: r.goals, assist: r.assist,
+      autogol: r.autogol, meta: r.meta, rigori_sbagliati: r.rigoriSbagliati,
+      titolo: r.titolo || null, descrizione: r.notes || null, write_text: !untouchedTexts.has(r.playerId) })),
+    ...(header ? { p_header: { ...header } } : {}),
+    p_untouched_texts: [...untouchedTexts],
+  });
+  if (error) throw fail('pagelle', error);
 }
 
 /** Redazione: cambia solo titolo e descrizione di alcune pagelle ('' = nessun testo). Voti e numeri non si toccano (lo garantisce anche il database). */
 export async function saveMatchTexts(matchId: string, rows: Array<{ playerId: string; titolo: string; descrizione: string }>): Promise<void> {
-  const results = await Promise.all(
-    rows.map((r) => supabase.from('match_players').update({ titolo: r.titolo || null, descrizione: r.descrizione || null }).eq('match_id', matchId).eq('player_id', r.playerId)),
-  );
-  const bad = results.find((x) => x.error);
-  if (bad?.error) throw fail('pagelle', bad.error);
-}
-
-/** Risultato, descrizione, ora e luogo di una partita ('' = non inserito). */
-export async function updateMatchHeader(matchId: string, scoreA: number | '', scoreB: number | '', notes: string, time: string, place: string): Promise<void> {
-  const { error } = await supabase.from('matches').update({ score_a: scoreA === '' ? null : scoreA, score_b: scoreB === '' ? null : scoreB, notes: notes || null, play_time: time || null, place: place.trim() || null }).eq('id', matchId);
-  if (error) throw fail('risultato', error);
+  const { error } = await supabase.rpc('save_match_texts', {
+    p_match: matchId,
+    p_rows: rows.map((r) => ({ player_id: r.playerId, titolo: r.titolo || null, descrizione: r.descrizione || null })),
+  });
+  if (error) throw fail('pagelle', error);
 }
 
 /** Elimina la partita con tutte le sue pagelle (le righe collegate si cancellano da sole). */
@@ -69,27 +60,17 @@ export interface NewMatch {
   predRank: number;
 }
 
-/** Crea la partita con le squadre. Se le squadre non si salvano, la partita appena creata si toglie. */
+/** Crea partita e squadre in una sola transazione. */
 export async function createMatch(m: NewMatch): Promise<string> {
-  const { data, error } = await supabase
-    .from('matches')
-    .insert({
-      league_id: m.leagueId, date: m.date, play_time: m.time || null, place: m.place.trim() || null, notes: m.notes || null,
-      score_a: m.scoreA === '' ? null : m.scoreA, score_b: m.scoreB === '' ? null : m.scoreB, pred: m.pred, pred_rank: m.predRank,
-    })
-    .select('id')
-    .single();
+  const { data, error } = await supabase.rpc('create_match_with_teams', {
+    p_match: { league_id: m.leagueId, date: m.date, play_time: m.time || null,
+      place: m.place.trim() || null, notes: m.notes || null,
+      score_a: m.scoreA === '' ? null : m.scoreA, score_b: m.scoreB === '' ? null : m.scoreB,
+      pred: m.pred, pred_rank: m.predRank },
+    p_team_a: m.teamA, p_team_b: m.teamB,
+  });
   if (error || !data) throw fail('partita', error ?? { message: 'nessuna risposta' });
-  const rows = [
-    ...m.teamA.map((id, i) => ({ match_id: data.id, player_id: id, team: 'A', position: i })),
-    ...m.teamB.map((id, i) => ({ match_id: data.id, player_id: id, team: 'B', position: i })),
-  ];
-  const r = await supabase.from('match_players').insert(rows);
-  if (r.error) {
-    await supabase.from('matches').delete().eq('id', data.id);
-    throw fail('squadre', r.error);
-  }
-  return data.id;
+  return data;
 }
 
 /** Ricorda i soprannomi dei giocatori nella lega (id giocatore → elenco completo dei soprannomi). */
@@ -110,14 +91,9 @@ export async function updatePlayer(id: string, patch: { stats?: number[]; roles?
 
 /** Nuovo giocatore nella lega: centrocampista con tutte le statistiche a 5. */
 export async function createPlayer(leagueId: string, name: string): Promise<string> {
-  const { data, error } = await supabase.from('players').insert({ name, roles: ['MED'], stats: Array(11).fill(5) }).select('id').single();
+  const { data, error } = await supabase.rpc('create_player_in_league', { p_league: leagueId, p_name: name });
   if (error || !data) throw fail('giocatore', error ?? { message: 'nessuna risposta' });
-  const r = await supabase.from('league_players').insert({ league_id: leagueId, player_id: data.id });
-  if (r.error) {
-    await supabase.from('players').delete().eq('id', data.id);
-    throw fail('rosa', r.error);
-  }
-  return data.id;
+  return data;
 }
 
 /**
