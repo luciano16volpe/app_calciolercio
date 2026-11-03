@@ -626,3 +626,5 @@ input[type=file]{display:none}
 .form-switch.on{background:var(--green)}
 .form-switch .form-knob{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:transform var(--tr);box-shadow:0 1px 3px rgba(0,0,0,0.3)}
 .form-switch.on .form-knob{transform:translateX(19px)}
+
+.update-notice { position: fixed; z-index: 10000; top: max(8px, env(safe-area-inset-top)); left: 8px; right: 8px; margin: auto; max-width: 480px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; padding: 10px; background: var(--gray); color: var(--text); border: 1px solid var(--gray3); border-radius: 12px; box-shadow: 0 4px 20px #0005; font-size: 14px; }

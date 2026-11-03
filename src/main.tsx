@@ -7,6 +7,7 @@ import '@fontsource/bebas-neue/latin-400.css';
 import './styles/app.css';
 import './styles/menu.css';
 import { App } from './App';
+import { UpdateNotice } from './app/UpdateNotice';
 import { repairViewport } from './app/Dialogs';
 import { applyTheme, getTheme } from './app/theme';
 
@@ -19,6 +20,6 @@ document.addEventListener('focusout', (e) => {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider><ToastProvider><SessionCache><App /></SessionCache></ToastProvider></AuthProvider>
+    <AuthProvider><ToastProvider><SessionCache><App /></SessionCache><UpdateNotice /></ToastProvider></AuthProvider>
   </StrictMode>,
 );
