@@ -6,7 +6,7 @@ import { useConfirm } from '../../app/Dialogs';
 import { Sheet } from '../../app/Sheet';
 import { useToast } from '../../app/Toast';
 import { formOn, modulesOf, setSetting } from '../../data/gameSettings';
-import { LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
+import { GAME_SETTINGS_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { FORM_FULL_RATINGS, FORM_MAX_WEIGHT, FORM_MIN_RATINGS } from '../../domain/form';
 import { addModule, moduleComposition, MODULE_SIZES, removeModule, serializeModules, type Modules } from '../../domain/modules';
 import { ICONS, STATS } from '../../domain/types';
@@ -62,7 +62,7 @@ export function GameSettingsPanel({ data, editable, onClose }: { data: LeagueDat
     setBusy(true);
     try {
       await setSetting(key, value);
-      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      await qc.invalidateQueries({ queryKey: GAME_SETTINGS_QUERY_KEY });
       toast(ok);
       return true;
     } catch (e) {

@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { releaseKeyboard, repairViewport } from '../../app/Dialogs';
 import { useToast } from '../../app/Toast';
 import { createMatch } from '../../data/mutations';
-import { LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
+import { LEAGUE_HISTORY_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { goalsLabel, type Combo } from '../../domain/balancing';
 import { clampInt } from '../../domain/matchEdit';
 
@@ -48,7 +48,7 @@ export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData
         // previsione al momento della creazione → "Precisione bilanciamento" esatta in seguito
         pred: +(combo.sA - combo.sB).toFixed(4), predRank: combo.custom ? 0 : idx + 1,
       });
-      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
       toast('Partita creata!');
       close();
     } catch (e) {

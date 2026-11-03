@@ -6,7 +6,7 @@ import { Sheet } from '../../app/Sheet';
 import { useToast } from '../../app/Toast';
 import { useConfirm } from '../../app/Dialogs';
 import { setRatingsSkipped, setRatingsSkippedMany } from '../../data/mutations';
-import { LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
+import { LEAGUE_HISTORY_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { formatDate, whenWhere } from '../../domain/format';
 import { pendingRatings, scoreText, skippedRatings } from '../../domain/matches';
 import type { Match } from '../../domain/types';
@@ -23,7 +23,7 @@ export function PendingPanel({ data, onClose, onOpenMatch }: { data: LeagueData;
     setBusy(m.id);
     try {
       await setRatingsSkipped(m.id, skip);
-      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
       toast(skip ? `Pagelle del ${formatDate(m.date)} saltate` : `Pagelle del ${formatDate(m.date)} rimesse da scrivere`);
     } catch (e) {
       toast('Errore: ' + (e as Error).message);
@@ -51,7 +51,7 @@ export function PendingPanel({ data, onClose, onOpenMatch }: { data: LeagueData;
     setBusy('bulk');
     try {
       const n = await setRatingsSkippedMany(list.map((m) => m.id), skip);
-      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
       toast(skip ? `${n} partite saltate` : `${n} partite rimesse da scrivere`);
     } catch (e) {
       toast('Errore: ' + (e as Error).message);

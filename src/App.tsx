@@ -10,7 +10,7 @@ import { useToast } from './app/Toast';
 import { createPlayer } from './data/mutations';
 import { useQueryClient } from '@tanstack/react-query';
 import { ImageProvider } from './app/ImageViewer';
-import { LEAGUE_QUERY_KEY, NoLeagueError, photoUrl, rosterView, useLeagueData, type LeagueData } from './data/queries';
+import { LEAGUE_ROSTER_QUERY_KEY, NoLeagueError, photoUrl, rosterView, useLeagueData, type LeagueData } from './data/queries';
 import { ClassifichePage } from './features/classifiche/ClassifichePage';
 import { GiocaPage } from './features/gioca/GiocaPage';
 import { SettingsPage } from './features/impostazioni/SettingsPage';
@@ -51,7 +51,7 @@ function RosaGate({ data, onOpen }: { data: LeagueData; onOpen: (id: string) => 
     if (!nome.trim()) return toast('Nome non valido');
     try {
       await createPlayer(data.league.id, nome.trim());
-      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      await qc.invalidateQueries({ queryKey: LEAGUE_ROSTER_QUERY_KEY });
       toast('Giocatore aggiunto');
     } catch (e) {
       toast('Errore: ' + (e as Error).message);

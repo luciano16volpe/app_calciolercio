@@ -1,6 +1,7 @@
 // Lettura dei dati della lega da Supabase, con la cache di TanStack Query:
 // la schermata mostra subito quello che c'era l'ultima volta, poi si aggiorna.
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { useSelectedLeague } from '../app/league';
 import { useAuth } from '../app/auth';
 import type { AlboRow } from '../domain/awards';
@@ -72,8 +73,8 @@ export class NoLeagueError extends Error {
   }
 }
 
-/** Carica tutto quello che serve per mostrare una lega: quella scelta (se si può vedere), altrimenti la prima di cui faccio parte. */
-export async function fetchLeagueData(slug: string | null = null): Promise<LeagueData> {
+/** Individua la lega scelta oppure la prima accessibile. */
+async function fetchLeagueIdentity(slug: string | null): Promise<LeagueData['league']> {
   let league: LeagueData['league'] | undefined;
   if (slug) {
     const chosen = await supabase.from('leagues').select('id, name, is_public, slug, owner_id').eq('slug', slug).maybeSingle();
@@ -90,18 +91,36 @@ export async function fetchLeagueData(slug: string | null = null): Promise<Leagu
     }
   }
   if (!league) throw new NoLeagueError();
+  return league;
 
-  const lp = await fetchAll((a, b) => supabase.from('league_players').select('player_id, aliases').eq('league_id', league.id).order('player_id').range(a, b), 'giocatori della lega');
+}
+
+/** Rosa attiva e soprannomi: hanno una cache distinta dallo storico. */
+async function fetchLeagueRoster(leagueId: string) {
+  const lp = await fetchAll((a, b) => supabase.from('league_players').select('player_id, aliases').eq('league_id', leagueId).order('player_id').range(a, b), 'giocatori della lega');
   const ids = lp.map((x) => x.player_id);
-  const [players, matches, settings, albo, gaz, editorsRes] = await Promise.all([
-    fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path').in('id', ids).order('id').range(a, b), 'giocatori'),
+  const players: Array<DbRows['players'][number] & { photo_path: string | null }> = [];
+  for (let i = 0; i < ids.length; i += 100) {
+    const part = ids.slice(i, i + 100);
+    players.push(...await fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path').in('id', part).order('id').range(a, b), 'giocatori'));
+  }
+  return { ids, players, aliases: Object.fromEntries(lp.filter((x) => x.aliases?.length).map((x) => [x.player_id, x.aliases])) };
+}
+
+/** Lo storico resta completo per tutte le formule e si legge in pagine dal server. */
+async function fetchLeagueHistory(league: LeagueData['league']) {
+  const [matches, albo, editorsRes] = await Promise.all([
     fetchAll((a, b) => supabase.from('matches').select('id, date, play_time, place, ratings_skipped, notes, score_a, score_b, pred, pred_rank').eq('league_id', league.id).order('id').range(a, b), 'partite'),
-    supabase.from('app_settings').select('key, value').in('key', ['ovr_weights', 'use_form', 'game_modules']),
     supabase.from('albo').select('rows').eq('league_id', league.id),
-    fetchAll((a, b) => supabase.from('gazzette').select('match_id, file_path').order('match_id').range(a, b), 'Gazzette'),
     supabase.from('match_editors').select('match_id, name').eq('league_id', league.id), // la firma delle pagelle: se non si legge, si omette
   ]);
   const matchIds = matches.map((m) => m.id);
+  // Le Gazzette sono filtrate sul server: non si scaricano quelle delle altre leghe.
+  const gaz: Array<{ match_id: string; file_path: string }> = [];
+  for (let i = 0; i < matchIds.length; i += 100) {
+    const ids = matchIds.slice(i, i + 100);
+    gaz.push(...await fetchAll((a, b) => supabase.from('gazzette').select('match_id, file_path').in('match_id', ids).order('match_id').range(a, b), 'Gazzette'));
+  }
   // le pagelle si leggono a gruppi di partite (l'elenco degli id sta nell'indirizzo della richiesta)
   const mp: DbRows['matchPlayers'] = [];
   for (let i = 0; i < matchIds.length; i += 100) {
@@ -120,46 +139,73 @@ export async function fetchLeagueData(slug: string | null = null): Promise<Leagu
       )),
     );
   }
-  // chi è uscito dalla Rosa ma ha partite in questa lega resta nella storia (nome, foto, statistiche)
-  const inRoster = new Set(ids);
-  const exIds = [...new Set(mp.map((x) => x.player_id))].filter((id) => !inRoster.has(id));
-  const exPlayers = exIds.length
-    ? await fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path').in('id', exIds).order('id').range(a, b), 'giocatori usciti dalla lega')
-    : [];
-  const everyone = [...players, ...exPlayers];
-  if (settings.error) throw new Error(`impostazioni: ${settings.error.message}`);
   if (albo.error) throw new Error(`albo: ${albo.error.message}`);
 
-  const setting = (k: string) => settings.data?.find((s) => s.key === k)?.value;
-  const w = setting('ovr_weights');
-  const weights = Array.isArray(w) && w.length === 11 ? (w as number[]) : Array(11).fill(1);
-  const matchSet = new Set(matchIds);
-  return {
-    league,
-    dataset: dbToDataset({ players: everyone, matches, matchPlayers: mp }),
-    rosterIds: ids,
-    weights,
-    useForm: setting('use_form') !== false,
-    ...(typeof setting('game_modules') === 'string' ? { modulesText: setting('game_modules') as string } : {}),
-    photos: Object.fromEntries(everyone.map((p) => [p.id, p.photo_path])),
+  return { matches, matchPlayers: mp,
     albo: (albo.data ?? []).flatMap((r) => r.rows as unknown as AlboRow[]),
     editors: Object.fromEntries((editorsRes.data ?? []).map((x) => [x.match_id, x.name])),
-    aliases: Object.fromEntries(lp.filter((x) => x.aliases?.length).map((x) => [x.player_id, x.aliases])),
-    gazzette: Object.fromEntries(gaz.filter((g) => matchSet.has(g.match_id)).map((g) => [g.match_id, g.file_path])),
-  };
+    gazzette: Object.fromEntries(gaz.map((g) => [g.match_id, g.file_path])) };
 }
 
 export const LEAGUE_QUERY_KEY = ['league-data'] as const;
+export const LEAGUE_ROSTER_QUERY_KEY = [...LEAGUE_QUERY_KEY, 'roster'] as const;
+export const LEAGUE_HISTORY_QUERY_KEY = [...LEAGUE_QUERY_KEY, 'history'] as const;
+export const GAME_SETTINGS_QUERY_KEY = ['game-settings'] as const;
 
-/** Dati della lega: dalla cache subito, poi aggiornati in rete. */
+/** Le regole sono condivise dalle leghe e si ricaricano solo quando cambiano. */
+export async function fetchGameSettings(): Promise<Pick<LeagueData, 'weights' | 'useForm' | 'modulesText'>> {
+  const { data, error } = await supabase.from('app_settings').select('key, value').in('key', ['ovr_weights', 'use_form', 'game_modules']);
+  if (error) throw new Error('impostazioni: ' + error.message);
+  const setting = (k: string) => data?.find((s) => s.key === k)?.value;
+  const w = setting('ovr_weights');
+  return {
+    weights: Array.isArray(w) && w.length === 11 ? (w as number[]) : Array(11).fill(1),
+    useForm: setting('use_form') !== false,
+    ...(typeof setting('game_modules') === 'string' ? { modulesText: setting('game_modules') as string } : {}),
+  };
+}
+
+/** Chi e uscito dalla rosa resta leggibile nelle partite passate. */
+async function fetchPastPlayers(ids: string[]) {
+  const players: Array<DbRows['players'][number] & { photo_path: string | null }> = [];
+  for (let i = 0; i < ids.length; i += 100) {
+    const part = ids.slice(i, i + 100);
+    players.push(...await fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path').in('id', part).order('id').range(a, b), 'giocatori nello storico'));
+  }
+  return players;
+}
+
+/** Identita, rosa, storico e regole hanno cache separate per utente e lega. */
 export function useLeagueData() {
-  const leagueId = useSelectedLeague();
+  const slug = useSelectedLeague();
   const { user } = useAuth();
-  return useQuery({
-    queryKey: [...LEAGUE_QUERY_KEY, user?.id, leagueId],
-    enabled: !!user,
-    queryFn: () => fetchLeagueData(leagueId),
-    retry: (n, e) => !(e instanceof NoLeagueError) && n < 1, // «nessuna lega» non cambia riprovando
-    staleTime: 60_000, // come legacy: i dati valgono 1 minuto
-  });
+  const uid = user?.id;
+  const settings = useQuery({ queryKey: [...GAME_SETTINGS_QUERY_KEY, uid], enabled: !!uid, queryFn: fetchGameSettings, staleTime: 60_000 });
+  const league = useQuery({ queryKey: [...LEAGUE_QUERY_KEY, 'identity', uid, slug], enabled: !!uid,
+    queryFn: () => fetchLeagueIdentity(slug), retry: (n, e) => !(e instanceof NoLeagueError) && n < 1, staleTime: 60_000 });
+  const identity = league.data;
+  const roster = useQuery({ queryKey: [...LEAGUE_ROSTER_QUERY_KEY, uid, identity?.id], enabled: !!identity && !!uid,
+    queryFn: () => fetchLeagueRoster(identity!.id), staleTime: 60_000 });
+  const history = useQuery({ queryKey: [...LEAGUE_HISTORY_QUERY_KEY, uid, identity?.id], enabled: !!identity && !!uid,
+    queryFn: () => fetchLeagueHistory(identity!), staleTime: 60_000 });
+  const pastIds = useMemo(() => {
+    const active = new Set(roster.data?.ids ?? []);
+    return [...new Set((history.data?.matchPlayers ?? []).map((p) => p.player_id))].filter((id) => !active.has(id)).sort();
+  }, [roster.data, history.data]);
+  const pastPlayers = useQuery({ queryKey: [...LEAGUE_QUERY_KEY, 'past-players', uid, identity?.id, pastIds],
+    enabled: !!uid && !!identity && !!roster.data && !!history.data,
+    queryFn: () => fetchPastPlayers(pastIds), staleTime: 60_000 });
+  const data = useMemo((): LeagueData | undefined => {
+    if (!identity || !roster.data || !history.data || !settings.data || !pastPlayers.data) return undefined;
+    const players = [...roster.data.players, ...pastPlayers.data];
+    return { league: identity, rosterIds: roster.data.ids, aliases: roster.data.aliases,
+      dataset: dbToDataset({ players, matches: history.data.matches, matchPlayers: history.data.matchPlayers }),
+      photos: Object.fromEntries(players.map((p) => [p.id, p.photo_path])),
+      albo: history.data.albo, gazzette: history.data.gazzette, editors: history.data.editors, ...settings.data };
+  }, [identity, roster.data, history.data, settings.data, pastPlayers.data]);
+  return { ...league, data,
+    isError: league.isError || roster.isError || history.isError || settings.isError || pastPlayers.isError,
+    error: league.error ?? roster.error ?? history.error ?? settings.error ?? pastPlayers.error,
+    refetch: () => Promise.all([league.refetch(), settings.refetch(), ...(identity ? [roster.refetch(), history.refetch()] : []), ...(identity && roster.data && history.data ? [pastPlayers.refetch()] : [])]),
+  };
 }
