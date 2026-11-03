@@ -23,7 +23,7 @@ test('Panchina: via dalla lega, resta nella storia, torna dalla Panchina', async
     await be.attach(ctx, user);
     await ctx.addInitScript(() => localStorage.removeItem('calciolercio-cache'));
     const page = await ctx.newPage();
-    await page.goto('/l/san-marcello/rosa');
+    await page.goto('/l/san-marcello/rosa', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('#players-list .card-compact').first()).toBeVisible({ timeout: 20_000 });
     return page;
   };
@@ -32,6 +32,7 @@ test('Panchina: via dalla lega, resta nella storia, torna dalla Panchina', async
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22);
   // toglie il giocatore dalla lega (dalla sua scheda, in Rosa)
   await page.locator('#players-list .card-compact', { hasText: name }).first().click();
+  await expect(page.locator('#match-modal-body > :last-child')).toHaveId('player-bench-row');
   await page.locator('#player-remove').click();
   await expect(page.locator('#app-modal-msg')).toContainText('restano nella storia');
   await page.locator('#app-modal-ok').click();

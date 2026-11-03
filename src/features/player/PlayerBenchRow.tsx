@@ -1,4 +1,4 @@
-// Nella scheda del giocatore (solo amministratore): «Togli dalla lega». La storia resta; senza altre leghe finisce in Panchina.
+// Nella scheda del giocatore (solo amministratore): la rimozione conserva la storia e archivia nella lega.
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useConfirm } from '../../app/Dialogs';
@@ -20,7 +20,7 @@ export function PlayerBenchRow({ data, player, onRemoved }: { data: LeagueData; 
         `${player.name} esce dalla Rosa di ${data.league.name}: non si potrà più convocare.`,
         'Le sue partite, pagelle e statistiche restano nella storia della lega.',
         'Se ha un account collegato, quella persona non vedrà più questa lega.',
-        'Se non gioca in nessun’altra lega finisce in Panchina: da lì un amministratore può riportarlo in una lega.',
+        'Finisce nella Panchina di questa lega: un amministratore può riportarlo nella Rosa.',
       ],
       okLabel: 'Togli dalla lega', danger: true,
     });

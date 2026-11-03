@@ -1,4 +1,4 @@
-// ☰ → Panchina: i giocatori senza lega. Ogni amministratore li può portare nella sua lega; solo il supremo li cancella.
+// ☰ → Panchina: i giocatori rimossi dalla lega selezionata.
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useAuth } from '../../app/auth';
@@ -17,7 +17,7 @@ export function BenchPanel({ data, onClose }: { data: LeagueData; onClose: () =>
   const confirm = useConfirm();
   const qc = useQueryClient();
   const isSuper = useIsSuperAdmin(user?.id ?? null).data === true;
-  const q = useBench(true);
+  const q = useBench(data.league.id, true);
   const [busy, setBusy] = useState<string | null>(null);
   const refresh = () =>
     Promise.all([
@@ -41,7 +41,7 @@ export function BenchPanel({ data, onClose }: { data: LeagueData; onClose: () =>
   const remove = async (p: BenchPlayer) => {
     const ok = await confirm({
       icon: '🗑', title: 'Cancellare per sempre?',
-      lines: [`${p.name} non ha mai giocato partite: viene eliminato dall’app e non si recupera.`],
+      lines: [`${p.name} viene eliminato dall’app e non si recupera. È possibile solo se non ha partite e non appartiene ad altre leghe.`],
       okLabel: 'Cancella', danger: true,
     });
     if (!ok) return;
@@ -61,7 +61,7 @@ export function BenchPanel({ data, onClose }: { data: LeagueData; onClose: () =>
     <Sheet title="Panchina" onClose={onClose} id="sheet-bench">
       <div className="card">
         <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.4, marginBottom: 8 }}>
-          I giocatori che non fanno parte di nessuna lega. Puoi portarli nella Rosa di <b>{data.league.name}</b>; se hanno un account collegato rientrano anche nella lega.
+          I giocatori rimossi dalla Rosa di <b>{data.league.name}</b>. Puoi riportarli nella stessa lega; se hanno un account collegato rientrano anche come membri.
         </div>
         {q.isLoading ? <div style={{ fontSize: 12, color: 'var(--text3)' }}>⏳ Caricamento…</div> : null}
         {q.isError ? <div id="bench-error" style={{ fontSize: 12, color: 'var(--red)', fontWeight: 700 }}>{(q.error as Error).message}</div> : null}

@@ -24,6 +24,7 @@ export class FakeBackend {
   members: Row[] = [];
   players: Row[] = [];
   lplayers: Row[] = [];
+  bench: Row[] = [];
   matches: Row[] = [];
   mplayers: Row[] = [];
   albo: Row[] = [];
@@ -268,19 +269,21 @@ export class FakeBackend {
         const pl = this.players.find((p) => p.id === pid);
         if (pl?.user_id && this.role(lg, pl.user_id as string) === 'admin') return err(400, 'Il giocatore è collegato a un amministratore della lega: togli prima il ruolo da «Membri e ruoli»', 'P0001');
         this.lplayers.splice(i, 1);
+        if (!this.bench.some((x) => x.league_id === lg && x.player_id === pid)) this.bench.push({ league_id: lg, player_id: pid });
         if (pl?.user_id) {
           const j = this.members.findIndex((m) => m.league_id === lg && m.user_id === pl.user_id);
           if (j >= 0) this.members.splice(j, 1);
         }
         this.log(actor, 'league_players.delete', 'league_players', String(pl?.name), 'giocatori', lg, null, ua);
-        return { status: 200, body: !this.lplayers.some((lp) => lp.player_id === pid) };
+        return { status: 200, body: true };
       }
       case 'bench_players': {
         const e = need(); if (e) return e;
-        if (!(this.members.some((m) => m.user_id === actor && m.role === 'admin') || this.supers.has(actor as string))) return err(400, 'Permesso negato: la Panchina è per gli amministratori', 'P0001');
-        return { status: 200, body: this.players.filter((p) => !this.lplayers.some((lp) => lp.player_id === p.id)).map((p) => ({
+        const lg = a.p_league as string;
+        if (!this.isAdmin(lg, actor)) return err(400, 'Permesso negato', 'P0001');
+        return { status: 200, body: this.players.filter((p) => this.bench.some((x) => x.league_id === lg && x.player_id === p.id) && !this.lplayers.some((lp) => lp.league_id === lg && lp.player_id === p.id)).map((p) => ({
           player_id: p.id, name: p.name, roles: p.roles ?? [], photo_path: p.photo_path ?? null, linked: !!p.user_id,
-          matches_played: this.mplayers.filter((x) => x.player_id === p.id).length })) };
+          matches_played: this.mplayers.filter((x) => x.player_id === p.id && this.matches.some((m) => m.id === x.match_id && m.league_id === lg)).length })) };
       }
       case 'add_player_to_league': {
         const e = need(); if (e) return e;
@@ -288,8 +291,10 @@ export class FakeBackend {
         if (!this.isAdmin(lg, actor)) return err(400, 'Permesso negato: solo un amministratore della lega aggiunge un giocatore', 'P0001');
         const pl = this.players.find((p) => p.id === pid);
         if (!pl) return err(400, 'Giocatore non trovato', 'P0001');
-        if (this.lplayers.some((lp) => lp.player_id === pid)) return err(400, 'Il giocatore non è in Panchina: gioca già in una lega', 'P0001');
+        if (!this.bench.some((x) => x.league_id === lg && x.player_id === pid)) return err(400, 'Giocatore non presente nella Panchina di questa lega', 'P0001');
+        if (this.lplayers.some((lp) => lp.league_id === lg && lp.player_id === pid)) return err(400, 'Giocatore già in lega', 'P0001');
         this.lplayers.push({ league_id: lg, player_id: pid, aliases: [] });
+        this.bench = this.bench.filter((x) => !(x.league_id === lg && x.player_id === pid));
         if (pl.user_id && !this.role(lg, pl.user_id as string)) this.members.push({ league_id: lg, user_id: pl.user_id, role: 'member', joined_at: new Date().toISOString() });
         this.log(actor, 'league_players.insert', 'league_players', String(pl.name), 'giocatori', lg, null, ua);
         return { status: 200, body: null };

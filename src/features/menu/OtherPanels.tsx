@@ -1,13 +1,9 @@
 // Pannelli del menu: Privacy (con cancellazione dell'account), Aiuto, guida "Aggiungi i giocatori".
-import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
 import { useAuth } from '../../app/auth';
 import { usePrompt } from '../../app/Dialogs';
 import { Sheet } from '../../app/Sheet';
 import { useToast } from '../../app/Toast';
 import { deleteMyAccount } from '../../data/account';
-import { addPlayersFromMyLeagues, useMyLeagues } from '../../data/leagues';
-import { LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { PRIVACY_SECTIONS } from './privacyText';
 
 export function PrivacyPanel({ onClose, onDeleted }: { onClose: () => void; onDeleted: () => void }) {
@@ -69,37 +65,13 @@ export function HelpPanel({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** Lega nuova e vuota: guida "Aggiungi i giocatori" (dalle mie altre leghe, oppure uno nuovo). */
-export function EmptyLeagueGuide({ data, onAddNew }: { data: LeagueData; onAddNew: () => void }) {
-  const { user } = useAuth();
-  const toast = useToast();
-  const qc = useQueryClient();
-  const leagues = useMyLeagues(user?.id ?? null);
-  const others = (leagues.data ?? []).filter((l) => l.role === 'admin' && l.id !== data.league.id);
-  const [busy, setBusy] = useState(false);
-  const go = async () => {
-    setBusy(true);
-    try {
-      const n = await addPlayersFromMyLeagues(data.league.id, others.map((l) => l.id));
-      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
-      toast(n ? `Aggiunti ${n} giocatori` : 'Nessun giocatore nuovo da aggiungere');
-    } catch (e) {
-      toast('Errore: ' + (e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
+/** Lega nuova e vuota: aggiungi un giocatore. */
+export function EmptyLeagueGuide({ onAddNew }: { onAddNew: () => void }) {
   return (
     <div className="card" id="empty-guide">
-      <div className="section-header">👥 Aggiungi i giocatori</div>
-      <div style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 10 }}>La lega è vuota. Hai due strade:</div>
-      {others.length ? (
-        <button type="button" className="btn btn-primary btn-full" id="guide-from-leagues" disabled={busy} onClick={() => void go()} style={{ marginBottom: 8 }}>
-          📥 Dalle mie altre leghe ({others.map((l) => l.name).join(', ')})
-        </button>
-      ) : null}
-      <button type="button" className="btn btn-secondary btn-full" id="guide-new" onClick={onAddNew}>➕ Nuovo giocatore</button>
-      <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 8 }}>Con la prima strada i giocatori sono gli stessi, con le stesse schede: niente doppioni.</div>
+      <div className="section-header">?? Aggiungi i giocatori</div>
+      <div style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 10 }}>La lega ? vuota.</div>
+      <button type="button" className="btn btn-secondary btn-full" id="guide-new" onClick={onAddNew}>? Nuovo giocatore</button>
     </div>
   );
 }

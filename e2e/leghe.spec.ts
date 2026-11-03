@@ -85,19 +85,13 @@ test('Cambio lega: un indirizzo sconosciuto riporta alla lega pubblica', async (
   expect(new URL(page.url()).pathname).toBe('/l/san-marcello/rosa');
 });
 
-test('Lega vuota: l\'amministratore vede la guida e porta i giocatori dalle sue altre leghe', async ({ page }) => {
-  const writes = await setup(page, { mine: mineAs('admin'), publicRole: 'admin' });
+test('Lega vuota: la guida non importa giocatori da altre leghe', async ({ page }) => {
+  await setup(page, { mine: mineAs('admin'), publicRole: 'admin' });
   await openApp(page, '/', 22); // per conoscere la lega pubblica
   await page.goto('/l/lega-di-prova/rosa');
   await expect(page.locator('#empty-guide')).toBeVisible({ timeout: 15_000 });
   await expect(page.locator('#guide-new')).toBeVisible();
-  await expect(page.locator('#guide-from-leagues')).toContainText('San Marcello');
-  await page.locator('#guide-from-leagues').click();
-  await expect(page.locator('#toast')).toContainText('Aggiunti 22 giocatori', { timeout: 15_000 });
-  const rows = lastWrite(writes, 'league_players').body as Array<{ league_id: string; player_id: string }>;
-  expect(rows.length).toBe(22);
-  expect(new Set(rows.map((r) => r.player_id)).size).toBe(22); // niente doppioni
-  expect(rows.every((r) => r.league_id === 'L2')).toBe(true);
+  await expect(page.locator('#guide-from-leagues')).toHaveCount(0);
   await noOverflow(page);
 });
 
