@@ -6,7 +6,7 @@ import { releaseKeyboard, repairViewport } from '../../app/Dialogs';
 import { useToast } from '../../app/Toast';
 import { resizeSquare } from '../../canvas/photo';
 import { setPlayerPhoto, updatePlayer } from '../../data/mutations';
-import { LEAGUE_QUERY_KEY, photoUrl, type LeagueData } from '../../data/queries';
+import { LEAGUE_ROSTER_QUERY_KEY, photoUrl, type LeagueData } from '../../data/queries';
 import { avatarClass, initials } from '../../domain/format';
 import { clampStat, ROLES, ROLE_CLS, ROLE_LABEL, toggleRole } from '../../domain/playerEdit';
 import { ICONS, STATS, type Player } from '../../domain/types';
@@ -26,7 +26,7 @@ export function PlayerEditTop({ data, player, weightRow }: { data: LeagueData; p
   const stats = raw.map(clampStat);
   const photo = photoUrl(data.photos[player.id]);
 
-  const refresh = () => qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+  const refresh = () => qc.invalidateQueries({ queryKey: LEAGUE_ROSTER_QUERY_KEY });
   const fail = (e: unknown) => toast('Errore: ' + (e as Error).message);
 
   // le statistiche si salvano poco dopo l'ultima modifica

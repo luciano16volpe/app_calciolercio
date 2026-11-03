@@ -9,7 +9,7 @@ import { formOn } from '../../data/gameSettings';
 import { useToast } from '../../app/Toast';
 import { compressGazzetta, makeGazzettaThumb } from '../../canvas/gazzetta';
 import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, setRatingsSkipped } from '../../data/mutations';
-import { gazzettaUrl, LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
+import { gazzettaUrl, LEAGUE_HISTORY_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
 import { formatDate, whenWhere } from '../../domain/format';
 import { matchBalance, matchHighlights, needsRatings, rateColors, type MatchBalance } from '../../domain/matches';
@@ -342,7 +342,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
       toast('⏳ Salvataggio...');
       await saveMatchTexts(matchId, changed);
       releaseKeyboard();
-      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
       toast(`Salvati titoli e descrizioni: ${changed.length}`);
       repairViewport();
       onClose();
@@ -379,7 +379,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
         notes: notes || null, play_time: draft.time || null, place: draft.place.trim() || null,
       } : undefined);
       releaseKeyboard();
-      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
       toast(`Salvato: ${plan.rows.length} pagelle`);
       repairViewport();
       onClose();
@@ -395,7 +395,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
       toast('⏳ Carico la Gazzetta…');
       const [full, thumb] = await Promise.all([compressGazzetta(file), makeGazzettaThumb(file)]);
       await setGazzetta(data.league.id, matchId, full, thumb, g ?? null);
-      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
       toast('📰 Gazzetta salvata');
     } catch (e) {
       toast('❌ Caricamento non riuscito: ' + (e as Error).message);
@@ -409,7 +409,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
     if (!ok) return;
     try {
       await removeGazzetta(matchId, g);
-      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
       toast('🗑 Gazzetta rimossa');
     } catch (e) {
       toast('❌ Non riuscito: ' + (e as Error).message);
@@ -421,7 +421,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
     const skip = !m.ratingsSkipped;
     try {
       await setRatingsSkipped(matchId, skip);
-      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
       toast(skip ? 'Pagelle saltate: la partita non compare più tra quelle da scrivere' : 'Pagelle rimesse tra quelle da scrivere');
     } catch (e) {
       toast('Errore: ' + (e as Error).message);
@@ -434,7 +434,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
     if (!ok) return;
     try {
       await deleteMatch(matchId);
-      await qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
       toast('Partita eliminata');
       onClose();
     } catch (e) {
