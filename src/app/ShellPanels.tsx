@@ -10,6 +10,7 @@ import { LeagueSettingsPanel } from '../features/menu/LeagueSettingsPanel';
 import { ClaimsPanel, InvitesPanel, MergePanel } from '../features/menu/LinkPanels';
 import { MembersPanel } from '../features/menu/MembersPanel';
 import { ComparePanel } from '../features/menu/ComparePanel';
+import { AlboPanel, CouplesPanel, RecordsPanel } from '../features/menu/ExtraPanels';
 import { BenchPanel } from '../features/menu/BenchPanel';
 import { PendingPanel } from '../features/menu/PendingPanel';
 import { HelpPanel, PrivacyPanel } from '../features/menu/OtherPanels';
@@ -29,12 +30,13 @@ function GameSettingsGate({ data, onClose }: { data: LeagueData; onClose: () => 
 }
 
 /** Pannelli del menu: il chiamante mantiene solo la scelta e le azioni condivise. */
-export function ShellPanels({ panel, data, closePanel, go, openMatch }: {
+export function ShellPanels({ panel, data, closePanel, go, openMatch, openPlayer }: {
   panel: Panel | null;
   data: LeagueData | undefined;
   closePanel: () => void;
   go: (page: PageName) => void;
   openMatch: (id: string, text?: boolean) => void;
+  openPlayer: (id: string) => void;
 }) {
   return (
     <>
@@ -53,6 +55,9 @@ export function ShellPanels({ panel, data, closePanel, go, openMatch }: {
       {data && panel === 'claims' ? <ClaimsPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'merge' ? <MergePanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'compare' ? <ComparePanel data={data} onClose={closePanel} /> : null}
+      {data && panel === 'couples' ? <CouplesPanel data={data} onClose={closePanel} onOpenPlayer={openPlayer} onOpenMatch={openMatch} /> : null}
+      {data && panel === 'albo' ? <AlboPanel data={data} onClose={closePanel} onOpenPlayer={openPlayer} onOpenMatch={openMatch} /> : null}
+      {data && panel === 'records' ? <RecordsPanel data={data} onClose={closePanel} onOpenPlayer={openPlayer} onOpenMatch={openMatch} /> : null}
       {data && panel === 'bench' ? <BenchPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'pending' ? <PendingPanel data={data} onClose={closePanel} onOpenMatch={openMatch} /> : null}
       {data && panel === 'league-settings' ? <LeagueSettingsPanel data={data} onClose={closePanel} /> : null}

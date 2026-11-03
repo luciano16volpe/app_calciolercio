@@ -199,3 +199,7 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 ## Profilo per lega e periodo
 - Nel profilo personale, pagelle, media, forma e vittorie si riferiscono alla stagione attuale della lega selezionata, oppure alle ultime 5 partite con risultato del giocatore se nella stagione ne ha meno di 5. Anche il dettaglio pagelle aperto dal profilo usa lo stesso periodo.
 - Le ultime partite nel profilo sono al massimo 10 della lega corrente. Rimosso il riquadro complessivo per tutte le leghe. Le statistiche base e l'OVR del giocatore restano comuni; il peso dei voti resta calcolato sulla lega selezionata.
+
+## Funzioni extra nel menu laterale (novembre 2026)
+- Confronto, Coppie, Albo d'oro e Record non sono classifiche: stanno nel menu laterale (sezione Giocatori), non più nelle Classifiche. Il contenuto e i calcoli sono identici; ogni pannello ha la sua scelta della stagione (parte dalla più recente).
+- Toccando un giocatore o una partita dentro un pannello, il pannello si chiude e si apre la scheda.

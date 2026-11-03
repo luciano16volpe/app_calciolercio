@@ -137,7 +137,7 @@ function Shell() {
         {data ? <PartitePage data={data} act={act} active={page === 'partite'} onArchive={() => setView({ kind: 'gazArchive' })} /> : <Loading q={q} onPanel={setPanel} />}
       </div>
       <div id="page-classifiche" className={`page${page === 'classifiche' ? ' active' : ''}`}>
-        {data ? <ClassifichePage data={data} onOpenPlayer={openPlayer} onOpenMatch={openMatch} /> : <Loading q={q} onPanel={setPanel} />}
+        {data ? <ClassifichePage data={data} onOpenPlayer={openPlayer} /> : <Loading q={q} onPanel={setPanel} />}
       </div>
       <div id="page-settings" className={`page${page === 'settings' ? ' active' : ''}`}><SettingsPage data={data} /></div>
 
@@ -164,7 +164,7 @@ function Shell() {
       {data && ptDialog ? <PagelleTextDialog data={data} matchId={ptDialog} onClose={() => setPtDialog(null)} /> : null}
 
       {menuOpen ? <MenuDrawer data={data} onClose={closeMenu} onOpenPanel={setPanel} onGoSettings={() => go('settings')} onOpenMatch={openMatch} /> : null}
-      <ShellPanels panel={panel} data={data} closePanel={closePanel} go={go} openMatch={openMatch} />
+      <ShellPanels panel={panel} data={data} closePanel={closePanel} go={go} openMatch={openMatch} openPlayer={openPlayer} />
 
       {inviteToken ? (
         <InvitePage

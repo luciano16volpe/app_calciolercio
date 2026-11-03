@@ -107,8 +107,9 @@ il **nome della funzione legacy** da leggere per i dettagli esatti: in caso di d
 ## 9. Classifiche
 - Selettore stagione (default la più recente) + "♾️ Sempre"; schede: Marcatori, Assist, Media voto
   (sotto: classifica a parte degli Occasionali), Statistiche (filtri Tutti / Titolari ≥ 40% /
-  Occasionali), Coppie (≥ 3 partite insieme; migliori e peggiori), Confronto testa a testa
-  (`headToHead`, `compareRows`), Albo d'oro, Record.
+  Occasionali).
+- Nel **menu laterale** (sezione Giocatori), ognuno con la propria scelta della stagione: Confronto testa a
+  testa (`headToHead`, `compareRows`), Coppie (≥ 3 partite insieme; migliori e peggiori), Albo d'oro, Record.
 - Una sola fonte statistica: `seasonStats(scope)` (scope = chiave stagione o 'all').
 
 ## 10. Scheda giocatore

@@ -1,6 +1,6 @@
 // Partite (passo 3.4): ultima partita, Gazzette, elenco, scheda partita, equilibrio squadre, testo delle pagelle.
 import { expect, test, type Page } from '@playwright/test';
-import { setup } from './helpers';
+import { openPanel, setup } from './helpers';
 
 // l'app si apre solo con l'accesso: la prova entra come membro della lega pubblica vera (accesso simulato, letture vere)
 test.beforeEach(async ({ page }) => {
@@ -95,9 +95,8 @@ test('Collegamenti verso la partita: dai record e dalle pagelle del giocatore', 
   await page.goto('/');
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
   // dai Record
-  await page.locator('.bottom-nav').getByRole('button', { name: 'Classifiche', exact: true }).click();
-  await page.locator('#cl-tabs .chip', { hasText: 'Record' }).click();
-  await page.locator('#scorers-list .cl-date').first().click();
+  await openPanel(page, '#menu-records', '#sheet-record');
+  await page.locator('#extra-list .cl-date').first().click();
   await expect(page.locator('#match-modal-title')).toContainText('📅');
   await page.locator('#match-modal button', { hasText: '✕' }).first().click();
   // dalla scheda giocatore → "Le pagelle di…" → "Apri la partita"
