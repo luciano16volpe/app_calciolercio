@@ -18,7 +18,6 @@ import { MyProfileTools } from '../impostazioni/MyProfileTools';
 import { LastMatchCard, type MatchActions } from '../partite/parts';
 import { PlayerCard } from '../player/PlayerCard';
 
-const ROLE_LABEL = { admin: 'Amministratore', redazione: 'Redazione', member: 'Membro' } as const;
 const TEAM_NAME = { A: '🔵 Blu', B: '⚪ Bianchi' } as const;
 
 /** «giovedì 5 novembre» da aaaa-mm-gg (in italiano, con l'iniziale maiuscola). */
@@ -27,32 +26,6 @@ function dayName(date: unknown): string {
   if (isNaN(d.getTime())) return formatDate(date);
   const s = d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
   return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-/** Le leghe di cui faccio parte: tocco per cambiare, quella in uso è evidenziata. */
-function MyLeagues({ currentId }: { currentId: string }) {
-  const { user } = useAuth();
-  const leagues = useMyLeagues(user?.id ?? null);
-  const mine = (leagues.data ?? []).filter((l) => l.role);
-  if (!mine.length) return null;
-  return (
-    <div className="card" id="profilo-leghe">
-      <div className="section-header">🏢 Le mie leghe</div>
-      {mine.map((l) => {
-        const cur = l.id === currentId;
-        return (
-          <button
-            key={l.id} type="button" className={`pf-league${cur ? ' act' : ''}`} data-slug={l.slug} aria-current={cur}
-            onClick={() => { if (!cur) setSelectedLeague(l.slug); }}
-          >
-            <span className="pf-lg-n">{l.name}</span>
-            <span className="pf-lg-r">{l.role ? ROLE_LABEL[l.role] : ''}</span>
-            {cur ? <span className="pf-lg-ok" aria-label="Lega in uso">✓</span> : null}
-          </button>
-        );
-      })}
-    </div>
-  );
 }
 
 /** La prossima partita in cui gioco: giorno, ora, luogo, squadra, compagni e avversari. */
@@ -154,8 +127,6 @@ export function ProfiloPage({ data, active, act }: { data: LeagueData; active: b
       {next && me ? <NextMatch data={data} m={next.m} team={next.team} myId={me.id} /> : null}
 
       {last && me ? <LastMatchCard data={data} m={last.m} act={act} title="🏆 La mia ultima partita" id="my-last-match" mine={{ id: me.id, name: me.name }} active={active} /> : null}
-
-      <MyLeagues currentId={data.league.id} />
 
       {linked && me && inRoster ? (
         <div id="profilo-scheda" style={{ marginBottom: 12 }}>

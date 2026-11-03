@@ -2,7 +2,7 @@
 // il riepilogo, il mio giocatore, uscire da una lega. Footer a sole icone con la mia faccia. Database finto con i dati veri di prova.
 import { expect, test, type Browser, type Page, type TestInfo } from '@playwright/test';
 import { FakeBackend } from './fakeBackend';
-import { noOverflow, openProfile } from './helpers';
+import { noOverflow, openMenu, openProfile } from './helpers';
 
 type Row = Record<string, unknown>;
 
@@ -53,7 +53,7 @@ test('Profilo: è la pagina iniziale e le sezioni sono nell’ordine voluto', as
   await expect(page.locator('#page-profilo.active')).toBeVisible({ timeout: 20_000 });
   await expect.poll(() => new URL(page.url()).pathname).toBe('/l/san-marcello/profilo');
   await expect(page.locator('#profile-player-card')).toBeVisible();
-  const order = ['#next-match', '#my-last-match', '#profilo-leghe', '#profile-player-card', '#profile-recent-matches', '#myplayer-card', '#my-tools', '#leave-card'];
+  const order = ['#next-match', '#my-last-match', '#profile-player-card', '#profile-recent-matches', '#myplayer-card', '#my-tools', '#leave-card'];
   const ys: number[] = [];
   for (const sel of order) {
     await expect(page.locator(sel).first(), sel).toBeVisible();
@@ -64,17 +64,16 @@ test('Profilo: è la pagina iniziale e le sezioni sono nell’ordine voluto', as
   await noOverflow(page);
 });
 
-test('Profilo: le mie leghe con quella in uso evidenziata; toccando un’altra si cambia lega', async ({ browser }, testInfo) => {
+test('Cambio lega dal menu: lega attiva e selezione immediata', async ({ browser }, testInfo) => {
   const { be, u } = world();
   const page = await open(browser, testInfo, be, u);
-  const cur = page.locator('#profilo-leghe .pf-league.act');
-  await expect(cur).toHaveCount(1);
-  await expect(cur).toContainText('San Marcello');
-  await expect(cur).toHaveAttribute('aria-current', 'true');
-  await page.locator('#profilo-leghe .pf-league', { hasText: 'Calcetto del Giovedì' }).click();
-  await expect(page.locator('#league-pill')).toContainText('Calcetto del Giovedì', { timeout: 20_000 });
-  await expect(page.locator('#page-profilo.active')).toBeVisible(); // resto nel profilo
-  await expect(page.locator('#profilo-leghe .pf-league.act')).toContainText('Calcetto del Giovedì');
+  await expect(page.locator('#profilo-leghe')).toHaveCount(0);
+  await openMenu(page);
+  await expect(page.locator('#menu-leagues .menu-lgrow.act')).toContainText('San Marcello');
+  await page.locator('#menu-leagues .menu-lgrow[data-slug="calcetto-del-giovedi"]').click();
+  await expect(page.locator('#league-pill')).toContainText('Calcetto del');
+  await openMenu(page);
+  await expect(page.locator('#menu-leagues .menu-lgrow.act')).toContainText('Calcetto del');
 });
 
 test('Profilo: la prossima partita mostra giorno, ora, luogo, squadra, compagni e avversari', async ({ browser }, testInfo) => {
@@ -185,7 +184,7 @@ test('Profilo senza un giocatore collegato: le leghe, «Questo sono io» e l’u
   const { be, u } = world('member', false);
   const page = await open(browser, testInfo, be, u);
   await expect(page.locator('#page-profilo.active')).toBeVisible({ timeout: 20_000 });
-  await expect(page.locator('#profilo-leghe')).toBeVisible();
+  await expect(page.locator('#profilo-leghe')).toHaveCount(0);
   await expect(page.locator('#myplayer-card')).toContainText('Scegli il tuo nome');
   await expect(page.locator('#leave-card')).toBeVisible();
   await expect(page.locator('#profile-player-card, #my-last-match, #next-match, #profile-card')).toHaveCount(0);
@@ -208,7 +207,8 @@ test('Profilo: statistiche e ultime dieci partite seguono la lega scelta', async
   await expect(card).toBeVisible();
   const overall = await card.locator('.fut-mini-ovr').innerText();
   await expect(page.locator('#profile-card')).toHaveCount(0);
-  await page.locator('#profilo-leghe .pf-league', { hasText: 'Calcetto del' }).click();
+  await openMenu(page);
+  await page.locator('#menu-leagues .menu-lgrow[data-slug="calcetto-del-giovedi"]').click();
   await expect(page.locator('#league-pill')).toContainText('Calcetto del');
   await expect(page.locator('#profile-recent-matches .profile-match')).toHaveCount(10);
   await expect(page.locator('#profile-recent-matches')).toContainText('99 - 0');
@@ -223,7 +223,8 @@ test('Profilo: statistiche e ultime dieci partite seguono la lega scelta', async
   await expect(page.locator('#match-modal')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.locator('#match-modal')).toHaveCount(0);
-  await page.locator('#profilo-leghe .pf-league', { hasText: 'San Marcello' }).click();
+  await openMenu(page);
+  await page.locator('#menu-leagues .menu-lgrow[data-slug="san-marcello"]').click();
   await expect(page.locator('#league-pill')).toContainText('San Marcello');
   await expect(page.locator('#profile-recent-matches')).not.toContainText('99 - 0');
 });
@@ -251,7 +252,8 @@ test('Forma: stesso stato in Rosa e profilo, distinto per lega', async ({ browse
   await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
   await expect(page.locator('#players-list .card-compact', { hasText: String(me.name) }).locator('.fire-chip')).toHaveCount(0);
   await openProfile(page);
-  await page.locator('#profilo-leghe .pf-league', { hasText: 'Calcetto del' }).click();
+  await openMenu(page);
+  await page.locator('#menu-leagues .menu-lgrow[data-slug="calcetto-del-giovedi"]').click();
   await expect(page.locator('#league-pill')).toContainText('Calcetto del');
   await expect(card.locator('.fut-mini')).toHaveClass(/fire/);
   await expect(card.locator('.pg-head')).toContainText('In forma');
