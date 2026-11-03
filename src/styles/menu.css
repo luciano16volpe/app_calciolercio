@@ -87,7 +87,7 @@ header.app-header .hb{justify-self:start;margin-right:0}
 
 /* riquadro «ultima partita» con effetti: il contenuto sta sopra la pioggia; sfondo un po' più cupo se si è perso */
 .fx-card > :not(canvas){position:relative;z-index:1}
-.fx-card.fx-win{overflow:hidden}
+.fx-card.fx-win,.fx-card.fx-balls{overflow:hidden}
 .fx-card.fx-rain{overflow:hidden;background-image:linear-gradient(180deg,rgba(70,90,125,.16),rgba(70,90,125,.04))}
 
 /* «Il mio profilo»: elenco delle mie leghe, quella in uso evidenziata */
