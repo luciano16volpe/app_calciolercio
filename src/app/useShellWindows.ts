@@ -11,6 +11,7 @@ export function useShellWindows() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
   const [inviteToken, setInviteToken] = useState<string | null>(() => parsePath(window.location.pathname).invite);
+  const [inviteKind] = useState(() => parsePath(window.location.pathname).inviteKind);
   const [gazViewer, setGazViewer] = useState<{ id: string; fromArchive: boolean } | null>(null);
   const [ptDialog, setPtDialog] = useState<string | null>(null);
   const [bachecaOpen, setBachecaOpen] = useState(false);
@@ -28,7 +29,7 @@ export function useShellWindows() {
   }), [openMatch]);
   const closePanel = useCallback(() => setPanel(null), []);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
-  return { view, setView, menuOpen, setMenuOpen, panel, setPanel, inviteToken, setInviteToken,
+  return { view, setView, menuOpen, setMenuOpen, panel, setPanel, inviteToken, setInviteToken, inviteKind,
     gazViewer, setGazViewer, ptDialog, setPtDialog, bachecaOpen, setBachecaOpen,
     close, openPlayer, openPlayerFromRosa, openMatch, act, closePanel, closeMenu };
 }

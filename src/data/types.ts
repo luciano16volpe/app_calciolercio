@@ -536,6 +536,50 @@ export type Database = {
           },
         ]
       }
+      league_invites: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          expires_at: string
+          league_id: string
+          revoked: boolean
+          token: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          expires_at?: string
+          league_id: string
+          revoked?: boolean
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          expires_at?: string
+          league_id?: string
+          revoked?: boolean
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_invites_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       player_invites: {
         Row: {
           created_at: string
@@ -791,6 +835,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_league_invite: {
+        Args: { p_name?: string; p_player?: string; p_roles?: string[]; p_stats?: number[]; tok: string }
+        Returns: {
+          league_id: string
+          league_name: string
+          league_slug: string
+          outcome: string
+          player_id: string
+          player_name: string
+        }[]
+      }
+      create_league_invite: { Args: { l: string; p_email: string }; Returns: string }
+      league_invite_players: {
+        Args: { tok: string }
+        Returns: { name: string; player_id: string }[]
+      }
+      league_invite_preview: {
+        Args: { tok: string }
+        Returns: { league_name: string; status: string }[]
+      }
       accept_player_invite: {
         Args: { tok: string }
         Returns: {

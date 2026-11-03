@@ -203,3 +203,9 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 ## Funzioni extra nel menu laterale (novembre 2026)
 - Confronto, Coppie, Albo d'oro e Record non sono classifiche: stanno nel menu laterale (sezione Giocatori), non più nelle Classifiche. Il contenuto e i calcoli sono identici; ogni pannello ha la sua scelta della stagione (parte dalla più recente).
 - Toccando un giocatore o una partita dentro un pannello, il pannello si chiude e si apre la scheda.
+
+## Invito libero alla lega (novembre 2026)
+- In «Inviti giocatori», in alto, **➕ Invita una persona**: l'amministratore scrive un'email e ottiene un **link personale** (`/unisciti/<codice>`) da girare su WhatsApp o sui social. L'elenco dei giocatori resta com'era sotto.
+- Il link vale per **una persona sola** e **7 giorni**; un nuovo link per la stessa email annulla il vecchio. L'email è solo un'etichetta: **non viene inviata nessuna email** (TODO: invio automatico in futuro).
+- Chi lo apre (con o senza app) si registra o accede, **entra nella lega come membro** e, se non ha ancora un giocatore, sceglie: **🙋 Sono già in Rosa** (parte la richiesta «Questo sono io», conferma l'amministratore) oppure **🆕 Sono nuovo** (si crea il giocatore: nome, ruoli e statistiche scelte da lui; va **subito in Rosa**, l'amministratore le aggiusta dopo). Chi ha già un giocatore entra con quello, senza crearne un altro.
+- Nome già usato nella lega (o come «altro nome») = rifiutato. Le funzioni sono nel database (`supabase/migrations/20261124000000_invito_per_email.sql`), provate in `tests/db/invito-per-email.test.ts`.

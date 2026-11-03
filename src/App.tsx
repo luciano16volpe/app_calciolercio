@@ -16,6 +16,7 @@ import { GiocaPage } from './features/gioca/GiocaPage';
 import { SettingsPage } from './features/impostazioni/SettingsPage';
 import { LoginPage } from './features/auth/LoginPage';
 import { InvitePage } from './features/menu/InvitePage';
+import { LeagueInvitePage } from './features/menu/LeagueInvitePage';
 import { MenuDrawer, type Panel } from './features/menu/MenuDrawer';
 import { EmptyLeagueGuide } from './features/menu/OtherPanels';
 import { ShellPanels } from './app/ShellPanels';
@@ -105,7 +106,7 @@ function Loading({ q, onPanel }: { q: { isError: boolean; error?: unknown; refet
 }
 
 function Shell() {
-  const { view, setView, menuOpen, setMenuOpen, panel, setPanel, inviteToken, setInviteToken,
+  const { view, setView, menuOpen, setMenuOpen, panel, setPanel, inviteToken, setInviteToken, inviteKind,
     gazViewer, setGazViewer, ptDialog, setPtDialog, bachecaOpen, setBachecaOpen,
     close, openPlayer, openPlayerFromRosa, openMatch, act, closePanel, closeMenu } = useShellWindows();
   const q = useLeagueData();
@@ -166,7 +167,17 @@ function Shell() {
       {menuOpen ? <MenuDrawer data={data} onClose={closeMenu} onOpenPanel={setPanel} onGoSettings={() => go('settings')} onOpenMatch={openMatch} /> : null}
       <ShellPanels panel={panel} data={data} closePanel={closePanel} go={go} openMatch={openMatch} openPlayer={openPlayer} />
 
-      {inviteToken ? (
+      {inviteToken && inviteKind === 'league' ? (
+        <LeagueInvitePage
+          token={inviteToken}
+          onDone={(a) => {
+            if (a) setSelectedLeague(a.leagueSlug);
+            setInviteToken(null);
+            navigate(a ? buildPath(a.leagueSlug, HOME_PAGE) : '/', true);
+            if (a) go('profilo');
+          }}
+        />
+      ) : inviteToken ? (
         <InvitePage
           token={inviteToken}
           onDone={(a) => {

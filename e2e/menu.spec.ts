@@ -30,7 +30,7 @@ test('Menu: voci comuni e accesso alle funzioni giocatori', async ({ page }) => 
   await openApp(page);
   await openMenu(page);
   await expect(page.locator('.menu-nm')).toHaveText('Luciano');
-  for (const id of ['#menu-compare', '#menu-couples', '#menu-albo', '#menu-records']) await expect(page.locator(id)).toBeVisible();
+  await expectSections(page, ['Le mie leghe', 'Giocatori', 'App']);
   await expect(page.locator('.menu-lgrow:not(.add)')).toHaveCount(1);
   await expect(page.locator('#menu-create')).toHaveCount(0); // per ora le leghe le crea solo l'amministratore supremo
   await expect(page.locator('#menu-join')).toBeVisible();
@@ -44,9 +44,7 @@ test('Menu: le sezioni cambiano con il ruolo nella lega', async ({ page }) => {
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openMenu(page);
   await expect(page.locator('#menu-role')).toContainText('Membro · Lega di prova');
-  await expect(page.locator('#menu-compare')).toBeVisible();
-  await expect(page.locator('#menu-members')).toHaveCount(0);
-  await expect(page.locator('#menu-red-list')).toHaveCount(0);
+  await expectSections(page, ['Le mie leghe', 'Giocatori', 'App']);
   await expect(page.locator('#menu-signout')).toBeVisible();
 });
 
@@ -55,7 +53,7 @@ test('Menu: la redazione vede la sezione Redazione e non la Gestione', async ({ 
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openMenu(page);
   await expect(page.locator('#menu-role')).toContainText('Redazione');
-  await expect(page.locator('#menu-red-list')).toBeVisible();
+  await expectSections(page, ['Le mie leghe', 'Giocatori', 'Redazione · Lega di prova', 'App']);
   await expect(page.locator('#menu-members')).toHaveCount(0);
 });
 
@@ -63,6 +61,7 @@ test('Menu: l\'amministratore (non creatore) vede la Gestione ma non le proposte
   await setup(page, { mine: mineAs('admin', { owner_id: 'altro' }) });
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openMenu(page);
+  await expectSections(page, ['Le mie leghe', 'Giocatori', 'Gestione · Lega di prova', 'App']);
   for (const id of ['#menu-members', '#menu-invites', '#menu-claims', '#menu-merge', '#menu-league-settings', '#menu-code']) await expect(page.locator(id)).toBeVisible();
   await expect(page.locator('#menu-code')).toHaveText('abc12345');
   await expect(page.locator('#menu-proposals')).toHaveCount(0);
@@ -90,6 +89,7 @@ test('Menu: l\'amministratore supremo vede la sezione Piattaforma', async ({ pag
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openMenu(page);
   await expect(page.locator('.menu-chip.gold')).toContainText('Amministratore supremo');
+  await expectSections(page, ['Le mie leghe', 'Giocatori', 'Piattaforma', 'App']);
   for (const id of ['#menu-audit', '#menu-platform-leagues', '#menu-platform-users']) await expect(page.locator(id)).toBeVisible();
 });
 
