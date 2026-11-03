@@ -6,7 +6,7 @@ import { useToast } from '../../app/Toast';
 import { photoUrl, type LeagueData } from '../../data/queries';
 import { formState } from '../../domain/form';
 import { profileSeasonData } from '../../domain/profile';
-import { avatarClass, initials } from '../../domain/format';
+import { PlayerAvatar } from './PlayerAvatar';
 import { playerPairs, type PairMate } from '../../domain/pairs';
 import { bachecaView, formWeightTip, formWeightView, playerTrophies } from '../../domain/playerCard';
 import { seasonStats } from '../../domain/stats';
@@ -20,8 +20,7 @@ import { PlayerLinkRow } from './PlayerLinkRow';
 import { PlayerPagelleDialog } from './PlayerPagelleDialog';
 
 function Avatar({ player, photo }: { player: Player; photo: string | null }) {
-  if (photo) return <div className="avatar avatar-xl has-photo" style={{ backgroundImage: `url('${photo}')` }} />;
-  return <div className={`avatar avatar-xl ${avatarClass(player.roles)}`}>{initials(player.name)}</div>;
+  return <PlayerAvatar key={`${player.id}:${photo}`} size="xl" name={player.name} roles={player.roles} photo={photo} />;
 }
 
 function Bacheca({ data, player, open, onToggle }: { data: LeagueData; player: Player; open: boolean; onToggle: () => void }) {
