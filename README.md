@@ -4,6 +4,7 @@ App per il calcetto tra amici: rosa e figurine, sorteggio squadre equilibrate, p
 classifiche, albo d'oro, Gazzette. Nuova versione multi-lega su Supabase.
 
 - Guida per lo sviluppo (Claude Code): `CLAUDE.md`
+- Test e copertura: `docs/TEST.md`
 - Regole dell'app: `docs/REGOLE.md` · Decisioni: `docs/DECISIONI.md` · Piano: `docs/PIANO.md`
 - App attuale (riferimento): `legacy/`
 
