@@ -2,6 +2,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useAuth } from '../../app/auth';
+import { Palloni } from '../../app/Palloni';
 import { useConfirm } from '../../app/Dialogs';
 import { setSelectedLeague } from '../../app/league';
 import { useToast } from '../../app/Toast';
@@ -75,11 +76,12 @@ function NextMatch({ data, m, team, myId }: { data: LeagueData; m: Match; team: 
 }
 
 /** Ultime partite del giocatore nella lega attiva. */
-function RecentMatches({ data, player, onOpen }: { data: LeagueData; player: { id: string; name: string }; onOpen: (id: string) => void }) {
+function RecentMatches({ data, player, onOpen, active }: { data: LeagueData; player: { id: string; name: string }; onOpen: (id: string) => void; active: boolean }) {
   const matches = myRecentMatches(data.dataset, player.id, player.name);
   if (!matches.length) return null;
   return (
-    <div className="card" id="profile-recent-matches">
+    <div className="card fx-card fx-balls" id="profile-recent-matches" style={{ position: 'relative' }}>
+      {active ? <Palloni /> : null}
       <div className="section-header">Ultime partite</div>
       {matches.map((m) => {
         const result = getPlayerMatchResult(m, player.id, player.name);
@@ -168,7 +170,7 @@ export function ProfiloPage({ data, active, act }: { data: LeagueData; active: b
 
       {last && me ? <LastMatchCard data={data} m={last.m} act={act} title="🏆 La mia ultima partita" id="my-last-match" mine={{ id: me.id, name: me.name }} active={active} /> : null}
 
-      {me ? <RecentMatches data={data} player={me} onOpen={act.openMatch} /> : null}
+      {me ? <RecentMatches data={data} player={me} onOpen={act.openMatch} active={active} /> : null}
 
       <MyPlayerCard data={data} />
       {linked ? <MyProfileTools data={data} playerId={linked.id} name={linked.name} /> : null}
