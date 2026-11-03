@@ -10,6 +10,7 @@ import { useMyPlayer, usePendingClaims } from '../../data/claims';
 import { useAdminRequests, useMembers, useMyLeagues, useIsSuperAdmin } from '../../data/leagues';
 import { pendingRatings } from '../../domain/matches';
 import { formatDate } from '../../domain/format';
+import { premiumDate, useMyPremium } from '../../data/premium';
 
 export type Panel =
   | 'create-league' | 'join-league' | 'members' | 'invites' | 'claims' | 'merge' | 'league-settings' | 'admin-proposals'
@@ -44,6 +45,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
   const isOwner = !!user && !!data && data.league.owner_id === user.id;
   const leagues = useMyLeagues(user?.id ?? null);
   const superQ = useIsSuperAdmin(user?.id ?? null);
+  const premium = useMyPremium(user?.id ?? null);
   const isSuper = superQ.data === true;
   const members = useMembers(lid, isAdmin);
   const claims = usePendingClaims(lid, isAdmin);
@@ -83,6 +85,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
   const roleChips = (
     <>
       {isSuper ? <span className="menu-chip gold">👑 Amministratore supremo</span> : null}
+      {premium.data?.active && premium.data.expires_at ? <span className="menu-chip gold">Premium · fino al {premiumDate(premium.data.expires_at)}</span> : null}
       {role && data ? (
         <span className={`menu-chip${role === 'redazione' ? ' green' : ''}`} id="menu-role">
           {role === 'admin' && isOwner ? 'Admin (creatore)' : ROLE_LABEL[role]} · {data.league.name}
