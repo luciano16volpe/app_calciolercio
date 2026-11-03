@@ -48,6 +48,12 @@ function drawBall(ctx: CanvasRenderingContext2D, r: number) {
   }
 }
 
+/** Tema scuro attivo? Vale la scelta nelle Impostazioni (data-theme), altrimenti quella del telefono. */
+function isDark(): boolean {
+  const t = document.documentElement.getAttribute('data-theme');
+  return t === 'dark' || (t !== 'light' && !!window.matchMedia?.('(prefers-color-scheme: dark)').matches);
+}
+
 export function Palloni() {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -71,12 +77,14 @@ export function Palloni() {
     const balls: Ball[] = Array.from({ length: Math.max(5, Math.min(12, Math.round(w / 40))) }, () => make(Math.random() * h));
     const draw = () => {
       ctx.clearRect(0, 0, w, h);
+      // nel tema chiaro il bianco e il contorno scuro si vedono molto di più: palloni più trasparenti e un po' più piccoli
+      const light = !isDark();
       for (const b of balls) {
         ctx.save();
-        ctx.globalAlpha = b.alpha;
+        ctx.globalAlpha = b.alpha * (light ? 0.55 : 1);
         ctx.translate(b.x, b.y);
         ctx.rotate(b.rot);
-        drawBall(ctx, b.r);
+        drawBall(ctx, b.r * (light ? 0.82 : 1));
         ctx.restore();
       }
     };
