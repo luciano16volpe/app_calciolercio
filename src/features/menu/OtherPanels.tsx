@@ -69,9 +69,9 @@ export function HelpPanel({ onClose }: { onClose: () => void }) {
 export function EmptyLeagueGuide({ onAddNew }: { onAddNew: () => void }) {
   return (
     <div className="card" id="empty-guide">
-      <div className="section-header">?? Aggiungi i giocatori</div>
-      <div style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 10 }}>La lega ? vuota.</div>
-      <button type="button" className="btn btn-secondary btn-full" id="guide-new" onClick={onAddNew}>? Nuovo giocatore</button>
+      <div className="section-header">👥 Aggiungi i giocatori</div>
+      <div style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 10 }}>La lega è vuota.</div>
+      <button type="button" className="btn btn-secondary btn-full" id="guide-new" onClick={onAddNew}>➕ Nuovo giocatore</button>
     </div>
   );
 }
