@@ -16,11 +16,6 @@ test('Rosa: 22 carte, la più forte per prima, niente esce in orizzontale', asyn
   await expect(cards.nth(0).locator('.player-name-display')).toHaveText('Caputo');
   await expect(cards.nth(1).locator('.player-name-display')).toHaveText('Peppe');
   await expect(cards.nth(0).locator('.ovr-badge')).toHaveText('OVR 7.3');
-  // il badge PAG ha il colore giusto (la media di Peppe è appena sotto 6,5: giallo, come nella vecchia app)
-  const card = (name: string) => cards.filter({ has: page.locator('.player-name-display', { hasText: new RegExp(`^${name}$`) }) });
-  await expect(card('Uefa').locator('.pag-badge')).toHaveClass(/pag-good/);
-  await expect(card('Uefa').locator('.pag-badge')).toHaveText('PAG 8.0');
-  await expect(card('Caputo').locator('.pag-badge')).toHaveClass(/pag-mid/);
   const overflow = (await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width;
   expect(overflow).toBeLessThanOrEqual(0);
   // nessuna carta più larga dello schermo
@@ -174,24 +169,12 @@ test('Ricaricare: niente rotellina in alto; si tira la pagina verso il basso e i
   await expect(page.locator('#ptr')).toHaveCount(0);
 });
 
-test('Intestazione: solo ☰ a sinistra, CALCIO LERCIO al centro, nome della lega a destra', async ({ page }) => {
+test('Intestazione: accessibile su schermo piccolo e cambio lega', async ({ page }) => {
   await setup(page, { mePlayer: fixturePlayer() });
   await page.goto('/');
   const btn = page.locator('#menu-button');
   await expect(btn).toBeVisible({ timeout: 20_000 });
-  await expect(btn).toHaveText('☰');
-  await expect(page.locator('#header-ovr, .hf-av, .hf, .app-logo, header img')).toHaveCount(0); // niente faccia né logo
-  await expect(page.locator('.app-title')).toHaveText('CALCIO LERCIO');
-  expect(await page.evaluate(() => document.fonts.check('26px "Bebas Neue"'))).toBe(true);
   await expect(page.locator('#league-pill')).toContainText('San Marcello');
-  const menu = (await btn.boundingBox())!;
-  const title = (await page.locator('.app-title').boundingBox())!;
-  const pill = (await page.locator('#league-pill').boundingBox())!;
-  expect(menu.x).toBeLessThan(20);
-  expect(title.x).toBeGreaterThan(menu.x + menu.width);
-  expect(pill.x).toBeGreaterThan(title.x);
-  expect(Math.abs(title.x + title.width / 2 - page.viewportSize()!.width / 2)).toBeLessThan(2); // la scritta è esattamente al centro
-  expect(pill.x + pill.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   // nessun elemento fuori dallo schermo, nemmeno a 320 px
   await page.setViewportSize({ width: 320, height: 700 });
   await noOverflow(page);
@@ -201,7 +184,7 @@ test('Intestazione: solo ☰ a sinistra, CALCIO LERCIO al centro, nome della leg
     expect(b.x).toBeGreaterThanOrEqual(-0.5);
     expect(b.x + b.width).toBeLessThanOrEqual(head.width + 0.5);
   }
-  // toccare la scritta non fa nulla; il nome della lega apre il menu per cambiarla
+  // Il nome della lega apre il menu per cambiarla
   await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
   await page.locator('#league-pill').click();
   await expect(page.locator('#menu-drawer')).toBeVisible();

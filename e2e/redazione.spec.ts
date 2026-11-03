@@ -87,13 +87,13 @@ test('Questo sono io: se sono tutti collegati si spiega', async ({ page }) => {
   await expect(page.locator('#myplayer-none')).toContainText('già un account collegato');
 });
 
-const firstRealPlayer = async (_page: unknown): Promise<{ id: string; name: string }> => fixturePlayer();
+const firstRealPlayer = async (): Promise<{ id: string; name: string }> => fixturePlayer();
 const status = (player_id: string, name: string, over: Record<string, unknown> = {}) => ({
   player_id, name, linked: false, linked_name: null, invite_token: null, invite_created: null, invite_expires: null, ...over,
 });
 
 test('Scheda giocatore (admin): non collegato → si può invitare', async ({ page }) => {
-  const p = await firstRealPlayer(page);
+  const p = await firstRealPlayer();
   const writes = await setup(page, { publicRole: 'admin', rpc: { league_players_status: [status(p.id, p.name)], create_player_invite: 'tok' } });
   await openApp(page);
   await page.locator('#players-list .card-compact', { hasText: p.name }).first().click();
@@ -106,7 +106,7 @@ test('Scheda giocatore (admin): non collegato → si può invitare', async ({ pa
 });
 
 test('Scheda giocatore (admin): collegato → si vede a chi, senza pulsante di invito', async ({ page }) => {
-  const p = await firstRealPlayer(page);
+  const p = await firstRealPlayer();
   await setup(page, { publicRole: 'admin', rpc: { league_players_status: [status(p.id, p.name, { linked: true, linked_name: 'Marco R.' })] } });
   await openApp(page);
   await page.locator('#players-list .card-compact', { hasText: p.name }).first().click();
@@ -115,7 +115,7 @@ test('Scheda giocatore (admin): collegato → si vede a chi, senza pulsante di i
 });
 
 test('Scheda giocatore: un membro non vede la riga del collegamento', async ({ page }) => {
-  const p = await firstRealPlayer(page);
+  const p = await firstRealPlayer();
   await setup(page, { publicRole: 'member', rpc: { league_players_status: [status(p.id, p.name)] } });
   await openApp(page);
   await page.locator('#players-list .card-compact', { hasText: p.name }).first().click();
