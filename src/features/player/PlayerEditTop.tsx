@@ -7,7 +7,7 @@ import { useToast } from '../../app/Toast';
 import { resizeSquare } from '../../canvas/photo';
 import { setPlayerPhoto, updatePlayer } from '../../data/mutations';
 import { LEAGUE_ROSTER_QUERY_KEY, photoUrl, type LeagueData } from '../../data/queries';
-import { avatarClass, initials } from '../../domain/format';
+import { PlayerAvatar } from './PlayerAvatar';
 import { clampStat, ROLES, ROLE_CLS, ROLE_LABEL, toggleRole } from '../../domain/playerEdit';
 import { ICONS, STATS, type Player } from '../../domain/types';
 import { FutMini } from './FutMini';
@@ -98,11 +98,7 @@ export function PlayerEditTop({ data, player, weightRow }: { data: LeagueData; p
             onClick={() => (photo ? setMenu(true) : file.current?.click())}
             title={photo ? 'Tocca per cambiare o rimuovere la foto' : 'Tocca per caricare una foto'}
           >
-            {photo ? (
-              <div className="avatar avatar-xl has-photo" style={{ backgroundImage: `url('${photo}')` }} />
-            ) : (
-              <div className={`avatar avatar-xl ${avatarClass(roles)}`}>{initials(player.name)}</div>
-            )}
+            <PlayerAvatar key={`${player.id}:${photo}`} size="xl" name={player.name} roles={roles} photo={photo} />
             <span className="photo-badge">📷</span>
           </div>
           <input ref={file} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; onFile(f); }} />

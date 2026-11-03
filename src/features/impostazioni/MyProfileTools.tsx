@@ -6,6 +6,7 @@ import { useToast } from '../../app/Toast';
 import { resizeSquare } from '../../canvas/photo';
 import { MY_PLAYER_KEY, renameMyPlayer, setMyPhoto } from '../../data/claims';
 import { LEAGUE_QUERY_KEY, photoUrl, type LeagueData } from '../../data/queries';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 
 export function MyProfileTools({ data, playerId, name }: { data: LeagueData | undefined; playerId: string; name: string }) {
   const qc = useQueryClient();
@@ -59,7 +60,7 @@ export function MyProfileTools({ data, playerId, name }: { data: LeagueData | un
     <div className="card" id="my-tools" style={{ marginBottom: 12 }}>
       <div className="section-header">🛠 Foto e nome</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        {photo ? <div className="avatar avatar-xl has-photo" style={{ backgroundImage: `url('${photo}')`, flexShrink: 0 }} /> : null}
+        {photo ? <PlayerAvatar key={photo} size="xl" name={name} photo={photo} /> : null}
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <button type="button" id="my-photo" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => file.current?.click()}>📷 {photo ? 'Cambia la mia foto' : 'Carica la mia foto'}</button>
           {photo ? <button type="button" id="my-photo-remove" className="btn btn-secondary btn-sm" disabled={busy} onClick={removePhoto}>🗑 Rimuovi la foto</button> : null}

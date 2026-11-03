@@ -9,6 +9,7 @@ import { PLAYERS_STATUS_KEY } from '../../data/invites';
 import { useIsSuperAdmin } from '../../data/leagues';
 import { addToLeague, BENCH_KEY, deleteBenchPlayer, useBench, type BenchPlayer } from '../../data/panchina';
 import { LEAGUE_QUERY_KEY, photoUrl, type LeagueData } from '../../data/queries';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 
 export function BenchPanel({ data, onClose }: { data: LeagueData; onClose: () => void }) {
   const { user } = useAuth();
@@ -69,9 +70,7 @@ export function BenchPanel({ data, onClose }: { data: LeagueData; onClose: () =>
           const photo = photoUrl(p.photoPath);
           return (
             <div key={p.id} className="row-line bench-row" style={{ gap: 8, alignItems: 'center' }}>
-              <div className={`avatar${photo ? ' has-photo' : ''}`} style={photo ? { backgroundImage: `url('${photo}')`, flexShrink: 0 } : { flexShrink: 0 }}>
-                {photo ? '' : p.name.slice(0, 1).toUpperCase()}
-              </div>
+              <PlayerAvatar key={`${p.id}:${photo}`} size="sm" name={p.name} photo={photo} label={p.name.slice(0, 1).toUpperCase()} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 800 }}>{p.name}</div>
                 <div style={{ fontSize: 11, color: 'var(--text3)' }}>
