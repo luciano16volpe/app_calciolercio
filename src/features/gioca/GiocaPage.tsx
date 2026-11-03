@@ -271,8 +271,12 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
 
   return (
     <>
-      <div className="card">
-        <div className="section-header">Formato partita</div>
+      <div className="gioca-intro">
+        <div className="gioca-intro-title">⚽ Prepara la partita</div>
+        <div>Scegli il formato, seleziona i giocatori e genera le squadre.</div>
+      </div>
+      <div className="card gioca-section">
+        <div className="gioca-section-heading"><span className="gioca-step">1</span><div><div className="section-header">Formato partita</div><div className="gioca-section-help">Quanti giocatori per squadra?</div></div></div>
         <div className="format-grid">
           {[5, 6, 7].map((n) => (
             <button key={n} className={`format-btn${fmt.sizeA === n ? ' active' : ''}`} id={`fmt-${n}`} onClick={() => update({ sizeA: n, sizeB: n, asym: false })}>
@@ -304,7 +308,9 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
           </div>
         </div>
 
-        <div className="section-header" style={{ marginTop: 10 }}>Convocati</div>
+      </div>
+      <div className="card gioca-section">
+        <div className="gioca-section-heading"><span className="gioca-step">2</span><div><div className="section-header">Convocati</div><div className="gioca-section-help">Scegli i giocatori che scenderanno in campo.</div></div></div>
         <div className="btn-row" style={{ marginBottom: 8 }}>
           <button className="btn btn-secondary btn-sm" onClick={() => setSelected(order.slice(0, Math.min(total, order.length)).map((i) => (dataset.players[i] as { id: string }).id))}>
             ✓ Seleziona i primi <span id="sfn">{total}</span>
@@ -336,7 +342,8 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
         <div className="conv-status">Selezionati: <span className={`cnt${live.length === total ? '' : ' warn'}`} id="sel-cnt">{live.length}</span> / <span id="needed-n2">{total}</span> richiesti</div>
       </div>
 
-      <button className="btn btn-primary btn-full" style={{ marginBottom: 14 }} onClick={generate}>⚽ Genera squadre bilanciate</button>
+      <div className="gioca-generate"><div className="gioca-section-heading"><span className="gioca-step">3</span><div><div className="section-header">Squadre</div><div className="gioca-section-help">{live.length === total ? 'Tutto pronto per il sorteggio.' : `Selezionati ${live.length} su ${total} giocatori.`}</div></div></div>
+      <button className="btn btn-primary btn-full" style={{ marginBottom: 14 }} onClick={generate}>⚽ Genera squadre bilanciate</button></div>
 
       {res && res.combos.length ? <ResultView data={data} res={res} scores={scores} onChange={setRes} onCreate={canCreate ? () => setCreating(true) : undefined} /> : null}
       {creating && res && res.combos.length ? <NewMatchDialog data={data} combo={res.combos[res.idx] as Combo} idx={res.idx} onClose={() => setCreating(false)} /> : null}
