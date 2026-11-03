@@ -38,15 +38,14 @@ export function RosaList({ data, onOpen, onAdd }: { data: LeagueData; onOpen: (p
           <div className="player-header" onClick={() => onOpen(p.id)}>
             <div className="ph-top">
               <div className="avatar-stack">
-                <span className={`pag-badge ${pag.cls}`} title="Media pagelle">{pag.label}</span>
                 <PlayerAvatar key={`${p.id}:${photo}`} name={p.name} roles={p.roles ?? []} photo={photo} />
-                <span className="ovr-badge">OVR {ovr}</span>
               </div>
               <div className="ph-info">
                 <div className="ph-name-row">
                   <span className="player-name-display">{p.name}</span>
                   <FireChip state={state} />
                 </div>
+                <div className="rosa-metrics"><span className={`pag-badge ${pag.cls}`} title="Media pagelle">{pag.label}</span><span className="ovr-badge">OVR {ovr}</span></div>
                 <div className="role-pills-display">
                   {(p.roles ?? []).map((r) => (
                     <span key={r} className={`rp rp-${r.toLowerCase()}`}>{r}</span>
