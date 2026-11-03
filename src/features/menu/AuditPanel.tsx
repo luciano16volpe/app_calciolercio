@@ -69,6 +69,8 @@ export function AuditPanel({ onClose }: { onClose: () => void }) {
   // a ogni cambio di filtro si riparte dalla prima pagina
   useEffect(() => {
     const my = ++seq.current;
+    // Il filtro avvia una richiesta: segnala subito il caricamento.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBusy(true);
     setError('');
     fetchAuditPage(filter(), 0)

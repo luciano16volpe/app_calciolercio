@@ -102,7 +102,7 @@ test('Registro: esporta CSV delle righe filtrate', async ({ page }) => {
   const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('#audit-csv').click()]);
   expect(dl.suggestedFilename()).toMatch(/^registro-attivita-\d{4}-\d{2}-\d{2}\.csv$/);
   const path = await dl.path();
-  const text = readFileSync(path, 'utf-8').replace(/^﻿/, '');
+  const text = readFileSync(path, 'utf-8').replace(/^\uFEFF/, '');
   const lines = text.split('\r\n');
   expect(lines[0]).toBe('Data e ora;Persona;Lega;Gruppo;Azione;Oggetto;Cosa è successo;Delicata;Prima → dopo;IP;Dispositivo;Origine;Operazione');
   expect(lines).toHaveLength(14); // intestazione + 13 righe

@@ -298,6 +298,8 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
     const mm = data.dataset.matches.find((x) => x.id === matchId);
     if (!mm) return;
     started.current = true;
+    // La redazione puo aprire la scheda in modifica anche se i dati arrivano dopo.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTextOnly(true);
     setDraft(startDraft(mm, data.dataset.ratings.filter((r) => r.matchId === matchId)));
   }, [startText, canEditText, data, matchId]);
