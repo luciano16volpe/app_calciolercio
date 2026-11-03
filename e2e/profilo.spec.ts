@@ -53,7 +53,7 @@ test('Profilo: è la pagina iniziale e le sezioni sono nell’ordine voluto', as
   await expect(page.locator('#page-profilo.active')).toBeVisible({ timeout: 20_000 });
   await expect.poll(() => new URL(page.url()).pathname).toBe('/l/san-marcello/profilo');
   await expect(page.locator('#profile-player-card')).toBeVisible();
-  const order = ['#profilo-leghe', '#profile-player-card', '#next-match', '#my-last-match', '#profile-recent-matches', '#myplayer-card', '#my-tools', '#leave-card'];
+  const order = ['#next-match', '#my-last-match', '#profilo-leghe', '#profile-player-card', '#profile-recent-matches', '#myplayer-card', '#my-tools', '#leave-card'];
   const ys: number[] = [];
   for (const sel of order) {
     await expect(page.locator(sel).first(), sel).toBeVisible();
@@ -97,8 +97,8 @@ test('Profilo: la prossima partita mostra giorno, ora, luogo, squadra, compagni 
   await expect(card).toContainText(`Con te: ${others[0]!.name}`);
   await expect(card).toContainText(others[1]!.name as string);
   await expect(card).toContainText('Contro:');
-  // senza partite in programma la sezione non c'è
-  be.matches.splice(be.matches.findIndex((x) => x.id === 'futura'), 1);
+  // La partita resta in programma, ma non compare se non sono convocato.
+  be.mplayers = be.mplayers.filter((r) => !(r.match_id === 'futura' && r.player_id === me.id));
   await page.reload();
   await expect(page.locator('#my-last-match')).toBeVisible({ timeout: 20_000 });
   await expect(page.locator('#next-match')).toHaveCount(0);

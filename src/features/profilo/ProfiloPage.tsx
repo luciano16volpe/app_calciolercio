@@ -151,6 +151,10 @@ export function ProfiloPage({ data, active, act }: { data: LeagueData; active: b
 
   return (
     <>
+      {next && me ? <NextMatch data={data} m={next.m} team={next.team} myId={me.id} /> : null}
+
+      {last && me ? <LastMatchCard data={data} m={last.m} act={act} title="🏆 La mia ultima partita" id="my-last-match" mine={{ id: me.id, name: me.name }} active={active} /> : null}
+
       <MyLeagues currentId={data.league.id} />
 
       {linked && me && inRoster ? (
@@ -165,10 +169,6 @@ export function ProfiloPage({ data, active, act }: { data: LeagueData; active: b
           />
         </div>
       ) : null}
-
-      {next && me ? <NextMatch data={data} m={next.m} team={next.team} myId={me.id} /> : null}
-
-      {last && me ? <LastMatchCard data={data} m={last.m} act={act} title="🏆 La mia ultima partita" id="my-last-match" mine={{ id: me.id, name: me.name }} active={active} /> : null}
 
       {me ? <RecentMatches data={data} player={me} onOpen={act.openMatch} active={active} /> : null}
 
