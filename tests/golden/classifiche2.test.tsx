@@ -58,6 +58,11 @@ const plain = (html: string) =>
     .replace(/\s+/g, ' ')
     .trim();
 const noop = () => undefined;
+// La legenda è testo dell'interfaccia e può cambiare; confrontiamo dati e ordinamento.
+const statsWithoutHelp = (s: string) => s
+  .replace('Scorri la tabella ↔ · tocca una colonna per ordinare ', '')
+  .replace(/(?:Tocca un'intestazione per riordinare · PG presenze|PG presenze · V\/N\/P).*$/, '')
+  .trim();
 // Le miniature hanno una regola di forma aggiornata: il resto del confronto resta verificato.
 const withoutMiniatures = (s: string) => s.replace(/( ▾ ⇄ .*? ▾) .*? (⚔️ Da avversari)/, '$1 $2');
 const toLd = (d: Dataset, albo: unknown[] = []): LeagueData => ({
@@ -82,7 +87,7 @@ describe.each(datasets)('%s', (_label, raw) => {
           const mine = plain(renderToStaticMarkup(
             <StatsTable data={ld} scope={sc} filter={f} sort={{ col, dir }} onFilter={noop} onSort={noop} onOpenPlayer={noop} />,
           ));
-          expect(mine).toBe(run(legacy.renderStatsTable, sc));
+          expect(statsWithoutHelp(mine)).toBe(statsWithoutHelp(run(legacy.renderStatsTable, sc)));
           rows += mine.length;
         }
       }
