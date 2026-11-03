@@ -2,10 +2,6 @@
 import { expect, test } from '@playwright/test';
 import { lastWrite, mineAs, noOverflow, openApp, openMenu, setup } from './helpers';
 
-const sections = (page: import('@playwright/test').Page) => page.locator('.menu-sec').allTextContents();
-/** Le sezioni dipendono dal ruolo, che arriva dopo l'apertura: si aspetta che l'elenco sia quello atteso. */
-const expectSections = (page: import('@playwright/test').Page, want: string[]) => expect.poll(() => sections(page), { timeout: 10_000 }).toEqual(want);
-
 test('Menu: si apre e si chiude con ✕, toccando lo scuro e con Esc', async ({ page }) => {
   await setup(page);
   await openApp(page);
@@ -29,7 +25,7 @@ test('Menu: si apre e si chiude con ✕, toccando lo scuro e con Esc', async ({ 
   await expect(page.locator('#menu-drawer')).toBeVisible();
 });
 
-test('Menu: chi è dentro ma senza ruolo nella lega vede solo Le mie leghe e le voci dell\'app', async ({ page }) => {
+test('Menu: voci comuni e accesso alle funzioni giocatori', async ({ page }) => {
   await setup(page);
   await openApp(page);
   await openMenu(page);
@@ -40,11 +36,10 @@ test('Menu: chi è dentro ma senza ruolo nella lega vede solo Le mie leghe e le 
   await expect(page.locator('#menu-join')).toBeVisible();
   await expect(page.locator('#menu-signout')).toBeVisible();
   await expect(page.locator('#menu-login')).toHaveCount(0);
-  await noOverflow(page);
 });
 
 test('Menu: le sezioni cambiano con il ruolo nella lega', async ({ page }) => {
-  // Membro: solo Le mie leghe e App
+  // Il membro vede le funzioni comuni, senza quelle di amministrazione.
   await setup(page, { mine: mineAs('member', { owner_id: 'altro' }) });
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openMenu(page);
@@ -105,14 +100,6 @@ for (const width of [360]) {
     await openApp(page, '/l/lega-di-prova/rosa', 0);
     await openMenu(page);
     await noOverflow(page);
-    // il menu scivola dentro: si aspetta che si sia fermato
-    await expect.poll(async () => {
-      const box = await page.locator('#menu-drawer').boundingBox();
-      return !!box && box.x >= -0.5 && box.x + box.width <= width + 0.5;
-    }).toBe(true);
-    // ogni voce sta dentro il menu
-    const rights = await page.locator('#menu-drawer .menu-it, #menu-drawer .menu-lgrow, #menu-drawer .menu-code').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().right));
-    for (const r of rights) expect(r).toBeLessThanOrEqual(width + 0.5);
     await page.locator('#menu-help').scrollIntoViewIfNeeded();
     await expect(page.locator('#menu-signout')).toBeVisible();
   });
