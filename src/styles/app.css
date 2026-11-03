@@ -641,6 +641,12 @@ input[type=file]{display:none}
 .form-switch.on .form-knob{transform:translateX(19px)}
 
 .update-notice { position: fixed; z-index: 10000; top: max(8px, env(safe-area-inset-top)); left: 8px; right: 8px; margin: auto; max-width: 480px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; padding: 10px; background: var(--gray); color: var(--text); border: 1px solid var(--gray3); border-radius: 12px; box-shadow: 0 4px 20px #0005; font-size: 14px; }
+.premium-trial-banner{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:10px 12px;padding:12px 14px;border-radius:14px;background:linear-gradient(120deg,#413281,#7954a8);color:#fff;font-size:12px;line-height:1.5}
+.premium-trial-banner b{font-size:14px}.premium-trial-banner button{border:0;background:transparent;color:inherit;font-size:24px;cursor:pointer}
+.premium-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.premium-tile{min-height:150px;border:0;border-radius:16px;padding:16px;color:white;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;cursor:pointer;font:inherit}
+.premium-tile span{font-size:28px;margin-bottom:auto}.premium-tile b{font-size:16px}.premium-tile small{font-size:12px;line-height:1.35}.premium-tile-users{background:linear-gradient(135deg,#24599f,#347ac1)}.premium-tile-trial{background:linear-gradient(135deg,#68439c,#a85b96)}
+.player-tile-awards{background:linear-gradient(135deg,#9b6719,#c58b27)}.player-tile-records{background:linear-gradient(135deg,#187667,#299e80)}
 
 /* Gerarchia visiva delle schermate principali. */
 #players-list{gap:8px}

@@ -30,6 +30,7 @@ import { AppHeader } from './app/AppHeader';
 import { InstallHint } from './app/InstallHint';
 import { PullToRefresh } from './app/PullToRefresh';
 import { PushPrompt } from './app/PushPrompt';
+import { PremiumTrialBanner } from './app/PremiumTrialBanner';
 import { RosaList } from './features/rosa/RosaList';
 
 
@@ -120,6 +121,8 @@ function Shell() {
     <>
       <AppHeader data={data} onMenu={() => setMenuOpen(true)} />
 
+      <PremiumTrialBanner />
+
       <PullToRefresh />
       <InstallHint />
       <PushPrompt />
@@ -165,7 +168,7 @@ function Shell() {
       {data && ptDialog ? <PagelleTextDialog data={data} matchId={ptDialog} onClose={() => setPtDialog(null)} /> : null}
 
       {menuOpen ? <MenuDrawer data={data} onClose={closeMenu} onOpenPanel={setPanel} onGoSettings={() => go('settings')} onOpenMatch={openMatch} /> : null}
-      <ShellPanels panel={panel} data={data} closePanel={closePanel} go={go} openMatch={openMatch} openPlayer={openPlayer} />
+      <ShellPanels panel={panel} data={data} closePanel={closePanel} setPanel={setPanel} go={go} openMatch={openMatch} openPlayer={openPlayer} />
 
       {inviteToken && inviteKind === 'league' ? (
         <LeagueInvitePage

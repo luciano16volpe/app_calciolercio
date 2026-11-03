@@ -873,10 +873,11 @@ export type Database = {
         Args: { l: string; new_owner: string }
         Returns: undefined
       }
-      my_premium_status: { Args: never; Returns: { active: boolean; expires_at: string | null }[] }
-      admin_premium_statuses: { Args: never; Returns: { user_id: string; active: boolean; expires_at: string }[] }
+      my_premium_status: { Args: never; Returns: { active: boolean; expires_at: string | null; trial: boolean; trial_expires_at: string | null; lifetime: boolean }[] }
+      admin_premium_statuses: { Args: never; Returns: { user_id: string; active: boolean; expires_at: string | null; trial: boolean; trial_expires_at: string | null; lifetime: boolean }[] }
       admin_extend_premium: { Args: { p_user: string; p_months: number }; Returns: string }
       admin_end_premium: { Args: { p_user: string }; Returns: undefined }
+      admin_grant_lifetime_premium: { Args: { p_user: string }; Returns: undefined }
       admin_league_admins: {
         Args: { l: string }
         Returns: {

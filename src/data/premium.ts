@@ -11,7 +11,7 @@ export function useMyPremium(userId: string | null) {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('my_premium_status');
       if (error) throw error;
-      return data?.[0] ?? { active: false, expires_at: null };
+      return data?.[0] ?? { active: false, expires_at: null, trial: false, trial_expires_at: null, lifetime: false };
     },
   });
 }
@@ -29,5 +29,10 @@ export async function extendPremium(userId: string, months: number) {
 
 export async function endPremium(userId: string) {
   const { error } = await supabase.rpc('admin_end_premium', { p_user: userId });
+  if (error) throw error;
+}
+
+export async function grantLifetimePremium(userId: string) {
+  const { error } = await supabase.rpc('admin_grant_lifetime_premium', { p_user: userId });
   if (error) throw error;
 }

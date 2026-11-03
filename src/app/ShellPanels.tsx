@@ -14,6 +14,7 @@ import { AlboPanel, CouplesPanel, RecordsPanel } from '../features/menu/ExtraPan
 import { BenchPanel } from '../features/menu/BenchPanel';
 import { PendingPanel } from '../features/menu/PendingPanel';
 import { HelpPanel, PrivacyPanel } from '../features/menu/OtherPanels';
+import { PlayersHub } from '../features/menu/PlayersHub';
 
 // I pannelli amministrativi si caricano quando vengono aperti.
 const AuditPanel = lazy(() => import('../features/menu/AuditPanel').then((m) => ({ default: m.AuditPanel })));
@@ -21,6 +22,7 @@ const GameSettingsPanel = lazy(() => import('../features/menu/GameSettingsPanel'
 const AdminProposalsPanel = lazy(() => import('../features/menu/AdminPanels').then((m) => ({ default: m.AdminProposalsPanel })));
 const PlatformLeaguesPanel = lazy(() => import('../features/menu/AdminPanels').then((m) => ({ default: m.PlatformLeaguesPanel })));
 const PlatformUsersPanel = lazy(() => import('../features/menu/AdminPanels').then((m) => ({ default: m.PlatformUsersPanel })));
+const PremiumPanel = lazy(() => import('../features/menu/AdminPanels').then((m) => ({ default: m.PremiumPanel })));
 
 /** Regole di gioco: le cambia solo l'amministratore supremo, gli amministratori di lega le vedono. */
 function GameSettingsGate({ data, onClose }: { data: LeagueData; onClose: () => void }) {
@@ -30,10 +32,11 @@ function GameSettingsGate({ data, onClose }: { data: LeagueData; onClose: () => 
 }
 
 /** Pannelli del menu: il chiamante mantiene solo la scelta e le azioni condivise. */
-export function ShellPanels({ panel, data, closePanel, go, openMatch, openPlayer }: {
+export function ShellPanels({ panel, data, closePanel, setPanel, go, openMatch, openPlayer }: {
   panel: Panel | null;
   data: LeagueData | undefined;
   closePanel: () => void;
+  setPanel: (panel: Panel) => void;
   go: (page: PageName) => void;
   openMatch: (id: string, text?: boolean) => void;
   openPlayer: (id: string) => void;
@@ -49,11 +52,13 @@ export function ShellPanels({ panel, data, closePanel, go, openMatch, openPlayer
         {panel === 'audit' ? <AuditPanel onClose={closePanel} /> : null}
         {panel === 'platform-leagues' ? <PlatformLeaguesPanel onClose={closePanel} /> : null}
         {panel === 'platform-users' ? <PlatformUsersPanel onClose={closePanel} /> : null}
+        {panel === 'premium' ? <PremiumPanel onClose={closePanel} /> : null}
       </Suspense>
       {data && panel === 'members' ? <MembersPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'invites' ? <InvitesPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'claims' ? <ClaimsPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'merge' ? <MergePanel data={data} onClose={closePanel} /> : null}
+      {data && panel === 'players-hub' ? <PlayersHub onClose={closePanel} onOpen={setPanel} /> : null}
       {data && panel === 'compare' ? <ComparePanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'couples' ? <CouplesPanel data={data} onClose={closePanel} onOpenPlayer={openPlayer} onOpenMatch={openMatch} /> : null}
       {data && panel === 'albo' ? <AlboPanel data={data} onClose={closePanel} onOpenPlayer={openPlayer} onOpenMatch={openMatch} /> : null}

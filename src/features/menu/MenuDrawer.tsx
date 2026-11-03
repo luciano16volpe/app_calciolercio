@@ -14,7 +14,7 @@ import { premiumDate, useMyPremium } from '../../data/premium';
 
 export type Panel =
   | 'create-league' | 'join-league' | 'members' | 'invites' | 'claims' | 'merge' | 'league-settings' | 'admin-proposals'
-  | 'compare' | 'couples' | 'albo' | 'records' | 'game-settings' | 'bench' | 'pending' | 'audit' | 'platform-leagues' | 'platform-users' | 'privacy' | 'help' | 'account';
+  | 'players-hub' | 'compare' | 'couples' | 'albo' | 'records' | 'game-settings' | 'bench' | 'pending' | 'audit' | 'platform-leagues' | 'platform-users' | 'premium' | 'privacy' | 'help' | 'account';
 
 const ROLE_LABEL = { admin: 'Admin', redazione: 'Redazione', member: 'Membro' } as const;
 
@@ -85,7 +85,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
   const roleChips = (
     <>
       {isSuper ? <span className="menu-chip gold">👑 Amministratore supremo</span> : null}
-      {premium.data?.active && premium.data.expires_at ? <span className="menu-chip gold">Premium · fino al {premiumDate(premium.data.expires_at)}</span> : null}
+      {premium.data?.active ? <span className="menu-chip gold">{premium.data.lifetime ? 'Premium a vita' : <>{premium.data.trial ? 'Premium in prova' : 'Premium'}{premium.data.expires_at ? ` · fino al ${premiumDate(premium.data.trial && premium.data.trial_expires_at ? premium.data.trial_expires_at : premium.data.expires_at)}` : ''}</>}</span> : null}
       {role && data ? (
         <span className={`menu-chip${role === 'redazione' ? ' green' : ''}`} id="menu-role">
           {role === 'admin' && isOwner ? 'Admin (creatore)' : ROLE_LABEL[role]} · {data.league.name}
@@ -158,10 +158,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
           {data ? (
             <>
               <div className="menu-sec">Giocatori</div>
-              <Item icon="⚔️" title="Confronto" sub="due giocatori testa a testa" onClick={() => open('compare')} id="menu-compare" />
-              <Item icon="🤝" title="Coppie" sub="chi vince (e perde) insieme" onClick={() => open('couples')} id="menu-couples" />
-              <Item icon="🏆" title="Albo d'oro" sub="i premi di ogni stagione" onClick={() => open('albo')} id="menu-albo" />
-              <Item icon="🏅" title="Record" sub="le imprese più grandi" onClick={() => open('records')} id="menu-records" />
+              <Item icon="⚽" title="Giocatori" sub="confronto, coppie, albo e record" onClick={() => open('players-hub')} id="menu-players" />
             </>
           ) : null}
 
@@ -200,6 +197,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
               <Item icon="🛡️" title="Registro attività" onClick={() => open('audit')} id="menu-audit" />
               <Item icon="🏟️" title="Tutte le leghe" onClick={() => open('platform-leagues')} id="menu-platform-leagues" />
               <Item icon="👤" title="Utenti" onClick={() => open('platform-users')} id="menu-platform-users" />
+              <Item icon="✨" title="Premium" onClick={() => open('premium')} id="menu-premium" />
             </>
           ) : null}
 
