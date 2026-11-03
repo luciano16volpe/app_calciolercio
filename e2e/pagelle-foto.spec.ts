@@ -140,19 +140,32 @@ test('Foto: dentro il pallino in Rosa, in Gioca, nel menu e nell’intestazione 
   const me = be.players[0] as { id: string; name: string; photo_path: string | null; user_id: string | null };
   me.photo_path = 'foto-di-prova.jpg';
   me.user_id = u; // il mio giocatore: la sua foto va anche in alto
+  const broken = be.players[1] as { name: string; photo_path: string | null };
+  broken.photo_path = 'foto-non-disponibile.jpg';
   const page = await open(browser, testInfo, be, u);
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/aWQAAAAASUVORK5CYII=', 'base64');
+  await page.route('**/storage/v1/object/public/photos/*', (route) => route.request().url().includes('foto-di-prova.jpg')
+    ? route.fulfill({ status: 200, contentType: 'image/png', body: png })
+    : route.fulfill({ status: 404 }));
+  await page.reload();
   const urlOf = (loc: ReturnType<typeof page.locator>) => loc.evaluate((el) => getComputedStyle(el).backgroundImage);
-  // Rosa: un solo pallino con la foto, gli altri con le iniziali
-  await expect(page.locator('#players-list .avatar.has-photo')).toHaveCount(1);
-  expect(await urlOf(page.locator('#players-list .avatar.has-photo'))).toContain('foto-di-prova.jpg');
-  expect(await page.locator('#players-list .avatar.has-photo').evaluate((el) => getComputedStyle(el).color)).toMatch(/rgba\(0, 0, 0, 0\)|transparent/); // le iniziali restano nella pagina ma non si vedono
-  await expect(page.locator('#players-list .avatar:not(.has-photo)').first()).not.toHaveText('');
+  // Rosa: immagine caricata davvero e iniziali se il file manca.
+  const rosaPhoto = page.locator('#players-list .card-compact', { hasText: me.name }).locator('.avatar');
+  await expect(rosaPhoto.locator('img')).toHaveAttribute('src', /foto-di-prova\.jpg/);
+  await expect.poll(() => rosaPhoto.locator('img').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  const rosaBroken = page.locator('#players-list .card-compact', { hasText: broken.name }).locator('.avatar');
+  await expect(rosaBroken).not.toHaveClass(/has-photo/);
+  await expect(rosaBroken).not.toHaveText('');
   // footer: la mia foto
   expect(await urlOf(page.locator('.bottom-nav .bn-face'))).toContain('foto-di-prova.jpg');
   // Gioca (amministratore): il pallino della lista di convocazione
   await page.locator('.bottom-nav').getByRole('button', { name: 'Gioca', exact: true }).click();
-  await expect(page.locator('#page-partita .conv-avatar.has-photo')).toHaveCount(1);
-  expect(await urlOf(page.locator('#page-partita .conv-avatar.has-photo'))).toContain('foto-di-prova.jpg');
+  const giocaPhoto = page.locator('#conv-list .conv-item', { hasText: me.name }).locator('.conv-avatar');
+  await expect(giocaPhoto.locator('img')).toHaveAttribute('src', /foto-di-prova\.jpg/);
+  await expect.poll(() => giocaPhoto.locator('img').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  const giocaBroken = page.locator('#conv-list .conv-item', { hasText: broken.name }).locator('.conv-avatar');
+  await expect(giocaBroken).not.toHaveClass(/has-photo/);
+  await expect(giocaBroken).not.toHaveText('');
   // menu: il cerchio in alto mostra la foto, non l'iniziale
   await openMenu(page);
   await expect(page.locator('#menu-avatar img')).toHaveAttribute('src', /foto-di-prova\.jpg/);

@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { photoUrl, type LeagueData } from '../../data/queries';
 import { calcOvr, rosaOrder } from '../../domain/ovr';
 import { formState, pagInfo, playerRatingAvg } from '../../domain/form';
-import { avatarClass, initials } from '../../domain/format';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 import { playerSeason, seasonStats } from '../../domain/stats';
 
 /** 🔥 In forma / 🌧️ In crisi accanto al nome. */
@@ -39,7 +39,7 @@ export function RosaList({ data, onOpen, onAdd }: { data: LeagueData; onOpen: (p
             <div className="ph-top">
               <div className="avatar-stack">
                 <span className={`pag-badge ${pag.cls}`} title="Media pagelle">{pag.label}</span>
-                <div className={`avatar avatar-ini ${avatarClass(p.roles)}${photo ? ' has-photo' : ''}`} style={photo ? { backgroundImage: `url('${photo}')` } : undefined}>{initials(p.name)}</div>
+                <PlayerAvatar key={`${p.id}:${photo}`} name={p.name} roles={p.roles ?? []} photo={photo} />
                 <span className="ovr-badge">OVR {ovr}</span>
               </div>
               <div className="ph-info">
