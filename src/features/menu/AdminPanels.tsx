@@ -5,7 +5,7 @@ import { useConfirm } from '../../app/Dialogs';
 import { Sheet } from '../../app/Sheet';
 import { useToast } from '../../app/Toast';
 import {
-  ADMIN_REQUESTS_KEY, assignOwner, decideAdminRequest, fetchLeagueAdmins, fetchPlatformLeagues, fetchPlatformUsers, MEMBERS_KEY, useAdminRequests,
+  ADMIN_REQUESTS_KEY, assignOwner, decideAdminRequest, decideLeagueCreation, fetchLeagueAdmins, fetchLeagueCreationRequests, fetchPlatformLeagues, fetchPlatformUsers, MEMBERS_KEY, useAdminRequests,
 } from '../../data/leagues';
 import type { LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';
@@ -47,6 +47,7 @@ export function PlatformLeaguesPanel({ onClose }: { onClose: () => void }) {
   const confirm = useConfirm();
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ['platform-leagues'], queryFn: fetchPlatformLeagues, retry: false });
+  const requests = useQuery({ queryKey: ['league-creation-requests'], queryFn: fetchLeagueCreationRequests, retry: false });
   const [assign, setAssign] = useState<{ leagueId: string; options: Array<{ id: string; name: string }> } | null>(null);
   const openAssign = async (leagueId: string) => {
     try {
@@ -68,8 +69,21 @@ export function PlatformLeaguesPanel({ onClose }: { onClose: () => void }) {
       toast('Errore: ' + (e as Error).message);
     }
   };
+  const decideCreation = async (id: string, approve: boolean) => {
+    try {
+      await decideLeagueCreation(id, approve);
+      await Promise.all([qc.invalidateQueries({ queryKey: ['league-creation-requests'] }), qc.invalidateQueries({ queryKey: ['platform-leagues'] })]);
+      toast(approve ? 'Lega approvata' : 'Richiesta rifiutata');
+    } catch (e) { toast('Errore: ' + (e as Error).message); }
+  };
   return (
     <Sheet title="Tutte le leghe" onClose={onClose} id="sheet-platform-leagues">
+      {requests.isError ? <div className="card" role="alert">Impossibile caricare le richieste: {(requests.error as Error).message}</div> : null}
+      {(requests.data ?? []).map((r) => <div className="card" key={r.id} style={{ marginBottom: 10 }}>
+        <b>Richiesta: {r.name}</b><div style={{ fontSize: 12 }}>Da {r.requester_name} · {r.email} · {formatDate(r.created_at.slice(0, 10))}</div>
+        <button type="button" className="mini-btn" onClick={() => void decideCreation(r.id, true)}>Approva</button>{' '}
+        <button type="button" className="mini-btn" onClick={() => void decideCreation(r.id, false)}>Rifiuta</button>
+      </div>)}
       {q.isError ? <div className="card" style={{ color: 'var(--red)', fontWeight: 700, fontSize: 13 }}>{(q.error as Error).message}</div> : null}
       {(q.data ?? []).map((l) => (
         <div className="card platform-league" key={l.id} style={{ marginBottom: 10 }}>
@@ -77,7 +91,8 @@ export function PlatformLeaguesPanel({ onClose }: { onClose: () => void }) {
           <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 4, lineHeight: 1.5 }}>
             Creatore: <b>{l.ownerMissing ? 'nessuno' : l.owner}</b><br />
             Amministratori: {l.admins || '—'}<br />
-            {l.members} membri · {l.matches} partite · creata il {formatDate(l.createdAt.slice(0, 10))} · ultima attività {formatDate(l.lastActivity.slice(0, 10))}
+            {l.members} membri · {l.matches} partite · creata il {formatDate(l.createdAt.slice(0, 10))}<br />
+            Ultima partita: {l.lastMatch ? formatDate(l.lastMatch) : 'nessuna'} · ultima attività {formatDate(l.lastActivity.slice(0, 10))}
           </div>
           {l.ownerMissing ? <button type="button" className="mini-btn" style={{ marginTop: 6 }} onClick={() => void openAssign(l.id)}>Assegna un creatore</button> : null}
           {assign?.leagueId === l.id ? (

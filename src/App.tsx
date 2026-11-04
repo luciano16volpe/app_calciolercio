@@ -4,6 +4,7 @@ import { useShellNavigation } from './app/useShellNavigation';
 import { useShellWindows } from './app/useShellWindows';
 import { useAuth, useRole } from './app/auth';
 import { useIsSuperAdmin } from './data/leagues';
+import { useMyPremium } from './data/premium';
 import { DialogProvider, usePrompt } from './app/Dialogs';
 import { buildPath, HOME_PAGE, navigate, parsePath, setSelectedLeague } from './app/league';
 import { useToast } from './app/Toast';
@@ -78,7 +79,8 @@ function MatchCardGate(props: ComponentProps<typeof MatchCard>) {
 /** Messaggio al posto di una pagina mentre i dati si caricano o se non arrivano; senza leghe, come entrare. */
 function Loading({ q, onPanel }: { q: { isError: boolean; error?: unknown; refetch: () => unknown }; onPanel: (p: Panel) => void }) {
   const { user } = useAuth();
-  const canCreate = useIsSuperAdmin(user?.id ?? null).data === true; // per ora le leghe le crea solo l'amministratore supremo
+  const canCreate = useIsSuperAdmin(user?.id ?? null).data === true;
+  const canRequest = useMyPremium(user?.id ?? null).data?.active === true;
   if (q.error instanceof NoLeagueError) {
     return (
       <div className="card" id="no-league">
@@ -87,7 +89,7 @@ function Loading({ q, onPanel }: { q: { isError: boolean; error?: unknown; refet
           Non fai ancora parte di nessuna lega. Le leghe si vedono solo su invito: apri il <b>link personale</b> che ti ha mandato un amministratore, oppure entra con il <b>codice d’invito</b>. Puoi anche creare una nuova lega.
         </div>
         <button type="button" className="f-btn" id="no-league-join" onClick={() => onPanel('join-league')}>🔑 Entra con un codice</button>
-        {canCreate ? <button type="button" className="btn btn-secondary btn-full" id="no-league-create" style={{ marginTop: 8 }} onClick={() => onPanel('create-league')}>＋ Crea una nuova lega</button> : null}
+        {canCreate || canRequest ? <button type="button" className="btn btn-secondary btn-full" id="no-league-create" style={{ marginTop: 8 }} onClick={() => onPanel('create-league')}>{canCreate ? '＋ Crea una nuova lega' : '＋ Richiedi una nuova lega'}</button> : null}
       </div>
     );
   }
