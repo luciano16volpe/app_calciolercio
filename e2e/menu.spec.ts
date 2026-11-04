@@ -132,8 +132,16 @@ test('Menu: la redazione vede la sezione Redazione e non la Gestione', async ({ 
   await expect(page.locator('#menu-members')).toHaveCount(0);
 });
 
-test('Menu: l\'amministratore (non creatore) vede la Gestione ma non le proposte', async ({ page }) => {
+test('Menu: admin senza Premium gestisce la lega ma non vede le impostazioni avanzate', async ({ page }) => {
   await setup(page, { mine: mineAs('admin', { owner_id: 'altro' }) });
+  await openApp(page, '/l/lega-di-prova/rosa', 0);
+  await openMenu(page);
+  for (const id of ['#menu-members', '#menu-invites', '#menu-claims', '#menu-pending']) await expect(page.locator(id)).toBeVisible();
+  await expect(page.locator('#menu-league-settings')).toHaveCount(0);
+});
+
+test('Menu: l\'amministratore Premium (non creatore) vede la Gestione ma non le proposte', async ({ page }) => {
+  await setup(page, { mine: mineAs('admin', { owner_id: 'altro' }), rpc: { my_premium_status: [{ active: true, expires_at: null, trial: false, trial_expires_at: null, lifetime: true }] } });
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openMenu(page);
   for (const id of ['#menu-members', '#menu-invites', '#menu-claims', '#menu-merge', '#menu-league-settings', '#menu-code']) await expect(page.locator(id)).toBeVisible();

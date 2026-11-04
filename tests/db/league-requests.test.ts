@@ -24,7 +24,8 @@ test('la richiesta Premium crea una lega solo dopo approvazione e attribuisce la
   expect((await db.query('select user_id, role from league_members where league_id = $1', [league])).rows).toEqual([{ user_id: player, role: 'admin' }]);
   await db.exec(`update account_premium set expires_at = now() - interval '1 second', trial_expires_at = now() - interval '1 second' where user_id = '${player}';
     select set_config('request.jwt.claim.sub','${player}',false); set role authenticated`);
-  expect((await db.query<{ allowed: boolean }>('select is_league_admin($1) as allowed', [league])).rows[0]?.allowed).toBe(false);
+  expect((await db.query<{ allowed: boolean }>('select is_league_admin($1) as allowed', [league])).rows[0]?.allowed).toBe(true); // resta admin, ma non Premium
+  expect((await db.query<{ allowed: boolean }>('select is_premium_league_admin($1) as allowed', [league])).rows[0]?.allowed).toBe(false);
   await expect(db.query('select request_league($1,5,null)', ['Lega scaduta'])).rejects.toThrow(/Premium/);
   expect((await db.query('select id from leagues where id = $1', [league])).rows).toHaveLength(1);
 });

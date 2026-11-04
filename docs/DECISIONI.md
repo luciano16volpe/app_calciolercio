@@ -210,3 +210,14 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Il link vale per **una persona sola** e **7 giorni**; un nuovo link per la stessa email annulla il vecchio. L'email è solo un'etichetta: **non viene inviata nessuna email** (TODO: invio automatico in futuro).
 - Chi lo apre (con o senza app) si registra o accede, **entra nella lega come membro** e, se non ha ancora un giocatore, sceglie: **🙋 Sono già in Rosa** (parte la richiesta «Questo sono io», conferma l'amministratore) oppure **🆕 Sono nuovo** (si crea il giocatore: nome, ruoli e statistiche scelte da lui; va **subito in Rosa**, l'amministratore le aggiusta dopo). Chi ha già un giocatore entra con quello, senza crearne un altro.
 - Nome già usato nella lega (o come «altro nome») = rifiutato. Le funzioni sono nel database (`supabase/migrations/20261124000000_invito_per_email.sql`), provate in `tests/db/invito-per-email.test.ts`.
+
+## Rosa, scheda e figurina: periodo breve (novembre 2026)
+- Su richiesta di Luciano, **Rosa, scheda giocatore e figurina usano lo stesso periodo del profilo**: stagione in corso se il giocatore ha almeno 5 presenze con risultato, altrimenti le sue ultime 5 partite giocate. Vale per la media pagelle (e il suo colore) e per i numeri della figurina; è una differenza voluta rispetto a `legacy`, che usava tutto lo storico.
+- Da non cambiare senza chiedere. Il calcolo è in `profileSeasonData` (`src/domain/profile.ts`) e viene messo in cache per dati/giocatore/giorno, così Rosa, scheda e figurina non lo rifanno a ogni schermata.
+
+## Admin senza Premium (novembre 2026)
+- Un amministratore con Premium scaduto **resta amministratore** e gestisce la lega al minimo. Concordato con Luciano:
+  - **Può (senza Premium):** partite e pagelle, sorteggio squadre (Gioca), gestione della Rosa (aggiungere/modificare giocatori), inviti, richieste «sono io» e membri/ruoli.
+  - **Solo con Premium:** impostazioni della lega (nome, visibilità, regole) e sua eliminazione, eliminazione dei giocatori, pubblicazione delle Gazzette (la redazione le pubblica sempre), creare nuove leghe, storico e funzioni Premium. Il super amministratore non ha limiti.
+- Nel database: `has_league_role`/`is_any_admin` non guardano più il Premium; `is_premium_league_admin` e `can_write_gazzetta` proteggono le parti riservate (migrazione `20261202000000_admin_senza_premium.sql`, test in `tests/db/account-premium.test.ts`). In app: `useRole` → `isAdmin` (base) e `isPremiumAdmin` (avanzate).
+- Le immagini delle Gazzette in Storage richiedono Premium anche in lettura (`20261201000000_gazzette_storage_premium.sql`).

@@ -194,7 +194,7 @@ test('WhatsApp: messaggio senza pagelle', async ({ page }) => {
   await modal.locator('#edit-toggle-btn').click();
   await modal.locator('#wa-text').fill('Ciao a tutti, stasera si gioca?');
   await modal.locator('button', { hasText: 'Analizza il messaggio' }).click();
-  await expect(modal.locator('#wa-preview')).toContainText('Non ho trovato pagelle');
+  await expect(modal.locator('#wa-preview')).toContainText("non c'è nessun voto");
 });
 
 // ── Rosa: scheda giocatore modificabile, nuovo giocatore, foto (passo 3.7d) ────────────────────────────────────────────

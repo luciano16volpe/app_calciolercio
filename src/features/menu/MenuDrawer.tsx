@@ -41,7 +41,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
   const { user, signOut } = useAuth();
   const toast = useToast();
   const lid = data?.league.id;
-  const { role, isAdmin, canEditText } = useRole(lid);
+  const { role, isAdmin, isPremiumAdmin, canEditText } = useRole(lid);
   const isOwner = !!user && !!data && data.league.owner_id === user.id;
   const leagues = useMyLeagues(user?.id ?? null);
   const superQ = useIsSuperAdmin(user?.id ?? null);
@@ -183,7 +183,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
               <Item icon="🔀" title="Unisci giocatori" onClick={() => open('merge')} id="menu-merge" />
               {!isSuper ? <Item icon="🎮" title="Regole di gioco" sub="formazioni, forma, pesi (sola lettura)" onClick={() => open('game-settings')} id="menu-game-settings" /> : null}
               {isOwner ? <Item icon="🛡️" title="Proposte di amministratore" badge={proposals.data?.length ?? 0} hot onClick={() => open('admin-proposals')} id="menu-proposals" /> : null}
-              <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" onClick={() => open('league-settings')} id="menu-league-settings" />
+              {isPremiumAdmin || isSuper ? <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" onClick={() => open('league-settings')} id="menu-league-settings" /> : null}
               {cur ? (
                 <div className="menu-code">Codice d'invito <b id="menu-code">{cur.inviteCode}</b><button type="button" onClick={() => void copy(cur.inviteCode)}>Copia</button></div>
               ) : null}

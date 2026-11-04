@@ -109,7 +109,7 @@ export function useAuth(): AuthTools {
 }
 
 /** Ruolo di chi è entrato nella lega (null = non è un membro, oppure non ha fatto l'accesso). */
-export function useRole(leagueId: string | undefined): { role: Role; isAdmin: boolean; canEditText: boolean; /** il ruolo è stato letto (finché non lo è, `role` è vuoto) */ ready: boolean } {
+export function useRole(leagueId: string | undefined): { role: Role; isAdmin: boolean; /** admin con Premium attivo: impostazioni lega, eliminazioni, Gazzette */ isPremiumAdmin: boolean; canEditText: boolean; /** il ruolo è stato letto (finché non lo è, `role` è vuoto) */ ready: boolean } {
   const { user } = useAuth();
   const premium = useMyPremium(user?.id ?? null);
   const q = useQuery({
@@ -123,6 +123,8 @@ export function useRole(leagueId: string | undefined): { role: Role; isAdmin: bo
   });
   const role = user ? (q.data ?? null) : null;
   const ready = !user || !leagueId || ((q.isSuccess || q.isError) && (premium.isSuccess || premium.isError));
-  const isAdmin = role === 'admin' && premium.data?.active === true;
-  return { role, isAdmin, canEditText: isAdmin || role === 'redazione', ready };
+  // L'admin resta admin anche senza Premium (gestione minima); il Premium sblocca le funzioni avanzate.
+  const isAdmin = role === 'admin';
+  const isPremiumAdmin = isAdmin && premium.data?.active === true;
+  return { role, isAdmin, isPremiumAdmin, canEditText: isAdmin || role === 'redazione', ready };
 }

@@ -72,8 +72,8 @@ function PlayerCardGate({ editable, ...props }: ComponentProps<typeof PlayerCard
   return <PlayerCard {...props} canEdit={isAdmin && editable} />;
 }
 function MatchCardGate(props: ComponentProps<typeof MatchCard>) {
-  const { isAdmin, canEditText } = useRole(props.data.league.id);
-  return <MatchCard {...props} canEdit={isAdmin} canEditText={canEditText && !isAdmin} />;
+  const { isAdmin, isPremiumAdmin, canEditText } = useRole(props.data.league.id);
+  return <MatchCard {...props} canEdit={isAdmin} canGazzetta={!isAdmin || isPremiumAdmin} canEditText={canEditText && !isAdmin} />;
 }
 
 /** Messaggio al posto di una pagina mentre i dati si caricano o se non arrivano; senza leghe, come entrare. */

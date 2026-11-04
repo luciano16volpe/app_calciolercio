@@ -45,6 +45,19 @@ export function myRecentMatches(data: Dataset, playerId: string, playerName: str
 
 /** Periodo comune a profilo, scheda, Rosa e figurina: stagione corrente con almeno cinque presenze, altrimenti ultime cinque partite giocate. */
 export function profileSeasonData(data: Dataset, playerId: string, playerName: string, today = todayRome()): { dataset: Dataset; label: string } {
+  // Rosa, scheda e figurina chiedono lo stesso periodo più volte: lo calcolo una volta per dati/giocatore/giorno.
+  let perData = periodCache.get(data);
+  if (!perData) periodCache.set(data, perData = new Map());
+  const key = `${playerId}|${playerName}|${today}`;
+  let hit = perData.get(key);
+  if (!hit) perData.set(key, hit = computeProfileSeasonData(data, playerId, playerName, today));
+  return hit;
+}
+
+type PeriodData = { dataset: Dataset; label: string };
+const periodCache = new WeakMap<Dataset, Map<string, PeriodData>>();
+
+function computeProfileSeasonData(data: Dataset, playerId: string, playerName: string, today: string): PeriodData {
   const current = seasonOf(today);
   const played = data.matches.filter((m) => hasScore(m) && String(m.date ?? '') <= today && myTeam(m, playerId, playerName))
     .sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')) || String(b.id).localeCompare(String(a.id)));
