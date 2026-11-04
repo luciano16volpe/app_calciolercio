@@ -7,6 +7,7 @@ import { formState, pagInfo, playerRatingAvg } from '../../domain/form';
 import { futRating, futTierOfRating } from '../../domain/ovr';
 import { playerTrophies } from '../../domain/playerCard';
 import { playerSeason, seasonStats } from '../../domain/stats';
+import { profileSeasonData } from '../../domain/profile';
 import { FORM_STATES, FUT_TIERS } from '../../domain/tiers';
 import type { Dataset, Player } from '../../domain/types';
 
@@ -14,7 +15,7 @@ export function FutMini({ data, player, statsDataset }: { data: LeagueData; play
   const toast = useToast();
   const { showImage } = useImageTools();
   const { dataset, weights } = data;
-  const statsData = statsDataset ?? dataset;
+  const statsData = statsDataset ?? profileSeasonData(dataset, player.id, player.name).dataset;
   const all = seasonStats(statsData);
   const t = FUT_TIERS[futTierOfRating(futRating(player.stats, weights))];
   const n = playerTrophies(dataset, player, data.albo).awards.filter((a) => !a.shame).length;
@@ -28,7 +29,7 @@ export function FutMini({ data, player, statsDataset }: { data: LeagueData; play
       className={`fut-mini${t.holo ? ' holo' : ''}${fire ? ' fire' : ''}${crisi ? ' crisi' : ''}`}
       onClick={() => {
         toast('⏳ Preparo la figurina…');
-        void figurinaCanvas(data, player, statsDataset).then((c) => showImage('🃏 La figurina di ' + player.name, c, 'figurina_' + player.name.replace(/\s+/g, '_') + '.png', '🃏 La figurina di ' + player.name));
+        void figurinaCanvas(data, player, statsData).then((c) => showImage('🃏 La figurina di ' + player.name, c, 'figurina_' + player.name.replace(/\s+/g, '_') + '.png', '🃏 La figurina di ' + player.name));
       }}
       title="Apri la figurina"
       style={{ background: `linear-gradient(150deg,${t.metal.join(',')})`, color: t.text }}

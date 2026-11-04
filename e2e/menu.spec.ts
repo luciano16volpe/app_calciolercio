@@ -88,6 +88,29 @@ test('Menu: lo swipe dal bordo chiude anche le altre schermate con animazione', 
   await expect(sheet).toHaveCount(0);
 });
 
+test('Abbonamenti: lo swipe quasi completo termina senza attendere altri 200 ms', async ({ page }) => {
+  await setup(page, { rpc: { is_super_admin: true, admin_list_users: [], admin_premium_statuses: [] } });
+  await openApp(page);
+  await openMenu(page);
+  await page.locator('#menu-premium').click();
+  await page.getByRole('button', { name: /Abbonamenti/ }).click();
+  const sheet = page.locator('#sheet-platform-users');
+  await expect(sheet).toBeVisible();
+  const duration = await sheet.evaluate((target) => {
+    const touch = (x: number) => ({ identifier: 1, target, clientX: x, clientY: 200 });
+    const start = touch(10);
+    const end = touch((target as HTMLElement).offsetWidth - 10);
+    const emit = (type: string, touches: object[], changedTouches: object[]) => target.dispatchEvent(Object.assign(new Event(type, { bubbles: true }), { touches, changedTouches }));
+    emit('touchstart', [start], [start]);
+    emit('touchmove', [end], [end]);
+    emit('touchend', [], [end]);
+    return parseFloat(getComputedStyle(target).transitionDuration) * 1000;
+  });
+  expect(duration).toBeLessThanOrEqual(80);
+  await expect(page.locator('#sheet-premium')).toBeVisible();
+  await expect(sheet).toHaveCount(0);
+});
+
 test('Menu: le sezioni cambiano con il ruolo nella lega', async ({ page }) => {
   // Il membro vede le funzioni comuni, senza quelle di amministrazione.
   await setup(page, { mine: mineAs('member', { owner_id: 'altro' }) });

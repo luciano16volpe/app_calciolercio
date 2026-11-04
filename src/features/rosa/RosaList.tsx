@@ -5,6 +5,7 @@ import { calcOvr, rosaOrder } from '../../domain/ovr';
 import { formState, pagInfo, playerRatingAvg } from '../../domain/form';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import { playerSeason, seasonStats } from '../../domain/stats';
+import { profileSeasonData } from '../../domain/profile';
 
 /** 🔥 In forma / 🌧️ In crisi accanto al nome. */
 export function FireChip({ state }: { state: 'up' | 'flat' | 'down' | null }) {
@@ -19,10 +20,11 @@ export function RosaList({ data, onOpen, onAdd }: { data: LeagueData; onOpen: (p
     const all = seasonStats(dataset);
     return rosaOrder(dataset.players, weights).map((i) => {
       const p = dataset.players[i]!;
+      const period = profileSeasonData(dataset, p.id, p.name).dataset;
       return {
         p,
         ovr: calcOvr(p.stats, weights).toFixed(1),
-        pag: pagInfo(playerRatingAvg(playerSeason(dataset, p, all)).avg),
+        pag: pagInfo(playerRatingAvg(playerSeason(period, p, seasonStats(period))).avg),
         state: formState(dataset, p, all),
       };
     });

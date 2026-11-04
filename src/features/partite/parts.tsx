@@ -173,8 +173,9 @@ export function MatchesList({ data, act }: { data: LeagueData; act: MatchActions
 export function GazThumb({ path, className }: { path: string; className?: string }) {
   const [fallback, setFallback] = useState(false);
   const thumb = useGazzettaUrl(gazzettaThumbPath(path));
-  const full = useGazzettaUrl(fallback ? path : undefined);
-  const url = fallback ? full.data : thumb.data;
+  const useFull = fallback || thumb.isError;
+  const full = useGazzettaUrl(useFull ? path : undefined);
+  const url = useFull ? full.data : thumb.data;
   return url ? <img className={className} src={url} alt="La Gazzetta" loading="lazy" onError={() => setFallback(true)} /> : null;
 }
 

@@ -127,7 +127,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   const player = dataset.players.find((p) => p.id === playerId);
   const [pagelleOpen, setPagelleOpen] = useState<{ focus?: string } | null>(null);
   const all = useMemo(() => seasonStats(dataset), [dataset]);
-  const period = useMemo(() => inline && player ? profileSeasonData(dataset, player.id, player.name) : null, [dataset, inline, player]);
+  const period = useMemo(() => player ? profileSeasonData(dataset, player.id, player.name) : null, [dataset, player]);
   const statsData = useMemo(() => period ? { ...data, dataset: period.dataset } : data, [data, period]);
   const useForm = formOn(data);
 

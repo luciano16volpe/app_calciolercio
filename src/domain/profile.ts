@@ -43,7 +43,7 @@ export function myRecentMatches(data: Dataset, playerId: string, playerName: str
     .slice(0, limit);
 }
 
-/** Nel profilo: stagione corrente, o ultime cinque partite giocate del giocatore. */
+/** Periodo comune a profilo, scheda, Rosa e figurina: stagione corrente con almeno cinque presenze, altrimenti ultime cinque partite giocate. */
 export function profileSeasonData(data: Dataset, playerId: string, playerName: string, today = todayRome()): { dataset: Dataset; label: string } {
   const current = seasonOf(today);
   const played = data.matches.filter((m) => hasScore(m) && String(m.date ?? '') <= today && myTeam(m, playerId, playerName))
