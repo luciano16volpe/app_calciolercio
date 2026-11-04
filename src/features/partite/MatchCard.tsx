@@ -275,7 +275,7 @@ function startDraft(m: Match, ratings: Rating[]): Draft {
 
 // ── la scheda ──────────────────────────────────────────────────────────────
 /** `canEdit` = amministratore (modifica tutto); `canEditText` = redazione (solo titoli e descrizioni delle pagelle, e la Gazzetta). */
-export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEditText = false, startText = false }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions; canEdit?: boolean; canEditText?: boolean; startText?: boolean }) {
+export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEditText = false, canGazzetta = true, startText = false }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions; canEdit?: boolean; canEditText?: boolean; /** pubblicare/sostituire la Gazzetta (admin: solo Premium) */ canGazzetta?: boolean; startText?: boolean }) {
   const m = data.dataset.matches.find((x) => x.id === matchId);
   const toast = useToast();
   const confirm = useConfirm();
@@ -529,7 +529,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
                   <div onClick={() => act.openGazzetta(m.id)}><GazThumb className="gaz-thumb" path={g} /></div>
                 </>
               ) : null}
-              {editing ? (
+              {editing && canGazzetta ? (
                 <div className="gaz-edit" style={{ display: 'flex' }}>
                   <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => gazInput.current?.click()}>
                     {g ? '🔄 Sostituisci la Gazzetta' : '📰 Carica la Gazzetta'}

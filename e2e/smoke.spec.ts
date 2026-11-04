@@ -57,7 +57,9 @@ test('scheda giocatore: si apre dalla Rosa, mostra tutto, si chiude e non esce i
   await expect(modal.locator('.stats-grid')).toContainText('Peso voti');
   // pagelle, bacheca, compagni e avversari
   await expect(modal.locator('.pg-title')).toHaveText(/Pagelle/);
-  await expect(modal.locator('.pg-bar')).toHaveCount(10);
+  // le pagelle seguono il periodo breve (stagione in corso o ultime 5 partite): fino a 10 barre, mai zero
+  await expect.poll(() => modal.locator('.pg-bar').count()).toBeGreaterThan(0);
+  expect(await modal.locator('.pg-bar').count()).toBeLessThanOrEqual(10);
   await expect(modal.locator('.bach-sum')).toContainText('Bacheca');
   await expect(modal.locator('.pe-title', { hasText: 'Compagni e avversari' })).toBeVisible();
   const overflow = (await page.evaluate(() => document.documentElement.scrollWidth)) - (page.viewportSize() as { width: number }).width;
@@ -66,6 +68,9 @@ test('scheda giocatore: si apre dalla Rosa, mostra tutto, si chiude e non esce i
   await modal.locator('.pg-hit').nth(2).click();
   await expect(modal.locator('.pg-pop')).toBeVisible();
   await expect(modal.locator('.pgp-top')).toContainText('voto');
+  // il riquadro si chiude toccando altrove (può coprire la Bacheca)
+  await modal.locator('.stats-grid').click({ position: { x: 4, y: 4 } });
+  await expect(modal.locator('.pg-pop')).toBeHidden();
   // la Bacheca si apre e resta aperta passando a un altro giocatore
   await modal.locator('.bach-sum').click();
   await expect(modal.locator('.bach')).toHaveClass(/open/);

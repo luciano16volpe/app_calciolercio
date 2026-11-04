@@ -14,6 +14,14 @@ export function FireChip({ state }: { state: 'up' | 'flat' | 'down' | null }) {
   return null;
 }
 
+// Le statistiche di un periodo non cambiano finché il periodo (oggetto in cache) è lo stesso.
+const periodStats = new WeakMap<object, ReturnType<typeof seasonStats>>();
+function statsOfPeriod(period: Parameters<typeof seasonStats>[0]) {
+  let s = periodStats.get(period);
+  if (!s) periodStats.set(period, s = seasonStats(period));
+  return s;
+}
+
 export function RosaList({ data, onOpen, onAdd }: { data: LeagueData; onOpen: (playerId: string) => void; onAdd?: () => void }) {
   const { dataset, weights } = data;
   const rows = useMemo(() => {
@@ -24,7 +32,7 @@ export function RosaList({ data, onOpen, onAdd }: { data: LeagueData; onOpen: (p
       return {
         p,
         ovr: calcOvr(p.stats, weights).toFixed(1),
-        pag: pagInfo(playerRatingAvg(playerSeason(period, p, seasonStats(period))).avg),
+        pag: pagInfo(playerRatingAvg(playerSeason(period, p, statsOfPeriod(period))).avg),
         state: formState(dataset, p, all),
       };
     });

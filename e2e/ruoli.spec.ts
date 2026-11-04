@@ -92,7 +92,7 @@ test('Proposte: senza proposte si spiega', async ({ page }) => {
 });
 
 test('Impostazioni della lega: si aprono per l\'amministratore senza sbordare', async ({ page }) => {
-  await setup(page, { mine: mineAs('admin') });
+  await setup(page, { mine: mineAs('admin'), rpc: { my_premium_status: [{ active: true, expires_at: null, trial: false, trial_expires_at: null, lifetime: true }] } });
   await open(page);
   await openPanel(page, '#menu-league-settings', '[aria-label^="Impostazioni"]');
   await noOverflow(page);

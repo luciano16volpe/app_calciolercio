@@ -256,6 +256,9 @@ export class FakeBackend {
         return { status: 200, body: null };
       }
       case 'is_super_admin': return { status: 200, body: !!actor && this.supers.has(actor) };
+      // Premium attivo e tutte le funzioni aperte: i test sui dati non dipendono dalle restrizioni dello storico.
+      case 'my_premium_status': return { status: 200, body: [{ active: true, expires_at: null, trial: false, trial_expires_at: null, lifetime: true }] };
+      case 'my_feature_modes': return { status: 200, body: ['compare', 'couples', 'records', 'statistics', 'history', 'albo'].map((feature) => ({ feature, mode: 'standard', allowed: true })) };
       case 'log_event': return { status: 200, body: null };
       case 'player_history': return { status: 200, body: [] };
       case 'claims_pending': return { status: 200, body: [] };

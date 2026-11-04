@@ -59,3 +59,26 @@ test('alla registrazione parte una sola prova di un mese legata all’account', 
   );
   expect(result.rows[0]).toEqual({ active: true, trial: true, correct_duration: true });
 });
+
+test('admin senza Premium: gestisce partite e rosa, non impostazioni lega, eliminazioni e Gazzette', async () => {
+  const lapsed = '00000000-0000-4000-8000-000000000071';
+  const lg = '00000000-0000-4000-8000-000000000072';
+  const mt = '00000000-0000-4000-8000-000000000073';
+  const pl = '00000000-0000-4000-8000-000000000074';
+  await db.exec(`reset role; insert into auth.users(id,email) values ('${lapsed}','lapsed@example.invalid');
+    update account_premium set expires_at = now() - interval '1 day', trial_expires_at = null where user_id = '${lapsed}';
+    insert into leagues(id,name) values ('${lg}','Scaduta');
+    insert into league_members(league_id,user_id,role) values ('${lg}','${lapsed}','admin') on conflict (league_id,user_id) do update set role='admin';
+    insert into matches(id,league_id,date) values ('${mt}','${lg}', current_date);
+    insert into players(id,name,created_by) values ('${pl}','Rossi','${lapsed}');
+    insert into league_players(league_id,player_id) values ('${lg}','${pl}');
+    select set_config('request.jwt.claim.sub','${lapsed}',false); set role authenticated`);
+  expect((await db.query<{ ok: boolean }>('select is_league_admin($1) as ok', [lg])).rows[0]?.ok).toBe(true);
+  expect((await db.query<{ ok: boolean }>('select can_edit_player($1) as ok', [pl])).rows[0]?.ok).toBe(true);
+  expect((await db.query<{ ok: boolean }>('select can_delete_player($1) as ok', [pl])).rows[0]?.ok).toBe(false);
+  expect((await db.query('update leagues set name = $2 where id = $1 returning id', [lg, 'Nuova'])).rows).toHaveLength(0);
+  expect((await db.query('update matches set score_a = 1, score_b = 0 where id = $1 returning id', [mt])).rows).toHaveLength(1);
+  await expect(db.query('select publish_gazzetta($1,$2)', [mt, `${lg}/${mt}-1.jpg`])).rejects.toThrow(/Permesso negato/);
+  await db.exec(`reset role; update account_premium set lifetime = true where user_id = '${lapsed}'; select set_config('request.jwt.claim.sub','${lapsed}',false); set role authenticated`);
+  expect((await db.query('update leagues set name = $2 where id = $1 returning id', [lg, 'Nuova'])).rows).toHaveLength(1);
+});
