@@ -76,6 +76,8 @@ export async function setup(page: Page, opts: Opts = {}): Promise<Write[]> {
   // le immagini (Gazzette, foto) sono sempre una piccola immagine finta
   await page.route('**/storage/v1/object/public/**', (r) =>
     r.fulfill({ status: 200, headers: CORS, contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64') }));
+  await page.route('**/storage/v1/object/sign/gazzette/**', (r) =>
+    json(r, { signedURL: '/object/public/gazzette/test.jpg?token=fake' }));
   if (loggedIn) {
     await page.addInitScript(([ref, jwt]) => {
       localStorage.setItem(`sb-${ref}-auth-token`, JSON.stringify({

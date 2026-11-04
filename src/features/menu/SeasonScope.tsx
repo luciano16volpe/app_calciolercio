@@ -2,7 +2,7 @@
 // parte dalla stagione più recente; "Sempre" mostra tutto.
 import { useMemo, useState } from 'react';
 import type { LeagueData } from '../../data/queries';
-import { seasonOf, seasonsList } from '../../domain/seasons';
+import { previousSeason, seasonOf, seasonsList } from '../../domain/seasons';
 import { todayRome } from '../../domain/profile';
 import { useAuth } from '../../app/auth';
 import { useFeatures } from '../../data/features';
@@ -14,13 +14,14 @@ export function useSeasonScope(data: LeagueData) {
   const canHistory = features.data?.find((f) => f.feature === 'history')?.allowed === true;
   const today = todayRome();
   const current = useMemo(() => seasonOf(today), [today]);
+  const previous = useMemo(() => current ? previousSeason(current) : null, [current]);
   const seasons = useMemo(() => {
     const all = seasonsList(data.dataset.matches, data.albo).slice().reverse();
     if (current && !all.some((s) => s.key === current.key)) all.unshift({ ...current, status: 'in corso' });
-    return canHistory ? all : all.filter((s) => s.key === current?.key);
-  }, [data, canHistory, current]);
+    return canHistory ? all : all.filter((s) => s.key === current?.key || s.key === previous?.key);
+  }, [data, canHistory, current, previous]);
   const [sel, setScope] = useState<string | null>(null);
-  const scope = canHistory ? (sel ?? current?.key ?? 'all') : (current?.key ?? 'all');
+  const scope = canHistory || sel === current?.key || sel === previous?.key ? (sel ?? current?.key ?? 'all') : (current?.key ?? 'all');
   return { seasons, scope, setScope, canHistory };
 }
 

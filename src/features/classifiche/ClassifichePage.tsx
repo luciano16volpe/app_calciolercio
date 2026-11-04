@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { LeagueData } from '../../data/queries';
 import { nextStatsSort, seasonDash, STATS_SORT_DEFAULT, type StatsCol, type StatsFilter } from '../../domain/rankings';
-import { seasonOf, seasonsList } from '../../domain/seasons';
+import { previousSeason, seasonOf, seasonsList } from '../../domain/seasons';
 import { todayRome } from '../../domain/profile';
 import { useAuth } from '../../app/auth';
 import { useFeatures } from '../../data/features';
@@ -41,6 +41,7 @@ export function ClassifichePage({ data, onOpenPlayer }: { data: LeagueData; onOp
   const statistics = features.data?.find((f) => f.feature === 'statistics');
   const today = todayRome();
   const current = useMemo(() => seasonOf(today), [today]);
+  const previous = useMemo(() => current ? previousSeason(current) : null, [current]);
   // stagione scelta (null = la più recente) e scheda: restano come scelti finché l'app è aperta
   const [scopeSel, setScopeSel] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('marcatori');
@@ -49,9 +50,9 @@ export function ClassifichePage({ data, onOpenPlayer }: { data: LeagueData; onOp
   const seasons = useMemo(() => {
     const all = seasonsList(data.dataset.matches, data.albo).slice().reverse();
     if (current && !all.some((s) => s.key === current.key)) all.unshift({ ...current, status: 'in corso' });
-    return historyAllowed ? all : all.filter((s) => s.key === current?.key);
-  }, [data, historyAllowed, current]);
-  const scope = historyAllowed ? (scopeSel ?? current?.key ?? 'all') : (current?.key ?? 'all');
+    return historyAllowed ? all : all.filter((s) => s.key === current?.key || s.key === previous?.key);
+  }, [data, historyAllowed, current, previous]);
+  const scope = historyAllowed || scopeSel === current?.key || scopeSel === previous?.key ? (scopeSel ?? current?.key ?? 'all') : (current?.key ?? 'all');
   const selectScope = (next: string) => {
     if (next === scope) return;
     setScopeSel(next);

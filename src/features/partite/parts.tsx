@@ -5,7 +5,7 @@ import { Fragment, useState, type ReactNode } from 'react';
 import { useImageTools } from '../../app/ImageViewer';
 import { useToast } from '../../app/Toast';
 import { matchFormations, matchSheet, matchSummary } from '../../canvas/make';
-import { gazzettaThumbUrl, gazzettaUrl, type LeagueData } from '../../data/queries';
+import { gazzettaThumbPath, useGazzettaUrl, type LeagueData } from '../../data/queries';
 import { useAuth } from '../../app/auth';
 import { Confetti } from '../../app/Confetti';
 import { Rain } from '../../app/Rain';
@@ -170,8 +170,12 @@ export function MatchesList({ data, act }: { data: LeagueData; act: MatchActions
 }
 
 /** Miniatura leggera; se manca (Gazzetta caricata prima delle miniature) si usa il file completo. */
-function GazThumb({ path }: { path: string }) {
-  return <img src={gazzettaThumbUrl(path)} alt="" loading="lazy" onError={(e) => { const full = gazzettaUrl(path); if (e.currentTarget.src !== full) e.currentTarget.src = full; }} />;
+export function GazThumb({ path, className }: { path: string; className?: string }) {
+  const [fallback, setFallback] = useState(false);
+  const thumb = useGazzettaUrl(gazzettaThumbPath(path));
+  const full = useGazzettaUrl(fallback ? path : undefined);
+  const url = fallback ? full.data : thumb.data;
+  return url ? <img className={className} src={url} alt="La Gazzetta" loading="lazy" onError={() => setFallback(true)} /> : null;
 }
 
 // ── Gazzette ───────────────────────────────────────────────────────────────
@@ -228,10 +232,12 @@ export function GazViewer({ data, matchId, fromArchive, onClose, onGoToMatch }: 
   const [zoom, setZoom] = useState(false);
   const path = data.gazzette[matchId];
   const m = data.dataset.matches.find((x) => x.id === matchId);
+  const signed = useGazzettaUrl(path);
   if (!path) return null;
-  const url = gazzettaUrl(path);
+  const url = signed.data;
   const res = m && num(m.scoreA) != null && num(m.scoreB) != null ? ` · 🔵 ${m.scoreA} – ${m.scoreB} ⚪` : '';
   const share = async () => {
+    if (!url) return;
     toast("⏳ Preparo l'immagine…");
     try {
       const r = await fetch(url);
@@ -268,9 +274,9 @@ export function GazViewer({ data, matchId, fromArchive, onClose, onGoToMatch }: 
         <span>📰 {formatDate(m?.date)}{res}</span>
         <button type="button" onClick={onClose} aria-label="Chiudi">✕</button>
       </div>
-      <div className={`gv-img${zoom ? ' zoom' : ''}`} onClick={() => setZoom((z) => !z)}><img src={url} alt="La Gazzetta" /></div>
+      <div className={`gv-img${zoom ? ' zoom' : ''}`} onClick={() => setZoom((z) => !z)}>{url ? <img src={url} alt="La Gazzetta" /> : <span>{signed.isError ? 'Impossibile caricare la Gazzetta' : 'Caricamento…'}</span>}</div>
       <div className="gv-btns">
-        <button type="button" onClick={() => void share()}>📲 Condividi o salva</button>
+        <button type="button" disabled={!url} onClick={() => void share()}>📲 Condividi o salva</button>
         {fromArchive && m ? <button type="button" onClick={() => onGoToMatch(matchId)}>📋 Vai alla partita</button> : null}
       </div>
     </div>
