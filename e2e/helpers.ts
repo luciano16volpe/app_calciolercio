@@ -41,7 +41,7 @@ export interface Opts {
 }
 
 /** Funzioni del database che solo leggono: non contano come scritture. */
-const READ_RPCS = new Set(['my_premium_status', 'admin_premium_statuses', 'is_super_admin', 'league_member_list', 'admin_requests_list', 'claims_pending', 'league_players_status', 'invite_preview', 'admin_list_leagues', 'admin_list_users', 'admin_league_admins', 'audit_list', 'players_unclaimed', 'player_history']);
+const READ_RPCS = new Set(['my_feature_modes', 'my_premium_status', 'admin_premium_statuses', 'is_super_admin', 'league_member_list', 'admin_requests_list', 'claims_pending', 'league_players_status', 'invite_preview', 'admin_list_leagues', 'admin_list_users', 'admin_league_admins', 'audit_list', 'players_unclaimed', 'player_history']);
 
 const slugify = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -50,7 +50,7 @@ export async function setup(page: Page, opts: Opts = {}): Promise<Write[]> {
   const { loggedIn = true } = opts;
   const mine: Mine[] = [...(opts.mine ?? [])];
   const writes: Write[] = [];
-  const rpc: Record<string, unknown> = { my_premium_status: [{ active: false, expires_at: null, trial: false, trial_expires_at: null, lifetime: false }], admin_premium_statuses: [], league_member_list: [], admin_requests_list: [], claims_pending: [], league_players_status: [], players_unclaimed: [], player_history: opts.history ?? [], is_super_admin: false, ...opts.rpc };
+  const rpc: Record<string, unknown> = { my_feature_modes: ['compare', 'couples', 'records', 'statistics', 'history', 'albo'].map((feature) => ({ feature, mode: 'standard', allowed: true })), my_premium_status: [{ active: false, expires_at: null, trial: false, trial_expires_at: null, lifetime: false }], admin_premium_statuses: [], league_member_list: [], admin_requests_list: [], claims_pending: [], league_players_status: [], players_unclaimed: [], player_history: opts.history ?? [], is_super_admin: false, ...opts.rpc };
   // database finto: le letture vengono da qui (San Marcello con i dati veri di prova, più le leghe finte `mine`); le scritture si registrano soltanto
   const be = new FakeBackend();
   const smRole = opts.publicRole === undefined ? 'member' : opts.publicRole;

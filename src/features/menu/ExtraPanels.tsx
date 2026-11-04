@@ -10,10 +10,10 @@ import { SeasonChips, useSeasonScope } from './SeasonScope';
 type Props = { data: LeagueData; onClose: () => void; onOpenPlayer: (id: string) => void; onOpenMatch: (id: string) => void };
 
 function ExtraSheet({ data, title, id, onClose, children }: { data: LeagueData; title: string; id: string; onClose: () => void; children: (scope: string) => ReactNode }) {
-  const { seasons, scope, setScope } = useSeasonScope(data);
+  const { seasons, scope, setScope, canHistory } = useSeasonScope(data);
   return (
     <Sheet title={title} onClose={onClose} id={id}>
-      <SeasonChips seasons={seasons} scope={scope} onPick={setScope} />
+      <SeasonChips seasons={seasons} scope={scope} onPick={setScope} canHistory={canHistory} />
       <div className="card" id="extra-list">{children(scope)}</div>
     </Sheet>
   );
