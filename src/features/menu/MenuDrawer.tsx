@@ -149,7 +149,7 @@ export function MenuDrawer({ data, onClose, onOpenPanel, onGoSettings, onOpenMat
             ))}
             {user ? (
               <>
-                {isSuper ? <button type="button" className="menu-lgrow add" id="menu-create" onClick={() => open('create-league')}><span className="menu-lgic">＋</span><span className="menu-lgn">Crea nuova lega</span></button> : null}
+                {isSuper || premium.data?.active ? <button type="button" className="menu-lgrow add" id="menu-create" onClick={() => open('create-league')}><span className="menu-lgic">＋</span><span className="menu-lgn">{isSuper ? 'Crea nuova lega' : 'Richiedi nuova lega'}</span></button> : null}
                 <button type="button" className="menu-lgrow add" id="menu-join" onClick={() => open('join-league')}><span className="menu-lgic">🔑</span><span className="menu-lgn">Entra con un codice</span></button>
               </>
             ) : null}

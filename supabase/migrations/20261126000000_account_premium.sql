@@ -10,6 +10,27 @@ create table public.account_premium (
 alter table public.account_premium enable row level security;
 revoke all on public.account_premium from public, anon, authenticated;
 
+-- Gli amministratori già presenti al momento della migrazione mantengono
+-- l'accesso a vita; le nomine successive non ricevono automaticamente il beneficio.
+insert into public.account_premium (user_id, lifetime)
+select user_id, true from public.league_members where role = 'admin'
+union
+select user_id, true from public.platform_admins
+on conflict (user_id) do update set lifetime = true, expires_at = null, trial_expires_at = null;
+
+-- Data dell'ultima partita effettivamente disputata, distinta dall'ultima attività.
+create function public.admin_league_last_matches()
+returns table (league_id uuid, last_match date)
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if not public.is_super_admin() then raise exception 'Permesso negato'; end if;
+  return query select m.league_id, max(m.date) from public.matches m
+    where m.date <= current_date and m.score_a is not null and m.score_b is not null
+    group by m.league_id;
+end $$;
+revoke all on function public.admin_league_last_matches() from public, anon;
+grant execute on function public.admin_league_last_matches() to authenticated;
+
 -- La prova parte solo per gli account creati dopo l'attivazione della migrazione.
 create function public.start_premium_trial()
 returns trigger language plpgsql security definer set search_path = public as $$

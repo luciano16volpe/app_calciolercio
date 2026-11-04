@@ -5,6 +5,7 @@ import type { Session, User } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { logEvent } from '../data/audit';
 import { supabase } from '../data/supabase';
+import { useMyPremium } from '../data/premium';
 import { changeCacheOwner } from './accountCache';
 
 export type Role = 'admin' | 'redazione' | 'member' | null;
@@ -110,6 +111,7 @@ export function useAuth(): AuthTools {
 /** Ruolo di chi è entrato nella lega (null = non è un membro, oppure non ha fatto l'accesso). */
 export function useRole(leagueId: string | undefined): { role: Role; isAdmin: boolean; canEditText: boolean; /** il ruolo è stato letto (finché non lo è, `role` è vuoto) */ ready: boolean } {
   const { user } = useAuth();
+  const premium = useMyPremium(user?.id ?? null);
   const q = useQuery({
     queryKey: ['role', leagueId, user?.id],
     enabled: !!user && !!leagueId,
@@ -120,6 +122,7 @@ export function useRole(leagueId: string | undefined): { role: Role; isAdmin: bo
     },
   });
   const role = user ? (q.data ?? null) : null;
-  const ready = !user || !leagueId || q.isSuccess || q.isError;
-  return { role, isAdmin: role === 'admin', canEditText: role === 'admin' || role === 'redazione', ready };
+  const ready = !user || !leagueId || ((q.isSuccess || q.isError) && (premium.isSuccess || premium.isError));
+  const isAdmin = role === 'admin' && premium.data?.active === true;
+  return { role, isAdmin, canEditText: isAdmin || role === 'redazione', ready };
 }

@@ -878,6 +878,10 @@ export type Database = {
       admin_extend_premium: { Args: { p_user: string; p_months: number }; Returns: string }
       admin_end_premium: { Args: { p_user: string }; Returns: undefined }
       admin_grant_lifetime_premium: { Args: { p_user: string }; Returns: undefined }
+      admin_league_last_matches: { Args: never; Returns: { league_id: string; last_match: string }[] }
+      request_league: { Args: { p_name: string; p_format: number; p_day?: number }; Returns: string }
+      admin_league_creation_requests: { Args: never; Returns: { id: string; name: string; requester: string; requester_name: string; email: string; settings: Json; created_at: string }[] }
+      admin_decide_league_request: { Args: { p_id: string; p_approve: boolean }; Returns: string | null }
       admin_league_admins: {
         Args: { l: string }
         Returns: {
