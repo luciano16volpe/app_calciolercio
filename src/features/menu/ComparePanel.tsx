@@ -9,7 +9,7 @@ export function ComparePanel({ data, onClose }: { data: LeagueData; onClose: () 
   const { seasons, scope, setScope, canHistory } = useSeasonScope(data);
   const [cmp, setCmp] = useState<{ a: string | null; b: string | null }>({ a: null, b: null });
   return (
-    <Sheet title="⚔️ Confronto" onClose={onClose} id="sheet-compare">
+    <Sheet title="⚔️ Confronto" onClose={onClose} id="sheet-compare" swipeBack>
       <SeasonChips seasons={seasons} scope={scope} onPick={setScope} canHistory={canHistory} />
       <div className="card" id="cmp-box">
         <Confronto data={data} scope={scope} a={cmp.a} b={cmp.b} onChange={(a, b) => setCmp({ a, b })} />
