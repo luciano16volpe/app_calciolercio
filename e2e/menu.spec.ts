@@ -40,6 +40,30 @@ test('Menu: voci comuni e accesso alle funzioni giocatori', async ({ page }) => 
   for (const id of ['#menu-compare', '#menu-couples', '#menu-albo', '#menu-records']) await expect(page.locator(id)).toBeVisible();
 });
 
+test('Giocatori: lo swipe dal bordo torna ai riquadri senza intercettare lo scorrimento centrale', async ({ page }) => {
+  await setup(page);
+  await openApp(page);
+  await openMenu(page);
+  await page.locator('#menu-players').click();
+  await page.locator('#menu-couples').click();
+  const sheet = page.locator('#sheet-coppie');
+  await expect(sheet).toBeVisible();
+  const swipe = async (x: number, dx: number, dy = 0) => {
+    await sheet.evaluate((el, { x, dx, dy }) => {
+      const target = el as HTMLElement;
+      const touch = (clientX: number, clientY: number) => new Touch({ identifier: 1, target, clientX, clientY });
+      const start = touch(x, 200);
+      const end = touch(x + dx, 200 + dy);
+      target.dispatchEvent(new TouchEvent('touchstart', { bubbles: true, touches: [start], changedTouches: [start] }));
+      target.dispatchEvent(new TouchEvent('touchend', { bubbles: true, touches: [], changedTouches: [end] }));
+    }, { x, dx, dy });
+  };
+  await swipe(120, 100);
+  await expect(sheet).toBeVisible();
+  await swipe(10, 100);
+  await expect(page.locator('#sheet-players-hub')).toBeVisible();
+});
+
 test('Menu: le sezioni cambiano con il ruolo nella lega', async ({ page }) => {
   // Il membro vede le funzioni comuni, senza quelle di amministrazione.
   await setup(page, { mine: mineAs('member', { owner_id: 'altro' }) });

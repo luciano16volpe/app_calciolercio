@@ -59,10 +59,10 @@ export function ShellPanels({ panel, data, closePanel, setPanel, go, openMatch, 
       {data && panel === 'claims' ? <ClaimsPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'merge' ? <MergePanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'players-hub' ? <PlayersHub onClose={closePanel} onOpen={setPanel} /> : null}
-      {data && panel === 'compare' ? <ComparePanel data={data} onClose={closePanel} /> : null}
-      {data && panel === 'couples' ? <CouplesPanel data={data} onClose={closePanel} onOpenPlayer={openPlayer} onOpenMatch={openMatch} /> : null}
-      {data && panel === 'albo' ? <AlboPanel data={data} onClose={closePanel} onOpenPlayer={openPlayer} onOpenMatch={openMatch} /> : null}
-      {data && panel === 'records' ? <RecordsPanel data={data} onClose={closePanel} onOpenPlayer={openPlayer} onOpenMatch={openMatch} /> : null}
+      {data && panel === 'compare' ? <ComparePanel data={data} onClose={() => setPanel('players-hub')} /> : null}
+      {data && panel === 'couples' ? <CouplesPanel data={data} onClose={() => setPanel('players-hub')} onOpenPlayer={(id) => { closePanel(); openPlayer(id); }} onOpenMatch={(id) => { closePanel(); openMatch(id); }} /> : null}
+      {data && panel === 'albo' ? <AlboPanel data={data} onClose={() => setPanel('players-hub')} onOpenPlayer={(id) => { closePanel(); openPlayer(id); }} onOpenMatch={(id) => { closePanel(); openMatch(id); }} /> : null}
+      {data && panel === 'records' ? <RecordsPanel data={data} onClose={() => setPanel('players-hub')} onOpenPlayer={(id) => { closePanel(); openPlayer(id); }} onOpenMatch={(id) => { closePanel(); openMatch(id); }} /> : null}
       {data && panel === 'bench' ? <BenchPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'pending' ? <PendingPanel data={data} onClose={closePanel} onOpenMatch={openMatch} /> : null}
       {data && panel === 'league-settings' ? <LeagueSettingsPanel data={data} onClose={closePanel} /> : null}
