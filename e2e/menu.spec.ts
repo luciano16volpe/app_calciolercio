@@ -55,6 +55,7 @@ test('Giocatori: lo swipe dal bordo torna ai riquadri senza intercettare lo scor
       const start = touch(x, 200);
       const end = touch(x + dx, 200 + dy);
       target.dispatchEvent(new TouchEvent('touchstart', { bubbles: true, touches: [start], changedTouches: [start] }));
+      target.dispatchEvent(new TouchEvent('touchmove', { bubbles: true, touches: [end], changedTouches: [end] }));
       target.dispatchEvent(new TouchEvent('touchend', { bubbles: true, touches: [], changedTouches: [end] }));
     }, { x, dx, dy });
   };
