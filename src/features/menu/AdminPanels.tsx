@@ -9,6 +9,7 @@ import {
 } from '../../data/leagues';
 import type { LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';
+import { endPremium, extendPremium, fetchPremiumStatuses, grantLifetimePremium, premiumDate } from '../../data/premium';
 
 export function AdminProposalsPanel({ data, onClose }: { data: LeagueData; onClose: () => void }) {
   const toast = useToast();
@@ -90,11 +91,30 @@ export function PlatformLeaguesPanel({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function PlatformUsersPanel({ onClose }: { onClose: () => void }) {
+export function PlatformUsersPanel({ onClose, premiumOnly = false }: { onClose: () => void; premiumOnly?: boolean }) {
   const q = useQuery({ queryKey: ['platform-users'], queryFn: fetchPlatformUsers, retry: false });
+  const premium = useQuery({ queryKey: ['platform-premium'], queryFn: fetchPremiumStatuses, retry: false, enabled: premiumOnly });
+  const qc = useQueryClient();
+  const toast = useToast();
+  const confirm = useConfirm();
+  const [busy, setBusy] = useState<string | null>(null);
+  const [months, setMonths] = useState<Record<string, number>>({});
+  const changePremium = async (id: string, name: string, action: 'extend' | 'end' | 'lifetime') => {
+    const duration = months[id] ?? 1;
+    if (action === 'end' && !await confirm({ title: 'Disattivare Premium?', lines: [`Il Premium di ${name} terminerà subito.`], okLabel: 'Disattiva' })) return;
+    if (action === 'lifetime' && !await confirm({ title: 'Premium a vita?', lines: [`${name} avrà Premium senza scadenza.`], okLabel: 'Assegna' })) return;
+    setBusy(id);
+    try {
+      if (action === 'end') await endPremium(id); else if (action === 'lifetime') await grantLifetimePremium(id); else await extendPremium(id, duration);
+      await Promise.all([qc.invalidateQueries({ queryKey: ['platform-premium'] }), qc.invalidateQueries({ queryKey: ['premium', id] })]);
+      toast(action === 'end' ? 'Premium disattivato' : 'Premium aggiornato');
+    } catch (e) { toast('Errore: ' + (e as Error).message); }
+    finally { setBusy(null); }
+  };
   return (
-    <Sheet title="Utenti" onClose={onClose} id="sheet-platform-users">
+    <Sheet title={premiumOnly ? 'Abbonamenti Premium' : 'Utenti'} onClose={onClose} id="sheet-platform-users">
       {q.isError ? <div className="card" style={{ color: 'var(--red)', fontWeight: 700, fontSize: 13 }}>{(q.error as Error).message}</div> : null}
+      {premium.isError ? <div className="card" role="alert">Impossibile caricare gli abbonamenti: {(premium.error as Error).message}</div> : null}
       {q.data ? <div style={{ fontSize: 12, color: 'var(--text3)', margin: '0 2px 8px' }}>{q.data.length} account</div> : null}
       {(q.data ?? []).map((u) => (
         <div className="card platform-user" key={u.id} style={{ marginBottom: 8 }}>
@@ -104,8 +124,37 @@ export function PlatformUsersPanel({ onClose }: { onClose: () => void }) {
             {u.leagues || 'Nessuna lega'}<br />
             Ultimo accesso: {u.lastSignIn ? formatDate(u.lastSignIn.slice(0, 10)) : '—'}
           </div>
+          {premiumOnly && premium.data ? (() => {
+            const status = premium.data.find((p) => p.user_id === u.id);
+            return <div style={{ marginTop: 8, fontSize: 12 }}>
+              <div><b>{status?.lifetime ? 'Premium a vita' : status?.trial ? 'Premium in prova' : status?.active ? 'Premium attivo' : 'Standard'}</b>{status?.trial_expires_at && status.trial ? ` · prova fino al ${premiumDate(status.trial_expires_at)}` : status?.expires_at ? ` · ${status.active ? 'scade' : 'scaduto'} il ${premiumDate(status.expires_at)}` : ''}</div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginTop: 6 }}>
+                {!status?.lifetime ? <><label>Durata <select aria-label={`Mesi Premium per ${u.name || u.email}`} value={months[u.id] ?? 1} onChange={(e) => setMonths((old) => ({ ...old, [u.id]: Number(e.target.value) }))}>
+                  {[1, 3, 6, 12].map((m) => <option value={m} key={m}>{m} {m === 1 ? 'mese' : 'mesi'}</option>)}
+                </select></label>
+                <button type="button" className="mini-btn" disabled={busy !== null} onClick={() => void changePremium(u.id, u.name || u.email, 'extend')}>{status?.active ? 'Proroga' : 'Attiva'}</button>
+                <button type="button" className="mini-btn" disabled={busy !== null} onClick={() => void changePremium(u.id, u.name || u.email, 'lifetime')}>Assegna a vita</button></> : null}
+                {status?.active ? <button type="button" className="mini-btn" disabled={busy !== null} onClick={() => void changePremium(u.id, u.name || u.email, 'end')}>Disattiva</button> : null}
+              </div>
+            </div>;
+          })() : null}
         </div>
       ))}
     </Sheet>
   );
+}
+
+export function PremiumPanel({ onClose }: { onClose: () => void }) {
+  const [section, setSection] = useState<'subscriptions' | 'trial' | null>(null);
+  if (section === 'subscriptions') return <PlatformUsersPanel premiumOnly onClose={() => setSection(null)} />;
+  return <Sheet title="Premium" onClose={onClose} id="sheet-premium">
+    {section === 'trial' ? <div className="card">
+      <h3>Prova gratuita</h3>
+      <p>Ogni nuovo account riceve un mese di Premium dalla registrazione. Nella gestione abbonamenti puoi vedere chi è in prova.</p>
+      <button className="mini-btn" type="button" onClick={() => setSection(null)}>Torna a Premium</button>
+    </div> : <div className="premium-tiles">
+      <button type="button" className="premium-tile premium-tile-users" onClick={() => setSection('subscriptions')}><span>👥</span><b>Abbonamenti</b><small>Attiva, rinnova e controlla le scadenze</small></button>
+      <button type="button" className="premium-tile premium-tile-trial" onClick={() => setSection('trial')}><span>✨</span><b>Prova gratuita</b><small>Un mese per i nuovi iscritti</small></button>
+    </div>}
+  </Sheet>;
 }

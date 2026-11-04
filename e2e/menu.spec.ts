@@ -30,12 +30,14 @@ test('Menu: voci comuni e accesso alle funzioni giocatori', async ({ page }) => 
   await openApp(page);
   await openMenu(page);
   await expect(page.locator('.menu-nm')).toHaveText('Luciano');
-  for (const id of ['#menu-compare', '#menu-couples', '#menu-albo', '#menu-records']) await expect(page.locator(id)).toBeVisible();
+  await expect(page.locator('#menu-players')).toBeVisible();
   await expect(page.locator('.menu-lgrow:not(.add)')).toHaveCount(1);
   await expect(page.locator('#menu-create')).toHaveCount(0); // per ora le leghe le crea solo l'amministratore supremo
   await expect(page.locator('#menu-join')).toBeVisible();
   await expect(page.locator('#menu-signout')).toBeVisible();
   await expect(page.locator('#menu-login')).toHaveCount(0);
+  await page.locator('#menu-players').click();
+  for (const id of ['#menu-compare', '#menu-couples', '#menu-albo', '#menu-records']) await expect(page.locator(id)).toBeVisible();
 });
 
 test('Menu: le sezioni cambiano con il ruolo nella lega', async ({ page }) => {
@@ -44,7 +46,7 @@ test('Menu: le sezioni cambiano con il ruolo nella lega', async ({ page }) => {
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openMenu(page);
   await expect(page.locator('#menu-role')).toContainText('Membro · Lega di prova');
-  await expect(page.locator('#menu-compare')).toBeVisible();
+  await expect(page.locator('#menu-players')).toBeVisible();
   await expect(page.locator('#menu-members')).toHaveCount(0);
   await expect(page.locator('#menu-red-list')).toHaveCount(0);
   await expect(page.locator('#menu-signout')).toBeVisible();
@@ -90,7 +92,14 @@ test('Menu: l\'amministratore supremo vede la sezione Piattaforma', async ({ pag
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openMenu(page);
   await expect(page.locator('.menu-chip.gold')).toContainText('Amministratore supremo');
-  for (const id of ['#menu-audit', '#menu-platform-leagues', '#menu-platform-users']) await expect(page.locator(id)).toBeVisible();
+  for (const id of ['#menu-audit', '#menu-platform-leagues', '#menu-platform-users', '#menu-premium']) await expect(page.locator(id)).toBeVisible();
+  await page.locator('#menu-premium').click();
+  await expect(page.locator('#sheet-premium')).toBeVisible();
+  await page.getByRole('button', { name: /Prova gratuita/ }).click();
+  await expect(page.locator('#sheet-premium')).toContainText('un mese di Premium');
+  await page.getByRole('button', { name: 'Torna a Premium' }).click();
+  await page.getByRole('button', { name: /Abbonamenti/ }).click();
+  await expect(page.locator('#sheet-platform-users')).toBeVisible();
 });
 
 for (const width of [360]) {
