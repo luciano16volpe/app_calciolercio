@@ -12,7 +12,7 @@ type Props = { data: LeagueData; onClose: () => void; onOpenPlayer: (id: string)
 function ExtraSheet({ data, title, id, onClose, children }: { data: LeagueData; title: string; id: string; onClose: () => void; children: (scope: string) => ReactNode }) {
   const { seasons, scope, setScope } = useSeasonScope(data);
   return (
-    <Sheet title={title} onClose={onClose} id={id}>
+    <Sheet title={title} onClose={onClose} id={id} swipeBack>
       <SeasonChips seasons={seasons} scope={scope} onPick={setScope} />
       <div className="card" id="extra-list">{children(scope)}</div>
     </Sheet>
