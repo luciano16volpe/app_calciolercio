@@ -32,7 +32,7 @@ test('Standard vede solo due stagioni anche tramite richieste dirette; Premium e
   expect((await db.query('select date from matches where league_id = $1', [league])).rows).toHaveLength(2);
   expect((await db.query('select season_key from albo where league_id = $1', [league])).rows).toHaveLength(2);
   expect((await db.query('select match_id from match_players')).rows).toHaveLength(2);
-  expect((await db.query("select name from storage.objects where bucket_id='gazzette'")).rows).toHaveLength(2);
+  expect((await db.query("select name from storage.objects where bucket_id='gazzette'")).rows).toHaveLength(0);
   await db.exec(`reset role; select set_config('request.jwt.claim.sub','${admin}',false); set role authenticated`);
   await db.query('select admin_extend_premium($1, 1)', [member]);
   await db.exec(`reset role; select set_config('request.jwt.claim.sub','${member}',false); set role authenticated`);

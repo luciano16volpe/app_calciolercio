@@ -124,7 +124,7 @@ export async function setGazzetta(leagueId: string, matchId: string, full: Blob,
   if (up.error) throw fail('Gazzetta', up.error);
   const th = await bucket.upload(path.replace(/\.jpg$/, '-t.jpg'), thumb, { contentType: 'image/jpeg' });
   if (th.error) console.warn('miniatura Gazzetta non salvata', th.error.message); // non grave: si usa il file completo
-  const { error } = await supabase.from('gazzette').upsert({ match_id: matchId, file_path: path });
+  const { error } = await supabase.rpc('publish_gazzetta', { p_match: matchId, p_path: path });
   if (error) {
     await bucket.remove([path, path.replace(/\.jpg$/, '-t.jpg')]);
     throw fail('Gazzetta', error);

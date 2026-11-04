@@ -1,7 +1,7 @@
 // Pannello a tutto schermo con intestazione "‹ titolo" (si chiude con ‹ o Esc). Lo usano le voci del menu laterale.
 import { useEffect, useRef, type ReactNode } from 'react';
 
-export function Sheet({ title, onClose, children, id, swipeBack = false }: { title: string; onClose: () => void; children: ReactNode; id?: string; swipeBack?: boolean }) {
+export function Sheet({ title, onClose, children, id, swipeBack = true }: { title: string; onClose: () => void; children: ReactNode; id?: string; swipeBack?: boolean }) {
   const start = useRef<{ x: number; y: number } | null>(null);
   const sheet = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);

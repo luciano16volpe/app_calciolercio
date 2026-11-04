@@ -881,6 +881,7 @@ export type Database = {
       admin_league_last_matches: { Args: never; Returns: { league_id: string; last_match: string }[] }
       my_feature_modes: { Args: never; Returns: { feature: string; mode: string; allowed: boolean }[] }
       admin_set_feature_mode: { Args: { p_feature: string; p_mode: string }; Returns: undefined }
+      publish_gazzetta: { Args: { p_match: string; p_path: string }; Returns: undefined }
       request_league: { Args: { p_name: string; p_format: number; p_day?: number }; Returns: string }
       admin_league_creation_requests: { Args: never; Returns: { id: string; name: string; requester: string; requester_name: string; email: string; settings: Json; created_at: string }[] }
       admin_decide_league_request: { Args: { p_id: string; p_approve: boolean }; Returns: string | null }

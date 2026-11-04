@@ -51,18 +51,41 @@ test('Giocatori: lo swipe dal bordo torna ai riquadri senza intercettare lo scor
   const swipe = async (x: number, dx: number, dy = 0) => {
     await sheet.evaluate((el, { x, dx, dy }) => {
       const target = el as HTMLElement;
-      const touch = (clientX: number, clientY: number) => new Touch({ identifier: 1, target, clientX, clientY });
+      const touch = (clientX: number, clientY: number) => ({ identifier: 1, target, clientX, clientY });
+      const emit = (type: string, touches: object[], changedTouches: object[]) => target.dispatchEvent(Object.assign(new Event(type, { bubbles: true }), { touches, changedTouches }));
       const start = touch(x, 200);
       const end = touch(x + dx, 200 + dy);
-      target.dispatchEvent(new TouchEvent('touchstart', { bubbles: true, touches: [start], changedTouches: [start] }));
-      target.dispatchEvent(new TouchEvent('touchmove', { bubbles: true, touches: [end], changedTouches: [end] }));
-      target.dispatchEvent(new TouchEvent('touchend', { bubbles: true, touches: [], changedTouches: [end] }));
+      emit('touchstart', [start], [start]);
+      emit('touchmove', [end], [end]);
+      emit('touchend', [], [end]);
     }, { x, dx, dy });
   };
   await swipe(120, 100);
   await expect(sheet).toBeVisible();
   await swipe(10, 100);
   await expect(page.locator('#sheet-players-hub')).toBeVisible();
+});
+
+test('Menu: lo swipe dal bordo chiude anche le altre schermate con animazione', async ({ page }) => {
+  await setup(page);
+  await openApp(page);
+  await openMenu(page);
+  await page.locator('#menu-privacy').click();
+  const sheet = page.locator('#sheet-privacy');
+  await expect(sheet).toBeVisible();
+  await sheet.evaluate((target) => {
+    const touch = (x: number) => ({ identifier: 1, target, clientX: x, clientY: 200 });
+    const start = touch(10);
+    const end = touch(110);
+    target.dispatchEvent(Object.assign(new Event('touchstart', { bubbles: true }), { touches: [start], changedTouches: [start] }));
+    target.dispatchEvent(Object.assign(new Event('touchmove', { bubbles: true }), { touches: [end], changedTouches: [end] }));
+  });
+  await expect(sheet).toHaveCSS('transform', /matrix\(1, 0, 0, 1, 100, 0\)/);
+  await sheet.evaluate((target) => {
+    const end = { identifier: 1, target, clientX: 110, clientY: 200 };
+    target.dispatchEvent(Object.assign(new Event('touchend', { bubbles: true }), { touches: [], changedTouches: [end] }));
+  });
+  await expect(sheet).toHaveCount(0);
 });
 
 test('Menu: le sezioni cambiano con il ruolo nella lega', async ({ page }) => {

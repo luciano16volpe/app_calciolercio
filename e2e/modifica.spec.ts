@@ -8,7 +8,7 @@ interface Write { method: string; table: string; body: unknown }
 
 /** Accesso simulato con il ruolo dato in San Marcello (dati veri di prova); le scritture si intercettano e si registrano. */
 async function login(page: Page, role: 'admin' | 'member' = 'admin') {
-  return (await setup(page, { publicRole: role })) as Write[];
+  return (await setup(page, { publicRole: role, rpc: { my_premium_status: [{ active: role === 'admin', expires_at: null, trial: false, trial_expires_at: null, lifetime: role === 'admin' }] } })) as Write[];
 }
 
 async function openLastMatch(page: Page) {
@@ -297,8 +297,8 @@ test('Gazzetta: carica (file + miniatura) e rimuovi', async ({ page }) => {
   const files = writes.filter((w) => w.table === 'storage' && w.method === 'POST').map((w) => String(w.body));
   expect(files.some((f) => /^gazzette\/[^/]+\/[^/]+-\d+\.jpg$/.test(f))).toBe(true);
   expect(files.some((f) => /^gazzette\/[^/]+\/[^/]+-\d+-t\.jpg$/.test(f))).toBe(true);
-  const row = writes.find((w) => w.table === 'gazzette') as Write;
-  expect((row.body as { file_path: string }).file_path).toMatch(/^[^/]+\/[^/]+-\d+\.jpg$/);
+  const row = writes.find((w) => w.table === 'publish_gazzetta') as Write;
+  expect((row.body as { p_path: string }).p_path).toMatch(/^[^/]+\/[^/]+-\d+\.jpg$/);
   if (had) {
     await modal.locator('.gaz-edit .btn', { hasText: 'Rimuovi' }).click();
     await page.locator('#app-modal-ok').click();
