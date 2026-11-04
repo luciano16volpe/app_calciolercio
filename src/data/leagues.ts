@@ -54,6 +54,22 @@ export async function createLeague(input: { name: string; settings: LeagueSettin
   return { id };
 }
 
+export async function requestLeague(name: string, format: number, day?: number): Promise<void> {
+  const { error } = await supabase.rpc('request_league', { p_name: name, p_format: format, ...(day ? { p_day: day } : {}) });
+  if (error) throw plain(error);
+}
+
+export async function fetchLeagueCreationRequests() {
+  const { data, error } = await supabase.rpc('admin_league_creation_requests');
+  if (error) throw plain(error);
+  return data ?? [];
+}
+
+export async function decideLeagueCreation(id: string, approve: boolean) {
+  const { error } = await supabase.rpc('admin_decide_league_request', { p_id: id, p_approve: approve });
+  if (error) throw plain(error);
+}
+
 /** Entra in una lega con il codice d'invito (come membro). Se hai già un giocatore collegato, entra con te. */
 export async function joinLeague(code: string): Promise<string> {
   const { data, error } = await supabase.rpc('join_league', { code: code.trim() });
@@ -171,7 +187,7 @@ export async function transferOwnership(leagueId: string, newOwner: string): Pro
 // ── Amministratore supremo ─────────────────────────────────────────────────
 export interface PlatformLeague {
   id: string; name: string; slug: string; isPublic: boolean; owner: string; ownerMissing: boolean;
-  admins: string; members: number; matches: number; createdAt: string; lastActivity: string;
+  admins: string; members: number; matches: number; createdAt: string; lastActivity: string; lastMatch: string | null;
 }
 export interface PlatformUser { id: string; name: string; email: string; lastSignIn: string | null; createdAt: string; leagues: string }
 
@@ -185,11 +201,13 @@ export function useIsSuperAdmin(userId: string | null) {
 }
 
 export async function fetchPlatformLeagues(): Promise<PlatformLeague[]> {
-  const { data, error } = await supabase.rpc('admin_list_leagues');
+  const [{ data, error }, lastMatches] = await Promise.all([supabase.rpc('admin_list_leagues'), supabase.rpc('admin_league_last_matches')]);
   if (error) throw plain(error);
+  if (lastMatches.error) throw plain(lastMatches.error);
+  const latest = new Map((lastMatches.data ?? []).map((m) => [m.league_id, m.last_match]));
   return (data ?? []).map((l) => ({
     id: l.id, name: l.name, slug: l.slug, isPublic: l.is_public, owner: l.owner_name ?? '', ownerMissing: l.owner_missing, admins: l.admins ?? '',
-    members: Number(l.members), matches: Number(l.matches), createdAt: l.created_at, lastActivity: l.last_activity,
+    members: Number(l.members), matches: Number(l.matches), createdAt: l.created_at, lastActivity: l.last_activity, lastMatch: latest.get(l.id) ?? null,
   }));
 }
 

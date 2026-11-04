@@ -5,7 +5,7 @@ import { useAuth } from '../../app/auth';
 import { setSelectedLeague } from '../../app/league';
 import { Sheet } from '../../app/Sheet';
 import { useToast } from '../../app/Toast';
-import { createLeague, fetchMyLeagues, joinLeague, MY_LEAGUES_KEY, type MyLeague } from '../../data/leagues';
+import { createLeague, fetchMyLeagues, joinLeague, MY_LEAGUES_KEY, requestLeague, useIsSuperAdmin, type MyLeague } from '../../data/leagues';
 import { LEAGUE_QUERY_KEY } from '../../data/queries';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven'];
@@ -33,6 +33,7 @@ export async function shareText(text: string, toast: (m: string) => void, title 
 
 export function CreateLeagueSheet({ onClose }: { onClose: () => void }) {
   const { user } = useAuth();
+  const isSuper = useIsSuperAdmin(user?.id ?? null).data === true;
   const toast = useToast();
   const qc = useQueryClient();
   const [name, setName] = useState('');
@@ -46,6 +47,12 @@ export function CreateLeagueSheet({ onClose }: { onClose: () => void }) {
     if (n.length < 3 || n.length > 40) return toast('Il nome deve avere da 3 a 40 caratteri');
     setBusy(true);
     try {
+      if (!isSuper) {
+        await requestLeague(n, format, day);
+        toast('Richiesta inviata: attendi l’approvazione');
+        onClose();
+        return;
+      }
       const { id } = await createLeague({ name: n, settings: { format, ...(day ? { day } : {}) } });
       const mine = await fetchMyLeagues(user?.id ?? null);
       const l = mine.find((x) => x.id === id);
@@ -90,8 +97,8 @@ export function CreateLeagueSheet({ onClose }: { onClose: () => void }) {
         <div className="f-seg">
           {DAYS.map((d, i) => <button type="button" key={d} className={day === i + 1 ? 'on' : ''} onClick={() => setDay(day === i + 1 ? undefined : i + 1)}>{d}</button>)}
         </div>
-        <button type="button" className="f-btn" id="cl-submit" disabled={busy} onClick={() => void submit()}>Crea la lega</button>
-        <div className="f-note">Diventerai <b>amministratore</b> della nuova lega. Riceverai il <b>codice d'invito</b> da mandare agli amici; i giocatori che hanno già una scheda in un'altra lega la porteranno con sé (niente doppioni).</div>
+        <button type="button" className="f-btn" id="cl-submit" disabled={busy} onClick={() => void submit()}>{isSuper ? 'Crea la lega' : 'Invia richiesta'}</button>
+        <div className="f-note">{isSuper ? 'La lega viene creata subito.' : 'La richiesta sarà esaminata dal super amministratore. Dopo l’approvazione diventerai amministratore della lega.'}</div>
       </div>
     </Sheet>
   );
