@@ -5,6 +5,7 @@ import type { LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';
 import { pairsRanking } from '../../domain/pairs';
 import { avgColor, mediaRanking, scorersRanking } from '../../domain/rankings';
+import { rankingNote } from '../../domain/rankingNotes';
 import { computeRecords } from '../../domain/records';
 
 type OpenPlayer = (playerId: string) => void;
@@ -73,6 +74,7 @@ export function ScorersList({ data, scope, field, onOpenPlayer }: { data: League
               <div style={{ fontSize: 11, color: 'var(--text3)' }}>
                 {s.pres} {s.pres === 1 ? 'presenza' : 'presenze'} · {perMatch} {isAst ? 'assist' : 'gol'}/partita
               </div>
+              <div className="ranking-insight">{rankingNote(val, ranked[0]![field], isAst ? 'assist' : 'gol', i === 0)}</div>
             </div>
             <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--green)' }}>{val} {isAst ? '🅰️' : '⚽'}</span>
           </div>

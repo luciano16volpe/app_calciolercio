@@ -33,6 +33,7 @@ const ENT: Record<string, string> = { '&#039;': "'", '&#x27;': "'", '&amp;': '&'
 /** Solo il testo che si legge: ogni tag è un confine, <br> è "|", le entità sono decodificate, gli spazi uniformati. */
 const plain = (html: string) =>
   html
+    .replace(/<div class="ranking-insight">[^<]*<\/div>/g, '')
     .replace(/<br\s*\/?>/g, ' | ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&#039;|&#x27;|&amp;|&quot;|&lt;|&gt;/g, (m) => ENT[m] as string)
