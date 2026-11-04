@@ -15,6 +15,7 @@ import { BenchPanel } from '../features/menu/BenchPanel';
 import { PendingPanel } from '../features/menu/PendingPanel';
 import { HelpPanel, PrivacyPanel } from '../features/menu/OtherPanels';
 import { PlayersHub } from '../features/menu/PlayersHub';
+import { FeatureBoundary } from '../features/menu/FeatureBoundary';
 
 // I pannelli amministrativi si caricano quando vengono aperti.
 const AuditPanel = lazy(() => import('../features/menu/AuditPanel').then((m) => ({ default: m.AuditPanel })));
@@ -59,10 +60,10 @@ export function ShellPanels({ panel, data, closePanel, setPanel, go, openMatch, 
       {data && panel === 'claims' ? <ClaimsPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'merge' ? <MergePanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'players-hub' ? <PlayersHub onClose={closePanel} onOpen={setPanel} /> : null}
-      {data && panel === 'compare' ? <ComparePanel data={data} onClose={() => setPanel('players-hub')} /> : null}
-      {data && panel === 'couples' ? <CouplesPanel data={data} onClose={() => setPanel('players-hub')} onOpenPlayer={(id) => { closePanel(); openPlayer(id); }} onOpenMatch={(id) => { closePanel(); openMatch(id); }} /> : null}
-      {data && panel === 'albo' ? <AlboPanel data={data} onClose={() => setPanel('players-hub')} onOpenPlayer={(id) => { closePanel(); openPlayer(id); }} onOpenMatch={(id) => { closePanel(); openMatch(id); }} /> : null}
-      {data && panel === 'records' ? <RecordsPanel data={data} onClose={() => setPanel('players-hub')} onOpenPlayer={(id) => { closePanel(); openPlayer(id); }} onOpenMatch={(id) => { closePanel(); openMatch(id); }} /> : null}
+      {data && panel === 'compare' ? <FeatureBoundary feature="compare" onClose={() => setPanel('players-hub')}><ComparePanel data={data} onClose={() => setPanel('players-hub')} /></FeatureBoundary> : null}
+      {data && panel === 'couples' ? <FeatureBoundary feature="couples" onClose={() => setPanel('players-hub')}><CouplesPanel data={data} onClose={() => setPanel('players-hub')} onOpenPlayer={(id) => { closePanel(); openPlayer(id); }} onOpenMatch={(id) => { closePanel(); openMatch(id); }} /></FeatureBoundary> : null}
+      {data && panel === 'albo' ? <FeatureBoundary feature="albo" onClose={() => setPanel('players-hub')}><AlboPanel data={data} onClose={() => setPanel('players-hub')} onOpenPlayer={(id) => { closePanel(); openPlayer(id); }} onOpenMatch={(id) => { closePanel(); openMatch(id); }} /></FeatureBoundary> : null}
+      {data && panel === 'records' ? <FeatureBoundary feature="records" onClose={() => setPanel('players-hub')}><RecordsPanel data={data} onClose={() => setPanel('players-hub')} onOpenPlayer={(id) => { closePanel(); openPlayer(id); }} onOpenMatch={(id) => { closePanel(); openMatch(id); }} /></FeatureBoundary> : null}
       {data && panel === 'bench' ? <BenchPanel data={data} onClose={closePanel} /> : null}
       {data && panel === 'pending' ? <PendingPanel data={data} onClose={closePanel} onOpenMatch={openMatch} /> : null}
       {data && panel === 'league-settings' ? <LeagueSettingsPanel data={data} onClose={closePanel} /> : null}

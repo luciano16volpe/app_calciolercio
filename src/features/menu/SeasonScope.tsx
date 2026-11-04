@@ -2,17 +2,30 @@
 // parte dalla stagione più recente; "Sempre" mostra tutto.
 import { useMemo, useState } from 'react';
 import type { LeagueData } from '../../data/queries';
-import { seasonsList } from '../../domain/seasons';
+import { previousSeason, seasonOf, seasonsList } from '../../domain/seasons';
+import { todayRome } from '../../domain/profile';
+import { useAuth } from '../../app/auth';
+import { useFeatures } from '../../data/features';
 import { SEASON_ICON } from '../classifiche/ClassifichePage';
 
 export function useSeasonScope(data: LeagueData) {
-  const seasons = useMemo(() => seasonsList(data.dataset.matches, data.albo).slice().reverse(), [data]);
+  const { user } = useAuth();
+  const features = useFeatures(user?.id ?? null);
+  const canHistory = features.data?.find((f) => f.feature === 'history')?.allowed === true;
+  const today = todayRome();
+  const current = useMemo(() => seasonOf(today), [today]);
+  const previous = useMemo(() => current ? previousSeason(current) : null, [current]);
+  const seasons = useMemo(() => {
+    const all = seasonsList(data.dataset.matches, data.albo).slice().reverse();
+    if (current && !all.some((s) => s.key === current.key)) all.unshift({ ...current, status: 'in corso' });
+    return canHistory ? all : all.filter((s) => s.key === current?.key || s.key === previous?.key);
+  }, [data, canHistory, current, previous]);
   const [sel, setScope] = useState<string | null>(null);
-  const scope = sel ?? (seasons.length ? (seasons[0] as { key: string }).key : 'all');
-  return { seasons, scope, setScope };
+  const scope = canHistory || sel === current?.key || sel === previous?.key ? (sel ?? current?.key ?? 'all') : (current?.key ?? 'all');
+  return { seasons, scope, setScope, canHistory };
 }
 
-export function SeasonChips({ seasons, scope, onPick }: { seasons: { key: string; label: string }[]; scope: string; onPick: (key: string) => void }) {
+export function SeasonChips({ seasons, scope, onPick, canHistory }: { seasons: { key: string; label: string }[]; scope: string; onPick: (key: string) => void; canHistory: boolean }) {
   return (
     <div className="chips-row" id="panel-seasons">
       {seasons.map((s) => (
@@ -20,7 +33,7 @@ export function SeasonChips({ seasons, scope, onPick }: { seasons: { key: string
           {SEASON_ICON[s.key.slice(-3)] ?? ''} {s.label}
         </button>
       ))}
-      <button className={`chip${scope === 'all' ? ' active' : ''}`} onClick={() => onPick('all')}>♾️ Sempre</button>
+      {canHistory ? <button className={`chip${scope === 'all' ? ' active' : ''}`} onClick={() => onPick('all')}>♾️ Sempre</button> : null}
     </div>
   );
 }

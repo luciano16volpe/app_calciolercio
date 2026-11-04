@@ -9,14 +9,14 @@ import { formOn } from '../../data/gameSettings';
 import { useToast } from '../../app/Toast';
 import { compressGazzetta, makeGazzettaThumb } from '../../canvas/gazzetta';
 import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, setRatingsSkipped } from '../../data/mutations';
-import { gazzettaUrl, LEAGUE_HISTORY_QUERY_KEY, type LeagueData } from '../../data/queries';
+import { LEAGUE_HISTORY_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
 import { formatDate, whenWhere } from '../../domain/format';
 import { matchBalance, matchHighlights, needsRatings, rateColors, type MatchBalance } from '../../domain/matches';
 import { clampRating, normalizeTeam } from '../../domain/stats';
 import type { Match, Rating } from '../../domain/types';
 import { waHTML } from '../../domain/whatsapp';
-import { MatchButtons, type MatchActions } from './parts';
+import { GazThumb, MatchButtons, type MatchActions } from './parts';
 import { WhatsAppImport } from './WhatsAppImport';
 
 const LABEL = { fontSize: 12, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase' as const, letterSpacing: '.5px' };
@@ -526,7 +526,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
               {g ? (
                 <>
                   <div className="gaz-h">📰 La Gazzetta</div>
-                  <img className="gaz-thumb" src={gazzettaUrl(g)} alt="La Gazzetta" loading="lazy" onClick={() => act.openGazzetta(m.id)} />
+                  <div onClick={() => act.openGazzetta(m.id)}><GazThumb className="gaz-thumb" path={g} /></div>
                 </>
               ) : null}
               {editing ? (

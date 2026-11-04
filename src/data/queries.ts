@@ -8,6 +8,7 @@ import type { AlboRow } from '../domain/awards';
 import type { Dataset } from '../domain/types';
 import { dbToDataset, type DbRows } from './dataset';
 import { supabase } from './supabase';
+import { useFeatures } from './features';
 
 export const SUPABASE_PUBLIC_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
@@ -20,6 +21,17 @@ export const gazzettaUrl = (path: string): string => `${SUPABASE_PUBLIC_URL}/sto
 /** Percorso della miniatura leggera di una Gazzetta (le Gazzette caricate prima non ce l'hanno: allora si usa il file completo). */
 export const gazzettaThumbPath = (path: string): string => path.replace(/\.jpg$/, '-t.jpg');
 export const gazzettaThumbUrl = (path: string): string => gazzettaUrl(gazzettaThumbPath(path));
+
+/** URL temporaneo: il database verifica che la Gazzetta sia accessibile all'account. */
+export function useGazzettaUrl(path: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({ queryKey: ['gazzetta-url', user?.id, path], enabled: !!user && !!path,
+    queryFn: async () => {
+      const { data, error } = await supabase.storage.from('gazzette').createSignedUrl(path!, 60);
+      if (error) throw error;
+      return data.signedUrl;
+    }, staleTime: 40_000, refetchInterval: 45_000, gcTime: 0, retry: false });
+}
 
 export interface LeagueData {
   league: { id: string; name: string; is_public: boolean; slug: string; owner_id: string | null };
@@ -180,14 +192,16 @@ export function useLeagueData() {
   const slug = useSelectedLeague();
   const { user } = useAuth();
   const uid = user?.id;
+  const features = useFeatures(uid ?? null);
+  const historyAllowed = features.data?.find((f) => f.feature === 'history')?.allowed === true;
   const settings = useQuery({ queryKey: [...GAME_SETTINGS_QUERY_KEY, uid], enabled: !!uid, queryFn: fetchGameSettings, staleTime: 60_000 });
   const league = useQuery({ queryKey: [...LEAGUE_QUERY_KEY, 'identity', uid, slug], enabled: !!uid,
     queryFn: () => fetchLeagueIdentity(slug), retry: (n, e) => !(e instanceof NoLeagueError) && n < 1, staleTime: 60_000 });
   const identity = league.data;
   const roster = useQuery({ queryKey: [...LEAGUE_ROSTER_QUERY_KEY, uid, identity?.id], enabled: !!identity && !!uid,
     queryFn: () => fetchLeagueRoster(identity!.id), staleTime: 60_000 });
-  const history = useQuery({ queryKey: [...LEAGUE_HISTORY_QUERY_KEY, uid, identity?.id], enabled: !!identity && !!uid,
-    queryFn: () => fetchLeagueHistory(identity!), staleTime: 60_000 });
+  const history = useQuery({ queryKey: [...LEAGUE_HISTORY_QUERY_KEY, uid, identity?.id, historyAllowed], enabled: !!identity && !!uid && features.isSuccess,
+    queryFn: () => fetchLeagueHistory(identity!), staleTime: 0, gcTime: 0 });
   const pastIds = useMemo(() => {
     const active = new Set(roster.data?.ids ?? []);
     return [...new Set((history.data?.matchPlayers ?? []).map((p) => p.player_id))].filter((id) => !active.has(id)).sort();
@@ -204,8 +218,8 @@ export function useLeagueData() {
       albo: history.data.albo, gazzette: history.data.gazzette, editors: history.data.editors, ...settings.data };
   }, [identity, roster.data, history.data, settings.data, pastPlayers.data]);
   return { ...league, data,
-    isError: league.isError || roster.isError || history.isError || settings.isError || pastPlayers.isError,
-    error: league.error ?? roster.error ?? history.error ?? settings.error ?? pastPlayers.error,
+    isError: league.isError || roster.isError || history.isError || settings.isError || pastPlayers.isError || features.isError,
+    error: league.error ?? roster.error ?? history.error ?? settings.error ?? pastPlayers.error ?? features.error,
     refetch: () => Promise.all([league.refetch(), settings.refetch(), ...(identity ? [roster.refetch(), history.refetch()] : []), ...(identity && roster.data && history.data ? [pastPlayers.refetch()] : [])]),
   };
 }

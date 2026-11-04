@@ -38,6 +38,13 @@ export function seasonOf(date: unknown): Season | null {
   };
 }
 
+/** La stagione immediatamente precedente, anche a cavallo d'anno. */
+export function previousSeason(season: Season): Season | null {
+  const date = new Date(`${season.start}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() - 1);
+  return seasonOf(date.toISOString().slice(0, 10));
+}
+
 /** in corso fino alla fine; in chiusura per 14 giorni; poi chiusa. `today` = data ISO di oggi. */
 export function seasonStatus(s: Season, today: string = new Date().toISOString().slice(0, 10)): SeasonStatus {
   if (today <= s.end) return 'in corso';

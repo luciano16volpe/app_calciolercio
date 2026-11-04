@@ -3,7 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { LeagueData } from '../../data/queries';
 import { nextStatsSort, seasonDash, STATS_SORT_DEFAULT, type StatsCol, type StatsFilter } from '../../domain/rankings';
-import { seasonsList } from '../../domain/seasons';
+import { previousSeason, seasonOf, seasonsList } from '../../domain/seasons';
+import { todayRome } from '../../domain/profile';
+import { useAuth } from '../../app/auth';
+import { useFeatures } from '../../data/features';
 import { MediaList, ScorersList } from './lists';
 import { StatsTable } from './StatsTable';
 
@@ -32,13 +35,24 @@ export function SeasonDash({ data, scope }: { data: LeagueData; scope: string })
 }
 
 export function ClassifichePage({ data, onOpenPlayer }: { data: LeagueData; onOpenPlayer: (playerId: string) => void }) {
+  const { user } = useAuth();
+  const features = useFeatures(user?.id ?? null);
+  const historyAllowed = features.data?.find((f) => f.feature === 'history')?.allowed === true;
+  const statistics = features.data?.find((f) => f.feature === 'statistics');
+  const today = todayRome();
+  const current = useMemo(() => seasonOf(today), [today]);
+  const previous = useMemo(() => current ? previousSeason(current) : null, [current]);
   // stagione scelta (null = la più recente) e scheda: restano come scelti finché l'app è aperta
   const [scopeSel, setScopeSel] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('marcatori');
   const [statsFilter, setStatsFilter] = useState<StatsFilter>('regulars');
   const [statsSort, setStatsSort] = useState(STATS_SORT_DEFAULT);
-  const seasons = useMemo(() => seasonsList(data.dataset.matches, data.albo).slice().reverse(), [data]);
-  const scope = scopeSel ?? (seasons.length ? (seasons[0] as { key: string }).key : 'all');
+  const seasons = useMemo(() => {
+    const all = seasonsList(data.dataset.matches, data.albo).slice().reverse();
+    if (current && !all.some((s) => s.key === current.key)) all.unshift({ ...current, status: 'in corso' });
+    return historyAllowed ? all : all.filter((s) => s.key === current?.key || s.key === previous?.key);
+  }, [data, historyAllowed, current, previous]);
+  const scope = historyAllowed || scopeSel === current?.key || scopeSel === previous?.key ? (scopeSel ?? current?.key ?? 'all') : (current?.key ?? 'all');
   const selectScope = (next: string) => {
     if (next === scope) return;
     setScopeSel(next);
@@ -78,10 +92,10 @@ export function ClassifichePage({ data, onOpenPlayer }: { data: LeagueData; onOp
             {SEASON_ICON[s.key.slice(-3)] ?? ''} {s.label}
           </button>
         ))}
-        <button className={`chip${scope === 'all' ? ' active' : ''}`} onClick={() => selectScope('all')}>♾️ Sempre</button>
+        {historyAllowed ? <button className={`chip${scope === 'all' ? ' active' : ''}`} onClick={() => selectScope('all')}>♾️ Sempre</button> : null}
       </div>
       <div className="chips-row" id="cl-tabs" ref={tabsRef}>
-        {CL_TABS.map(([k, l]) => (
+        {CL_TABS.filter(([k]) => k !== 'statistiche' || !!statistics).map(([k, l]) => (
           <button key={k} className={`chip tab${k === tab ? ' active' : ''}`} onClick={() => selectTab(k)}>{l}</button>
         ))}
       </div>
@@ -99,10 +113,10 @@ export function ClassifichePage({ data, onOpenPlayer }: { data: LeagueData; onOp
       {tab === 'statistiche' ? (
         <div className="card cl-sec" id="stats-card">
           <div id="stats-table">
-            <StatsTable
+            {statistics?.allowed ? <StatsTable
               data={data} scope={scope} filter={statsFilter} sort={statsSort} onOpenPlayer={onOpenPlayer}
               onFilter={setStatsFilter} onSort={(c: StatsCol) => setStatsSort((s) => nextStatsSort(s, c))}
-            />
+            /> : <div>Questa funzione è riservata agli utenti Premium.</div>}
           </div>
         </div>
       ) : null}

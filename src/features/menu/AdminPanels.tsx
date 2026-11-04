@@ -10,6 +10,8 @@ import {
 import type { LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';
 import { endPremium, extendPremium, fetchPremiumStatuses, grantLifetimePremium, premiumDate } from '../../data/premium';
+import { useAuth } from '../../app/auth';
+import { FEATURE_LABELS, setFeatureMode, useFeatures, type Feature, type FeatureMode } from '../../data/features';
 
 export function AdminProposalsPanel({ data, onClose }: { data: LeagueData; onClose: () => void }) {
   const toast = useToast();
@@ -160,8 +162,9 @@ export function PlatformUsersPanel({ onClose, premiumOnly = false }: { onClose: 
 }
 
 export function PremiumPanel({ onClose }: { onClose: () => void }) {
-  const [section, setSection] = useState<'subscriptions' | 'trial' | null>(null);
+  const [section, setSection] = useState<'subscriptions' | 'trial' | 'features' | null>(null);
   if (section === 'subscriptions') return <PlatformUsersPanel premiumOnly onClose={() => setSection(null)} />;
+  if (section === 'features') return <FeatureSettings onClose={() => setSection(null)} />;
   return <Sheet title="Premium" onClose={onClose} id="sheet-premium">
     {section === 'trial' ? <div className="card">
       <h3>Prova gratuita</h3>
@@ -170,6 +173,36 @@ export function PremiumPanel({ onClose }: { onClose: () => void }) {
     </div> : <div className="premium-tiles">
       <button type="button" className="premium-tile premium-tile-users" onClick={() => setSection('subscriptions')}><span>👥</span><b>Abbonamenti</b><small>Attiva, rinnova e controlla le scadenze</small></button>
       <button type="button" className="premium-tile premium-tile-trial" onClick={() => setSection('trial')}><span>✨</span><b>Prova gratuita</b><small>Un mese per i nuovi iscritti</small></button>
+      <button type="button" className="premium-tile player-tile-records" onClick={() => setSection('features')}><span>⚙️</span><b>Funzionalità</b><small>Standard, Premium o Beta</small></button>
     </div>}
+  </Sheet>;
+}
+
+function FeatureSettings({ onClose }: { onClose: () => void }) {
+  const { user } = useAuth();
+  const features = useFeatures(user?.id ?? null);
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [saving, setSaving] = useState(false);
+  const change = async (feature: Feature, mode: FeatureMode) => {
+    setSaving(true);
+    try {
+      await setFeatureMode(feature, mode);
+      await qc.invalidateQueries({ queryKey: ['feature-modes'] });
+      toast('Funzionalità aggiornata');
+    } catch (e) { toast('Errore: ' + (e as Error).message); }
+    finally { setSaving(false); }
+  };
+  return <Sheet title="Funzionalità" onClose={onClose} id="sheet-feature-settings">
+    <div className="card">
+      <p>Standard è per tutti, Premium richiede l’abbonamento, Beta è visibile solo al super amministratore.</p>
+      {features.isError ? <p role="alert">Impossibile caricare le impostazioni.</p> : null}
+      {(features.data ?? []).map((f) => <label key={f.feature} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', padding: '8px 0' }}>
+        <span>{FEATURE_LABELS[f.feature as Feature] ?? f.feature}</span>
+        <select value={f.mode} disabled={saving} onChange={(e) => void change(f.feature as Feature, e.target.value as FeatureMode)}>
+          <option value="standard">Standard</option><option value="premium">Premium</option><option value="beta">Beta</option>
+        </select>
+      </label>)}
+    </div>
   </Sheet>;
 }
