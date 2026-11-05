@@ -865,27 +865,91 @@ export type Database = {
       }
       push_prefs: {
         Row: {
+          change: boolean
+          enabled: boolean
           gazzetta: boolean
           ratings: boolean
           reminder: boolean
+          reminder_minutes: number | null
           result: boolean
           user_id: string
         }
         Insert: {
+          change?: boolean
+          enabled?: boolean
           gazzetta?: boolean
           ratings?: boolean
           reminder?: boolean
+          reminder_minutes?: number | null
           result?: boolean
           user_id: string
         }
         Update: {
+          change?: boolean
+          enabled?: boolean
           gazzetta?: boolean
           ratings?: boolean
           reminder?: boolean
+          reminder_minutes?: number | null
           result?: boolean
           user_id?: string
         }
         Relationships: []
+      }
+      push_program_changes: {
+        Row: {
+          before_state: Json
+          changed_at: string
+          match_id: string
+          revision: string
+          user_id: string
+        }
+        Insert: {
+          before_state: Json
+          changed_at?: string
+          match_id: string
+          revision?: string
+          user_id: string
+        }
+        Update: {
+          before_state?: Json
+          changed_at?: string
+          match_id?: string
+          revision?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_program_changes_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_program_state: {
+        Row: {
+          match_id: string
+          snapshot: Json
+        }
+        Insert: {
+          match_id: string
+          snapshot: Json
+        }
+        Update: {
+          match_id?: string
+          snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_program_state_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_sent: {
         Row: {
@@ -1264,9 +1328,13 @@ export type Database = {
       my_push_prefs: {
         Args: never
         Returns: {
+          change: boolean
+          customizable: boolean
+          enabled: boolean
           gazzetta: boolean
           ratings: boolean
           reminder: boolean
+          reminder_minutes: number
           result: boolean
         }[]
       }
@@ -1314,7 +1382,27 @@ export type Database = {
           user_id: string
         }[]
       }
+      push_due_at: {
+        Args: { p_now: string; p_today?: string }
+        Returns: {
+          auth: string
+          endpoint: string
+          kind: string
+          league_name: string
+          league_slug: string
+          match_date: string
+          match_id: string
+          p256dh: string
+          place: string
+          play_time: string
+          score_a: number
+          score_b: number
+          team: string
+          user_id: string
+        }[]
+      }
       push_events_run: { Args: never; Returns: undefined }
+      push_program_snapshot: { Args: { p_match: string }; Returns: Json }
       push_public_key: { Args: never; Returns: string }
       push_reminder_run: { Args: never; Returns: undefined }
       push_reminders_due: {
@@ -1384,10 +1472,13 @@ export type Database = {
         Returns: undefined
       }
       set_my_photo: { Args: { p_path: string }; Returns: undefined }
+      set_push_enabled: { Args: { p_on: boolean }; Returns: undefined }
       set_push_pref: {
         Args: { p_kind: string; p_on: boolean }
         Returns: undefined
       }
+      // NULL ripristina le 7; il generatore non descrive gli argomenti SQL nullable.
+      set_push_reminder: { Args: { p_minutes: number | null }; Returns: undefined }
       set_ratings_skipped: {
         Args: { p_match: string; p_skip: boolean }
         Returns: undefined

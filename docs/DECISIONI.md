@@ -221,3 +221,9 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
   - **Solo con Premium:** impostazioni della lega (nome, visibilità, regole) e sua eliminazione, eliminazione dei giocatori, pubblicazione delle Gazzette (la redazione le pubblica sempre), creare nuove leghe, storico e funzioni Premium. Il super amministratore non ha limiti.
 - Nel database: `has_league_role`/`is_any_admin` non guardano più il Premium; `is_premium_league_admin` e `can_write_gazzetta` proteggono le parti riservate (migrazione `20261202000000_admin_senza_premium.sql`, test in `tests/db/account-premium.test.ts`). In app: `useRole` → `isAdmin` (base) e `isPremiumAdmin` (avanzate).
 - Le immagini delle Gazzette in Storage richiedono Premium anche in lettura (`20261201000000_gazzette_storage_premium.sql`).
+
+## Notifiche Standard e Premium (5 novembre 2026)
+- Notifiche di base per tutti; Premium personalizza tipi e anticipo del promemoria. Sospendere e riattivare tutte le notifiche resta gratuito. Le disattivazioni già scelte vengono conservate.
+- Standard: promemoria alle 7, variazioni di programma/convocazione, risultato e pagelle. Gazzette solo ai Premium che possono leggerle.
+- Premium: promemoria alle 7 oppure 1/2/3/24 ore prima. Preferenze per lega e fascia silenziosa in una fase successiva.
+- Dettagli e ordine di rilascio in `docs/specifiche/notifiche-standard-premium.md`. Sostituisce la precedente regola degli interruttori per tipo disponibili a tutti.

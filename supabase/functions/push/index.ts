@@ -1,6 +1,6 @@
 // Servizio che invia le notifiche push (Supabase Edge Function).
-//  · job «reminders» (lo sveglia pg_cron alle 7 in Italia, con l'intestazione x-cron-secret): promemoria del giorno della partita;
-//  · job «events» (lo sveglia pg_cron ogni minuto SOLO se c'è qualcosa): risultato inserito, pagelle pronte, Gazzetta caricata;
+//  · job «reminders» (pg_cron controlla ogni minuto): promemoria standard alle 7 o anticipo Premium;
+//  · job «events» (pg_cron controlla ogni minuto): programma/convocazione, risultato, pagelle pronte, Gazzetta;
 //  · {"test": true} con l'accesso dell'utente (dall'app, Impostazioni → Notifiche): notifica di prova ai telefoni di chi la chiede.
 // Chiavi e segreti stanno nei «Secrets» del progetto Supabase (VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, CRON_SECRET), mai nel codice.
 import { createClient } from 'npm:@supabase/supabase-js@2';
@@ -37,7 +37,7 @@ async function dropGone(endpoints: string[]) {
   if (endpoints.length) await admin.from('push_subscriptions').delete().in('endpoint', endpoints);
 }
 
-/** Manda quello che c'è da mandare. `reminders` = i promemoria delle 7; `events` = tutti gli altri tipi. */
+/** Manda quello che c'è da mandare: promemoria all'orario previsto oppure altri eventi. */
 async function runJob(job: 'reminders' | 'events', dryRun: boolean) {
   const { data, error } = await admin.rpc('push_due');
   if (error) return json({ error: error.message }, 500);
@@ -77,7 +77,7 @@ async function runTest(req: Request) {
   let ok = 0;
   const gone: string[] = [];
   for (const sub of list) {
-    const res = await send(sub, { title: 'CalcioLercio', body: '🔔 Le notifiche funzionano: il promemoria arriverà la mattina della partita.', url: '/', tag: 'prova' });
+    const res = await send(sub, { title: 'CalcioLercio', body: '🔔 Le notifiche su questo telefono funzionano.', url: '/', tag: 'prova' });
     if (res === 'ok') ok++;
     else if (res === 'gone') gone.push(sub.endpoint);
   }

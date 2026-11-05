@@ -71,6 +71,18 @@ describe('notifiche degli eventi', () => {
   });
 
   it('il promemoria passa dallo stesso punto', () => {
-    expect(buildMessage(ev({ kind: 'reminder' }))).toEqual(buildReminder(base));
+    expect(buildMessage(ev({ kind: 'reminder' })).body).toContain('Il 28/10 si gioca');
+  });
+
+  it('gli anticipi del giorno prima riportano la data, senza dire oggi', () => {
+    expect(buildMessage(ev({ kind: 'reminder', match_date: '2026-10-30' })).body).toContain('Il 30/10 si gioca');
+    expect(buildMessage(ev({ kind: 'reminder', match_date: '2026-10-29' }))).toEqual(buildReminder(base));
+  });
+
+  it('le variazioni indicano il programma attuale e mantengono lo stesso tag fra revisioni', () => {
+    const first=buildMessage(ev({ kind: 'change:revision-one' }));
+    expect(first.body).toBe('📅 Partita aggiornata: 28/10 · 21:00 · Campo Sole\nSei con i Blu 🔵');
+    expect(buildMessage(ev({ kind: 'change:revision-two', team: 'out' })).body).toContain('convocazione per la partita del 28/10 è stata annullata');
+    expect(buildMessage(ev({ kind: 'change:revision-two' })).tag).toBe(first.tag);
   });
 });

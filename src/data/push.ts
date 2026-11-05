@@ -80,10 +80,11 @@ export async function sendTestPush(): Promise<number> {
 }
 
 /** Tipi di notifica che ognuno può accendere o spegnere. */
-export type PushKind = 'reminder' | 'result' | 'ratings' | 'gazzetta';
-export type PushPrefs = Record<PushKind, boolean>;
+export type PushKind = 'reminder' | 'result' | 'ratings' | 'gazzetta' | 'change';
+export type PushPrefs = Record<PushKind, boolean> & { enabled: boolean; reminder_minutes: number | null; customizable: boolean };
 export const PUSH_KINDS: { id: PushKind; label: string; sub: string }[] = [
-  { id: 'reminder', label: 'Promemoria della mattina', sub: 'alle 7 del giorno della partita: ora, luogo e squadra' },
+  { id: 'reminder', label: 'Promemoria della partita', sub: 'ora, luogo e squadra prima di giocare' },
+  { id: 'change', label: 'Programma e convocazione', sub: 'cambi di giorno, ora, luogo o squadre; anche se vieni sostituito' },
   { id: 'result', label: 'Risultato inserito', sub: 'quando viene salvato il risultato della tua partita' },
   { id: 'ratings', label: 'Pagelle pronte', sub: 'quando titoli e descrizioni sono stati scritti' },
   { id: 'gazzetta', label: 'Gazzetta caricata', sub: 'quando esce la Gazzetta della partita' },
@@ -93,10 +94,21 @@ export async function fetchPushPrefs(): Promise<PushPrefs> {
   const { data, error } = await supabase.rpc('my_push_prefs');
   if (error) throw new Error(error.message);
   const r = (Array.isArray(data) ? data[0] : data) as Partial<PushPrefs> | undefined;
-  return { reminder: r?.reminder !== false, result: r?.result !== false, ratings: r?.ratings !== false, gazzetta: r?.gazzetta !== false };
+  return { reminder: r?.reminder !== false, result: r?.result !== false, ratings: r?.ratings !== false, gazzetta: r?.gazzetta !== false,
+    change: r?.change !== false, enabled: r?.enabled !== false, reminder_minutes: r?.reminder_minutes ?? null, customizable: r?.customizable === true };
 }
 
 export async function setPushPref(kind: PushKind, on: boolean): Promise<void> {
   const { error } = await supabase.rpc('set_push_pref', { p_kind: kind, p_on: on });
+  if (error) throw new Error(error.message);
+}
+
+export async function setPushEnabled(on: boolean): Promise<void> {
+  const { error } = await supabase.rpc('set_push_enabled', { p_on: on });
+  if (error) throw new Error(error.message);
+}
+
+export async function setPushReminder(minutes: number | null): Promise<void> {
+  const { error } = await supabase.rpc('set_push_reminder', { p_minutes: minutes });
   if (error) throw new Error(error.message);
 }

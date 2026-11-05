@@ -81,6 +81,17 @@ La prova aggiuntiva con quattro worker è stata interrotta dopo cinque timeout n
 
 La migrazione `supabase/migrations/20261203000000_modifica_programma_partita.sql` è stata applicata in produzione il 5 novembre 2026, prima del frontend, su autorizzazione dell'utente. La nuova RPC è stata verificata anche nell'ambiente Supabase reale. I tipi TypeScript sono stati rigenerati dallo schema aggiornato; build e lint sono passati nuovamente. Il rilascio di queste modifiche resta distinto dal passaggio finale descritto sotto.
 
+## Notifiche Standard/Premium — 5 novembre 2026
+
+Sviluppo successivo al rilascio `145dd2a`. Notifiche Standard per tutti; Premium personalizza tipi e anticipo; interruttore generale gratuito e disattivazioni preservate. Gli avvisi di variazione del programma sono raggruppati e includono chi viene sostituito. Specifica: `docs/specifiche/notifiche-standard-premium.md`.
+
+- Suite unitari/DB: **218 test passati in 29 file**, comprese le 14 prove SQL delle nuove regole e dei trigger.
+- Build e lint: passati.
+- Browser, impostazioni e nuove preferenze sui tre formati: **31 passati, 5 esclusi intenzionalmente, zero errori e nessun retry**. Report: `test-checkpoints/2026-11-05/notifiche-premium-browser.json`.
+- Un timeout nel precedente test del tema con due sessioni consecutive è stato risolto separando i due scenari e riutilizzando la pagina del test, senza alzare i timeout.
+- Funzione Edge aggiornata e migrazione `20261204000000_notifiche_standard_premium.sql` applicate in produzione. La transazione ha verificato che le preferenze precedenti restassero identiche. Tipi rigenerati, build e lint nuovamente superati.
+- Collaudo aggiuntivo `supabase/tests/notifiche_premium.sql`: superato sia in PGlite sia sul database reale, con ROLLBACK. Nessun invio reale durante il collaudo; il nuovo test `tests/db/push-collaudo.test.ts` verifica l'annullamento dei dati.
+
 ## Prove manuali prima del passaggio
 
 1. Standard e Premium nella stessa lega, più un Premium esterno: Gazzette, storico e link diretti.

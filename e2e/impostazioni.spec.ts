@@ -81,7 +81,7 @@ test('Notifiche: si attivano e si tolgono da Impostazioni (iscrizione salvata co
     Object.defineProperty(Notification, 'permission', { get: () => perm });
     (Notification as unknown as { requestPermission: () => Promise<string> }).requestPermission = async () => (perm = 'granted');
   });
-  const writes = await setup(page, { rpc: { push_public_key: 'BAECAwQFBgc', my_push_prefs: [{ reminder: true, result: true, ratings: false, gazzetta: true }] } });
+  const writes = await setup(page, { rpc: { push_public_key: 'BAECAwQFBgc', my_premium_status: [{ active: true }], my_push_prefs: [{ reminder: true, result: true, ratings: false, gazzetta: true, customizable: true }] } });
   await openSettings(page);
   await expect(page.locator('#push-state')).toContainText('Non sono attive');
   await page.locator('#push-enable').click();
@@ -157,17 +157,14 @@ test('Aspetto: chiaro, scuro e come il telefono; la scelta resta dopo il riavvio
   await noOverflow(page);
 });
 
-test('Aspetto: scegliere «Scuro» vale anche se il telefono è in chiaro, e «Chiaro» se è in scuro', async ({ browser }) => {
-  for (const [phone, pick, want] of [['light', 'dark', '#181c24'], ['dark', 'light', '#f2f4f7']] as const) {
-    const ctx = await browser.newContext({ colorScheme: phone });
-    const page = await ctx.newPage();
-    await setup(page, { publicRole: 'member' });
+for (const [phone, pick, want] of [['light', 'dark', '#181c24'], ['dark', 'light', '#f2f4f7']] as const) {
+  test(`Aspetto: tema ${pick} anche con il telefono in ${phone}`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: phone });
     await openSettings(page);
     await page.locator(`#theme-${pick}`).click();
     expect(await page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--gray').trim())).toBe(want);
-    await ctx.close();
-  }
-});
+  });
+}
 
 test('Impostazioni: solo versione, aggiornamento e account (le regole di gioco sono nel menu)', async ({ page }) => {
   await openSettings(page);

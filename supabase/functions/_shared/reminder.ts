@@ -2,7 +2,7 @@
 // le usa il servizio che invia e le provano i test.
 
 /** Tipi di notifica (uguali a push_prefs e push_sent nel database). */
-export type PushKind = 'reminder' | 'result' | 'ratings' | 'gazzetta';
+export type PushKind = 'reminder' | 'result' | 'ratings' | 'gazzetta' | `change:${string}`;
 
 export interface ReminderInput {
   league_name: string;
@@ -78,6 +78,14 @@ export function buildResult(r: EventInput): PushMessage {
 
 /** Il messaggio giusto per ogni tipo di notifica. */
 export function buildMessage(r: EventInput): PushMessage {
+  if (r.kind.startsWith('change:')) {
+    const detail=[ddmm(r.match_date),hhmm(r.play_time),r.place?.trim()].filter(Boolean).join(' · ');
+    const team=TEAM[r.team as 'A' | 'B'];
+    return { title: r.league_name,
+      body: r.team === 'out' ? `La tua convocazione per la partita del ${ddmm(r.match_date)} è stata annullata`
+        : `📅 Partita aggiornata: ${detail}${team ? `\nSei con i ${team}` : ''}`,
+      url: `/l/${r.league_slug}/partite`, tag: `change-${r.match_id}` };
+  }
   switch (r.kind) {
     case 'result':
       return buildResult(r);
@@ -86,6 +94,9 @@ export function buildMessage(r: EventInput): PushMessage {
     case 'gazzetta':
       return { title: r.league_name, body: `📰 La Gazzetta della partita del ${ddmm(r.match_date)} è online`, url: `/l/${r.league_slug}/partite`, tag: `gazzetta-${r.match_id}` };
     default:
-      return buildReminder(r);
+      { const message=buildReminder(r);
+        const today=new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Rome' }).format(new Date());
+        return r.match_date === today ? message : { ...message, body: message.body.replace('Oggi si gioca', `Il ${ddmm(r.match_date)} si gioca`) };
+      }
   }
 }
