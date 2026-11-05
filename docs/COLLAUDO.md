@@ -1,29 +1,91 @@
-# Collaudo finale — Fase 4 (1 novembre 2026)
+﻿# Collaudo prima del passaggio — regole attuali
 
-Ambiente: progetto Supabase vero, solo migrazioni nuove e additive; le prove con utenti finti girano dentro transazioni che si annullano da sole (verificato: nessuna traccia). Nessun progetto di prova.
+Aggiornamento del 5 novembre 2026. Sostituisce il resoconto della Fase 4 del 1 novembre: i vecchi esiti non certificano le funzioni aggiunte dopo quella data.
 
-## Esiti
-- ✅ Completezza: menu e leghe, collegamento account, registro attività, profilo e privacy (vedi `docs/PIANO.md`).
-- ✅ Permessi per ruolo nel database: `supabase/tests/permessi_per_ruolo.sql`, 51 azioni × 7 ruoli (visitatore, membro, redazione, admin, creatore, admin di un'altra lega, amministratore supremo). Tutte come atteso dopo la correzione dei permessi sui giocatori.
-- ✅ Registro attività: `supabase/tests/registro_attivita.sql`, 35 controlli (righe giuste, niente righe per aggiornamenti vuoti, stessa operazione raggruppata, IP e dispositivo, origine import/sistema, nessuna modifica o cancellazione possibile, pulizia a 60 giorni, account cancellato anonimo).
-- ✅ Scenario completo sul database: `supabase/tests/scenario_completo.sql`, 30 controlli. Scenario con più telefoni: `e2e/scenario.spec.ts` (database finto condiviso).
-- ✅ Test esistenti delle Fasi 1–3 e i golden: verdi (vedi riepilogo finale).
-- ✅ Nessun sbordo a 320/360/390 px nel menu e nelle schermate nuove; prove su iPhone, Android e 360 px.
-- ⚠️ Non provati qui: installazione e aggiornamento PWA su telefono vero, tema scuro a vista, 412 px.
-- ✅ Chiavi segrete: nessuna nel codice (`.env.local` fuori da Git).
+## Ambienti e limiti
 
-## Problemi trovati
-| Gravità | Problema | Stato |
-|---|---|---|
-| Alta | `accept_player_invite`: errore «colonna ambigua», il link d'invito non funzionava | Corretto (migrazione 20261108000100) |
-| Alta | Il registro bloccava la creazione di giocatori (`min(uuid)`) | Corretto (20261107000100) prima dell'uso |
-| Media | I dialoghi di conferma comparivano dietro i pannelli del menu | Corretto |
-| Media | Cambio lega dal menu senza effetto con l'indirizzo `/l/<slug>` | Corretto |
-| Media | L'admin, salvando con dati vecchi di meno di un minuto, cancellava i testi appena scritti dalla redazione | Corretto: i testi non toccati non si riscrivono |
-| Media | Chi ha creato un giocatore da admin e ora è solo membro può ancora modificarlo/eliminarlo | Corretto il 1/11 con la tua approvazione (migrazioni 20261109000000 e 20261109000100): modifica ed eliminazione solo per gli admin delle leghe del giocatore; eliminare richiede di essere admin di tutte le sue leghe |
-| Bassa | Qualsiasi amministratore (non solo il creatore) può eliminare la lega | Deciso il 1/11: resta così (serve scrivere il nome della lega) |
-| Bassa | La redazione non salva i soprannomi imparati dall'import (permesso solo agli admin): restano sul telefono | Accettato |
-| Bassa | L'intestazione `x-audit-source: import` può essere dichiarata da chiunque: cambia solo l'etichetta, la persona resta registrata | Accettato |
+- `npm test`: logica e PostgreSQL in memoria (PGlite), con tutte le migrazioni. Auth e servizi Storage sono simulati; funzioni e RLS applicative sono eseguite.
+- `npm run e2e -- entrambi`: app compilata nei browser emulati iPhone, Android e 360 px. Accessi e dati simulati, nessuna scrittura in produzione. Verifica interfaccia e richieste; non sostituisce Supabase.
+- `supabase/tests/premium.sql`: controlli sul progetto collegato dentro una transazione con `ROLLBACK`. Account, contenuti e modifiche alle modalità delle funzioni vengono annullati. Prima viene eseguito anche da `tests/db/premium-collaudo.test.ts`, che verifica l'annullamento.
+- Installazione PWA, push ricevuti e fluidità su telefoni fisici richiedono ancora una prova manuale.
 
-## Cosa resta
-Riga SQL dell'amministratore supremo, prova su telefono vero, poi `PIANO_PASSAGGIO.md`.
+## Matrice Premium
+
+Premium appartiene all'account. Ruolo e abbonamento sono distinti: Premium non concede accesso alle leghe altrui.
+
+| Operazione | Standard | Premium / prova attiva | Controllo |
+|---|---|---|---|
+| Prova gratuita | Un mese dalla registrazione, una sola volta | Accesso fino alla scadenza | Trigger di registrazione |
+| Rinnovo, revoca, vita | Non modificabile dal titolare | Durata assegnata; vita senza scadenza | Solo super amministratore |
+| Richiesta nuova lega | Negata | In attesa, senza creare subito la lega | Super amministratore approva/rifiuta; richiedente ancora Premium alla decisione |
+| Funzione Standard | Accessibile nella propria lega | Accessibile nella propria lega | Modalità configurata dalla piattaforma |
+| Funzione Premium | Negata | Accessibile nella propria lega | Controllo dell'account |
+| Funzione Beta | Nascosta | Nascosta | Solo super amministratore |
+| Storico in modalità Premium | Stagione corrente e precedente | Storico disponibile della lega | Database, anche su richieste dirette |
+| Storico in modalità Standard | Storico disponibile della lega | Storico disponibile della lega | Cambio modalità e invalidazione cache |
+| Leggere Gazzette e file | Negato | Solo nelle proprie leghe | Se non ci sono contenuti la sezione non appare |
+| Pubblicare Gazzette | Redazione della lega; admin Standard escluso | Admin o redazione autorizzati | Appartenenza e ruolo, anche per Storage |
+
+La qualifica di super amministratore abilita le funzioni di piattaforma. Non va confusa con l'appartenenza a una lega per leggere le sue Gazzette.
+
+## Admin senza Premium
+
+| Azione nella propria lega | Consentita |
+|---|---|
+| Sorteggio, partite, voti, pagelle | Sì |
+| Aggiungere e modificare la Rosa | Sì |
+| Membri e inviti | Sì, rispettando le regole del creatore |
+| Programma e convocati prima della partita | Sì, senza risultati o dati di gioco già registrati |
+| Impostazioni avanzate ed eliminazione lega | No |
+| Eliminare definitivamente giocatori | No |
+| Pubblicare Gazzette come admin | No |
+| Leggere Gazzette come Standard | No |
+
+La scadenza non cancella l'appartenenza né il ruolo amministrativo. Per una redazione Standard resta valida l'autorizzazione distinta a pubblicare.
+
+Gli incontri futuri devono restare visibili anche se rinviati alla stagione successiva: il limite Standard riguarda le partite storiche. La nuova migrazione `20261203000000_modifica_programma_partita.sql` copre anche questo caso; va applicata prima di pubblicare l'editor.
+
+## Prove ripetibili
+
+| Area | File |
+|---|---|
+| Prova, rinnovo, revoca, vita, admin scaduto | `tests/db/account-premium.test.ts` |
+| Richieste di lega | `tests/db/league-requests.test.ts`, `supabase/tests/premium.sql` |
+| Standard / Premium / Beta | `tests/db/feature-modes.test.ts` |
+| Storico e cambio anno | `tests/db/history-access.test.ts`, `tests/previous-season.test.ts` |
+| Gazzette e isolamento fra leghe | `tests/db/gazzette-premium.test.ts`, `supabase/tests/premium.sql` |
+| Collaudo SQL e ROLLBACK | `tests/db/premium-collaudo.test.ts` |
+| Programma partita sul database reale, con ROLLBACK | `supabase/tests/programma_partita.sql` |
+| Salvataggi atomici e modifiche concorrenti | `tests/db/atomic-saves.test.ts`, `tests/db/planned-match.test.ts` |
+| Schede coerenti | `e2e/scheda-coerente.spec.ts`, `tests/profile-season.test.ts` |
+| Anteprime protette | `e2e/gazzetta-privata.spec.ts` |
+| Swipe e Abbonamenti | `e2e/menu.spec.ts` |
+| Più telefoni e ruoli | `e2e/scenario.spec.ts` |
+
+Non vengono più confrontati codice, markup o risultati prodotti dalla vecchia app. I test di dominio verificano esempi, soglie e invarianti delle regole attuali. Le fixture storiche restano dati per le prove e per l'importazione.
+
+## Esito dell'ultima esecuzione
+
+Verifiche completate il 5 novembre 2026 sulle modifiche locali:
+
+- Unitari e database in memoria: **202 test passati in 28 file**.
+- Lint e build: superati.
+- Suite browser completa, due worker e nessun retry: **469 passati, 5 esclusi intenzionalmente, 0 errori** su iPhone, Android e 360 px (25,5 minuti). Report salvato in `test-checkpoints/2026-11-05/collaudo-finale.json`.
+- I cinque casi esclusi riguardano tre prove push che richiedono l'installazione PWA su iPhone e due varianti Android della spiegazione specifica per iPhone.
+- Ripetizione mirata dei cinque percorsi iPhone che avevano avuto timeout (Panchina, collegamenti alle partite, caricamento Gazzetta, footer e statistiche del profilo), due esecuzioni ciascuno: **10 passati, 0 errori**, con due worker e nessun retry. Report: `test-checkpoints/2026-11-05/collaudo-stabilita.json`.
+- Prove browser mirate su foto/pagelle ed editor del programma partita: **27 passate** sui tre formati, compreso il conflitto con aggiornamenti in background.
+- Collaudo Premium sul progetto Supabase collegato: superato; dati e configurazioni di prova annullati con `ROLLBACK`.
+- Dopo la migrazione in produzione: superata anche `supabase/tests/programma_partita.sql` con un admin Standard (sostituto dalla Rosa, rifiuto esterno, conflitto, risultato zero, visibilità futura e permessi). Collaudo Premium ripetuto e superato. Entrambe le prove annullano i dati temporanei con `ROLLBACK`.
+
+La prova aggiuntiva con quattro worker è stata interrotta dopo cinque timeout nei percorsi iPhone; non è certificata. La configurazione ordinaria usa due worker, senza aumentare i timeout o riprovare automaticamente i test falliti.
+
+La migrazione `supabase/migrations/20261203000000_modifica_programma_partita.sql` è stata applicata in produzione il 5 novembre 2026, prima del frontend, su autorizzazione dell'utente. La nuova RPC è stata verificata anche nell'ambiente Supabase reale. I tipi TypeScript sono stati rigenerati dallo schema aggiornato; build e lint sono passati nuovamente. Il rilascio di queste modifiche resta distinto dal passaggio finale descritto sotto.
+
+## Prove manuali prima del passaggio
+
+1. Standard e Premium nella stessa lega, più un Premium esterno: Gazzette, storico e link diretti.
+2. Admin scaduto: gestione ordinaria disponibile, funzioni riservate non abilitate; ripristino al rinnovo.
+3. Richiesta di lega: approvazione/rifiuto e scadenza del richiedente prima della decisione.
+4. Cambio modalità su una sessione aperta: lo storico non deve restare accessibile tramite cache dopo una revoca.
+5. Telefoni fisici: installazione e aggiornamento PWA, push, foto/miniature, tema scuro, swipe e larghezza 412 px.
+6. Seguire `docs/passaggio/PIANO_PASSAGGIO.md` solo con il via al passaggio. Backup, importazione finale, inviti e modifica del vecchio sito restano azioni distinte.

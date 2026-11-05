@@ -258,6 +258,16 @@ export class FakeBackend {
       case 'is_super_admin': return { status: 200, body: !!actor && this.supers.has(actor) };
       // Premium attivo e tutte le funzioni aperte: i test sui dati non dipendono dalle restrizioni dello storico.
       case 'my_premium_status': return { status: 200, body: [{ active: true, expires_at: null, trial: false, trial_expires_at: null, lifetime: true }] };
+      case 'update_planned_match': {
+        const m = this.matches.find((row) => row.id === a.p_match);
+        if (!m || !this.isAdmin(String(m.league_id), actor)) return err(400, 'Permesso negato', 'P0001');
+        m.date=a.p_date; m.play_time=a.p_time; m.place=a.p_place; m.notes=a.p_notes;
+        this.mplayers=this.mplayers.filter((row) => row.match_id!==m.id);
+        for (const [team, ids] of [['A',a.p_team_a],['B',a.p_team_b]] as const) {
+          (ids as string[]).forEach((id, position) => this.mplayers.push({match_id:m.id,player_id:id,team,position,rating:null,goals:0,assist:0,autogol:0,meta:0,rigori_sbagliati:0,titolo:null,descrizione:null}));
+        }
+        return {status:200,body:null};
+      }
       case 'my_feature_modes': return { status: 200, body: ['compare', 'couples', 'records', 'statistics', 'history', 'albo'].map((feature) => ({ feature, mode: 'standard', allowed: true })) };
       case 'log_event': return { status: 200, body: null };
       case 'player_history': return { status: 200, body: [] };
@@ -452,6 +462,17 @@ export class FakeBackend {
 
   /** Collega un telefono (contesto del browser) a questo database finto, come `userId` (o senza accesso). */
   async attach(ctx: BrowserContext, userId: string | null): Promise<void> {
+    // Foto e Gazzette sono fixture: nessuna richiesta deve dipendere dallo Storage reale.
+    await ctx.route('**/storage/v1/object/**', (r) => {
+      const req = r.request();
+      if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS });
+      if (new URL(req.url()).pathname.includes('/object/sign/')) return r.fulfill({
+        status: 200, headers: CORS, contentType: 'application/json',
+        body: JSON.stringify({ signedURL: '/object/public/gazzette/fixture.jpg?token=fake' }),
+      });
+      if (req.method() !== 'GET') return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: '{"Key":"fixture"}' });
+      return r.fulfill({ status: 200, headers: CORS, contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64') });
+    });
     if (userId) {
       const u = this.users.find((x) => x.id === userId)!;
       await ctx.addInitScript(([ref, jwt, id, email, name]) => {

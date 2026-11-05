@@ -1,6 +1,6 @@
 // «Il mio profilo» = pagina iniziale: le mie leghe, la scheda, la prossima partita, la mia ultima partita (coriandoli / pioggia),
 // il riepilogo, il mio giocatore, uscire da una lega. Footer a sole icone con la mia faccia. Database finto con i dati veri di prova.
-import { expect, test, type Browser, type Page, type TestInfo } from '@playwright/test';
+import { expect, test, type Browser, type Page, type TestInfo } from './fixtures';
 import { FakeBackend } from './fakeBackend';
 import { noOverflow, openMenu, openProfile } from './helpers';
 

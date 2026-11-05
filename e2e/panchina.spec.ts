@@ -1,6 +1,6 @@
 // Panchina: l'amministratore toglie un giocatore dalla lega (non si «archivia»); la storia resta, finisce in Panchina,
 // da lì si riporta in Rosa. Database finto condiviso, con i dati veri di prova (22 giocatori, 16 partite).
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { FakeBackend } from './fakeBackend';
 import { noOverflow, openMenu } from './helpers';
 

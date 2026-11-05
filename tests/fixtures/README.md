@@ -14,7 +14,7 @@
 | `2026-10-14_contropagelle_corsivo.txt` | 2026-10-14 (8-9) | `_NOME voto 5,5_` + titolo MAIUSCOLO |
 | `2026-10-07_contropagelle_semplici.txt` | 2026-10-07 (9-10) | `NOME 6,5` / `NOME voto 5,5` |
 
-**Risultato atteso** (verificato sulla versione legacy): 40 pagelle su 40 abbinate al giocatore giusto,
+**Risultato atteso nei messaggi di prova**: 40 pagelle su 40 abbinate al giocatore giusto,
 voto letto uguale a quello in `app_data.json`, titoli corretti (es. «RISPARMIO ENERGETICO 🔋»,
 «MVP 🥇», «ANTIDOPING 💉», «TROY MCLURE», «SI’, CHEF!», «IN(PS)FERNALE», «É UN BEL PRODOTTINO»).
 "Gianluca" = **Cioccolata** (per esclusione la prima volta, poi ricordato come alias). I corsivi in

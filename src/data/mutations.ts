@@ -1,8 +1,18 @@
 // Scritture su Supabase (solo per chi ha il permesso: lo garantisce il database con le regole RLS, non lo schermo).
 import type { RatingRow } from '../domain/matchEdit';
+import { plannedSnapshot } from '../domain/plannedMatch';
+import type { Match } from '../domain/types';
 import { supabase } from './supabase';
 
 const fail = (what: string, e: { message: string }) => new Error(`${what}: ${e.message}`);
+
+export async function updatePlannedMatch(original: Match, plan: { date: string; time: string; place: string; notes: string; teamA: string[]; teamB: string[] }): Promise<void> {
+  const { error } = await supabase.rpc('update_planned_match', {
+    p_match: original.id, p_date: plan.date, p_time: plan.time, p_place: plan.place.trim(), p_notes: plan.notes.trim(),
+    p_team_a: plan.teamA, p_team_b: plan.teamB, p_original: plannedSnapshot(original),
+  });
+  if (error) throw fail('programma partita', error);
+}
 
 export interface MatchHeader {
   score_a: number | null;

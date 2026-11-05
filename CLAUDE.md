@@ -5,14 +5,13 @@ squadre equilibrate, partite con pagelle (voti + titolo e descrizione della "Red
 classifiche, albo d'oro per stagione, Gazzette. Lingua dell'interfaccia: **italiano**.
 
 Questo progetto è la **nuova versione multi-lega** dell'app, con database Supabase.
-L'app attuale (in produzione, usata ogni settimana) è un unico file HTML in `legacy/`.
+L'app corrente è questa versione React/Supabase. `legacy/` conserva il materiale storico per l'importazione e non è un riferimento per i test.
 
 ## Regola d'oro
 
-> **`legacy/index.html` è l'implementazione di riferimento.** Ogni calcolo (bilanciamento, OVR,
-> stato di forma, premi, stagioni, lettura WhatsApp, figurine…) va portato **fedelmente** e deve dare
-> **gli stessi risultati**, verificati da test. Se qualcosa sembra sbagliato o migliorabile, **chiedi
-> prima** all'utente: molte scelte sono state discusse a lungo (vedi `docs/DECISIONI.md`).
+> I test verificano le regole attuali decise dall'utente con risultati attesi espliciti,
+> casi limite e invarianti. Non caricare né eseguire la vecchia app per confrontare formule,
+> grafica, markup o immagini. Le istruzioni recenti dell'utente prevalgono sulle decisioni storiche.
 
 Prima di toccare la logica di dominio leggi **`docs/REGOLE.md`** (formule, soglie, regole) e
 **`docs/DECISIONI.md`** (cosa è stato scelto e cosa è stato scartato, da non riproporre).
@@ -31,7 +30,7 @@ Il piano di lavoro a fasi è in **`docs/PIANO.md`**.
 | UI | React |
 | Dati | supabase-js + TanStack Query (cache: mostra subito i dati, poi aggiorna) |
 | PWA | vite-plugin-pwa (service worker: risolve i problemi di aggiornamento su iPhone/Android) |
-| Stile | il CSS dell'app attuale, portato così com'è (l'aspetto deve restare identico) |
+| Stile | CSS della versione corrente, aggiornato secondo le decisioni dell'utente |
 | Test | Vitest (logica) + Playwright (schermate, emulazione iPhone e Android) |
 | Database | Supabase (Postgres + Auth + Storage), regione EU. Schema in `supabase/migrations/` |
 | Hosting | Vercel o Cloudflare Pages (anteprima per ogni ramo = ambiente di prova) |
@@ -48,8 +47,9 @@ src/
   styles/        app.css (portato da legacy)
 tests/
   fixtures/      dati reali di prova (partite, pagelle, messaggi WhatsApp)
-  golden/        confronto con legacy: stessi input → stessi output
-legacy/          app attuale (NON modificare: serve da riferimento)
+  domain/        regole attuali, esempi espliciti e casi limite
+  db/            migrazioni, funzioni e RLS applicative
+legacy/          materiale storico per l'importazione
 supabase/        migrations/ (+ functions/ in futuro)
 ```
 
@@ -85,7 +85,6 @@ supabase/        migrations/ (+ functions/ in futuro)
 
 ## Come lavorare
 - Passi piccoli, ognuno verificato da test; dopo ogni passo un riepilogo breve per l'utente.
-- Quando porti una funzione da legacy, aggiungi un **test golden** che esegue la versione legacy e la
-  nuova sugli stessi dati (`tests/fixtures/`) e confronta i risultati.
+- Verifica le regole di dominio correnti con esempi e risultati attesi indipendenti dal codice storico.
 - I dati in `tests/fixtures/` sono **reali** (nomi, voti, descrizioni): il repository deve restare
   **privato**.

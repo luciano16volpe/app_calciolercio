@@ -3,6 +3,8 @@
 // Modifica di voti, gol, risultato e pagelle: passo 3.7b. Importazione WhatsApp e Gazzetta: 3.7c e 3.7e.
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { HourSelect } from '../../app/HourSelect';
+import { canPlanMatch } from '../../domain/plannedMatch';
+import { PlannedMatchEditor } from './PlannedMatchEditor';
 import { useQueryClient } from '@tanstack/react-query';
 import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { formOn } from '../../data/gameSettings';
@@ -281,16 +283,17 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
   const confirm = useConfirm();
   const qc = useQueryClient();
   const [balanceOpen, setBalanceOpen] = useState(false);
+  const [planning, setPlanning] = useState(false);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [textOnly, setTextOnly] = useState(false);
   const [pagella, setPagella] = useState<{ key: string; name: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const gazInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    const k = (e: KeyboardEvent) => e.key === 'Escape' && !pagella && onClose();
+    const k = (e: KeyboardEvent) => e.key === 'Escape' && !pagella && !planning && onClose();
     document.addEventListener('keydown', k);
     return () => document.removeEventListener('keydown', k);
-  }, [onClose, pagella]);
+  }, [onClose, pagella, planning]);
   // dal menu della redazione la scheda si apre già pronta per scrivere le pagelle
   const started = useRef(false);
   useEffect(() => {
@@ -489,6 +492,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
             </div>
           ) : null}
           <div id="match-fields" style={{ opacity: editing ? 1 : 0.92 }}>
+            {canEdit && !editing && canPlanMatch(data.dataset, m) ? <button type="button" className="btn btn-secondary btn-full" style={{ marginBottom: 12 }} onClick={() => setPlanning(true)}>Modifica programma e squadre</button> : null}
             {full ? (
               <div style={{ marginBottom: 8 }}>
                 <div style={{ ...LABEL, marginBottom: 6 }}>⏰ Ora</div>
@@ -564,6 +568,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
           </div>
         </div>
       </div>
+      {planning ? <PlannedMatchEditor data={data} match={m} onClose={() => setPlanning(false)} onSaved={onClose} /> : null}
       {pagella && draft ? (
         <PagellaDialog
           key={pagella.key}

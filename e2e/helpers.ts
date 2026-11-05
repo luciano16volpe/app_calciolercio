@@ -1,6 +1,6 @@
 // Aiuti comuni per le prove sulle schermate di menu, leghe, ruoli e inviti.
 // L'accesso è simulato (nessun account vero) e tutte le scritture vengono intercettate e registrate: sul database vero non si scrive niente.
-// Le letture della lega pubblica vanno ai dati veri (serve la rete); la lega finta `L2` è sempre vuota.
+// Tutte le letture usano fixture locali; la lega finta `L2` è vuota salvo i dati impostati dal test.
 import { expect, type Page, type Route } from '@playwright/test';
 import { FakeBackend } from './fakeBackend';
 

@@ -9,9 +9,9 @@ Ogni fase finisce con: test verdi, prova su iPhone e Android (emulati), breve ri
       migrazione `supabase/migrations/20261031000000_schema.sql` applicata, tipi generati
 - [x] Pubblicazione su Vercel/Cloudflare Pages dal nuovo repository (privato)
 
-## Fase 1 — Logica pura, con test golden
-Portare da legacy, un modulo alla volta, con test che confrontano i risultati con legacy sugli
-stessi dati (`tests/fixtures/app_data.json`, `legacy/rosa_calcetto.json`):
+## Fase 1 — Logica pura (completata)
+La migrazione iniziale è completata. Dal 4 novembre 2026 i test non confrontano più la nuova app
+con quella storica: le regole correnti vengono verificate direttamente in `tests/domain/`.
 - [x] ovr (calcOvr, futRating, futTier) · form (formWeight, effectiveScore, formState)
 - [x] seasons (seasonOf, seasonStatus, seasonsList) · stats (seasonStats)
 - [x] awards (computeSeasonAwards, matchEvents, Occasionali, albo)

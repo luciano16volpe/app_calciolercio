@@ -1,7 +1,8 @@
 # Regole di CalcioLercio
 
-Tutte le regole qui sotto sono già implementate in `legacy/index.html`. Accanto a ogni regola c'è
-il **nome della funzione legacy** da leggere per i dettagli esatti: in caso di dubbio vale il codice.
+Le regole sono implementate nella versione corrente in `src/domain/` e verificate direttamente
+dai test. I nomi storici indicati nel documento non richiedono confronti con la vecchia app.
+Le decisioni recenti dell'utente prevalgono sulle descrizioni delle fasi iniziali.
 
 ---
 
@@ -31,8 +32,8 @@ il **nome della funzione legacy** da leggere per i dettagli esatti: in caso di d
 - Campi per giocatore e partita: voto, gol, assist, autogol, meta (tiri alle stelle), rigori
   sbagliati, **titolo** (max 60), **descrizione** (max 2000, con formattazione WhatsApp `*grassetto*`
   e `_corsivo_`, mostrata come grassetto/corsivo: `waHTML`).
-- **PAG** (badge): media di tutti i voti validi. Colori: ≥ 6,5 verde, < 5,5 rosso, altrimenti giallo
-  (`getPlayerPagInfo`).
+- **PAG** (badge): media dei voti validi del periodo comune alle schede. Colori: ≥ 6,5 verde, < 5,5 rosso, altrimenti giallo.
+- **Periodo comune** di profilo, scheda aperta dalla Rosa e figurina: stagione corrente se il giocatore ha almeno cinque partite giocate, altrimenti le ultime cinque partite giocate della lega. Stato di forma e peso dei voti mantengono le rispettive formule sullo storico accessibile della lega, identiche in tutte le aperture.
 
 ## 4. MVP e peggiore di una partita
 - `mvpPerf = voto + gol×0,5 + assist×0,3 − autogol×0,3 − rigori sbagliati×0,3` (`mvpPerf`).

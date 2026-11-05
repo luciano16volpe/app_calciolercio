@@ -1,5 +1,5 @@
 // Leghe dal menu ☰: crea lega, entra con il codice, cambio lega (anche dall'indirizzo /l/<slug>), lega vuota con guida, esci.
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { lastWrite, mineAs, noOverflow, openApp, openMenu, openPanel, setup, openProfile } from './helpers';
 
 test('Crea lega: controlli sul nome, poi codice d\'invito e lega scelta', async ({ page }) => {

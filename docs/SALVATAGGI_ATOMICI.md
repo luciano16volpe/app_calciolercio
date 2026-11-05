@@ -5,10 +5,26 @@ soli testi della redazione vengono salvati con comandi PostgreSQL transazionali.
 Un errore annulla tutte le scritture del comando, compresi audit, firma e marcatori delle notifiche.
 I testi non modificati dall'amministratore vengono conservati; l'intestazione viene riscritta solo se modificata.
 
-Le quattro RPC sono SECURITY INVOKER: applicano le RLS e i trigger esistenti, oltre al controllo esplicito
+Le RPC di salvataggio atomico sono SECURITY INVOKER: applicano le RLS e i trigger esistenti, oltre al controllo esplicito
 sul ruolo nella lega. Le funzioni non sono eseguibili da utenti anonimi.
 I caricamenti Storage restano operazioni separate e non fanno parte di queste transazioni SQL.
 L'atomicita non introduce una risoluzione automatica dei conflitti fra modifiche concorrenti.
+
+## Partite in programma
+
+`update_planned_match` salva giorno, ora, luogo, descrizione e convocati nella stessa transazione.
+È riservata agli admin della lega, anche Standard. La presenza di un risultato (anche zero), un voto,
+un gol, altri contatori o testi di pagella impedisce la modifica del programma e dei convocati.
+I nuovi giocatori devono essere nella Rosa della lega; gli attuali convocati possono restare anche se
+nel frattempo sono usciti dalla Rosa. Non sono ammessi duplicati o squadre vuote.
+
+Il comando blocca la partita e verifica che programma e squadre coincidano con la copia aperta
+dall'utente. Se un altro admin li ha già cambiati, rifiuta il salvataggio e chiede di riaprire la scheda.
+Se cambiano le squadre, la previsione originaria viene annullata e la proposta marcata come modificata a mano.
+Il semplice cambio del programma conserva la previsione. Il limite dello storico Standard non nasconde incontri futuri rinviati a un'altra stagione.
+
+La migrazione `20261203000000_modifica_programma_partita.sql` va applicata prima del frontend con il nuovo editor.
+Le prove sono in `tests/db/planned-match.test.ts`, `tests/domain/planned-match.test.ts` ed `e2e/programma-partita.spec.ts`.
 
 ## Verifiche
 

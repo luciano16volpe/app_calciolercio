@@ -4,7 +4,7 @@
 // il creatore approva → la redazione importa le pagelle da WhatsApp → l'admin salva la partita → il registro attività contiene tutte le azioni.
 // (I permessi veri e il registro scritto dai trigger si provano sul database vero in supabase/tests/*.sql.)
 import { readFileSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { FakeBackend } from './fakeBackend';
 import { noOverflow, openMenu } from './helpers';
 

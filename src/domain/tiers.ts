@@ -1,5 +1,5 @@
 // Aspetto delle fasce delle figurine e degli stati di forma. GENERATO dalle costanti FUT_TIERS e FORM_STATES
-// di legacy/index.html (nessuna copia a mano); i test golden le confrontano con legacy.
+// della prima versione; i test verificano le soglie attuali senza eseguire il codice storico.
 import type { FutTier } from './ovr';
 
 export interface TierStyle {

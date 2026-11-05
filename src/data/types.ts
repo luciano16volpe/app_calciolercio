@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_premium: {
+        Row: {
+          expires_at: string | null
+          lifetime: boolean
+          trial_expires_at: string | null
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          expires_at?: string | null
+          lifetime?: boolean
+          trial_expires_at?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          expires_at?: string | null
+          lifetime?: boolean
+          trial_expires_at?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       albo: {
         Row: {
           league_id: string
@@ -118,6 +145,21 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_modes: {
+        Row: {
+          feature: string
+          mode: string
+        }
+        Insert: {
+          feature: string
+          mode: string
+        }
+        Update: {
+          feature?: string
+          mode?: string
+        }
+        Relationships: []
+      }
       gazzette: {
         Row: {
           file_path: string
@@ -188,6 +230,94 @@ export type Database = {
           },
         ]
       }
+      league_creation_requests: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          league_id: string | null
+          name: string
+          requester: string
+          settings: Json
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          league_id?: string | null
+          name: string
+          requester: string
+          settings?: Json
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          league_id?: string | null
+          name?: string
+          requester?: string
+          settings?: Json
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_creation_requests_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_invites: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          expires_at: string
+          league_id: string
+          revoked: boolean
+          token: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          expires_at?: string
+          league_id: string
+          revoked?: boolean
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          expires_at?: string
+          league_id?: string
+          revoked?: boolean
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_invites_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       league_members: {
         Row: {
           joined_at: string
@@ -213,6 +343,39 @@ export type Database = {
             columns: ["league_id"]
             isOneToOne: false
             referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_player_bench: {
+        Row: {
+          league_id: string
+          player_id: string
+          removed_at: string
+        }
+        Insert: {
+          league_id: string
+          player_id: string
+          removed_at?: string
+        }
+        Update: {
+          league_id?: string
+          player_id?: string
+          removed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_player_bench_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_player_bench_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
             referencedColumns: ["id"]
           },
         ]
@@ -536,50 +699,6 @@ export type Database = {
           },
         ]
       }
-      league_invites: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          email: string
-          expires_at: string
-          league_id: string
-          revoked: boolean
-          token: string
-          used_at: string | null
-          used_by: string | null
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          email: string
-          expires_at?: string
-          league_id: string
-          revoked?: boolean
-          token?: string
-          used_at?: string | null
-          used_by?: string | null
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          email?: string
-          expires_at?: string
-          league_id?: string
-          revoked?: boolean
-          token?: string
-          used_at?: string | null
-          used_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "league_invites_league_id_fkey"
-            columns: ["league_id"]
-            isOneToOne: false
-            referencedRelation: "leagues"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       player_invites: {
         Row: {
           created_at: string
@@ -836,7 +955,13 @@ export type Database = {
     }
     Functions: {
       accept_league_invite: {
-        Args: { p_name?: string; p_player?: string; p_roles?: string[]; p_stats?: number[]; tok: string }
+        Args: {
+          p_name?: string
+          p_player?: string
+          p_roles?: string[]
+          p_stats?: number[]
+          tok: string
+        }
         Returns: {
           league_id: string
           league_name: string
@@ -845,15 +970,6 @@ export type Database = {
           player_id: string
           player_name: string
         }[]
-      }
-      create_league_invite: { Args: { l: string; p_email: string }; Returns: string }
-      league_invite_players: {
-        Args: { tok: string }
-        Returns: { name: string; player_id: string }[]
-      }
-      league_invite_preview: {
-        Args: { tok: string }
-        Returns: { league_name: string; status: string }[]
       }
       accept_player_invite: {
         Args: { tok: string }
@@ -873,23 +989,43 @@ export type Database = {
         Args: { l: string; new_owner: string }
         Returns: undefined
       }
-      my_premium_status: { Args: never; Returns: { active: boolean; expires_at: string | null; trial: boolean; trial_expires_at: string | null; lifetime: boolean }[] }
-      admin_premium_statuses: { Args: never; Returns: { user_id: string; active: boolean; expires_at: string | null; trial: boolean; trial_expires_at: string | null; lifetime: boolean }[] }
-      admin_extend_premium: { Args: { p_user: string; p_months: number }; Returns: string }
+      admin_decide_league_request: {
+        Args: { p_approve: boolean; p_id: string }
+        Returns: string
+      }
       admin_end_premium: { Args: { p_user: string }; Returns: undefined }
-      admin_grant_lifetime_premium: { Args: { p_user: string }; Returns: undefined }
-      admin_league_last_matches: { Args: never; Returns: { league_id: string; last_match: string }[] }
-      my_feature_modes: { Args: never; Returns: { feature: string; mode: string; allowed: boolean }[] }
-      admin_set_feature_mode: { Args: { p_feature: string; p_mode: string }; Returns: undefined }
-      publish_gazzetta: { Args: { p_match: string; p_path: string }; Returns: undefined }
-      request_league: { Args: { p_name: string; p_format: number; p_day?: number }; Returns: string }
-      admin_league_creation_requests: { Args: never; Returns: { id: string; name: string; requester: string; requester_name: string; email: string; settings: Json; created_at: string }[] }
-      admin_decide_league_request: { Args: { p_id: string; p_approve: boolean }; Returns: string | null }
+      admin_extend_premium: {
+        Args: { p_months: number; p_user: string }
+        Returns: string
+      }
+      admin_grant_lifetime_premium: {
+        Args: { p_user: string }
+        Returns: undefined
+      }
       admin_league_admins: {
         Args: { l: string }
         Returns: {
           name: string
           user_id: string
+        }[]
+      }
+      admin_league_creation_requests: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          requester: string
+          requester_name: string
+          settings: Json
+        }[]
+      }
+      admin_league_last_matches: {
+        Args: never
+        Returns: {
+          last_match: string
+          league_id: string
         }[]
       }
       admin_list_leagues: {
@@ -919,6 +1055,17 @@ export type Database = {
           leagues: string
         }[]
       }
+      admin_premium_statuses: {
+        Args: never
+        Returns: {
+          active: boolean
+          expires_at: string
+          lifetime: boolean
+          trial: boolean
+          trial_expires_at: string
+          user_id: string
+        }[]
+      }
       admin_requests_list: {
         Args: { l: string }
         Returns: {
@@ -929,6 +1076,10 @@ export type Database = {
           requested_by_name: string
           user_id: string
         }[]
+      }
+      admin_set_feature_mode: {
+        Args: { p_feature: string; p_mode: string }
+        Returns: undefined
       }
       admin_set_setting: { Args: { k: string; v: Json }; Returns: undefined }
       audit_anonymize_user: { Args: { uid: string }; Returns: undefined }
@@ -954,19 +1105,32 @@ export type Database = {
       audit_match_label: { Args: { mid: string }; Returns: string }
       audit_player_name: { Args: { pid: string }; Returns: string }
       audit_user_name: { Args: { uid: string }; Returns: string }
-      bench_players: {
-        Args: { p_league: string }
-        Returns: {
-          linked: boolean
-          matches_played: number
-          name: string
-          photo_path: string
-          player_id: string
-          roles: string[]
-        }[]
-      }
+      bench_players:
+        | {
+            Args: never
+            Returns: {
+              linked: boolean
+              matches_played: number
+              name: string
+              photo_path: string
+              player_id: string
+              roles: string[]
+            }[]
+          }
+        | {
+            Args: { p_league: string }
+            Returns: {
+              linked: boolean
+              matches_played: number
+              name: string
+              photo_path: string
+              player_id: string
+              roles: string[]
+            }[]
+          }
       can_delete_player: { Args: { p: string }; Returns: boolean }
       can_edit_player: { Args: { p: string }; Returns: boolean }
+      can_write_gazzetta: { Args: { l: string }; Returns: boolean }
       cancel_admin_request: { Args: { c: string }; Returns: undefined }
       claims_pending: {
         Args: { l: string }
@@ -980,6 +1144,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      create_league_invite: {
+        Args: { l: string; p_email: string }
+        Returns: string
+      }
       create_match_with_teams: {
         Args: { p_match: Json; p_team_a: string[]; p_team_b: string[] }
         Returns: string
@@ -989,16 +1157,26 @@ export type Database = {
         Returns: string
       }
       create_player_invite: { Args: { l: string; p: string }; Returns: string }
+      current_season_start: { Args: never; Returns: string }
       decide_admin_request: {
         Args: { approve: boolean; c: string }
         Returns: undefined
       }
       delete_bench_player: { Args: { p_player: string }; Returns: undefined }
       delete_my_account: { Args: never; Returns: undefined }
+      feature_allowed: { Args: { p_feature: string }; Returns: boolean }
+      feature_visible_to_account: {
+        Args: { p_feature: string }
+        Returns: boolean
+      }
+      gazzetta_access: { Args: { p_league: string }; Returns: boolean }
       has_league_role: {
         Args: { l: string; r: Database["public"]["Enums"]["league_role"][] }
         Returns: boolean
       }
+      has_premium: { Args: { p_user: string }; Returns: boolean }
+      history_date_visible: { Args: { p_date: string }; Returns: boolean }
+      history_season_visible: { Args: { p_season: string }; Returns: boolean }
       invite_preview: {
         Args: { tok: string }
         Returns: {
@@ -1009,8 +1187,27 @@ export type Database = {
       }
       is_any_admin: { Args: never; Returns: boolean }
       is_league_admin: { Args: { l: string }; Returns: boolean }
+      is_premium_league_admin: { Args: { l: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       join_league: { Args: { code: string }; Returns: string }
+      league_invite_players: {
+        Args: { tok: string }
+        Returns: {
+          name: string
+          player_id: string
+        }[]
+      }
+      league_invite_preview: {
+        Args: { tok: string }
+        Returns: {
+          league_name: string
+          status: string
+        }[]
+      }
+      league_invite_status: {
+        Args: { i: Database["public"]["Tables"]["league_invites"]["Row"] }
+        Returns: string
+      }
       league_member_list: {
         Args: { l: string }
         Returns: {
@@ -1045,7 +1242,25 @@ export type Database = {
         Args: { drop_id: string; keep: string }
         Returns: undefined
       }
+      my_feature_modes: {
+        Args: never
+        Returns: {
+          allowed: boolean
+          feature: string
+          mode: string
+        }[]
+      }
       my_player_id: { Args: never; Returns: string }
+      my_premium_status: {
+        Args: never
+        Returns: {
+          active: boolean
+          expires_at: string
+          lifetime: boolean
+          trial: boolean
+          trial_expires_at: string
+        }[]
+      }
       my_push_prefs: {
         Args: never
         Returns: {
@@ -1076,6 +1291,10 @@ export type Database = {
         }[]
       }
       propose_admin: { Args: { l: string; u: string }; Returns: string }
+      publish_gazzetta: {
+        Args: { p_match: string; p_path: string }
+        Returns: undefined
+      }
       push_due: {
         Args: { p_today?: string }
         Returns: {
@@ -1125,6 +1344,10 @@ export type Database = {
       }
       rename_my_player: { Args: { p_name: string }; Returns: string }
       request_claim: { Args: { l: string; p: string }; Returns: undefined }
+      request_league: {
+        Args: { p_day?: number; p_format: number; p_name: string }
+        Returns: string
+      }
       review_claim: {
         Args: { approve: boolean; c: string }
         Returns: undefined
@@ -1151,6 +1374,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      season_key_for_date: { Args: { p_date: string }; Returns: string }
       set_member_role: {
         Args: {
           l: string
@@ -1182,6 +1406,19 @@ export type Database = {
         Returns: string
       }
       unlink_player: { Args: { p: string }; Returns: undefined }
+      update_planned_match: {
+        Args: {
+          p_date: string
+          p_match: string
+          p_notes: string
+          p_original: Json
+          p_place: string
+          p_team_a: string[]
+          p_team_b: string[]
+          p_time: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       league_role: "admin" | "redazione" | "member"

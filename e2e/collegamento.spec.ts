@@ -1,6 +1,6 @@
 // Collegamento account: invito personale (/invito/<token>), Inviti giocatori, Unisci giocatori,
 // «Questo sono io», richieste dell'amministratore, profilo, privacy.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { fixturePlayer, lastWrite, mineAs, noOverflow, openApp, openPanel, setup, openProfile } from './helpers';
 
 const status = (player_id: string, name: string, over: Record<string, unknown> = {}) => ({

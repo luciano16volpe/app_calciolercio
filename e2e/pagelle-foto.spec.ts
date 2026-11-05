@@ -1,6 +1,6 @@
 // Pagelle da saltare (elenco, scheda partita, conteggio nel menu della redazione) e foto nei pallini (Rosa, Gioca, menu, intestazione).
 // Database finto condiviso con i dati veri di prova.
-import { expect, test, type Browser, type TestInfo } from '@playwright/test';
+import { expect, test, type Browser, type TestInfo } from './fixtures';
 import { FakeBackend } from './fakeBackend';
 import { openMenu } from './helpers';
 
@@ -34,6 +34,12 @@ function needs(be: FakeBackend, id: string): boolean {
 
 function strip(be: FakeBackend): number {
   const played = [...be.matches].filter((x) => x.score_a != null && x.score_b != null).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  // Due incontri recenti e gli altri oltre i sette giorni, anche quando cambia il calendario.
+  played.forEach((m, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (i < 2 ? i + 1 : 14 + (i - 2) * 7));
+    m.date = date.toLocaleDateString('sv-SE');
+  });
   const ids = played.slice(0, 2).map((x) => String(x.id));
   for (const r of be.mplayers) if (ids.includes(String(r.match_id))) { r.titolo = null; r.descrizione = null; }
   return played.filter((x) => needs(be, String(x.id))).length;
