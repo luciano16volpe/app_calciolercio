@@ -74,6 +74,11 @@ Le decisioni recenti dell'utente prevalgono sulle descrizioni delle fasi inizial
     ATT×0,60 + MED×0,35 + DIF×0,45), `extremePenalty = |(top1−bottom1)A − (top1−bottom1)B| × 0,05`
 - `generateTeams`: tutte le combinazioni, punteggio, duplicati tolti, prima quelle vicine alla
   differenza migliore (margine), poi le altre; si tengono le prime **50** proposte (navigatore ◀ ▶).
+- **Turnazione** (`blockedPairs`, `src/domain/rotation.ts`): due giocatori che nelle **ultime 3 partite giocate della lega**
+  (con risultato, fino a oggi) sono stati insieme nella stessa squadra in tutte e 3 **non vengono più messi insieme**.
+  È una regola assoluta: le divisioni che li uniscono non compaiono tra le proposte. Basta che uno manchi o che siano
+  in squadre diverse in una delle 3 partite e la serie si interrompe. Con meno di 3 partite giocate non blocca nulla.
+  Se nessuna divisione la rispetta, Gioca avvisa e chiede di cambiare i convocati. Gli scambi a mano restano liberi.
 - **Squilibrio in gol**: `pred = media Blu − media Bianchi`; gol = `pred × 9` (`GOALS_PER_POINT=9`,
   misurato sulle vostre partite). Etichetta: < 0,5 → "≈ pari", altrimenti "≈ +X gol per i Blu/Bianchi".
   Colore: < 1 gol verde, < 2,5 giallo, oltre rosso. Alla creazione della partita si salvano `pred` e

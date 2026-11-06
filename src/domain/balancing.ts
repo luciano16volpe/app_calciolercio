@@ -261,13 +261,16 @@ export interface GenerateInput extends BalanceContext {
   sizeA: number;
   sizeB: number;
   modules?: Record<number, Module[]>;
+  /** Coppie (indici nella rosa) che non possono stare nella stessa squadra: le divisioni che le uniscono non si propongono. */
+  blocked?: Array<[number, number]>;
 }
 
 /**
  * Genera le proposte: tutte le divisioni, ciascuna col suo miglior modulo; prima quelle la cui differenza
  * di media è vicina alla migliore (margine 0,20 fino a 10 convocati, 0,15 oltre), poi le altre, ognuna
  * ordinata per punteggio; si tengono le prime 50. `genBest` = Blu − Bianchi della prima proposta.
- * Se i convocati non sono esattamente sizeA + sizeB restituisce null.
+ * Se i convocati non sono esattamente sizeA + sizeB restituisce null. Con `blocked`, le divisioni che mettono
+ * insieme una coppia vietata sono escluse (se non resta nulla, `combos` è vuoto).
  */
 export function generateTeams(input: GenerateInput): { combos: Combo[]; genBest: number | null } | null {
   const { selected, sizeA, sizeB } = input;
@@ -278,8 +281,10 @@ export function generateTeams(input: GenerateInput): { combos: Combo[]; genBest:
   const allScored: Combo[] = [];
   const seen = new Set<string>();
 
+  const blocked = input.blocked ?? [];
   subsetsA.forEach((tA) => {
     const tB = idx.filter((i) => !tA.includes(i));
+    if (blocked.some(([x, y]) => (tA.includes(x) && tA.includes(y)) || (tB.includes(x) && tB.includes(y)))) return;
     const modsA = getModulesForSize(tA.length, input.modules);
     const modsB = getModulesForSize(tB.length, input.modules);
     modsA.forEach((modA) => {

@@ -10,6 +10,7 @@ import { NewMatchDialog } from './NewMatchDialog';
 import { useToast } from '../../app/Toast';
 import { photoUrl, type LeagueData } from '../../data/queries';
 import { balanceScores, generateTeams, type Combo } from '../../domain/balancing';
+import { blockedPairs } from '../../domain/rotation';
 import { pagInfo, playerRatingAvg } from '../../domain/form';
 import { formatDate } from '../../domain/format';
 import { PlayerAvatar } from '../player/PlayerAvatar';
@@ -262,8 +263,12 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
     }
     const sc = balanceScores(dataset, weights, formOn(data));
     const idx = live.map((id) => dataset.players.findIndex((p) => p.id === id));
-    const out = generateTeams({ players: dataset.players, scores: sc, selected: idx, sizeA: fmt.sizeA, sizeB: fmt.sizeB, modules: modulesOf(data) });
+    const out = generateTeams({ players: dataset.players, scores: sc, selected: idx, sizeA: fmt.sizeA, sizeB: fmt.sizeB, modules: modulesOf(data), blocked: blockedPairs(dataset, idx) });
     if (!out) return;
+    if (!out.combos.length) {
+      toast('Nessuna divisione rispetta la turnazione: due giocatori non possono stare insieme per più di 3 partite di fila. Cambia i convocati.');
+      return;
+    }
     setScores(sc);
     setRes({ combos: out.combos, genBest: out.genBest, idx: 0 });
     window.setTimeout(() => document.getElementById('partita-result')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
