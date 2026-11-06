@@ -48,7 +48,7 @@ export function drawShareHeader(ctx: Ctx, W: number, subtitle: string): void {
   ctx.fillText('⚽ CalcioLercio', W / 2, 56);
   ctx.fillStyle = SHARE_C.SUB;
   ctx.font = SHARE_FONT('600 19px');
-  ctx.fillText(subtitle, W / 2, 86);
+  ctx.fillText(fitText(ctx, subtitle, W - 60), W / 2, 86); // luogo lungo: accorciato, non esce dall'immagine
 }
 
 /** Rettangolo con gli angoli arrotondati (solo il tracciato: poi fill/stroke). */

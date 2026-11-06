@@ -40,7 +40,7 @@ export function MatchButtons({ data, m, act }: { data: LeagueData; m: Match; act
   const played = num(m.scoreA) != null && num(m.scoreB) != null;
   const fd = formatDate(m.date);
   const day = m.date || 'partita';
-  const formations = () => showImage('⚽ Formazioni · ' + fd, matchFormations(data, m), 'formazioni_' + day + '.png', '⚽ Formazioni della partita del ' + fd);
+  const formations = () => showImage('⚽ Formazioni · ' + fd, matchFormations(data, m), 'formazioni_' + day + '.png', '⚽ Formazioni della partita del ' + fd + (whenWhere(m) ? ' · ' + whenWhere(m) : ''));
   const summaryTexts = useMatchTexts({ ...data, textsDeferred: false }, m.id);
   const summary = async () => {
     const loaded = data.textsDeferred ? await summaryTexts.refetch() : null;
@@ -85,10 +85,12 @@ export { useMyPlayerIn } from '../../app/useMyPlayerIn';
  * Se `mine` ha giocato quella partita: coriandoli sopra se ha vinto, pioggia sullo sfondo se ha perso. Gli effetti partono solo con `active`
  * (la pagina è quella che si sta guardando).
  */
-export function LastMatchCard({ data, m, act, title = '🏆 Ultima partita', id, mine, active = true }: {
+export function LastMatchCard({ data, m, act, title, id, mine, active = true }: {
   data: LeagueData; m: Match; act: MatchActions; title?: string; id?: string; mine?: { id: string; name: string } | null; active?: boolean;
 }) {
   const has = hasScore(m);
+  // senza risultato la partita è ancora da giocare
+  title ??= has ? '🏆 Ultima partita' : '📅 Prossima partita';
   const a = parseInt(m.scoreA as string);
   const b = parseInt(m.scoreB as string);
   let win: ReactNode = null;

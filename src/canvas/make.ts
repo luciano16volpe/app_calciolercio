@@ -4,7 +4,7 @@ import { photoUrl, type LeagueData } from '../data/queries';
 import type { Combo } from '../domain/balancing';
 import { balanceScores } from '../domain/balancing';
 import { primaryRole, teamPlayers } from '../domain/gioca';
-import { formatDate } from '../domain/format';
+import { formatDate, whenWhere } from '../domain/format';
 import { normalizeTeam } from '../domain/stats';
 import { profileSeasonData } from '../domain/profile';
 import type { Dataset, Match, Player } from '../domain/types';
@@ -51,7 +51,7 @@ export function matchFormations(ld: LeagueData, m: Match): HTMLCanvasElement {
     return v.length ? v.reduce((s, p) => s + (p.score as number), 0) / v.length : null;
   };
   const sA = avg(tA), sB = avg(tB);
-  return drawFormations({ tA, tB, sA, sB, modA: '', modB: '', diff: sA != null && sB != null ? Math.abs(sA - sB) : null, subtitle: 'Formazioni del ' + formatDate(m.date) });
+  return drawFormations({ tA, tB, sA, sB, modA: '', modB: '', diff: sA != null && sB != null ? Math.abs(sA - sB) : null, subtitle: ['Formazioni del ' + formatDate(m.date), whenWhere(m)].filter(Boolean).join(' · ') });
 }
 
 export const matchSummary = (ld: LeagueData, m: Match): HTMLCanvasElement => drawSummary(summaryInput(ld.dataset, m, ld.editors?.[m.id]));
