@@ -1,6 +1,5 @@
 import { PlayerPagellaText } from './PlayerPagellaText';
 // Finestra "📝 Le pagelle di …": tutte le pagelle del giocatore, le più recenti per prime.
-// Fonte: openPlayerPagelle in legacy/index.html.
 import { useEffect, useRef, useState } from 'react';
 import type { LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';

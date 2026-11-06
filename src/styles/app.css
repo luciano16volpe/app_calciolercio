@@ -725,3 +725,19 @@ input[type=file]{display:none}
 .app-spinner{display:block;width:36px;height:36px;border:3px solid var(--gray3);border-top-color:var(--green);border-radius:50%;animation:appSpin .8s linear infinite;box-shadow:0 0 0 5px var(--gray)}
 @keyframes appSpin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.app-spinner{animation:none}}
+
+/* ✨ figurina che brilla (visualizzatore a schermo intero) */
+.tilt-card{position:relative;display:block;width:fit-content;max-width:100%;touch-action:none;transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .45s cubic-bezier(.2,.8,.2,1);will-change:transform;--mx:35%;--my:25%}
+.tilt-card.live{transition:transform .08s linear}
+.tilt-card img{display:block;max-width:100%;max-height:calc(100dvh - 190px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));object-fit:contain;cursor:zoom-in;-webkit-user-drag:none;user-select:none}
+.tilt-shine{position:absolute;inset:0;pointer-events:none;-webkit-mask-size:100% 100%;mask-size:100% 100%;mix-blend-mode:screen;opacity:.75;background:radial-gradient(circle at var(--mx) var(--my),rgba(255,255,255,.65),rgba(255,255,255,0) 42%)}
+.tilt-card.holo .tilt-shine{background:radial-gradient(circle at var(--mx) var(--my),rgba(255,255,255,.6),rgba(255,255,255,0) 40%),linear-gradient(115deg,rgba(255,77,109,0) 15%,rgba(255,77,109,.45) 30%,rgba(255,183,3,.4) 42%,rgba(138,201,38,.35) 50%,rgba(0,187,249,.45) 60%,rgba(155,93,229,.45) 72%,rgba(155,93,229,0) 88%);background-size:100% 100%,260% 260%;background-position:0 0,var(--mx) var(--my)}
+.gv-tilt-btn{display:block;margin:8px auto 0;border:none;border-radius:99px;padding:8px 14px;font:inherit;font-size:12px;font-weight:800;background:rgba(255,255,255,.18);color:#fff;cursor:pointer}
+/* 📊 barre delle statistiche che si riempiono, una dopo l'altra, quando si apre la scheda */
+@keyframes barGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.mini-bar-fill.stat-anim{transform-origin:left center;animation:barGrow .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 45ms)}
+@media(prefers-reduced-motion:reduce){.mini-bar-fill.stat-anim{animation:none}}
+/* passaggio tra le schermate: dissolvenza breve (solo opacità, così nulla si sposta) */
+@keyframes pageIn{from{opacity:0}to{opacity:1}}
+.page.active{animation:pageIn .16s ease-out}
+@media(prefers-reduced-motion:reduce){.page.active{animation:none}}

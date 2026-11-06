@@ -3,7 +3,7 @@
 Indirizzo definitivo dell'app: https://calciolercio.vercel.app
 
 1. **Copia di sicurezza**: foglio Google e Gazzette su Drive. Lo script vecchio resta acceso.
-2. **Ultima importazione** con i dati aggiornati: `npm run import -- --apply --admin-email=<tua email>` (prima la prova a secco senza `--apply`). Lo script stampa il riepilogo e manda l'intestazione `x-audit-source: import`.
+2. **Ultima importazione**: già fatta.
 3. **Amministratore supremo** (una volta sola): in Supabase → SQL Editor eseguire
    `insert into platform_admins select id from auth.users where email='luciano16volpe@gmail.com';`
    (prima devi esserti registrato con quell'email).

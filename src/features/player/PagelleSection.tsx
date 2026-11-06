@@ -1,6 +1,5 @@
 import { PlayerPagellaText } from './PlayerPagellaText';
 // "📈 Pagelle": numeri, grafico a barre (ultime 10) con riquadro al tocco, ultima pagella scritta.
-// Fonte: drawPagelle e pgBarTap in legacy/index.html.
 import { useEffect, useRef, useState } from 'react';
 import type { LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';

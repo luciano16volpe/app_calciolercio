@@ -1,6 +1,6 @@
-// Traduzione dei dati dell'app attuale (script Google + rosa_calcetto.json) nelle righe del database.
-// Solo calcoli, niente rete: così si può provare con i dati veri senza scrivere nulla.
-import type { Database } from '../../src/data/types';
+// Dati veri di prova (tests/fixtures/rosa.json e live_feed.json) tradotti nelle righe del database finto delle prove su schermo.
+// Solo calcoli, niente rete.
+import type { Database } from '../src/data/types';
 
 type Tables = Database['public']['Tables'];
 export type PlayerInsert = Tables['players']['Insert'];
@@ -8,8 +8,8 @@ export type MatchInsert = Tables['matches']['Insert'];
 export type MatchPlayerInsert = Tables['match_players']['Insert'];
 export type AlboInsert = Tables['albo']['Insert'];
 
-// ── forma dei dati attuali ─────────────────────────────────────────────────
-export interface LegacyPlayer {
+// ── forma dei dati di prova ─────────────────────────────────────────────────
+export interface SeedPlayer {
   id: string;
   name: string;
   roles?: string[];
@@ -17,23 +17,23 @@ export interface LegacyPlayer {
   photo?: string; // "data:image/jpeg;base64,…"
   aliases?: string[];
 }
-export interface LegacyRosa {
-  players: LegacyPlayer[];
+export interface SeedRosa {
+  players: SeedPlayer[];
   weights: number[];
 }
-export type LegacyTeamEntry = string | { id?: string | null; name?: string };
-export interface LegacyMatch {
+export type SeedTeamEntry = string | { id?: string | null; name?: string };
+export interface SeedMatch {
   id: string;
   date: unknown;
   notes?: string;
-  teamA?: LegacyTeamEntry[];
-  teamB?: LegacyTeamEntry[];
+  teamA?: SeedTeamEntry[];
+  teamB?: SeedTeamEntry[];
   scoreA?: unknown;
   scoreB?: unknown;
   pred?: number | null;
   predRank?: number | null;
 }
-export interface LegacyRating {
+export interface SeedRating {
   matchId: string;
   player?: string;
   playerId?: string;
@@ -46,7 +46,7 @@ export interface LegacyRating {
   rigoriSbagliati?: unknown;
   titolo?: string;
 }
-export interface LegacyAlboRow {
+export interface SeedAlboRow {
   stagione?: string;
   chiave?: string;
   dal?: string;
@@ -58,7 +58,7 @@ export interface LegacyAlboRow {
   valore?: string;
   aggiornato?: string;
 }
-export interface LegacyGazzetta {
+export interface SeedGazzetta {
   matchId: string;
   data?: string;
   fileId: string;
@@ -66,14 +66,14 @@ export interface LegacyGazzetta {
   nome?: string;
   caricata?: string;
 }
-export interface LegacyFeed {
-  matches: LegacyMatch[];
-  ratings: LegacyRating[];
-  albo: LegacyAlboRow[];
-  gazzette: LegacyGazzetta[];
+export interface SeedFeed {
+  matches: SeedMatch[];
+  ratings: SeedRating[];
+  albo: SeedAlboRow[];
+  gazzette: SeedGazzetta[];
 }
 
-/** Cose che non tornano nei dati: l'importazione vera si ferma se ce ne sono. */
+/** Cose che non tornano nei dati: . */
 export type Issue = string;
 
 // ── date ───────────────────────────────────────────────────────────────────
@@ -104,8 +104,8 @@ const textOrNull = (v: unknown): string | null => {
 };
 
 // ── giocatori ──────────────────────────────────────────────────────────────
-/** Riga `players` (senza la foto, che si carica a parte). `legacy_id` = id della vecchia app. */
-export function mapPlayers(rosa: LegacyRosa): PlayerInsert[] {
+/** Riga `players` (senza la foto, che si carica a parte). `legacy_id` = id del giocatore nei dati di prova. */
+export function mapPlayers(rosa: SeedRosa): PlayerInsert[] {
   return rosa.players.map((p) => {
     const id = playerUuid(p.id);
     return {
@@ -119,7 +119,7 @@ export function mapPlayers(rosa: LegacyRosa): PlayerInsert[] {
 }
 
 /**
- * Id del giocatore nel database. Gli id della vecchia app sono "p_" + un UUID: si usa quell'UUID, così
+ * Id del giocatore nel database. Gli id dei dati di prova sono "p_" + un UUID: si usa quell'UUID, così
  * l'ordine tra i giocatori resta identico (da quell'ordine dipende, per esempio, come si scrivono i due nomi
  * della Coppia d'oro). Per id di altro formato: nessuno, lo assegna il database.
  */
@@ -128,16 +128,9 @@ export function playerUuid(legacyId: string): string | undefined {
   return m ? (m[1] as string).toLowerCase() : undefined;
 }
 
-/** Foto di un giocatore: tipo e contenuto dal "data:image/jpeg;base64,…". Senza foto → null. */
-export function parsePhoto(dataUrl: string | undefined): { mime: string; bytes: Buffer } | null {
-  const m = String(dataUrl ?? '').match(/^data:(image\/[a-z+.-]+);base64,(.+)$/i);
-  if (!m) return null;
-  return { mime: m[1] as string, bytes: Buffer.from(m[2] as string, 'base64') };
-}
-
 // ── partite e squadre ──────────────────────────────────────────────────────
 /** Riga `matches` (senza id: lo assegna il database; si ritrova con `legacy_id`). */
-export function mapMatches(feed: LegacyFeed, leagueId: string): { rows: MatchInsert[]; issues: Issue[] } {
+export function mapMatches(feed: SeedFeed, leagueId: string): { rows: MatchInsert[]; issues: Issue[] } {
   const issues: Issue[] = [];
   const rows: MatchInsert[] = [];
   const seen = new Set<string>();
@@ -172,18 +165,18 @@ export function mapMatches(feed: LegacyFeed, leagueId: string): { rows: MatchIns
 
 /**
  * Riga `match_players`: chi ha giocato (squadra e posto) con la sua pagella.
- * `playerIdOf` / `matchIdOf`: dal id della vecchia app all'id nel database.
+ * `playerIdOf` / `matchIdOf`: dall'id dei dati di prova all'id nel database.
  */
 export function mapMatchPlayers(
-  feed: LegacyFeed,
-  rosa: LegacyRosa,
+  feed: SeedFeed,
+  rosa: SeedRosa,
   matchIdOf: (legacyId: string) => string | undefined,
   playerIdOf: (legacyId: string) => string | undefined,
 ): { rows: MatchPlayerInsert[]; issues: Issue[] } {
   const issues: Issue[] = [];
   const byId = new Map(rosa.players.map((p) => [p.id, p]));
   const byName = new Map(rosa.players.map((p) => [p.name, p]));
-  const resolve = (e: LegacyTeamEntry) => {
+  const resolve = (e: SeedTeamEntry) => {
     const id = typeof e === 'string' ? null : e.id;
     const name = typeof e === 'string' ? e : (e.name ?? '');
     return (id ? byId.get(id) : undefined) ?? byName.get(name);
@@ -195,7 +188,7 @@ export function mapMatchPlayers(
     const matchId = matchIdOf(m.id);
     if (!matchId) continue; // partita scartata (es. data illeggibile): già segnalata
     matchesWithRows.add(m.id);
-    const teams: Array<['A' | 'B', LegacyTeamEntry[]]> = [['A', m.teamA ?? []], ['B', m.teamB ?? []]];
+    const teams: Array<['A' | 'B', SeedTeamEntry[]]> = [['A', m.teamA ?? []], ['B', m.teamB ?? []]];
     for (const [team, list] of teams) {
       list.forEach((e, position) => {
         const p = resolve(e);
@@ -254,9 +247,9 @@ export function mapMatchPlayers(
 
 // ── albo d'oro ─────────────────────────────────────────────────────────────
 /** Riga `albo`: una per stagione, con tutte le righe dei premi così come sono nel foglio. */
-export function mapAlbo(feed: LegacyFeed, leagueId: string): { rows: AlboInsert[]; issues: Issue[] } {
+export function mapAlbo(feed: SeedFeed, leagueId: string): { rows: AlboInsert[]; issues: Issue[] } {
   const issues: Issue[] = [];
-  const by = new Map<string, LegacyAlboRow[]>();
+  const by = new Map<string, SeedAlboRow[]>();
   for (const r of feed.albo) {
     if (!r.chiave) continue;
     (by.get(r.chiave) ?? by.set(r.chiave, []).get(r.chiave)!).push(r);
@@ -275,35 +268,4 @@ export function mapAlbo(feed: LegacyFeed, leagueId: string): { rows: AlboInsert[
     });
   }
   return { rows, issues };
-}
-
-// ── riepilogo ──────────────────────────────────────────────────────────────
-/** Numeri da mostrare prima di scrivere. */
-export function summarize(rosa: LegacyRosa, feed: LegacyFeed) {
-  return {
-    giocatori: rosa.players.length,
-    conFoto: rosa.players.filter((p) => parsePhoto(p.photo)).length,
-    soprannomi: rosa.players.reduce((n, p) => n + (p.aliases?.length ?? 0), 0),
-    partite: feed.matches.length,
-    pagelle: feed.ratings.length,
-    pagelleConTitolo: feed.ratings.filter((r) => String(r.titolo ?? '').trim()).length,
-    pagelleConDescrizione: feed.ratings.filter((r) => String(r.notes ?? '').trim()).length,
-    righeAlbo: feed.albo.length,
-    gazzette: feed.gazzette.length,
-  };
-}
-
-/** Controlla i dati senza scrivere: stessi passaggi dell'importazione, con id finti. */
-export function check(rosa: LegacyRosa, feed: LegacyFeed): { issues: Issue[]; counts: Record<string, number> } {
-  const fakeLeague = 'lega';
-  const m = mapMatches(feed, fakeLeague);
-  const matchId = new Map(m.rows.map((r) => [r.legacy_id as string, 'm:' + r.legacy_id]));
-  const playerId = new Map(rosa.players.map((p) => [p.id, 'p:' + p.id]));
-  const mp = mapMatchPlayers(feed, rosa, (id) => matchId.get(id), (id) => playerId.get(id));
-  const al = mapAlbo(feed, fakeLeague);
-  const gaz = feed.gazzette.filter((g) => !matchId.has(g.matchId)).map((g) => `Gazzetta della partita ${g.matchId}: la partita non esiste`);
-  return {
-    issues: [...m.issues, ...mp.issues, ...al.issues, ...gaz],
-    counts: { partite: m.rows.length, 'squadre+pagelle': mp.rows.length, 'stagioni albo': al.rows.length },
-  };
 }

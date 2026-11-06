@@ -7,7 +7,7 @@ async function openPlanned(browser: Browser, info: TestInfo, role='admin') {
   const user=be.addUser('u-planned','planned@example.invalid','Organizzatore');
   be.leagues.push({id:'SM',name:'San Marcello',slug:'san-marcello',is_public:false,invite_code:'abc12345',owner_id:user,settings:{},created_at:'2026-01-01'});
   be.members.push({league_id:'SM',user_id:user,role,joined_at:'2026-01-01'});
-  be.seedLegacy('SM');
+  be.seedFixtures('SM');
   const ids=be.players.slice(0,5).map((p)=>String(p.id));
   be.matches.push({id:'planned',league_id:'SM',date:'2026-11-20',play_time:'21:00:00',place:'Campo Sole',notes:'Partita da organizzare',score_a:null,score_b:null,pred:0,pred_rank:1});
   ids.slice(0,4).forEach((id,i)=>be.mplayers.push({match_id:'planned',player_id:id,team:i<2?'A':'B',position:i%2,rating:null,goals:0,assist:0,autogol:0,meta:0,rigori_sbagliati:0,titolo:null,descrizione:null}));

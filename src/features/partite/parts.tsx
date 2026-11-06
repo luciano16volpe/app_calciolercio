@@ -3,8 +3,7 @@ import { useElementVisibility } from '../../app/visibility';
 import { MatchTextBoundary } from './MatchTextBoundary';
 import { useMatchTexts, withMatchTexts } from '../../data/matchTexts';
 // Pezzi delle Partite: pulsanti della partita, ultima partita, elenco, Gazzette (striscia, archivio, visualizzatore),
-// testo delle pagelle. Fonte: matchShareButtons, renderLastMatch, renderMatchesList, renderGazStrip, openGazArchive,
-// openGazzetta, openPagelleText in legacy/index.html.
+// testo delle pagelle.
 import { Fragment, useState, type ReactNode } from 'react';
 import { useImageTools } from '../../app/ImageViewer';
 import { useToast } from '../../app/Toast';

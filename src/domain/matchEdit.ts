@@ -1,5 +1,4 @@
 // Modifica di una partita: cosa si salva, quali controlli si fanno prima. Solo calcoli (niente schermo, niente database).
-// Fonte: saveRatings, saveNewMatch, clampInt in legacy/index.html.
 import { clampRating } from './stats';
 
 /** Numero intero tra min e max; se non è un numero, `fallback`. */
@@ -48,7 +47,7 @@ export interface SavePlan {
   overAssist: string[];
 }
 
-/** Prepara il salvataggio della scheda partita, con le stesse regole di legacy. */
+/** Prepara il salvataggio della scheda partita. */
 export function planSave(teamA: PlayerFields[], teamB: PlayerFields[], scA: string, scB: string): SavePlan {
   const rows: RatingRow[] = [];
   const missingRating: string[] = [];
@@ -84,7 +83,7 @@ export function planSave(teamA: PlayerFields[], teamB: PlayerFields[], scA: stri
   return { rows, missingRating, scoreA, scoreB, overAssist };
 }
 
-/** Pulsanti − e + dei campi: stesso comportamento di legacy (scoreStep, rateStep, goalStep). */
+/** Pulsanti − e + dei campi. */
 export function stepScore(cur: string, delta: number): string {
   let v = parseInt(cur);
   if (isNaN(v)) v = delta > 0 ? 1 : 0;

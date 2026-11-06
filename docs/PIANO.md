@@ -4,7 +4,7 @@ Ogni fase finisce con: test verdi, prova su iPhone e Android (emulati), breve ri
 
 ## Fase 0 — Progetto vuoto
 - [x] Vite + React + TypeScript (strict), ESLint, Vitest, Playwright, vite-plugin-pwa
-- [x] `src/styles/app.css` portato da `legacy/index.html` (aspetto identico)
+- [x] `src/styles/app.css` dall'app precedente
 - [x] Supabase: client (`src/data/supabase.ts`), `.env.local` con URL e chiave pubblica,
       migrazione `supabase/migrations/20261031000000_schema.sql` applicata, tipi generati
 - [x] Pubblicazione su Vercel/Cloudflare Pages dal nuovo repository (privato)
@@ -19,16 +19,11 @@ con quella storica: le regole correnti vengono verificate direttamente in `tests
 - [x] balancing (comboMetrics, roleFitScore, roleCountPenalty, generateTeams, predGoals)
 - [x] whatsapp (parseWhatsAppPagelle + abbinamento nomi) — i 4 messaggi reali: 40/40
 
-## Fase 2 — Importazione dei dati (ripetibile)
-- [x] Strumento (pagina o script) che legge l'attuale script Google (azione `matches`: partite,
-      pagelle, albo, gazzette) e `rosa_calcetto.json`, e scrive in Supabase usando `legacy_id`
-      (una seconda importazione aggiorna, non duplica)
-- [x] Foto dei giocatori (base64 nella rosa) → Storage `photos`; Gazzette (Drive, azione `gazFile`)
-      → Storage `gazzette/<lega>/<partita>.jpg`
-- [x] Lega "CalcioLercio" pubblica, l'utente come admin; controllo: stessi numeri della legacy
+## Fase 2 — Importazione dei dati (completata)
+- [x] Giocatori, partite, pagelle, albo, foto e Gazzette importati in Supabase; lo strumento di importazione è stato tolto.
 
 ## Fase 3 — Schermate, collegate a Supabase
-Ogni passo: aspetto identico a legacy (confronto con screenshot iPhone/Android/360 px), test, riepilogo.
+Ogni passo: prove su iPhone, Android e 360 px, test, riepilogo.
 - [x] 3.1 Struttura (intestazione, 4 schede in basso, cache dati) · Rosa: elenco delle carte · riquadro installa su iPhone
 - [x] 3.2 Scheda giocatore (sola lettura: foto, ruoli, statistiche, pagelle, bacheca, compagni e avversari)
 - [x] 3.3a Classifiche: stagione, quattro numeri, schede Marcatori · Assist · Media voto · Coppie · Record

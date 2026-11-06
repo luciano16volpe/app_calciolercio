@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 
 const OWNER_KEY = 'calciolercio-cache-owner';
-const LEGACY_KEY = 'calciolercio-cache';
+const OLD_CACHE_KEY = 'calciolercio-cache';
 const PREFIX = 'calciolercio-cache-user:';
 let activeUser: string | null | undefined;
 let activeClient: QueryClient | undefined;
@@ -20,7 +20,7 @@ export function changeCacheOwner(userId: string | null): void {
   }
   try {
     const storedOwner = localStorage.getItem(OWNER_KEY);
-    localStorage.removeItem(LEGACY_KEY);
+    localStorage.removeItem(OLD_CACHE_KEY);
     if (storedOwner && storedOwner !== userId) localStorage.removeItem(cacheKey(storedOwner));
     if (previous && previous !== userId) localStorage.removeItem(cacheKey(previous));
     if (userId) localStorage.setItem(OWNER_KEY, userId);

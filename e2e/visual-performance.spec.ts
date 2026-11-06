@@ -7,7 +7,7 @@ function world() {
   const be=new FakeBackend(); const user=be.addUser('u-visual','visual@example.com','Visual test');
   be.leagues.push({id:'SM',name:'San Marcello',slug:'san-marcello',is_public:false,invite_code:'test',owner_id:user,settings:{},created_at:'2026-01-01'});
   be.members.push({league_id:'SM',user_id:user,role:'admin',joined_at:'2026-01-01'});
-  be.seedLegacy('SM'); return {be,user};
+  be.seedFixtures('SM'); return {be,user};
 }
 
 test('player photos below the screen wait until scrolled near, keeping initials and layout', async ({ browser }) => {

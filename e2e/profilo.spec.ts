@@ -2,7 +2,7 @@
 // il riepilogo, il mio giocatore, uscire da una lega. Footer a sole icone con la mia faccia. Database finto con i dati veri di prova.
 import { expect, test, type Browser, type Page, type TestInfo } from './fixtures';
 import { FakeBackend } from './fakeBackend';
-import { noOverflow, openMenu, openProfile } from './helpers';
+import { noOverflow, openMenu, openProfile, settledText } from './helpers';
 
 type Row = Record<string, unknown>;
 
@@ -12,7 +12,7 @@ function world(role: 'admin' | 'member' = 'member', link = true) {
   const u = be.addUser('u-me', 'me@example.com', 'Io Medesimo');
   be.leagues.push({ id: 'SM', name: 'San Marcello', slug: 'san-marcello', is_public: false, invite_code: 'smsmsmsm', owner_id: null, settings: {}, created_at: '2026-01-01' });
   be.members.push({ league_id: 'SM', user_id: u, role, joined_at: '2026-01-01' });
-  be.seedLegacy('SM');
+  be.seedFixtures('SM');
   // una seconda lega di cui faccio parte
   be.leagues.push({ id: 'L2', name: 'Calcetto del Giovedì', slug: 'calcetto-del-giovedi', is_public: false, invite_code: 'giovgiov', owner_id: null, settings: {}, created_at: '2026-02-01' });
   be.members.push({ league_id: 'L2', user_id: u, role: 'member', joined_at: '2026-02-01' });
@@ -205,7 +205,7 @@ test('Profilo: statistiche e ultime dieci partite seguono la lega scelta', async
   const page = await open(browser, testInfo, be, u);
   const card = page.locator('#profile-player-card');
   await expect(card).toBeVisible();
-  const overall = await card.locator('.fut-mini-ovr').innerText();
+  const overall = await settledText(card.locator('.fut-mini-ovr'));
   await expect(page.locator('#profile-card')).toHaveCount(0);
   await openMenu(page);
   await page.locator('#menu-leagues .menu-lgrow[data-slug="calcetto-del-giovedi"]').click();

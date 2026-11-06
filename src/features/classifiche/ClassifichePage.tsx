@@ -1,6 +1,5 @@
 import { scrollPageToTop } from '../../app/scroll';
 // Pagina Classifiche: scelta della stagione, i quattro numeri, schede scorrevoli.
-// Fonte: renderClassifiche, renderSeasonDash, CL_TABS in legacy/index.html.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { LeagueData } from '../../data/queries';
 import { nextStatsSort, seasonDash, STATS_SORT_DEFAULT, type StatsCol, type StatsFilter } from '../../domain/rankings';
@@ -18,7 +17,7 @@ export const CL_TABS = [
 ] as const;
 type Tab = (typeof CL_TABS)[number][0];
 
-// Non è più mostrato nelle Classifiche (scelta di novembre 2026); resta testato contro legacy nel caso si voglia riusarlo.
+// Non è più mostrato nelle Classifiche (scelta di novembre 2026); resta nel codice nel caso si voglia riusarlo.
 export function SeasonDash({ data, scope }: { data: LeagueData; scope: string }) {
   const d = seasonDash(data.dataset, scope);
   if (!d) return null;
@@ -104,7 +103,7 @@ export function ClassifichePage({ data, onOpenPlayer, active = true }: { data: L
         ))}
       </div>
       </div>
-      {/* come in legacy: tre schede (carte) diverse, una sola visibile */}
+      {/* tre schede (carte) diverse, una sola visibile */}
       {tab !== 'statistiche' ? (
         <div className="card cl-sec" id="cl-list-card">
           <div id="scorers-list">

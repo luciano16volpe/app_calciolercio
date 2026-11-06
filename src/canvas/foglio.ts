@@ -1,5 +1,4 @@
 // Foglio partita A4 in bianco e nero, da stampare e compilare in campo con una X per ogni gol, assist o autogol.
-// Fonte: drawFieldSheet in legacy/index.html.
 import { formatDate } from '../domain/format';
 import { normalizeTeam, playerKey } from '../domain/stats';
 import type { Dataset, Match } from '../domain/types';

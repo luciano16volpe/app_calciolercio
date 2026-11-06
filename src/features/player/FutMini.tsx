@@ -1,5 +1,6 @@
 import { useElementVisibility } from '../../app/visibility';
-// Miniatura della figurina (il pulsante della scheda giocatore). Fonte: futMiniHTML in legacy/index.html.
+// Miniatura della figurina (il pulsante della scheda giocatore).
+import { CountUp } from '../../app/CountUp';
 import { useImageTools } from '../../app/ImageViewer';
 import { useToast } from '../../app/Toast';
 import { figurinaCanvas } from '../../canvas/lazy';
@@ -38,12 +39,12 @@ export function FutMini({ data, player, statsDataset }: { data: LeagueData; play
       className={`fut-mini${t.holo ? ' holo' : ''}${fire ? ' fire' : ''}${crisi ? ' crisi' : ''}`}
       onClick={() => {
         toast('⏳ Preparo la figurina…');
-        void figurinaCanvas(data, player, statsData).then((c) => showImage('🃏 La figurina di ' + player.name, c, 'figurina_' + player.name.replace(/\s+/g, '_') + '.png', '🃏 La figurina di ' + player.name)).catch(() => toast('Impossibile preparare la figurina. Riprova.'));
+        void figurinaCanvas(data, player, statsData).then((c) => showImage('🃏 La figurina di ' + player.name, c, 'figurina_' + player.name.replace(/\s+/g, '_') + '.png', '🃏 La figurina di ' + player.name, { tilt: { holo: !!t.holo } })).catch(() => toast('Impossibile preparare la figurina. Riprova.'));
       }}
       title="Apri la figurina"
       style={{ background: `linear-gradient(150deg,${t.metal.join(',')})`, color: t.text }}
     >
-      <span className="fut-mini-ovr">{futRating(player.stats, weights)}</span>
+      <span className="fut-mini-ovr"><CountUp value={futRating(player.stats, weights)} /></span>
       <span className={`fut-mini-pag ${pag.cls}`}>
         {pag.label}
         {fs ? (

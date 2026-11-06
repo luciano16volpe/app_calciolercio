@@ -1,5 +1,4 @@
 // "🏆 Albo d'oro": premi, Occasionali, premi della vergogna e imprese di ogni stagione.
-// Fonte: renderAlbo, nameLink, winnersHTML in legacy/index.html.
 import { Fragment, useMemo } from 'react';
 import type { LeagueData } from '../../data/queries';
 import { ALBO_MIN_MATCHES, alboSeasons, FEATS, type AwardResult } from '../../domain/awards';

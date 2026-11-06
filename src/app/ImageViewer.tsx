@@ -1,7 +1,8 @@
 // Visualizzatore a schermo intero delle immagini generate (figurina, riepilogo, formazioni…): prima si guarda,
-// poi si decide se condividere o salvare. Fonte: openImageViewer, shareViewerImage, saveViewerImage, shareCanvas in legacy/index.html.
+// poi si decide se condividere o salvare.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useToast } from './Toast';
+import { TiltImage, useGyro } from './TiltImage';
 
 interface Shown {
   title: string;
@@ -9,11 +10,17 @@ interface Shown {
   blob: Blob;
   name: string;
   text: string;
+  /** Figurina: la luce segue il dito o l'inclinazione. `holo` = riflessi arcobaleno (livelli alti). */
+  tilt?: { holo: boolean };
+}
+
+export interface ShowOptions {
+  tilt?: { holo: boolean };
 }
 
 interface ImageTools {
   /** Mostra l'immagine a schermo intero, con Condividi e Salva. */
-  showImage: (title: string, canvas: HTMLCanvasElement | Promise<HTMLCanvasElement>, name: string, text: string) => void;
+  showImage: (title: string, canvas: HTMLCanvasElement | Promise<HTMLCanvasElement>, name: string, text: string, opts?: ShowOptions) => void;
   /** Condivide subito l'immagine (o la salva, se il telefono non ha la finestra di condivisione). */
   shareCanvas: (canvas: HTMLCanvasElement | Promise<HTMLCanvasElement>, name: string, text: string) => void;
 }
@@ -56,6 +63,7 @@ export function ImageProvider({ children }: { children: ReactNode }) {
   const [shown, setShown] = useState<Shown | null>(null);
   const [zoom, setZoom] = useState(false);
   const last = useRef<Shown | null>(null);
+  const gyro = useGyro(!!shown?.tilt);
 
   const close = useCallback(() => setShown(null), []);
   // l'indirizzo temporaneo dell'immagine si libera quando se ne apre un'altra o si chiude la finestra
@@ -65,10 +73,10 @@ export function ImageProvider({ children }: { children: ReactNode }) {
     if (prev && prev !== shown) URL.revokeObjectURL(prev.url);
   }, [shown]);
 
-  const showImage = useCallback(function showCanvasImage(title: string, canvas: HTMLCanvasElement | Promise<HTMLCanvasElement>, name: string, text: string) {
+  const showImage = useCallback(function showCanvasImage(title: string, canvas: HTMLCanvasElement | Promise<HTMLCanvasElement>, name: string, text: string, opts?: ShowOptions) {
     if ('then' in canvas) {
       toast('Preparo immagine...');
-      void canvas.then((ready) => showCanvasImage(title, ready, name, text)).catch(() => toast('Impossibile preparare l’immagine. Riprova.'));
+      void canvas.then((ready) => showCanvasImage(title, ready, name, text, opts)).catch(() => toast('Impossibile preparare l’immagine. Riprova.'));
       return;
     }
     canvas.toBlob((blob) => {
@@ -78,7 +86,7 @@ export function ImageProvider({ children }: { children: ReactNode }) {
         return;
       }
       setZoom(false);
-      setShown({ title, blob, url: URL.createObjectURL(blob), name, text });
+      setShown({ title, blob, url: URL.createObjectURL(blob), name, text, tilt: opts?.tilt });
     }, 'image/png');
   }, [toast]);
 
@@ -123,9 +131,12 @@ export function ImageProvider({ children }: { children: ReactNode }) {
             <button type="button" onClick={close} aria-label="Chiudi">✕</button>
           </div>
           <div className={`gv-img${zoom ? ' zoom' : ''}`} onClick={() => setZoom((z) => !z)}>
-            <img src={shown.url} alt={shown.title} decoding="async" />
+            {shown.tilt && !zoom ? <TiltImage url={shown.url} alt={shown.title} holo={shown.tilt.holo} subscribe={gyro.subscribe} /> : <img src={shown.url} alt={shown.title} decoding="async" />}
           </div>
-          <div className="gv-note">Tocca l'immagine per ingrandirla.</div>
+          <div className="gv-note">
+            {shown.tilt ? 'Muovi il dito sulla figurina per farla brillare. Tocca per ingrandirla.' : "Tocca l'immagine per ingrandirla."}
+            {gyro.needsPermission ? <button type="button" className="gv-tilt-btn" onClick={() => void gyro.enable()}>✨ Fai brillare inclinando il telefono</button> : null}
+          </div>
           <div className="gv-btns">
             <button type="button" onClick={() => void shareShown()}>📲 Condividi</button>
             <button type="button" onClick={() => { download(shown.url, shown.name); toast('⬇️ Immagine salvata'); }}>⬇️ Salva</button>

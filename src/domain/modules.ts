@@ -1,9 +1,9 @@
-// Moduli di gioco personalizzati (Impostazioni). Fonte: moduleComposition, addModule, deleteModule, saveModules, loadModules in legacy/index.html.
+// Moduli di gioco personalizzati (Impostazioni).
 import { DEFAULT_MODULES, makeSlots, type Module, type Slot } from './balancing';
 
 export type Modules = Record<number, Module[]>;
 export const MODULE_SIZES = [5, 6, 7] as const;
-/** Chiave nel telefono (la stessa di legacy). */
+/** Chiave nel telefono. */
 export const MODULES_KEY = 'calc5_modules';
 
 /** Portieri, difensori, centrocampisti e attaccanti di uno schieramento (il portiere è il primo DIF molto arretrato). */
@@ -36,7 +36,7 @@ export function removeModule(mods: Modules, n: number, idx: number): { modules: 
   return { modules: { ...mods, [n]: list.filter((_, i) => i !== idx) }, error: null };
 }
 
-/** Testo da salvare nel telefono (stesso formato di legacy). */
+/** Testo da salvare nel telefono. */
 export function serializeModules(mods: Modules): string {
   const out: Record<number, Array<{ notation: string; desc: string; counts: ReturnType<typeof moduleComposition> }>> = {};
   for (const n of MODULE_SIZES) out[n] = (mods[n] ?? []).map((m) => ({ notation: m.notation, desc: m.desc || '', counts: moduleComposition(m.slots) }));

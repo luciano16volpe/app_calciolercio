@@ -1,4 +1,4 @@
-// Finestra di conferma (come confirmModal di legacy) e due piccoli aiuti per la tastiera di iPhone.
+// Finestra di conferma e due piccoli aiuti per la tastiera di iPhone.
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 
 /** Toglie il cursore dai campi: su iPhone, se la tastiera resta aperta chiudendo una finestra, la barra in basso resta "sospesa". */

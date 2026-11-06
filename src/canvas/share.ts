@@ -1,5 +1,4 @@
 // Strumenti comuni delle immagini da condividere (figurina, riepilogo, formazioni, foglio, confronto).
-// Fonte: SHARE_C, SHARE_FONT, newShareCanvas, fitText, drawShareHeader, drawTeamBlock, roundRect in legacy/index.html.
 // Regole imparate a caro prezzo (vedi CLAUDE.md): testo centrato sempre misurato con measureText, niente emoji con U+FE0F
 // nei testi centrati, doppia risoluzione.
 
@@ -77,5 +76,5 @@ export function drawTeamBlock(ctx: Ctx, x: number, y: number, w: number, h: numb
   ctx.globalAlpha = 1;
 }
 
-/** Versione dell'app scritta in fondo alle immagini (stessa di legacy: serve a riconoscere le immagini nuove da quelle vecchie). */
+/** Versione dell'app scritta in fondo alle immagini (serve a riconoscere le immagini nuove da quelle vecchie). */
 export const APP_VERSION = '2026.10.30-l';

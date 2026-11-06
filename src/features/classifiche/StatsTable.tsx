@@ -1,5 +1,4 @@
 // Tabella "📈 Statistiche giocatori": Titolari / Occasionali / Tutti, intestazioni toccabili per riordinare.
-// Fonte: renderStatsTable, statsFilterTabs in legacy/index.html.
 import type { LeagueData } from '../../data/queries';
 import { avgColor, statsTable, type StatsCol, type StatsFilter } from '../../domain/rankings';
 

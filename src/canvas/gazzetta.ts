@@ -1,4 +1,4 @@
-// Gazzetta: compressa sul telefono (lato lungo max 2000 px, JPEG 0,86, come legacy: gazCompress) + miniatura leggera per elenchi.
+// Gazzetta: compressa sul telefono (lato lungo max 1600 px, JPEG 0,8) + miniatura leggera per elenchi.
 
 /** Legge un'immagine e la riduce a `maxSide` px sul lato lungo, in JPEG (sfondo bianco). */
 export async function compressImage(file: File, maxSide: number, quality: number): Promise<Blob> {
@@ -25,5 +25,5 @@ export async function compressImage(file: File, maxSide: number, quality: number
   return new Promise((resolve, reject) => c.toBlob((b) => (b ? resolve(b) : reject(new Error('Errore immagine'))), 'image/jpeg', quality));
 }
 
-export const compressGazzetta = (f: File) => compressImage(f, 2000, 0.86);
+export const compressGazzetta = (f: File) => compressImage(f, 1600, 0.8);
 export const makeGazzettaThumb = (f: File) => compressImage(f, 500, 0.8);
