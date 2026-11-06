@@ -27,10 +27,10 @@ export function useGazzettaUrl(path: string | undefined, enabled = true) {
   const { user } = useAuth();
   return useQuery({ queryKey: ['gazzetta-url', user?.id, path], enabled: enabled && !!user && !!path,
     queryFn: async () => {
-      const { data, error } = await supabase.storage.from('gazzette').createSignedUrl(path!, 60);
+      const { data, error } = await supabase.storage.from('gazzette').createSignedUrl(path!, 300);
       if (error) throw error;
       return data.signedUrl;
-    }, staleTime: 40_000, refetchInterval: 45_000, gcTime: 0, retry: false });
+    }, staleTime: 240_000, gcTime: 0, retry: false });
 }
 
 export interface LeagueData {
@@ -129,30 +129,21 @@ async function fetchLeagueHistory(league: LeagueData['league']) {
     supabase.from('match_editors').select('match_id, name').eq('league_id', league.id), // la firma delle pagelle: se non si legge, si omette
   ]);
   const matchIds = matches.map((m) => m.id);
+  // Gazzette e pagelle si leggono a gruppi di 100 partite, tutti i gruppi insieme (non uno dopo l'altro).
   // Le Gazzette sono filtrate sul server: non si scaricano quelle delle altre leghe.
-  const gaz: Array<{ match_id: string; file_path: string }> = [];
-  for (let i = 0; i < matchIds.length; i += 100) {
-    const ids = matchIds.slice(i, i + 100);
-    gaz.push(...await fetchAll((a, b) => supabase.from('gazzette').select('match_id, file_path').in('match_id', ids).order('match_id').range(a, b), 'Gazzette'));
-  }
-  // le pagelle si leggono a gruppi di partite (l'elenco degli id sta nell'indirizzo della richiesta)
-  const mp: DbRows['matchPlayers'] = [];
-  for (let i = 0; i < matchIds.length; i += 100) {
-    const part = matchIds.slice(i, i + 100);
-    mp.push(
-      ...(await fetchAll(
-        (a, b) =>
-          supabase
-            .from('match_player_summaries')
-            .select('match_id, player_id, team, position, rating, goals, assist, autogol, meta, rigori_sbagliati, has_text')
-            .in('match_id', part)
-            .order('match_id')
-            .order('player_id')
-            .range(a, b),
-        'squadre e pagelle',
-      )),
-    );
-  }
+  const chunks: string[][] = [];
+  for (let i = 0; i < matchIds.length; i += 100) chunks.push(matchIds.slice(i, i + 100));
+  const [gazParts, mpParts] = await Promise.all([
+    Promise.all(chunks.map((ids) => fetchAll((a, b) => supabase.from('gazzette').select('match_id, file_path').in('match_id', ids).order('match_id').range(a, b), 'Gazzette'))),
+    Promise.all(chunks.map((part) => fetchAll(
+      (a, b) => supabase.from('match_player_summaries')
+        .select('match_id, player_id, team, position, rating, goals, assist, autogol, meta, rigori_sbagliati, has_text')
+        .in('match_id', part).order('match_id').order('player_id').range(a, b),
+      'squadre e pagelle',
+    ))),
+  ]);
+  const gaz = gazParts.flat();
+  const mp: DbRows['matchPlayers'] = mpParts.flat();
   if (albo.error) throw new Error(`albo: ${albo.error.message}`);
 
   return { matches, matchPlayers: mp,

@@ -49,7 +49,7 @@ export async function setMyPhoto(playerId: string, blob: Blob | null, oldPath: s
   let path: string | null = null;
   if (blob) {
     path = `${playerId}-${Date.now()}.jpg`;
-    const up = await supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg' });
+    const up = await supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000' });
     if (up.error) throw new Error(up.error.message);
   }
   const { error } = await supabase.rpc('set_my_photo', { p_path: path as string });

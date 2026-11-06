@@ -3,7 +3,8 @@ import { useElementVisibility } from '../../app/visibility';
 import { useImageTools } from '../../app/ImageViewer';
 import { useToast } from '../../app/Toast';
 import { figurinaCanvas } from '../../canvas/lazy';
-import type { LeagueData } from '../../data/queries';
+import { loadImage } from '../../canvas/images';
+import { photoUrl, type LeagueData } from '../../data/queries';
 import { formState, pagInfo, playerRatingAvg } from '../../domain/form';
 import { futRating, futTierOfRating } from '../../domain/ovr';
 import { playerTrophies } from '../../domain/playerCard';
@@ -11,6 +12,11 @@ import { playerSeason, seasonStats } from '../../domain/stats';
 import { profileSeasonData } from '../../domain/profile';
 import { FORM_STATES, FUT_TIERS } from '../../domain/tiers';
 import type { Dataset, Player } from '../../domain/types';
+
+/** Appena il dito tocca la figurina si scarica già il codice del disegno e la foto: al «click» è tutto pronto. */
+function prepareFigurina(data: LeagueData, player: Player): Promise<unknown> {
+  return Promise.all([import('../../canvas/make'), loadImage(photoUrl(data.photos[player.id]))]).catch(() => undefined);
+}
 
 export function FutMini({ data, player, statsDataset }: { data: LeagueData; player: Player; statsDataset?: Dataset }) {
   const { ref, visible } = useElementVisibility<HTMLButtonElement>();
@@ -28,6 +34,7 @@ export function FutMini({ data, player, statsDataset }: { data: LeagueData; play
   const fs = state ? FORM_STATES[state] : null;
   return (
     <button ref={ref} data-visual-active={visible}
+      onPointerDown={() => void prepareFigurina(data, player)}
       className={`fut-mini${t.holo ? ' holo' : ''}${fire ? ' fire' : ''}${crisi ? ' crisi' : ''}`}
       onClick={() => {
         toast('⏳ Preparo la figurina…');

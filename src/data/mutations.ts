@@ -114,7 +114,7 @@ export async function setPlayerPhoto(playerId: string, blob: Blob | null, oldPat
   let path: string | null = null;
   if (blob) {
     path = `${playerId}-${Date.now()}.jpg`;
-    const up = await supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg' });
+    const up = await supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000' });
     if (up.error) throw fail('foto', up.error);
   }
   const { error } = await supabase.from('players').update({ photo_path: path }).eq('id', playerId);
@@ -130,9 +130,9 @@ export async function setPlayerPhoto(playerId: string, blob: Blob | null, oldPat
 export async function setGazzetta(leagueId: string, matchId: string, full: Blob, thumb: Blob, oldPath: string | null): Promise<string> {
   const path = `${leagueId}/${matchId}-${Date.now()}.jpg`;
   const bucket = supabase.storage.from('gazzette');
-  const up = await bucket.upload(path, full, { contentType: 'image/jpeg' });
+  const up = await bucket.upload(path, full, { contentType: 'image/jpeg', cacheControl: '31536000' });
   if (up.error) throw fail('Gazzetta', up.error);
-  const th = await bucket.upload(path.replace(/\.jpg$/, '-t.jpg'), thumb, { contentType: 'image/jpeg' });
+  const th = await bucket.upload(path.replace(/\.jpg$/, '-t.jpg'), thumb, { contentType: 'image/jpeg', cacheControl: '31536000' });
   if (th.error) console.warn('miniatura Gazzetta non salvata', th.error.message); // non grave: si usa il file completo
   const { error } = await supabase.rpc('publish_gazzetta', { p_match: matchId, p_path: path });
   if (error) {
