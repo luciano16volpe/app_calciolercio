@@ -10,7 +10,7 @@ import { playerPairs, type PairMate } from '../../domain/pairs';
 import { bachecaView, formWeightTip, formWeightView, playerTrophies } from '../../domain/playerCard';
 import { seasonStats } from '../../domain/stats';
 import { ICONS, STATS, type Player } from '../../domain/types';
-import { FireChip } from '../rosa/RosaList';
+import { FireChip } from './FireChip';
 import { FutMini } from './FutMini';
 import { PagelleSection } from './PagelleSection';
 import { PlayerEditTop } from './PlayerEditTop';

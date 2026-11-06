@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '../../app/LoadingIndicator';
 // Scheda "Il mio giocatore" (solo con l'accesso): "questo sono io" → richiesta → conferma dell'amministratore.
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -37,7 +38,7 @@ export function MyPlayerCard({ data }: { data: LeagueData | undefined }) {
   return (
     <div className="card" id="myplayer-card">
       <div className="section-header">⚽ Il mio giocatore</div>
-      {q.isLoading ? <div style={{ fontSize: 12, color: 'var(--text3)' }}>⏳ Caricamento…</div> : null}
+      {q.isLoading ? <LoadingIndicator /> : null}
       {q.isError ? <div id="myplayer-error" style={{ fontSize: 12, color: 'var(--red)', fontWeight: 700 }}>{(q.error as Error).message}</div> : null}
       {s?.linked ? (
         <div>

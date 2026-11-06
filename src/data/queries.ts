@@ -1,7 +1,7 @@
 // Lettura dei dati della lega da Supabase, con la cache di TanStack Query:
 // la schermata mostra subito quello che c'era l'ultima volta, poi si aggiorna.
-import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
 import { useSelectedLeague } from '../app/league';
 import { useAuth } from '../app/auth';
 import type { AlboRow } from '../domain/awards';
@@ -23,9 +23,9 @@ export const gazzettaThumbPath = (path: string): string => path.replace(/\.jpg$/
 export const gazzettaThumbUrl = (path: string): string => gazzettaUrl(gazzettaThumbPath(path));
 
 /** URL temporaneo: il database verifica che la Gazzetta sia accessibile all'account. */
-export function useGazzettaUrl(path: string | undefined) {
+export function useGazzettaUrl(path: string | undefined, enabled = true) {
   const { user } = useAuth();
-  return useQuery({ queryKey: ['gazzetta-url', user?.id, path], enabled: !!user && !!path,
+  return useQuery({ queryKey: ['gazzetta-url', user?.id, path], enabled: enabled && !!user && !!path,
     queryFn: async () => {
       const { data, error } = await supabase.storage.from('gazzette').createSignedUrl(path!, 60);
       if (error) throw error;
@@ -34,6 +34,8 @@ export function useGazzettaUrl(path: string | undefined) {
 }
 
 export interface LeagueData {
+  textsDeferred?: boolean;
+  textVersion?: string;
   league: { id: string; name: string; is_public: boolean; slug: string; owner_id: string | null };
   /** Giocatori della lega, partite con squadre e pagelle, nel formato della logica (src/domain). Include anche chi è uscito dalla Rosa ma ha giocato partite della lega (storia). */
   dataset: Dataset;
@@ -141,8 +143,8 @@ async function fetchLeagueHistory(league: LeagueData['league']) {
       ...(await fetchAll(
         (a, b) =>
           supabase
-            .from('match_players')
-            .select('match_id, player_id, team, position, rating, goals, assist, autogol, meta, rigori_sbagliati, titolo, descrizione')
+            .from('match_player_summaries')
+            .select('match_id, player_id, team, position, rating, goals, assist, autogol, meta, rigori_sbagliati, has_text')
             .in('match_id', part)
             .order('match_id')
             .order('player_id')
@@ -162,6 +164,7 @@ async function fetchLeagueHistory(league: LeagueData['league']) {
 export const LEAGUE_QUERY_KEY = ['league-data'] as const;
 export const LEAGUE_ROSTER_QUERY_KEY = [...LEAGUE_QUERY_KEY, 'roster'] as const;
 export const LEAGUE_HISTORY_QUERY_KEY = [...LEAGUE_QUERY_KEY, 'history'] as const;
+export const LEAGUE_VERSION_QUERY_KEY = [...LEAGUE_QUERY_KEY, 'version'] as const;
 export const GAME_SETTINGS_QUERY_KEY = ['game-settings'] as const;
 
 /** Le regole sono condivise dalle leghe e si ricaricano solo quando cambiano. */
@@ -189,6 +192,7 @@ async function fetchPastPlayers(ids: string[]) {
 
 /** Identita, rosa, storico e regole hanno cache separate per utente e lega. */
 export function useLeagueData() {
+  const qc = useQueryClient();
   const slug = useSelectedLeague();
   const { user } = useAuth();
   const uid = user?.id;
@@ -200,8 +204,20 @@ export function useLeagueData() {
   const identity = league.data;
   const roster = useQuery({ queryKey: [...LEAGUE_ROSTER_QUERY_KEY, uid, identity?.id], enabled: !!identity && !!uid,
     queryFn: () => fetchLeagueRoster(identity!.id), staleTime: 60_000 });
-  const history = useQuery({ queryKey: [...LEAGUE_HISTORY_QUERY_KEY, uid, identity?.id, historyAllowed], enabled: !!identity && !!uid && features.isSuccess,
-    queryFn: () => fetchLeagueHistory(identity!), staleTime: 0, gcTime: 0 });
+  const version = useQuery({ queryKey: [...LEAGUE_VERSION_QUERY_KEY, uid, identity?.id, historyAllowed], enabled: !!identity && !!uid && features.isSuccess,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('league_data_versions').select('version').eq('league_id', identity!.id).maybeSingle();
+      if (error) throw new Error('versione dati: ' + error.message);
+      if (!data) throw new Error('Lega non disponibile: aggiorna le tue leghe.');
+      return data.version;
+    }, staleTime: 15_000, refetchInterval: 60_000, gcTime: 30 * 60_000 });
+  const history = useQuery({ queryKey: [...LEAGUE_HISTORY_QUERY_KEY, uid, identity?.id, historyAllowed], enabled: !!identity && !!uid && features.isSuccess && version.isSuccess,
+    queryFn: async () => ({ ...await fetchLeagueHistory(identity!), version: version.data }), staleTime: Infinity, gcTime: 30 * 60_000, refetchOnWindowFocus: false, refetchOnReconnect: false });
+  useEffect(() => {
+    if (version.data && history.data && history.data.version !== version.data) {
+      void qc.invalidateQueries({ queryKey: [...LEAGUE_HISTORY_QUERY_KEY, uid, identity?.id] });
+    }
+  }, [qc, uid, identity?.id, version.data, history.data]);
   const pastIds = useMemo(() => {
     const active = new Set(roster.data?.ids ?? []);
     return [...new Set((history.data?.matchPlayers ?? []).map((p) => p.player_id))].filter((id) => !active.has(id)).sort();
@@ -210,16 +226,16 @@ export function useLeagueData() {
     enabled: !!uid && !!identity && !!roster.data && !!history.data,
     queryFn: () => fetchPastPlayers(pastIds), staleTime: 60_000 });
   const data = useMemo((): LeagueData | undefined => {
-    if (!identity || !roster.data || !history.data || !settings.data || !pastPlayers.data) return undefined;
+    if (version.isError || !version.isSuccess || !identity || !roster.data || !history.data || !settings.data || !pastPlayers.data) return undefined;
     const players = [...roster.data.players, ...pastPlayers.data];
-    return { league: identity, rosterIds: roster.data.ids, aliases: roster.data.aliases,
+    return { textsDeferred: true, textVersion: version.data + ':' + history.dataUpdatedAt, league: identity, rosterIds: roster.data.ids, aliases: roster.data.aliases,
       dataset: dbToDataset({ players, matches: history.data.matches, matchPlayers: history.data.matchPlayers }),
       photos: Object.fromEntries(players.map((p) => [p.id, p.photo_path])),
       albo: history.data.albo, gazzette: history.data.gazzette, editors: history.data.editors, ...settings.data };
-  }, [identity, roster.data, history.data, settings.data, pastPlayers.data]);
+  }, [identity, roster.data, history.data, history.dataUpdatedAt, version.data, version.isError, version.isSuccess, settings.data, pastPlayers.data]);
   return { ...league, data,
-    isError: league.isError || roster.isError || history.isError || settings.isError || pastPlayers.isError || features.isError,
-    error: league.error ?? roster.error ?? history.error ?? settings.error ?? pastPlayers.error ?? features.error,
-    refetch: () => Promise.all([league.refetch(), settings.refetch(), ...(identity ? [roster.refetch(), history.refetch()] : []), ...(identity && roster.data && history.data ? [pastPlayers.refetch()] : [])]),
+    isError: version.isError || league.isError || roster.isError || history.isError || settings.isError || pastPlayers.isError || features.isError,
+    error: version.error ?? league.error ?? roster.error ?? history.error ?? settings.error ?? pastPlayers.error ?? features.error,
+    refetch: () => Promise.all([league.refetch(), version.refetch(), settings.refetch(), ...(identity ? [roster.refetch(), history.refetch()] : []), ...(identity && roster.data && history.data ? [pastPlayers.refetch()] : [])]),
   };
 }

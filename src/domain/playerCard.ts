@@ -99,6 +99,7 @@ export function bachecaView(tr: PlayerTrophies): BachecaView {
 
 // ── pagelle del giocatore ──────────────────────────────────────────────────
 export interface PagellaItem {
+  hasText?: boolean;
   m: Match;
   v: number;
   tit: string;
@@ -119,6 +120,7 @@ export function playerPagelleList(data: Dataset, p: Pick<Player, 'id' | 'name'>)
         out.push({
           m,
           v: parseFloat(r.rating as string),
+          hasText: r.hasText,
           tit: String(r.titolo || '').trim(),
           desc: String(r.notes || '').trim(),
           g: parseInt(r.goals as string) || 0,
@@ -276,7 +278,7 @@ export function pagelleView(data: Dataset, weights: number[], p: Player, all = s
   const ty2 = yToPx(Math.max(yMin, Math.min(yMax, trendEnd)));
   const trendLine = n >= 2 ? { x1: tx1, y1: ty1, x2: tx2, y2: ty2 } : null;
 
-  const texts = playerPagelleList(data, p).filter((x) => x.tit || x.desc);
+  const texts = playerPagelleList(data, p).filter((x) => x.hasText || x.tit || x.desc);
   const lp = texts[0];
   const first = ser[0] as { date: string };
   const lastBar = ser[n - 1] as { date: string };

@@ -1,3 +1,4 @@
+import { LoadingIndicator } from './LoadingIndicator';
 import { useEffect, useState, type ReactNode } from 'react';
 import { defaultShouldDehydrateQuery, QueryClientProvider } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
@@ -10,14 +11,14 @@ function AccountCache({ userId, children }: { userId: string | null; children: R
   const [persister] = useState(() => userId ? createSyncStoragePersister({ storage: accountStorage(userId), key: cacheKey(userId) }) : null);
   useEffect(() => registerAccountClient(userId, client), [userId, client]);
   if (!persister) return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
-  return <PersistQueryClientProvider client={client} persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 7, buster: 'history-access-v1',
-    dehydrateOptions: { shouldDehydrateQuery: (query) => defaultShouldDehydrateQuery(query) && query.queryKey[0] !== 'feature-modes' && query.queryKey[0] !== 'premium' && query.queryKey[0] !== 'gazzetta-url' && !(query.queryKey[0] === 'league-data' && query.queryKey[1] === 'history') } }}
+  return <PersistQueryClientProvider client={client} persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 7, buster: 'history-summaries-v2',
+    dehydrateOptions: { shouldDehydrateQuery: (query) => defaultShouldDehydrateQuery(query) && query.queryKey[0] !== 'feature-modes' && query.queryKey[0] !== 'premium' && query.queryKey[0] !== 'gazzetta-url' && !(query.queryKey[0] === 'league-data' && ['history', 'match-texts'].includes(String(query.queryKey[1]))) } }}
     onSuccess={() => void client.invalidateQueries()}>{children}</PersistQueryClientProvider>;
 }
 
 export function SessionCache({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <LoadingIndicator />;
   const id = user?.id ?? null;
   return <AccountCache key={id ?? 'anonymous'} userId={id}>{children}</AccountCache>;
 }

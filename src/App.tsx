@@ -1,4 +1,5 @@
-import { useMemo, type ComponentProps } from 'react';
+import { LoadingIndicator } from './app/LoadingIndicator';
+import { lazy, useMemo, type ComponentProps } from 'react';
 import { BottomNav } from './app/BottomNav';
 import { useShellNavigation } from './app/useShellNavigation';
 import { useShellWindows } from './app/useShellWindows';
@@ -12,28 +13,33 @@ import { createPlayer } from './data/mutations';
 import { useQueryClient } from '@tanstack/react-query';
 import { ImageProvider } from './app/ImageViewer';
 import { LEAGUE_ROSTER_QUERY_KEY, NoLeagueError, photoUrl, rosterView, useLeagueData, type LeagueData } from './data/queries';
-import { ClassifichePage } from './features/classifiche/ClassifichePage';
-import { GiocaPage } from './features/gioca/GiocaPage';
-import { SettingsPage } from './features/impostazioni/SettingsPage';
 import { LoginPage } from './features/auth/LoginPage';
-import { InvitePage } from './features/menu/InvitePage';
-import { LeagueInvitePage } from './features/menu/LeagueInvitePage';
-import { MenuDrawer, type Panel } from './features/menu/MenuDrawer';
-import { EmptyLeagueGuide } from './features/menu/OtherPanels';
-import { ShellPanels } from './app/ShellPanels';
-import { MatchCard } from './features/partite/MatchCard';
-import { PartitePage } from './features/partite/PartitePage';
-import { useMyPlayerIn } from './features/partite/parts';
-import { ProfiloPage } from './features/profilo/ProfiloPage';
-import { GazArchive, GazViewer, PagelleTextDialog } from './features/partite/parts';
-import { PlayerCard } from './features/player/PlayerCard';
+import type { Panel } from './features/menu/MenuDrawer';
+import { useMyPlayerIn } from './app/useMyPlayerIn';
+import { DeferredPage, LazyContent } from './app/LazyContent';
 import { AppHeader } from './app/AppHeader';
 import { InstallHint } from './app/InstallHint';
 import { PullToRefresh } from './app/PullToRefresh';
 import { PushPrompt } from './app/PushPrompt';
 import { PremiumTrialBanner } from './app/PremiumTrialBanner';
-import { RosaList } from './features/rosa/RosaList';
 
+
+const ClassifichePage = lazy(() => import('./features/classifiche/ClassifichePage').then((m) => ({ default: m.ClassifichePage })));
+const GiocaPage = lazy(() => import('./features/gioca/GiocaPage').then((m) => ({ default: m.GiocaPage })));
+const SettingsPage = lazy(() => import('./features/impostazioni/SettingsPage').then((m) => ({ default: m.SettingsPage })));
+const InvitePage = lazy(() => import('./features/menu/InvitePage').then((m) => ({ default: m.InvitePage })));
+const LeagueInvitePage = lazy(() => import('./features/menu/LeagueInvitePage').then((m) => ({ default: m.LeagueInvitePage })));
+const MenuDrawer = lazy(() => import('./features/menu/MenuDrawer').then((m) => ({ default: m.MenuDrawer })));
+const EmptyLeagueGuide = lazy(() => import('./features/menu/OtherPanels').then((m) => ({ default: m.EmptyLeagueGuide })));
+const ShellPanels = lazy(() => import('./app/ShellPanels').then((m) => ({ default: m.ShellPanels })));
+const MatchCard = lazy(() => import('./features/partite/MatchCard').then((m) => ({ default: m.MatchCard })));
+const PartitePage = lazy(() => import('./features/partite/PartitePage').then((m) => ({ default: m.PartitePage })));
+const ProfiloPage = lazy(() => import('./features/profilo/ProfiloPage').then((m) => ({ default: m.ProfiloPage })));
+const GazArchive = lazy(() => import('./features/partite/parts').then((m) => ({ default: m.GazArchive })));
+const GazViewer = lazy(() => import('./features/partite/parts').then((m) => ({ default: m.GazViewer })));
+const PagelleTextDialog = lazy(() => import('./features/partite/parts').then((m) => ({ default: m.PagelleTextDialog })));
+const PlayerCard = lazy(() => import('./features/player/PlayerCard').then((m) => ({ default: m.PlayerCard })));
+const RosaList = lazy(() => import('./features/rosa/RosaList').then((m) => ({ default: m.RosaList })));
 
 /** Gioca e scheda partita con i permessi di chi è entrato: la modifica si offre solo a chi può farla (il database la controlla comunque). */
 function GiocaGate({ data }: { data: LeagueData }) {
@@ -105,7 +111,7 @@ function Loading({ q, onPanel }: { q: { isError: boolean; error?: unknown; refet
       </div>
     );
   }
-  return <div style={{ textAlign: 'center', padding: 30, color: 'var(--text3)', fontSize: 13 }}>⏳ Caricamento…</div>;
+  return <LoadingIndicator />;
 }
 
 function Shell() {
@@ -118,6 +124,7 @@ function Shell() {
   const { isAdmin, ready } = useRole(data?.league.id);
   const me = useMyPlayerIn(data); // la mia faccia (o foto) nel footer
   const { page, go } = useShellNavigation(data, isAdmin, ready, inviteToken);
+  const visualsActive = !view && !gazViewer && !ptDialog && !menuOpen && !panel && !inviteToken;
 
   return (
     <>
@@ -128,27 +135,28 @@ function Shell() {
       <PullToRefresh />
       <InstallHint />
       <PushPrompt />
-      <div id="page-profilo" className={`page${page === 'profilo' ? ' active' : ''}`}>
-        {data ? <ProfiloPage data={data} active={page === 'profilo'} act={act} /> : <Loading q={q} onPanel={setPanel} />}
-      </div>
-      <div id="page-rosa" className={`page${page === 'rosa' ? ' active' : ''}`}>
+      <div id="page-profilo" data-visual-active={visualsActive} className={`page${page === 'profilo' ? ' active' : ''}`}><DeferredPage active={page === 'profilo'}>
+        {data ? <ProfiloPage data={data} active={page === 'profilo' && visualsActive} act={act} /> : <Loading q={q} onPanel={setPanel} />}
+      </DeferredPage></div>
+      <div id="page-rosa" data-visual-active={visualsActive} className={`page${page === 'rosa' ? ' active' : ''}`}><DeferredPage active={page === 'rosa'}>
         {data ? <RosaGate data={data} onOpen={openPlayerFromRosa} /> : <Loading q={q} onPanel={setPanel} />}
-      </div>
+      </DeferredPage></div>
       {isAdmin ? (
-        <div id="page-partita" className={`page${page === 'partita' ? ' active' : ''}`}>
+        <div id="page-partita" data-visual-active={visualsActive} className={`page${page === 'partita' ? ' active' : ''}`}><DeferredPage active={page === 'partita'}>
           {data ? <GiocaGate data={data} /> : <Loading q={q} onPanel={setPanel} />}
-        </div>
+        </DeferredPage></div>
       ) : null}
-      <div id="page-partite" className={`page${page === 'partite' ? ' active' : ''}`}>
-        {data ? <PartitePage data={data} act={act} active={page === 'partite'} onArchive={() => setView({ kind: 'gazArchive' })} /> : <Loading q={q} onPanel={setPanel} />}
-      </div>
-      <div id="page-classifiche" className={`page${page === 'classifiche' ? ' active' : ''}`}>
-        {data ? <ClassifichePage data={data} onOpenPlayer={openPlayer} /> : <Loading q={q} onPanel={setPanel} />}
-      </div>
-      <div id="page-settings" className={`page${page === 'settings' ? ' active' : ''}`}><SettingsPage data={data} /></div>
+      <div id="page-partite" data-visual-active={visualsActive} className={`page${page === 'partite' ? ' active' : ''}`}><DeferredPage active={page === 'partite'}>
+        {data ? <PartitePage data={data} act={act} active={page === 'partite' && visualsActive} onArchive={() => setView({ kind: 'gazArchive' })} /> : <Loading q={q} onPanel={setPanel} />}
+      </DeferredPage></div>
+      <div id="page-classifiche" data-visual-active={visualsActive} className={`page${page === 'classifiche' ? ' active' : ''}`}><DeferredPage active={page === 'classifiche'}>
+        {data ? <ClassifichePage data={data} onOpenPlayer={openPlayer} active={page === 'classifiche'} /> : <Loading q={q} onPanel={setPanel} />}
+      </DeferredPage></div>
+      <div id="page-settings" data-visual-active={visualsActive} className={`page${page === 'settings' ? ' active' : ''}`}><DeferredPage active={page === 'settings'}><SettingsPage data={data} /></DeferredPage></div>
 
       <BottomNav page={page} onGo={go} canPlay={isAdmin} me={me ? { photo: photoUrl(data?.photos[me.id]), initial: me.name.slice(0, 1).toUpperCase() } : null} />
 
+      <LazyContent>
       {data && view?.kind === 'player' ? (
         <PlayerCardGate
           editable={!!view.fromRosa}
@@ -169,8 +177,16 @@ function Shell() {
       ) : null}
       {data && ptDialog ? <PagelleTextDialog data={data} matchId={ptDialog} onClose={() => setPtDialog(null)} /> : null}
 
-      {menuOpen ? <MenuDrawer data={data} onClose={closeMenu} onOpenPanel={setPanel} onGoSettings={() => go('settings')} onOpenMatch={openMatch} /> : null}
-      <ShellPanels panel={panel} data={data} closePanel={closePanel} setPanel={setPanel} go={go} openMatch={openMatch} openPlayer={openPlayer} />
+      {menuOpen ? <MenuDrawer data={data} onClose={closeMenu} covered={!!panel} onOpenPanel={setPanel} onGoSettings={() => go('settings')} onOpenMatch={openMatch} /> : null}
+      {panel ? (
+        <ShellPanels
+          panel={panel} data={data} closePanel={closePanel} setPanel={setPanel}
+          leave={() => { closeMenu(); closePanel(); }}
+          go={(p) => { closeMenu(); go(p); }}
+          openMatch={(id, text) => { closeMenu(); openMatch(id, text); }}
+          openPlayer={(id) => { closeMenu(); openPlayer(id); }}
+        />
+      ) : null}
 
       {inviteToken && inviteKind === 'league' ? (
         <LeagueInvitePage
@@ -193,6 +209,7 @@ function Shell() {
           }}
         />
       ) : null}
+      </LazyContent>
     </>
   );
 }

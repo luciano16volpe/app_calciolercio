@@ -1,3 +1,4 @@
+import { useElementVisibility } from '../../app/visibility';
 import { useState } from 'react';
 import { avatarClass, initials } from '../../domain/format';
 
@@ -15,6 +16,7 @@ export function PlayerAvatar({ name, roles, photo, className = '', size = 'ini',
   size?: 'ini' | 'xl' | 'sm';
   label?: string;
 }) {
+  const { ref, visible: nearScreen } = useElementVisibility<HTMLDivElement>({ rootMargin: '160px', once: true, enabled: !!photo });
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const showPhoto = !!photo && !failed;
@@ -27,9 +29,9 @@ export function PlayerAvatar({ name, roles, photo, className = '', size = 'ini',
     showPhoto && loaded ? 'photo-loaded' : '',
   ].filter(Boolean).join(' ');
   return (
-    <div className={cls}>
+    <div className={cls} ref={ref}>
       {label ?? initials(name)}
-      {showPhoto ? <img className="player-avatar-photo" src={photo} alt="" onLoad={() => setLoaded(true)} onError={() => setFailed(true)} /> : null}
+      {showPhoto && nearScreen ? <img className="player-avatar-photo" src={photo} alt="" loading="lazy" decoding="async" onLoad={() => setLoaded(true)} onError={() => setFailed(true)} /> : null}
     </div>
   );
 }

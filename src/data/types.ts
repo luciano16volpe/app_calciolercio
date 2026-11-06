@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      league_data_versions: {
+        Row: { league_id: string; version: string };
+        Insert: { league_id: string; version?: string };
+        Update: { league_id?: string; version?: string };
+        Relationships: [];
+      };
       account_premium: {
         Row: {
           expires_at: string | null
@@ -1015,7 +1021,11 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      match_player_summaries: {
+        Row: Omit<Database['public']['Tables']['match_players']['Row'], 'titolo' | 'descrizione'> & { has_text: boolean };
+        Relationships: [];
+      };
+
     }
     Functions: {
       accept_league_invite: {

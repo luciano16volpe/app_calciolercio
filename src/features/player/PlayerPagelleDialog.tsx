@@ -1,3 +1,4 @@
+import { PlayerPagellaText } from './PlayerPagellaText';
 // Finestra "📝 Le pagelle di …": tutte le pagelle del giocatore, le più recenti per prime.
 // Fonte: openPlayerPagelle in legacy/index.html.
 import { useEffect, useRef, useState } from 'react';
@@ -46,16 +47,17 @@ export function PlayerPagelleDialog({ data, player, focusId, onClose, onOpenMatc
                   key={x.m.id}
                   ref={focus ? focusRef : undefined}
                   id={`pl-${x.m.id}`}
-                  className={`pl-item${x.tit || x.desc ? '' : ' bare'}${open.has(x.m.id) ? ' open' : ''}${focus ? ' focus' : ''}`}
+                  className={`pl-item${x.hasText || x.tit || x.desc ? '' : ' bare'}${open.has(x.m.id) ? ' open' : ''}${focus ? ' focus' : ''}`}
                   onClick={() => toggle(x.m.id)}
                 >
                   <div className="pl-top">
                     <span>{formatDate(x.m.date)}</span>
                     <span className="pl-v" style={{ color: voteColor(x.v) }}>{x.v}</span>
                   </div>
-                  {x.tit ? <div className="pl-tit">«{x.tit}»</div> : null}
-                  {x.desc ? <div className="pl-desc" dangerouslySetInnerHTML={{ __html: waHTML(x.desc) }} /> : null}
-                  {data.editors?.[x.m.id] && (x.tit || x.desc) ? <div className="pl-ed">✒️ Redazione {data.editors[x.m.id]}</div> : null}
+                  {!data.textsDeferred && x.tit ? <div className="pl-tit">«{x.tit}»</div> : null}
+                  {!data.textsDeferred && x.desc ? <div className="pl-desc" dangerouslySetInnerHTML={{ __html: waHTML(x.desc) }} /> : null}
+                  {data.textsDeferred && open.has(x.m.id) ? <PlayerPagellaText data={data} matchId={x.m.id} playerId={player.id} /> : null}
+                  {data.editors?.[x.m.id] && (x.hasText || x.tit || x.desc) ? <div className="pl-ed">✒️ Redazione {data.editors[x.m.id]}</div> : null}
                   <button
                     type="button"
                     className="pl-go"

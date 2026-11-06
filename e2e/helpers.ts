@@ -150,12 +150,19 @@ export const noOverflow = async (page: Page) =>
 /** Apre la pagina (rosa vera: 22 giocatori nella lega pubblica) o l'indirizzo dato. */
 export async function openApp(page: Page, path = '/', players = 22) {
   await page.goto(path);
-  if (players > 0) await expect(page.locator('#players-list .card-compact')).toHaveCount(players, { timeout: 20_000 });
-  // aprendo la lega senza dire la pagina si parte da «Il mio profilo»: i test della Rosa ci vanno col tasto in basso
-  if (players > 0 && !/\/l\/[^/]+\/[a-z]+/.test(path)) {
-    await expect(page.locator('#page-profilo.active')).toBeVisible();
-    await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
-    await expect(page.locator('#page-rosa.active')).toBeVisible();
+  if (players > 0) {
+    const requested = path.match(/\/l\/[^/]+\/([a-z]+)/)?.[1];
+    if (!requested) {
+      await expect(page.locator('#page-profilo.active #myplayer-card')).toBeVisible({ timeout: 20_000 });
+      await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
+    }
+    if (!requested || requested === 'rosa') {
+      await expect(page.locator('#players-list .card-compact')).toHaveCount(players, { timeout: 20_000 });
+      await expect(page.locator('#page-rosa.active')).toBeVisible();
+    } else {
+      const id = requested === 'gioca' ? 'partita' : requested;
+      await expect(page.locator('#page-' + id + '.active')).toBeVisible({ timeout: 20_000 });
+    }
   }
 }
 
@@ -176,6 +183,8 @@ export async function openSettings(page: Page) {
 export async function openPanel(page: Page, itemId: string, sheetId: string) {
   await openMenu(page);
   if (['#menu-compare', '#menu-couples', '#menu-albo', '#menu-records'].includes(itemId)) await page.locator('#menu-players').click();
+  if (['#menu-audit', '#menu-platform-leagues', '#menu-platform-users', '#menu-premium', '#menu-game-settings'].includes(itemId) && await page.locator('#menu-superadmin').count()) await page.locator('#menu-superadmin').click();
+  if (['#menu-invites', '#menu-claims', '#menu-bench', '#menu-proposals', '#menu-members', '#menu-merge'].includes(itemId)) await page.locator('#menu-league-admin').click();
   await page.locator(itemId).click();
   await expect(page.locator(sheetId)).toBeVisible();
 }

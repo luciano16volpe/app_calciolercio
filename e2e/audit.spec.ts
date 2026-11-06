@@ -23,6 +23,7 @@ async function openAudit(page: Page, rows: unknown[], queries?: string[]) {
   await setup(page, { mine: mineAs('member', { owner_id: 'altro' }), rpc: { is_super_admin: true }, audit: rows, auditQueries: queries });
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openPanel(page, '#menu-audit', '#sheet-audit');
+  await page.locator('#audit-search').click();
 }
 
 test('Registro: operazioni raggruppate, frasi leggibili e azione delicata evidenziata', async ({ page }) => {
@@ -62,18 +63,24 @@ test('Registro: i filtri arrivano al database (periodo, lega, persona, gruppo, s
   await expect(page.locator('.audit-op').first()).toBeVisible();
   // il periodo predefinito è 7 giorni: c'è un limite inferiore sulla data
   expect(queries.some((q) => /at=gte\./.test(q))).toBe(true);
+  await page.locator('#audit-league').focus();
   await page.locator('#audit-league').selectOption({ label: 'Lega del Mercoledì' });
+  await page.locator('#audit-search').click();
   await expect.poll(() => queries.some((q) => q.includes('league_id=eq.L2'))).toBe(true);
   await page.locator('#audit-actor').selectOption({ label: 'Luciano' });
+  await page.locator('#audit-search').click();
   await expect.poll(() => queries.some((q) => q.includes('actor_id=eq.u1'))).toBe(true);
   await page.locator('#audit-group').selectOption('leghe');
+  await page.locator('#audit-search').click();
   await expect.poll(() => queries.some((q) => q.includes('grp=eq.leghe'))).toBe(true);
   await page.locator('#audit-delicate').check();
+  await page.locator('#audit-search').click();
   await expect.poll(() => queries.some((q) => q.includes('action=in.(league_members.role') && q.includes('account.delete'))).toBe(true);
   await page.getByRole('button', { name: 'Oggi' }).click();
   await page.getByRole('button', { name: 'Date' }).click();
   await page.locator('#audit-from').fill('2026-10-01');
   await page.locator('#audit-to').fill('2026-10-31');
+  await page.locator('#audit-search').click();
   await expect.poll(() => queries.some((q) => /at=lt\./.test(q) && /at=gte\./.test(q))).toBe(true);
   await noOverflow(page);
 });
@@ -115,5 +122,27 @@ test('Registro: se il database rifiuta (non sei amministratore supremo) si vede 
   await page.route('**/rest/v1/audit_log*', (r) => r.fulfill({ status: 403, headers: { 'access-control-allow-origin': '*' }, contentType: 'application/json', body: JSON.stringify({ code: '42501', message: 'permission denied for table audit_log' }) }));
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openPanel(page, '#menu-audit', '#sheet-audit');
+  await page.locator('#audit-search').click();
   await expect(page.locator('#audit-error')).toContainText('permission denied');
 });
+
+ test('Registro: apertura e modifica filtri non avviano ricerche', async ({ page }) => {
+  const queries: string[] = [];
+  await setup(page, { mine: mineAs('member'), rpc: { is_super_admin: true }, audit: ROWS, auditQueries: queries });
+  await openApp(page, '/l/lega-di-prova/rosa', 0);
+  await openPanel(page, '#menu-superadmin', '#sheet-superadmin-hub');
+  await expect(page.locator('#sheet-superadmin-hub .premium-tile')).toHaveCount(6);
+  await noOverflow(page);
+  await page.locator('#menu-audit').click();
+  await expect(page.locator('#audit-start')).toBeVisible();
+  expect(queries).toHaveLength(0);
+  await page.locator('#audit-group').selectOption('leghe');
+  await page.locator('#audit-delicate').check();
+  expect(queries).toHaveLength(0);
+  await page.locator('#audit-search').click();
+  await expect(page.locator('#audit-count')).toContainText('operazioni');
+  expect(queries).toHaveLength(1);
+  await page.locator('#audit-group').selectOption('account');
+  await expect(page.getByRole('status').filter({ hasText: 'Filtri modificati' })).toBeVisible();
+  expect(queries).toHaveLength(1);
+ });

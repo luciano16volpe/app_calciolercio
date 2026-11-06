@@ -682,3 +682,46 @@ input[type=file]{display:none}
 .stats-table tbody tr:nth-child(even){background:rgba(128,128,128,.045)}
 .stats-table-legend{font-size:10px;color:var(--text2);line-height:1.5;margin-top:8px}
 @media(max-width:340px){#players-list .ph-info{flex-direction:column}#players-list .avatar-stack .avatar{width:40px;height:40px}}
+
+/* Spazi pubblicitari nel flusso dei contenuti. */
+.ad-banner{min-width:0;width:100%;margin:16px 0 20px;padding:10px 12px 12px;border:1px solid var(--gray2);border-radius:var(--radius);background:var(--gray)}
+.ad-banner-label{display:block;margin-bottom:8px;color:var(--text2);font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase}
+.ad-banner-space{min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:12px;border:1px dashed var(--gray3);border-radius:var(--radius-sm);text-align:center}
+.ad-banner-title{color:var(--text2);font-size:13px;font-weight:600}
+.ad-banner-note{color:var(--text2);font-size:11px}
+@media print{.ad-banner{display:none}}
+
+/* Ultime partite del profilo: riepilogo e righe compatte. */
+.recent-caption{font-size:11px;color:var(--text2);margin:4px 0 10px}
+.recent-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-bottom:10px;padding:10px 4px;background:var(--gray);border-radius:var(--radius-sm)}
+.recent-summary>div{display:flex;flex-direction:column;align-items:center;gap:3px}
+.recent-summary b{font-size:19px;color:var(--text)}
+.recent-summary span{font-size:10px;color:var(--text2)}
+.recent-columns,.profile-match{display:grid;grid-template-columns:46px minmax(0,1fr) 86px 34px;align-items:center;gap:4px}
+.recent-columns{font-size:9px;color:var(--text2);padding:6px 0}
+.recent-columns span:nth-child(n+3){text-align:right}
+.profile-match{width:100%;min-height:46px;padding:8px 0;border:0;border-bottom:1px solid var(--gray2);background:transparent;color:var(--text);text-align:left;font:inherit;font-size:12px;cursor:pointer}
+.profile-match:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.recent-outcome{font-size:11px;font-weight:800}
+.recent-score,.recent-rating{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.recent-actions{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.recent-actions:empty{display:none}
+
+/* Reserve thumbnail space before requesting signed URLs and image files. */
+.gaz-preview{width:92px;aspect-ratio:3/4;background:var(--gray2);border-radius:10px;overflow:hidden}
+.gaz-grid .gaz-preview{width:100%}
+.gaz-preview-full{width:100%;max-height:420px;border-radius:12px}
+.gaz-preview-placeholder{width:100%;height:100%}
+.gaz-preview img{display:block;width:100%;height:100%;object-fit:cover}
+.gaz-preview-full img{object-fit:contain}
+/* Keep decorative CSS effects paused outside the viewport and in inactive tabs. */
+.fut-mini[data-visual-active="false"],.fut-mini[data-visual-active="false"]::before,.fut-mini[data-visual-active="false"]::after,
+.page:not(.active) *,.page:not(.active) *::before,.page:not(.active) *::after{animation-play-state:paused!important}
+
+.page[data-visual-active="false"] *,.page[data-visual-active="false"] *::before,.page[data-visual-active="false"] *::after{animation-play-state:paused!important}
+
+/* One loading indicator for authentication, data and deferred sections. */
+.app-loading{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;pointer-events:none}
+.app-spinner{display:block;width:36px;height:36px;border:3px solid var(--gray3);border-top-color:var(--green);border-radius:50%;animation:appSpin .8s linear infinite;box-shadow:0 0 0 5px var(--gray)}
+@keyframes appSpin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.app-spinner{animation:none}}

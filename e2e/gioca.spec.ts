@@ -9,10 +9,10 @@ test.beforeEach(async ({ page }) => {
 
 async function openGioca(page: Page) {
   await page.goto('/');
-  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await expect(page.locator('#page-profilo #myplayer-card')).toBeVisible({ timeout: 20_000 });
   await page.evaluate(() => localStorage.removeItem('calciolercio-format'));
   await page.reload();
-  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await expect(page.locator('#page-profilo #myplayer-card')).toBeVisible({ timeout: 20_000 });
   await page.locator('.bottom-nav').getByRole('button', { name: 'Gioca', exact: true }).click();
   return page.locator('#page-partita');
 }

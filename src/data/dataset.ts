@@ -9,10 +9,11 @@ type Tables = Database['public']['Tables'];
 export interface DbRows {
   players: Pick<Tables['players']['Row'], 'id' | 'name' | 'roles' | 'stats'>[];
   matches: (Pick<Tables['matches']['Row'], 'id' | 'date' | 'notes' | 'score_a' | 'score_b' | 'pred' | 'pred_rank'> & Partial<Pick<Tables['matches']['Row'], 'play_time' | 'place' | 'ratings_skipped'>>)[];
-  matchPlayers: Pick<
+  matchPlayers: (Pick<
     Tables['match_players']['Row'],
-    'match_id' | 'player_id' | 'team' | 'position' | 'rating' | 'goals' | 'assist' | 'autogol' | 'meta' | 'rigori_sbagliati' | 'titolo' | 'descrizione'
-  >[];
+    'match_id' | 'player_id' | 'team' | 'position' | 'rating' | 'goals' | 'assist' | 'autogol' | 'meta' | 'rigori_sbagliati'
+  > & Partial<Pick<Tables['match_players']['Row'], 'titolo' | 'descrizione'>> & { has_text?: boolean }
+  )[];
 }
 
 /**
@@ -54,7 +55,7 @@ export function dbToDataset(rows: DbRows): Dataset {
       predRank: m.pred_rank,
     });
     for (const x of list) {
-      const hasData = x.rating != null || x.goals || x.assist || x.autogol || x.meta || x.rigori_sbagliati || x.titolo || x.descrizione;
+      const hasData = x.rating != null || x.goals || x.assist || x.autogol || x.meta || x.rigori_sbagliati || x.titolo || x.descrizione || x.has_text;
       if (!hasData) continue;
       ratings.push({
         matchId: m.id,
@@ -62,6 +63,7 @@ export function dbToDataset(rows: DbRows): Dataset {
         playerId: x.player_id,
         rating: x.rating,
         notes: x.descrizione ?? '',
+        hasText: x.has_text ?? !!(String(x.titolo ?? '').trim() || String(x.descrizione ?? '').trim()),
         goals: x.goals,
         autogol: x.autogol,
         meta: x.meta,

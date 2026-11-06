@@ -1,7 +1,8 @@
+import { LoadingIndicator } from '../../app/LoadingIndicator';
 // «🛡️ Registro attività» (solo amministratore supremo): chi ha fatto cosa, quando, dove. Filtri, azioni delicate ⚠️,
 // elenco per operazione, dettaglio (prima → dopo, IP e dispositivo), esportazione CSV. Si legge soltanto: nessuno lo può modificare.
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Sheet } from '../../app/Sheet';
 import { useToast } from '../../app/Toast';
 import { AUDIT_PAGE, fetchAuditAll, fetchAuditFacets, fetchAuditPage, type AuditFilter } from '../../data/audit';
@@ -59,36 +60,53 @@ export function AuditPanel({ onClose }: { onClose: () => void }) {
   const [open, setOpen] = useState<Set<string>>(new Set());
   const [openRow, setOpenRow] = useState<Set<number>>(new Set());
   const seq = useRef(0);
-  const facets = useQuery({ queryKey: ['audit-facets'], queryFn: fetchAuditFacets, retry: false, staleTime: 60_000 });
+  const [applied, setApplied] = useState<AuditFilter | null>(null);
+  const [appliedKey, setAppliedKey] = useState('');
+  const [loadFacets, setLoadFacets] = useState(false);
+  const draftKey = JSON.stringify([period, dFrom, dTo, leagueId, actorId, group, delicateOnly]);
+  const dirty = applied !== null && draftKey !== appliedKey;
+  useEffect(() => () => { seq.current++; }, []);
+  const facets = useQuery({ queryKey: ['audit-facets'], enabled: loadFacets, queryFn: fetchAuditFacets, retry: false, staleTime: 60_000 });
 
-  const filter = useCallback((): AuditFilter => ({
+  const filter = (): AuditFilter => ({
     ...periodRange(period, dFrom, dTo),
     ...(leagueId ? { leagueId } : {}), ...(actorId ? { actorId } : {}), ...(group ? { group } : {}), ...(delicateOnly ? { delicateOnly: true } : {}),
-  }), [period, dFrom, dTo, leagueId, actorId, group, delicateOnly]);
+  });
 
-  // a ogni cambio di filtro si riparte dalla prima pagina
-  useEffect(() => {
+  const search = async () => {
+    if (busy) return;
+    if (period === 'custom' && (!dFrom || !dTo || dFrom > dTo)) {
+      setError('Scegli un intervallo di date valido, con inizio e fine.');
+      return;
+    }
     const my = ++seq.current;
-    // Il filtro avvia una richiesta: segnala subito il caricamento.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    const next = filter();
     setBusy(true);
     setError('');
-    fetchAuditPage(filter(), 0)
-      .then((r) => {
-        if (my !== seq.current) return;
-        setRows(r);
-        setMore(r.length === AUDIT_PAGE);
-        setOpen(new Set());
-        setOpenRow(new Set());
-      })
-      .catch((e: Error) => my === seq.current && setError(e.message))
-      .finally(() => my === seq.current && setBusy(false));
-  }, [filter]);
+    setRows([]);
+    setMore(false);
+    setApplied(null);
+    setOpen(new Set());
+    setOpenRow(new Set());
+    try {
+      const r = await fetchAuditPage(next, 0);
+      if (my !== seq.current) return;
+      setRows(r);
+      setMore(r.length === AUDIT_PAGE);
+      setApplied(next);
+      setAppliedKey(draftKey);
+    } catch (e) {
+      if (my === seq.current) setError((e as Error).message);
+    } finally {
+      if (my === seq.current) setBusy(false);
+    }
+  };
 
   const loadMore = async () => {
+    if (!applied || busy) return;
     setBusy(true);
     try {
-      const r = await fetchAuditPage(filter(), rows.length);
+      const r = await fetchAuditPage(applied, rows.length);
       setRows((old) => mergeRows(old, r));
       setMore(r.length === AUDIT_PAGE);
     } catch (e) {
@@ -99,9 +117,10 @@ export function AuditPanel({ onClose }: { onClose: () => void }) {
   };
 
   const exportCsv = async () => {
+    if (!applied || busy) return;
     setBusy(true);
     try {
-      const all = await fetchAuditAll(filter());
+      const all = await fetchAuditAll(applied);
       const url = URL.createObjectURL(new Blob([toCsv(all)], { type: 'text/csv;charset=utf-8' }));
       const a = document.createElement('a');
       a.href = url;
@@ -141,12 +160,12 @@ export function AuditPanel({ onClose }: { onClose: () => void }) {
           </div>
         ) : null}
         <div className="f-lab">Lega</div>
-        <select className="f-inp" id="audit-league" aria-label="Lega" value={leagueId} onChange={(e) => setLeagueId(e.target.value)}>
+        <select className="f-inp" id="audit-league" onFocus={() => setLoadFacets(true)} aria-label="Lega" value={leagueId} onChange={(e) => setLeagueId(e.target.value)}>
           <option value="">Tutte le leghe</option>
           {(facets.data?.leagues ?? []).map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
         </select>
         <div className="f-lab">Persona</div>
-        <select className="f-inp" id="audit-actor" aria-label="Persona" value={actorId} onChange={(e) => setActorId(e.target.value)}>
+        <select className="f-inp" id="audit-actor" onFocus={() => setLoadFacets(true)} aria-label="Persona" value={actorId} onChange={(e) => setActorId(e.target.value)}>
           <option value="">Tutte le persone</option>
           {(facets.data?.actors ?? []).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
@@ -160,18 +179,24 @@ export function AuditPanel({ onClose }: { onClose: () => void }) {
           ⚠️ Solo azioni delicate
         </label>
         <div className="f-hint">Il registro tiene le azioni per {AUDIT_DAYS} giorni, poi si cancella da solo. Non si può modificare né cancellare da nessuno.</div>
+        <button type="button" className="btn btn-primary btn-full" id="audit-search" disabled={busy} onClick={() => void search()} style={{ marginTop: 12 }}>{busy ? 'Ricerca in corso...' : 'Cerca attività'}</button>
+        {facets.isLoading ? <LoadingIndicator /> : null}
+        {facets.isError ? <p role="alert" className="f-hint">Impossibile caricare persone e leghe. <button type="button" className="mini-btn" onClick={() => void facets.refetch()}>Riprova</button></p> : null}
       </div>
 
+      {!applied && !busy && !error ? <div className="card" id="audit-start">Scegli i filtri e premi Cerca attività per caricare il registro.</div> : null}
+      {dirty ? <p role="status" className="f-hint">Filtri modificati: premi Cerca attività per aggiornare i risultati. CSV e altre pagine usano l'ultima ricerca eseguita.</p> : null}
+      {busy ? <LoadingIndicator /> : null}
       {error ? <div className="card" id="audit-error" style={{ color: 'var(--red)', fontWeight: 700, fontSize: 13 }}>{error}</div> : null}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 2px 8px', flexWrap: 'wrap' }}>
         <span id="audit-count" style={{ flex: 1, fontSize: 12, color: 'var(--text3)' }}>
-          {busy && !rows.length ? '⏳ Carico…' : `${ops.length} operazioni (${rows.length} righe)${more ? ' · ce ne sono altre' : ''}`}
+          {!applied && !busy ? 'Nessuna ricerca eseguita' : busy && !rows.length ? '' : `${ops.length} operazioni (${rows.length} righe)${more ? ' · ce ne sono altre' : ''}`}
         </span>
         <button type="button" className="mini-btn" id="audit-csv" disabled={busy || !rows.length} onClick={() => void exportCsv()}>⬇️ Esporta CSV</button>
       </div>
 
-      {!busy && !error && !rows.length ? <div className="card" id="audit-empty" style={{ fontSize: 13, color: 'var(--text3)' }}>Nessuna azione in questo periodo, con questi filtri.</div> : null}
+      {applied && !busy && !error && !rows.length ? <div className="card" id="audit-empty" style={{ fontSize: 13, color: 'var(--text3)' }}>Nessuna azione in questo periodo, con questi filtri.</div> : null}
 
       {ops.map((o) => {
         const key = `${o.tx}|${o.rows[0]?.id}`;

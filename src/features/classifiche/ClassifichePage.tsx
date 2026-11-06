@@ -1,6 +1,7 @@
+import { scrollPageToTop } from '../../app/scroll';
 // Pagina Classifiche: scelta della stagione, i quattro numeri, schede scorrevoli.
 // Fonte: renderClassifiche, renderSeasonDash, CL_TABS in legacy/index.html.
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { LeagueData } from '../../data/queries';
 import { nextStatsSort, seasonDash, STATS_SORT_DEFAULT, type StatsCol, type StatsFilter } from '../../domain/rankings';
 import { previousSeason, seasonOf, seasonsList } from '../../domain/seasons';
@@ -34,7 +35,7 @@ export function SeasonDash({ data, scope }: { data: LeagueData; scope: string })
   );
 }
 
-export function ClassifichePage({ data, onOpenPlayer }: { data: LeagueData; onOpenPlayer: (playerId: string) => void }) {
+export function ClassifichePage({ data, onOpenPlayer, active = true }: { data: LeagueData; onOpenPlayer: (playerId: string) => void; active?: boolean }) {
   const { user } = useAuth();
   const features = useFeatures(user?.id ?? null);
   const historyAllowed = features.data?.find((f) => f.feature === 'history')?.allowed === true;
@@ -53,15 +54,18 @@ export function ClassifichePage({ data, onOpenPlayer }: { data: LeagueData; onOp
     return historyAllowed ? all : all.filter((s) => s.key === current?.key || s.key === previous?.key);
   }, [data, historyAllowed, current, previous]);
   const scope = historyAllowed || scopeSel === current?.key || scopeSel === previous?.key ? (scopeSel ?? current?.key ?? 'all') : (current?.key ?? 'all');
+  useLayoutEffect(() => { if (active) scrollPageToTop(); }, [active, scope, tab]);
   const selectScope = (next: string) => {
+    scrollPageToTop();
     if (next === scope) return;
     setScopeSel(next);
-    window.scrollTo(0, 0);
+
   };
   const selectTab = (next: Tab) => {
+    scrollPageToTop();
     if (next === tab) return;
     setTab(next);
-    window.scrollTo(0, 0);
+
   };
 
   // le scelte attive restano visibili nelle righe scorrevoli

@@ -1,0 +1,532 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Users\\luciano.volpe\\AppData\\Local\\JetBrains\\IntelliJIdea2026.2\\acp-agents\\.runtimes\\node\\24.19.0\\node.exe",
+      "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--project=iphone",
+      "e2e/panchina.spec.ts",
+      "e2e/partite.spec.ts",
+      "e2e/modifica.spec.ts",
+      "e2e/profilo.spec.ts",
+      "--grep",
+      "Panchina: via|Collegamenti verso la partita|Gazzetta: carica|Footer:|Profilo: statistiche",
+      "--repeat-each=2",
+      "--reporter=line,json",
+      "--output=test-results/stabilita"
+    ],
+    "configFile": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\playwright.config.ts",
+    "rootDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 2
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/test-results/stabilita",
+        "repeatEach": 2,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "iphone",
+        "name": "iphone",
+        "testDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/test-results/stabilita",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "android",
+        "name": "android",
+        "testDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/test-results/stabilita",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "piccolo-360",
+        "name": "piccolo-360",
+        "testDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\test-results\\stabilita",
+        "repeatEach": 2,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "name": "iphone",
+        "testDir": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e",
+        "snapshotDir": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "serviceWorkers": "block",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+          "viewport": {
+            "width": 390,
+            "height": 664
+          },
+          "screen": {
+            "width": 390,
+            "height": 844
+          },
+          "deviceScaleFactor": 3,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "webkit"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "iphone"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 2,
+    "webServer": {
+      "command": "npm run preview -- --host 127.0.0.1 --port 4173 --strictPort",
+      "url": "http://127.0.0.1:4173",
+      "reuseExistingServer": false,
+      "timeout": 60000
+    }
+  },
+  "suites": [
+    {
+      "title": "modifica.spec.ts",
+      "file": "modifica.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Gazzetta: carica (file + miniatura) e rimuovi",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11217,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T08:51:38.258Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "49cb381b4bb3a54ba163-c4afbd50d683161bdfe6",
+          "file": "modifica.spec.ts",
+          "line": 287,
+          "column": 1
+        },
+        {
+          "title": "Gazzetta: carica (file + miniatura) e rimuovi",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11946,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T08:52:10.853Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "49cb381b4bb3a54ba163-f1c20d040b6973feb34d",
+          "file": "modifica.spec.ts",
+          "line": 287,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "panchina.spec.ts",
+      "file": "panchina.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Panchina: via dalla lega, resta nella storia, torna dalla Panchina",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 27640,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T08:51:38.680Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "780f393f97db3fc6efdb-ec5f477d751e97807e26",
+          "file": "panchina.spec.ts",
+          "line": 7,
+          "column": 1
+        },
+        {
+          "title": "Panchina: via dalla lega, resta nella storia, torna dalla Panchina",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 29784,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T08:52:23.656Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "780f393f97db3fc6efdb-2988b09f49373661a660",
+          "file": "panchina.spec.ts",
+          "line": 7,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "partite.spec.ts",
+      "file": "partite.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Collegamenti verso la partita: dai record e dalle pagelle del giocatore",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18582,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T08:51:50.242Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "77027bf7ca6a6b02ab24-34ca9d59a8fc49ade848",
+          "file": "partite.spec.ts",
+          "line": 94,
+          "column": 1
+        },
+        {
+          "title": "Collegamenti verso la partita: dai record e dalle pagelle del giocatore",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 19546,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T08:52:46.918Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "77027bf7ca6a6b02ab24-e1e588ecab8e1062db9a",
+          "file": "partite.spec.ts",
+          "line": 94,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "profilo.spec.ts",
+      "file": "profilo.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Footer: solo icone, «Il mio profilo» per primo con la mia faccia; anche a 320 px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 10355,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T08:52:07.238Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9244b861249ad05650ba-d6a9ae39f3ca2430b35d",
+          "file": "profilo.spec.ts",
+          "line": 154,
+          "column": 1
+        },
+        {
+          "title": "Profilo: statistiche e ultime dieci partite seguono la lega scelta",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 26769,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T08:52:17.631Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9244b861249ad05650ba-02abdad141f48c362e8a",
+          "file": "profilo.spec.ts",
+          "line": 196,
+          "column": 1
+        },
+        {
+          "title": "Footer: solo icone, «Il mio profilo» per primo con la mia faccia; anche a 320 px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11463,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T08:52:53.531Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9244b861249ad05650ba-74b11c5fd139898ba7ff",
+          "file": "profilo.spec.ts",
+          "line": 154,
+          "column": 1
+        },
+        {
+          "title": "Profilo: statistiche e ultime dieci partite seguono la lega scelta",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16400,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T08:53:05.020Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9244b861249ad05650ba-af8bcfe6a25bb573f49b",
+          "file": "profilo.spec.ts",
+          "line": 196,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-05T08:51:29.719Z",
+    "duration": 113138.878,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '../../app/LoadingIndicator';
 // ☰ → Panchina: i giocatori rimossi dalla lega selezionata.
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -63,7 +64,7 @@ export function BenchPanel({ data, onClose }: { data: LeagueData; onClose: () =>
         <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.4, marginBottom: 8 }}>
           I giocatori rimossi dalla Rosa di <b>{data.league.name}</b>. Puoi riportarli nella stessa lega; se hanno un account collegato rientrano anche come membri.
         </div>
-        {q.isLoading ? <div style={{ fontSize: 12, color: 'var(--text3)' }}>⏳ Caricamento…</div> : null}
+        {q.isLoading ? <LoadingIndicator /> : null}
         {q.isError ? <div id="bench-error" style={{ fontSize: 12, color: 'var(--red)', fontWeight: 700 }}>{(q.error as Error).message}</div> : null}
         {q.data && !q.data.length ? <div id="bench-empty" style={{ fontSize: 13, color: 'var(--text3)' }}>La Panchina è vuota.</div> : null}
         {(q.data ?? []).map((p) => {

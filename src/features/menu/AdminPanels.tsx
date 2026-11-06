@@ -1,3 +1,4 @@
+import { PanelLayer } from '../../app/PanelLayer';
 // Proposte di amministratore (creatore) e pannelli della Piattaforma (amministratore supremo): Tutte le leghe, Utenti.
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -163,9 +164,9 @@ export function PlatformUsersPanel({ onClose, premiumOnly = false }: { onClose: 
 
 export function PremiumPanel({ onClose }: { onClose: () => void }) {
   const [section, setSection] = useState<'subscriptions' | 'trial' | 'features' | null>(null);
-  if (section === 'subscriptions') return <PlatformUsersPanel premiumOnly onClose={() => setSection(null)} />;
-  if (section === 'features') return <FeatureSettings onClose={() => setSection(null)} />;
-  return <Sheet title="Premium" onClose={onClose} id="sheet-premium">
+
+
+  return <><PanelLayer active={section !== 'subscriptions' && section !== 'features'}><Sheet title="Premium" onClose={onClose} id="sheet-premium">
     {section === 'trial' ? <div className="card">
       <h3>Prova gratuita</h3>
       <p>Ogni nuovo account riceve un mese di Premium dalla registrazione. Nella gestione abbonamenti puoi vedere chi è in prova.</p>
@@ -175,7 +176,10 @@ export function PremiumPanel({ onClose }: { onClose: () => void }) {
       <button type="button" className="premium-tile premium-tile-trial" onClick={() => setSection('trial')}><span>✨</span><b>Prova gratuita</b><small>Un mese per i nuovi iscritti</small></button>
       <button type="button" className="premium-tile player-tile-records" onClick={() => setSection('features')}><span>⚙️</span><b>Funzionalità</b><small>Standard, Premium o Beta</small></button>
     </div>}
-  </Sheet>;
+  </Sheet></PanelLayer>
+    {section === 'subscriptions' ? <PlatformUsersPanel premiumOnly onClose={() => setSection(null)} /> : null}
+    {section === 'features' ? <FeatureSettings onClose={() => setSection(null)} /> : null}
+  </>;
 }
 
 function FeatureSettings({ onClose }: { onClose: () => void }) {

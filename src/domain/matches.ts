@@ -48,7 +48,7 @@ export function matchListGroups(data: Dataset): MatchGroup[] {
     g.items.push({
       m,
       ratedCount: rs.length,
-      descCount: rs.filter((r) => String(r.notes || '').trim() || String(r.titolo || '').trim()).length,
+      descCount: rs.filter((r) => r.hasText || String(r.notes || '').trim() || String(r.titolo || '').trim()).length,
       totalPlayers: (m.teamA?.length || 0) + (m.teamB?.length || 0),
     });
   });
@@ -60,7 +60,7 @@ export const lastMatch = (data: Dataset): Match | null => ([...data.matches].sor
 
 /** Almeno una pagella con titolo o descrizione. */
 export const matchHasDesc = (data: Dataset, matchId: string): boolean =>
-  data.ratings.some((r) => r.matchId === matchId && (String(r.notes || '').trim() || String(r.titolo || '').trim()));
+  data.ratings.some((r) => r.matchId === matchId && (r.hasText || String(r.notes || '').trim() || String(r.titolo || '').trim()));
 
 /**
  * Quanto è «pagellata» una partita: quanti giocatori hanno titolo o descrizione su quanti ne giocano.
@@ -68,7 +68,7 @@ export const matchHasDesc = (data: Dataset, matchId: string): boolean =>
  */
 export function ratingsCoverage(data: Dataset, m: Match): { written: number; total: number } {
   const rs = data.ratings.filter((r) => r.matchId === m.id);
-  const written = rs.filter((r) => String(r.notes || '').trim() || String(r.titolo || '').trim()).length;
+  const written = rs.filter((r) => r.hasText || String(r.notes || '').trim() || String(r.titolo || '').trim()).length;
   const total = (m.teamA?.length || 0) + (m.teamB?.length || 0) || rs.length;
   return { written, total };
 }

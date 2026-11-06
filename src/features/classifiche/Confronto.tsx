@@ -2,7 +2,7 @@
 // Fonte: renderConfronto, pickCmp, setCmp in legacy/index.html. 
 import { useState } from 'react';
 import { useImageTools } from '../../app/ImageViewer';
-import { compareCanvas } from '../../canvas/make';
+import { compareCanvas } from '../../canvas/lazy';
 import type { LeagueData } from '../../data/queries';
 import { avatarClass, initials } from '../../domain/format';
 import { compareBars, compareLeads, compareRows, cmpLead, headToHead, resolveCompare, scopeLabel } from '../../domain/h2h';
@@ -133,7 +133,7 @@ export function Confronto({ data, scope, a, b, onChange }: {
           );
         })}
       </div>
-      <button className="btn btn-primary btn-full" style={{ marginTop: 12, background: '#25D366', borderColor: '#25D366' }} onClick={() => void compareCanvas(data, pa, pb, scope).then((cv) => shareCanvas(cv, `confronto_${pa.name}_vs_${pb.name}.png`.replace(/\s+/g, '_'), `⚔️ ${pa.name} vs ${pb.name}`))}>
+      <button className="btn btn-primary btn-full" style={{ marginTop: 12, background: '#25D366', borderColor: '#25D366' }} onClick={() => shareCanvas(compareCanvas(data, pa, pb, scope), `confronto_${pa.name}_vs_${pb.name}.png`.replace(/\s+/g, '_'), `⚔️ ${pa.name} vs ${pb.name}`)}>
         📲 Condividi il confronto
       </button>
       {picking ? (

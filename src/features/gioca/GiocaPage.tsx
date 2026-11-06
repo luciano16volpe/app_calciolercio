@@ -3,8 +3,9 @@
 // "Crea partita" arriva con il passo 3.7.
 import { Fragment, useMemo, useRef, useState } from 'react';
 import { useImageTools } from '../../app/ImageViewer';
+import { AdBanner } from '../../app/AdBanner';
 import { formOn, modulesOf } from '../../data/gameSettings';
-import { comboSheet, combosFormations } from '../../canvas/make';
+import { comboSheet, combosFormations } from '../../canvas/lazy';
 import { NewMatchDialog } from './NewMatchDialog';
 import { useToast } from '../../app/Toast';
 import { photoUrl, type LeagueData } from '../../data/queries';
@@ -198,9 +199,11 @@ export function ResultView({ data, res, scores, onChange, onCreate }: { data: Le
 
       <div style={{ display: 'flex', gap: 8, margin: '4px 0 14px' }}>
         <button className="btn btn-primary" style={{ ...narrowBtn, background: '#25D366', borderColor: '#25D366' }} onClick={() => showImage('⚽ Formazioni di oggi', combosFormations(data, scores, c), 'formazioni.png', '⚽ Formazioni di oggi')}>📲 Condividi</button>
-        <button className="btn btn-secondary" style={narrowBtn} onClick={() => { const s = comboSheet(data, c); shareCanvas(s.canvas, 'foglio_partita_' + s.date + '.png', '📋 Foglio partita del ' + formatDate(s.date)); }} title="Foglio A4 in bianco e nero da stampare e compilare in campo">🖨️ Foglio</button>
+        <button className="btn btn-secondary" style={narrowBtn} onClick={() => { void comboSheet(data, c).then((s) => shareCanvas(s.canvas, 'foglio_partita_' + s.date + '.png', '📋 Foglio partita del ' + formatDate(s.date))).catch(() => toast('Impossibile preparare il foglio. Riprova.')); }} title="Foglio A4 in bianco e nero da stampare e compilare in campo">🖨️ Foglio</button>
         <button className="btn btn-primary" style={narrowBtn} onClick={onCreate ?? soon("Per creare la partita serve essere amministratore della lega")}>📅 Crea partita</button>
       </div>
+
+      <AdBanner placement="gioca-risultato" />
 
       <div className="card">
         <div className="section-header" style={{ marginBottom: 10 }}>Confronto statistiche</div>

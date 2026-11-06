@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 
 async function openPartite(page: Page) {
   await page.goto('/');
-  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await expect(page.locator('#page-profilo #myplayer-card')).toBeVisible({ timeout: 20_000 });
   await page.locator('.bottom-nav').getByRole('button', { name: 'Partite', exact: true }).click();
   return page.locator('#page-partite');
 }
@@ -93,7 +93,7 @@ test('Gazzette: striscia → visualizzatore, archivio per stagione → "Vai alla
 
 test('Collegamenti verso la partita: dai record e dalle pagelle del giocatore', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await expect(page.locator('#page-profilo #myplayer-card')).toBeVisible({ timeout: 20_000 });
   // dai Record
   await openPanel(page, '#menu-records', '#sheet-record');
   await page.locator('#extra-list .cl-date').first().click();

@@ -1,3 +1,4 @@
+import { MatchTextBoundary } from './MatchTextBoundary';
 // Scheda partita (in lettura; con il ✏️ per chi ha il permesso diventa modificabile): pulsanti, risultato, highlights, Gazzetta, equilibrio squadre, pagelle di ogni giocatore.
 // Fonte: openMatch, matchHighlightsHTML, matchBalanceHTML, gazSectionHTML in legacy/index.html (stato "bloccato").
 // Modifica di voti, gol, risultato e pagelle: passo 3.7b. Importazione WhatsApp e Gazzetta: 3.7c e 3.7e.
@@ -277,7 +278,10 @@ function startDraft(m: Match, ratings: Rating[]): Draft {
 
 // ── la scheda ──────────────────────────────────────────────────────────────
 /** `canEdit` = amministratore (modifica tutto); `canEditText` = redazione (solo titoli e descrizioni delle pagelle, e la Gazzetta). */
-export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEditText = false, canGazzetta = true, startText = false }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions; canEdit?: boolean; canEditText?: boolean; /** pubblicare/sostituire la Gazzetta (admin: solo Premium) */ canGazzetta?: boolean; startText?: boolean }) {
+export function MatchCard(props: Parameters<typeof LoadedMatchCard>[0]) {
+  return <MatchTextBoundary data={props.data} matchId={props.matchId} onClose={props.onClose}>{(data) => <LoadedMatchCard {...props} data={data} />}</MatchTextBoundary>;
+}
+function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEditText = false, canGazzetta = true, startText = false }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions; canEdit?: boolean; canEditText?: boolean; /** pubblicare/sostituire la Gazzetta (admin: solo Premium) */ canGazzetta?: boolean; startText?: boolean }) {
   const m = data.dataset.matches.find((x) => x.id === matchId);
   const toast = useToast();
   const confirm = useConfirm();

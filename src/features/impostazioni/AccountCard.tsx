@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '../../app/LoadingIndicator';
 // Scheda "Account": accesso o registrazione con email e password, ruolo nella lega, uscita, password dimenticata.
 import { useState, type FormEvent } from 'react';
 import { useAuth, useRole } from '../../app/auth';
@@ -54,7 +55,7 @@ export function AccountCard({ leagueId }: { leagueId: string | undefined }) {
     <div className="card" id="account-card">
       <div className="section-header">👤 Account</div>
       {loading ? (
-        <div style={note}>⏳ Controllo l'accesso…</div>
+        <LoadingIndicator />
       ) : recovery ? (
         <form onSubmit={submit}>
           <div style={{ fontSize: 13, marginBottom: 8 }}>Scegli la nuova password.</div>

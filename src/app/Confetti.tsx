@@ -1,3 +1,4 @@
+import { animateWhenVisible } from './visibleAnimation';
 // Coriandoli sullo sfondo di un riquadro (il genitore deve essere `position: relative`): per la partita vinta.
 // Come la pioggia: stanno DIETRO al contenuto, restano nel riquadro, cadono in continuazione, non bloccano i tocchi
 // e si fermano da soli quando il riquadro non c'è più. Con «meno animazioni» restano fermi.
@@ -40,12 +41,7 @@ export function Confetti() {
         ctx.restore();
       }
     };
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-      draw();
-      return;
-    }
-    let raf = 0;
-    const frame = () => {
+    return animateWhenVisible(canvas, () => {
       for (const p of pieces) {
         p.y += p.vy;
         p.phase += 0.04;
@@ -53,11 +49,7 @@ export function Confetti() {
         p.r += p.vr;
         if (p.y > h + 10) Object.assign(p, make(-10 - Math.random() * 30));
       }
-      draw();
-      raf = requestAnimationFrame(frame);
-    };
-    raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
+    }, draw);
   }, []);
 
   return <canvas ref={ref} id="profile-confetti" aria-hidden="true" style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0, borderRadius: 'inherit' }} />;

@@ -1,5 +1,6 @@
 // Pagina Partite: ultima partita, striscia delle Gazzette, elenco di tutte le partite per stagione.
 import type { LeagueData } from '../../data/queries';
+import { AdBanner } from '../../app/AdBanner';
 import { GazStrip, LastMatch, MatchesList, useMyPlayerIn, type MatchActions } from './parts';
 
 export function PartitePage({ data, act, onArchive, active = true }: { data: LeagueData; act: MatchActions; onArchive: () => void; active?: boolean }) {
@@ -8,6 +9,7 @@ export function PartitePage({ data, act, onArchive, active = true }: { data: Lea
     <div id="partite-content">
       <div id="last-match"><LastMatch data={data} act={act} mine={mine} active={active} /></div>
       <div id="gaz-strip"><GazStrip data={data} act={act} onArchive={onArchive} /></div>
+      <AdBanner placement="partite-feed" />
       <div className="card">
         <div id="matches-list"><MatchesList data={data} act={act} /></div>
       </div>

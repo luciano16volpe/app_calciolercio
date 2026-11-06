@@ -136,16 +136,20 @@ test('Menu: admin senza Premium gestisce la lega ma non vede le impostazioni ava
   await setup(page, { mine: mineAs('admin', { owner_id: 'altro' }) });
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openMenu(page);
-  for (const id of ['#menu-members', '#menu-invites', '#menu-claims', '#menu-pending']) await expect(page.locator(id)).toBeVisible();
+  await expect(page.locator('#menu-pending')).toBeVisible();
   await expect(page.locator('#menu-league-settings')).toHaveCount(0);
+  await page.locator('#menu-league-admin').click();
+  for (const id of ['#menu-members', '#menu-invites', '#menu-claims']) await expect(page.locator(id)).toBeVisible();
 });
 
 test('Menu: l\'amministratore Premium (non creatore) vede la Gestione ma non le proposte', async ({ page }) => {
   await setup(page, { mine: mineAs('admin', { owner_id: 'altro' }), rpc: { my_premium_status: [{ active: true, expires_at: null, trial: false, trial_expires_at: null, lifetime: true }] } });
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openMenu(page);
-  for (const id of ['#menu-members', '#menu-invites', '#menu-claims', '#menu-merge', '#menu-league-settings', '#menu-code']) await expect(page.locator(id)).toBeVisible();
+  await expect(page.locator('#menu-league-settings')).toBeVisible();
   await expect(page.locator('#menu-code')).toHaveText('abc12345');
+  await page.locator('#menu-league-admin').click();
+  for (const id of ['#menu-members', '#menu-invites', '#menu-claims', '#menu-merge']) await expect(page.locator(id)).toBeVisible();
   await expect(page.locator('#menu-proposals')).toHaveCount(0);
 });
 
@@ -154,6 +158,7 @@ test('Menu: il creatore vede anche le proposte di amministratore', async ({ page
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openMenu(page);
   await expect(page.locator('#menu-role')).toContainText('Admin (creatore)');
+  await page.locator('#menu-league-admin').click();
   await expect(page.locator('#menu-proposals')).toBeVisible();
 });
 

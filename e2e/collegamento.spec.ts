@@ -1,3 +1,4 @@
+import { FakeBackend } from './fakeBackend';
 // Collegamento account: invito personale (/invito/<token>), Inviti giocatori, Unisci giocatori,
 // «Questo sono io», richieste dell'amministratore, profilo, privacy.
 import { expect, test, type Page } from './fixtures';
@@ -88,11 +89,10 @@ test('Inviti giocatori: crea il link, lo rigenera, scollega un giocatore', async
 });
 
 test('Unisci giocatori: controlli, conferma e unione', async ({ page }) => {
-  const writes = await setup(page, { publicRole: 'admin' });
+  const writes = await setup(page, { publicRole: 'admin', rpc: { league_players_status: mergeStatuses() } });
   await openApp(page);
   await openPanel(page, '#menu-merge', '#sheet-merge');
-  await page.locator('#mg-submit').click();
-  await expect(page.locator('#toast')).toContainText('Scegli i due giocatori');
+  await expect(page.locator('#mg-submit')).toBeDisabled();
   await page.locator('#mg-keep').selectOption({ index: 1 });
   await expect(page.locator('#mg-drop option')).toHaveCount(22); // «scegli» + 21: chi si tiene non si può assorbire
   const keep = await page.locator('#mg-keep').inputValue();
@@ -106,7 +106,7 @@ test('Unisci giocatori: controlli, conferma e unione', async ({ page }) => {
 });
 
 test('Unisci giocatori: se il database rifiuta si vede il motivo', async ({ page }) => {
-  await setup(page, { publicRole: 'admin', rpcError: { merge_players: 'I due giocatori hanno giocato la stessa partita' } });
+  await setup(page, { publicRole: 'admin', rpc: { league_players_status: mergeStatuses() }, rpcError: { merge_players: 'I due giocatori hanno giocato la stessa partita' } });
   await openApp(page);
   await openPanel(page, '#menu-merge', '#sheet-merge');
   await page.locator('#mg-keep').selectOption({ index: 1 });
@@ -249,4 +249,32 @@ test('Privacy: informativa con le righe sul registro; la cancellazione chiede di
   await page.locator('#app-modal-ok').click();
   await expect(page.locator('#toast')).toContainText('Account cancellato');
   expect(writes.some((w) => w.table === 'delete_my_account')).toBe(true);
+});
+
+function mergeStatuses() {
+  const b = new FakeBackend();
+  b.seedLegacy('SM');
+  return [...b.players].map((p) => status(String(p.id), String(p.name)));
+}
+
+test('ADMIN LEGA: riquadri e blocco unione di due account assegnati', async ({ page }) => {
+  const players = mergeStatuses();
+  players[0] = status(players[0]!.player_id, players[0]!.name, { linked: true, linked_name: 'Account A' });
+  players[1] = status(players[1]!.player_id, players[1]!.name, { linked: true, linked_name: 'Account B' });
+  const writes = await setup(page, { publicRole: 'admin', rpc: { league_players_status: players } });
+  await openApp(page);
+  await openPanel(page, '#menu-league-admin', '#sheet-league-admin-hub');
+  await expect(page.locator('#menu-invites')).toBeVisible();
+  await expect(page.locator('#menu-claims')).toBeVisible();
+  await expect(page.locator('#menu-members')).toBeVisible();
+  await expect(page.locator('#menu-bench')).toBeVisible();
+  await noOverflow(page);
+  await page.locator('#menu-merge').click();
+  await expect(page.locator('#mg-keep')).toBeEnabled();
+  await page.locator('#mg-keep').selectOption(players[0]!.player_id);
+  await expect(page.locator('#mg-drop option').filter({ hasText: 'Account B' })).toBeDisabled();
+  await page.locator('#mg-drop').selectOption(players[2]!.player_id);
+  await expect(page.locator('#mg-submit')).toBeEnabled();
+  await expect(page.locator('#mg-keep option').filter({ hasText: 'Account B' })).toBeEnabled();
+  expect(writes.some((w) => w.table === 'merge_players')).toBe(false);
 });

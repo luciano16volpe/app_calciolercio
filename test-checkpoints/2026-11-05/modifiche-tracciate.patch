@@ -1,0 +1,3352 @@
+diff --git a/CLAUDE.md b/CLAUDE.md
+index d0f64cb..bb73078 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -5,14 +5,13 @@ squadre equilibrate, partite con pagelle (voti + titolo e descrizione della "Red
+ classifiche, albo d'oro per stagione, Gazzette. Lingua dell'interfaccia: **italiano**.
+ 
+ Questo progetto è la **nuova versione multi-lega** dell'app, con database Supabase.
+-L'app attuale (in produzione, usata ogni settimana) è un unico file HTML in `legacy/`.
++L'app corrente è questa versione React/Supabase. `legacy/` conserva il materiale storico per l'importazione e non è un riferimento per i test.
+ 
+ ## Regola d'oro
+ 
+-> **`legacy/index.html` è l'implementazione di riferimento.** Ogni calcolo (bilanciamento, OVR,
+-> stato di forma, premi, stagioni, lettura WhatsApp, figurine…) va portato **fedelmente** e deve dare
+-> **gli stessi risultati**, verificati da test. Se qualcosa sembra sbagliato o migliorabile, **chiedi
+-> prima** all'utente: molte scelte sono state discusse a lungo (vedi `docs/DECISIONI.md`).
++> I test verificano le regole attuali decise dall'utente con risultati attesi espliciti,
++> casi limite e invarianti. Non caricare né eseguire la vecchia app per confrontare formule,
++> grafica, markup o immagini. Le istruzioni recenti dell'utente prevalgono sulle decisioni storiche.
+ 
+ Prima di toccare la logica di dominio leggi **`docs/REGOLE.md`** (formule, soglie, regole) e
+ **`docs/DECISIONI.md`** (cosa è stato scelto e cosa è stato scartato, da non riproporre).
+@@ -31,7 +30,7 @@ Il piano di lavoro a fasi è in **`docs/PIANO.md`**.
+ | UI | React |
+ | Dati | supabase-js + TanStack Query (cache: mostra subito i dati, poi aggiorna) |
+ | PWA | vite-plugin-pwa (service worker: risolve i problemi di aggiornamento su iPhone/Android) |
+-| Stile | il CSS dell'app attuale, portato così com'è (l'aspetto deve restare identico) |
++| Stile | CSS della versione corrente, aggiornato secondo le decisioni dell'utente |
+ | Test | Vitest (logica) + Playwright (schermate, emulazione iPhone e Android) |
+ | Database | Supabase (Postgres + Auth + Storage), regione EU. Schema in `supabase/migrations/` |
+ | Hosting | Vercel o Cloudflare Pages (anteprima per ogni ramo = ambiente di prova) |
+@@ -48,8 +47,9 @@ src/
+   styles/        app.css (portato da legacy)
+ tests/
+   fixtures/      dati reali di prova (partite, pagelle, messaggi WhatsApp)
+-  golden/        confronto con legacy: stessi input → stessi output
+-legacy/          app attuale (NON modificare: serve da riferimento)
++  domain/        regole attuali, esempi espliciti e casi limite
++  db/            migrazioni, funzioni e RLS applicative
++legacy/          materiale storico per l'importazione
+ supabase/        migrations/ (+ functions/ in futuro)
+ ```
+ 
+@@ -85,7 +85,6 @@ supabase/        migrations/ (+ functions/ in futuro)
+ 
+ ## Come lavorare
+ - Passi piccoli, ognuno verificato da test; dopo ogni passo un riepilogo breve per l'utente.
+-- Quando porti una funzione da legacy, aggiungi un **test golden** che esegue la versione legacy e la
+-  nuova sugli stessi dati (`tests/fixtures/`) e confronta i risultati.
++- Verifica le regole di dominio correnti con esempi e risultati attesi indipendenti dal codice storico.
+ - I dati in `tests/fixtures/` sono **reali** (nomi, voti, descrizioni): il repository deve restare
+   **privato**.
+diff --git a/README.md b/README.md
+index 10645ad..a13fdf7 100644
+--- a/README.md
++++ b/README.md
+@@ -6,7 +6,7 @@ classifiche, albo d'oro, Gazzette. Nuova versione multi-lega su Supabase.
+ - Guida per lo sviluppo (Claude Code): `CLAUDE.md`
+ - Test e copertura: `docs/TEST.md`
+ - Regole dell'app: `docs/REGOLE.md` · Decisioni: `docs/DECISIONI.md` · Piano: `docs/PIANO.md`
+-- App attuale (riferimento): `legacy/`
++- Archivio storico e dati per l'importazione: `legacy/` (non usato come confronto nei test)
+ 
+ ## Provare (Fase 4)
+ - `npx tsc --noEmit`, `npx vitest run` (logica), `npm run build`, `npm run e2e` (schermate: ti chiede se provare su iOS, Android o entrambi; `npm run e2e -- ios`, `-- android`, `-- entrambi`).
+diff --git a/docs/COLLAUDO.md b/docs/COLLAUDO.md
+index 01815b4..a1ab9dc 100644
+--- a/docs/COLLAUDO.md
++++ b/docs/COLLAUDO.md
+@@ -1,29 +1,77 @@
+-# Collaudo finale — Fase 4 (1 novembre 2026)
+-
+-Ambiente: progetto Supabase vero, solo migrazioni nuove e additive; le prove con utenti finti girano dentro transazioni che si annullano da sole (verificato: nessuna traccia). Nessun progetto di prova.
+-
+-## Esiti
+-- ✅ Completezza: menu e leghe, collegamento account, registro attività, profilo e privacy (vedi `docs/PIANO.md`).
+-- ✅ Permessi per ruolo nel database: `supabase/tests/permessi_per_ruolo.sql`, 51 azioni × 7 ruoli (visitatore, membro, redazione, admin, creatore, admin di un'altra lega, amministratore supremo). Tutte come atteso dopo la correzione dei permessi sui giocatori.
+-- ✅ Registro attività: `supabase/tests/registro_attivita.sql`, 35 controlli (righe giuste, niente righe per aggiornamenti vuoti, stessa operazione raggruppata, IP e dispositivo, origine import/sistema, nessuna modifica o cancellazione possibile, pulizia a 60 giorni, account cancellato anonimo).
+-- ✅ Scenario completo sul database: `supabase/tests/scenario_completo.sql`, 30 controlli. Scenario con più telefoni: `e2e/scenario.spec.ts` (database finto condiviso).
+-- ✅ Test esistenti delle Fasi 1–3 e i golden: verdi (vedi riepilogo finale).
+-- ✅ Nessun sbordo a 320/360/390 px nel menu e nelle schermate nuove; prove su iPhone, Android e 360 px.
+-- ⚠️ Non provati qui: installazione e aggiornamento PWA su telefono vero, tema scuro a vista, 412 px.
+-- ✅ Chiavi segrete: nessuna nel codice (`.env.local` fuori da Git).
+-
+-## Problemi trovati
+-| Gravità | Problema | Stato |
+-|---|---|---|
+-| Alta | `accept_player_invite`: errore «colonna ambigua», il link d'invito non funzionava | Corretto (migrazione 20261108000100) |
+-| Alta | Il registro bloccava la creazione di giocatori (`min(uuid)`) | Corretto (20261107000100) prima dell'uso |
+-| Media | I dialoghi di conferma comparivano dietro i pannelli del menu | Corretto |
+-| Media | Cambio lega dal menu senza effetto con l'indirizzo `/l/<slug>` | Corretto |
+-| Media | L'admin, salvando con dati vecchi di meno di un minuto, cancellava i testi appena scritti dalla redazione | Corretto: i testi non toccati non si riscrivono |
+-| Media | Chi ha creato un giocatore da admin e ora è solo membro può ancora modificarlo/eliminarlo | Corretto il 1/11 con la tua approvazione (migrazioni 20261109000000 e 20261109000100): modifica ed eliminazione solo per gli admin delle leghe del giocatore; eliminare richiede di essere admin di tutte le sue leghe |
+-| Bassa | Qualsiasi amministratore (non solo il creatore) può eliminare la lega | Deciso il 1/11: resta così (serve scrivere il nome della lega) |
+-| Bassa | La redazione non salva i soprannomi imparati dall'import (permesso solo agli admin): restano sul telefono | Accettato |
+-| Bassa | L'intestazione `x-audit-source: import` può essere dichiarata da chiunque: cambia solo l'etichetta, la persona resta registrata | Accettato |
+-
+-## Cosa resta
+-Riga SQL dell'amministratore supremo, prova su telefono vero, poi `PIANO_PASSAGGIO.md`.
++﻿# Collaudo prima del passaggio — regole attuali
++
++Aggiornamento del 4 novembre 2026. Sostituisce il resoconto della Fase 4 del 1 novembre: i vecchi esiti non certificano le funzioni aggiunte dopo quella data.
++
++## Ambienti e limiti
++
++- `npm test`: logica e PostgreSQL in memoria (PGlite), con tutte le migrazioni. Auth e servizi Storage sono simulati; funzioni e RLS applicative sono eseguite.
++- `npm run e2e -- entrambi`: app compilata nei browser emulati iPhone, Android e 360 px. Accessi e dati simulati, nessuna scrittura in produzione. Verifica interfaccia e richieste; non sostituisce Supabase.
++- `supabase/tests/premium.sql`: controlli sul progetto collegato dentro una transazione con `ROLLBACK`. Account, contenuti e modifiche alle modalità delle funzioni vengono annullati. Prima viene eseguito anche da `tests/db/premium-collaudo.test.ts`, che verifica l'annullamento.
++- Installazione PWA, push ricevuti e fluidità su telefoni fisici richiedono ancora una prova manuale.
++
++## Matrice Premium
++
++Premium appartiene all'account. Ruolo e abbonamento sono distinti: Premium non concede accesso alle leghe altrui.
++
++| Operazione | Standard | Premium / prova attiva | Controllo |
++|---|---|---|---|
++| Prova gratuita | Un mese dalla registrazione, una sola volta | Accesso fino alla scadenza | Trigger di registrazione |
++| Rinnovo, revoca, vita | Non modificabile dal titolare | Durata assegnata; vita senza scadenza | Solo super amministratore |
++| Richiesta nuova lega | Negata | In attesa, senza creare subito la lega | Super amministratore approva/rifiuta; richiedente ancora Premium alla decisione |
++| Funzione Standard | Accessibile nella propria lega | Accessibile nella propria lega | Modalità configurata dalla piattaforma |
++| Funzione Premium | Negata | Accessibile nella propria lega | Controllo dell'account |
++| Funzione Beta | Nascosta | Nascosta | Solo super amministratore |
++| Storico in modalità Premium | Stagione corrente e precedente | Storico disponibile della lega | Database, anche su richieste dirette |
++| Storico in modalità Standard | Storico disponibile della lega | Storico disponibile della lega | Cambio modalità e invalidazione cache |
++| Leggere Gazzette e file | Negato | Solo nelle proprie leghe | Se non ci sono contenuti la sezione non appare |
++| Pubblicare Gazzette | Redazione della lega; admin Standard escluso | Admin o redazione autorizzati | Appartenenza e ruolo, anche per Storage |
++
++La qualifica di super amministratore abilita le funzioni di piattaforma. Non va confusa con l'appartenenza a una lega per leggere le sue Gazzette.
++
++## Admin senza Premium
++
++| Azione nella propria lega | Consentita |
++|---|---|
++| Sorteggio, partite, voti, pagelle | Sì |
++| Aggiungere e modificare la Rosa | Sì |
++| Membri e inviti | Sì, rispettando le regole del creatore |
++| Programma e convocati prima della partita | Sì, senza risultati o dati di gioco già registrati |
++| Impostazioni avanzate ed eliminazione lega | No |
++| Eliminare definitivamente giocatori | No |
++| Pubblicare Gazzette come admin | No |
++| Leggere Gazzette come Standard | No |
++
++La scadenza non cancella l'appartenenza né il ruolo amministrativo. Per una redazione Standard resta valida l'autorizzazione distinta a pubblicare.
++
++Gli incontri futuri devono restare visibili anche se rinviati alla stagione successiva: il limite Standard riguarda le partite storiche. La nuova migrazione `20261203000000_modifica_programma_partita.sql` copre anche questo caso; va applicata prima di pubblicare l'editor.
++
++## Prove ripetibili
++
++| Area | File |
++|---|---|
++| Prova, rinnovo, revoca, vita, admin scaduto | `tests/db/account-premium.test.ts` |
++| Richieste di lega | `tests/db/league-requests.test.ts`, `supabase/tests/premium.sql` |
++| Standard / Premium / Beta | `tests/db/feature-modes.test.ts` |
++| Storico e cambio anno | `tests/db/history-access.test.ts`, `tests/previous-season.test.ts` |
++| Gazzette e isolamento fra leghe | `tests/db/gazzette-premium.test.ts`, `supabase/tests/premium.sql` |
++| Collaudo SQL e ROLLBACK | `tests/db/premium-collaudo.test.ts` |
++| Salvataggi atomici e modifiche concorrenti | `tests/db/atomic-saves.test.ts`, `tests/db/planned-match.test.ts` |
++| Schede coerenti | `e2e/scheda-coerente.spec.ts`, `tests/profile-season.test.ts` |
++| Anteprime protette | `e2e/gazzetta-privata.spec.ts` |
++| Swipe e Abbonamenti | `e2e/menu.spec.ts` |
++| Più telefoni e ruoli | `e2e/scenario.spec.ts` |
++
++Non vengono più confrontati codice, markup o risultati prodotti dalla vecchia app. I test di dominio verificano esempi, soglie e invarianti delle regole attuali. Le fixture storiche restano dati per le prove e per l'importazione.
++
++## Esito dell'ultima esecuzione
++
++Verifiche in corso: completare con gli esiti effettivi dopo l'esecuzione completa. Il successo dei test non autorizza da solo il passaggio.
++
++## Prove manuali prima del passaggio
++
++1. Standard e Premium nella stessa lega, più un Premium esterno: Gazzette, storico e link diretti.
++2. Admin scaduto: gestione ordinaria disponibile, funzioni riservate non abilitate; ripristino al rinnovo.
++3. Richiesta di lega: approvazione/rifiuto e scadenza del richiedente prima della decisione.
++4. Cambio modalità su una sessione aperta: lo storico non deve restare accessibile tramite cache dopo una revoca.
++5. Telefoni fisici: installazione e aggiornamento PWA, push, foto/miniature, tema scuro, swipe e larghezza 412 px.
++6. Seguire `docs/passaggio/PIANO_PASSAGGIO.md` solo con il via al passaggio. Backup, importazione finale, inviti e modifica del vecchio sito restano azioni distinte.
+diff --git a/docs/DECISIONI.md b/docs/DECISIONI.md
+index a1d6b9f..9e86960 100644
+--- a/docs/DECISIONI.md
++++ b/docs/DECISIONI.md
+@@ -88,11 +88,11 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
+ - **"Seleziona i primi N"** sceglie i primi N **come appaiono nell'elenco** (i più forti). Legacy prendeva i primi N nell'ordine
+   del file della rosa, che non si vede e non ha un significato (nella nuova base dati la rosa non ha quell'ordine).
+ - Il formato (5 vs 5, 6 vs 6, 7 vs 7, asimmetrico) resta ricordato sul telefono. I convocati no, come prima.
+-- Il sorteggio gira nel telefono e usa gli stessi calcoli di legacy: stesse proposte, stesso ordine (test su 7 vs 7 con 14 giocatori).
++- Il sorteggio gira nel telefono. I test verificano le regole attuali e l'integrità delle squadre senza eseguire la vecchia app.
+ 
+ 
+ ## Immagini da condividere (Fase 3.6)
+-- Le immagini (figurina, riepilogo, formazioni, foglio A4, confronto) sono disegnate come in legacy: i test registrano ogni istruzione di disegno e la confrontano con quella di legacy (identiche).
++- Le immagini (figurina, riepilogo, formazioni, foglio A4, confronto) vengono provate nella versione corrente. Il confronto delle istruzioni di disegno con la vecchia app è stato rimosso.
+ - Medaglie della figurina: legacy non le riordina (premi prima, gogna dopo) per un errore di confronto; portato **fedelmente**, senza riordino. Da chiedere all'utente se vuole il riordino.
+ - Il piè di pagina del riepilogo usa ✒️ (con U+FE0F) in un testo centrato, come legacy; da verificare su iPhone.
+ - Sbordo a 360 px: i 3 pulsanti sotto le squadre in Gioca (Condividi, Foglio, Crea partita) uscivano dallo schermo anche in legacy; ora il testo va a capo. Il controllo e2e usa la larghezza vera dello schermo.
+@@ -104,7 +104,7 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
+ - L'avviso sui "titoli non salvati" di legacy riguardava lo script Google: non serve più.
+ 
+ ## Importazione WhatsApp (Fase 3.7c)
+-- Lettura e abbinamento dei nomi: stessa logica già provata in Fase 1 (test golden). Qui solo la schermata.
++- Lettura e abbinamento dei nomi: prove sui messaggi e sui risultati attesi attuali, senza confronto con la vecchia app.
+ - I soprannomi imparati restano sul telefono (stessa chiave di legacy) e vengono salvati anche nella lega (colonna `aliases` di `league_players`).
+ 
+ ## Rosa e statistiche (Fase 3.7d)
+diff --git a/docs/PIANO.md b/docs/PIANO.md
+index a4f3e5c..f98db4d 100644
+--- a/docs/PIANO.md
++++ b/docs/PIANO.md
+@@ -9,9 +9,9 @@ Ogni fase finisce con: test verdi, prova su iPhone e Android (emulati), breve ri
+       migrazione `supabase/migrations/20261031000000_schema.sql` applicata, tipi generati
+ - [x] Pubblicazione su Vercel/Cloudflare Pages dal nuovo repository (privato)
+ 
+-## Fase 1 — Logica pura, con test golden
+-Portare da legacy, un modulo alla volta, con test che confrontano i risultati con legacy sugli
+-stessi dati (`tests/fixtures/app_data.json`, `legacy/rosa_calcetto.json`):
++## Fase 1 — Logica pura (completata)
++La migrazione iniziale è completata. Dal 4 novembre 2026 i test non confrontano più la nuova app
++con quella storica: le regole correnti vengono verificate direttamente in `tests/domain/`.
+ - [x] ovr (calcOvr, futRating, futTier) · form (formWeight, effectiveScore, formState)
+ - [x] seasons (seasonOf, seasonStatus, seasonsList) · stats (seasonStats)
+ - [x] awards (computeSeasonAwards, matchEvents, Occasionali, albo)
+diff --git a/docs/REGOLE.md b/docs/REGOLE.md
+index 2ad36d9..314c3d8 100644
+--- a/docs/REGOLE.md
++++ b/docs/REGOLE.md
+@@ -1,7 +1,8 @@
+ # Regole di CalcioLercio
+ 
+-Tutte le regole qui sotto sono già implementate in `legacy/index.html`. Accanto a ogni regola c'è
+-il **nome della funzione legacy** da leggere per i dettagli esatti: in caso di dubbio vale il codice.
++Le regole sono implementate nella versione corrente in `src/domain/` e verificate direttamente
++dai test. I nomi storici indicati nel documento non richiedono confronti con la vecchia app.
++Le decisioni recenti dell'utente prevalgono sulle descrizioni delle fasi iniziali.
+ 
+ ---
+ 
+@@ -31,8 +32,8 @@ il **nome della funzione legacy** da leggere per i dettagli esatti: in caso di d
+ - Campi per giocatore e partita: voto, gol, assist, autogol, meta (tiri alle stelle), rigori
+   sbagliati, **titolo** (max 60), **descrizione** (max 2000, con formattazione WhatsApp `*grassetto*`
+   e `_corsivo_`, mostrata come grassetto/corsivo: `waHTML`).
+-- **PAG** (badge): media di tutti i voti validi. Colori: ≥ 6,5 verde, < 5,5 rosso, altrimenti giallo
+-  (`getPlayerPagInfo`).
++- **PAG** (badge): media dei voti validi del periodo comune alle schede. Colori: ≥ 6,5 verde, < 5,5 rosso, altrimenti giallo.
++- **Periodo comune** di profilo, scheda aperta dalla Rosa e figurina: stagione corrente se il giocatore ha almeno cinque partite giocate, altrimenti le ultime cinque partite giocate della lega. Stato di forma e peso dei voti mantengono le rispettive formule sullo storico accessibile della lega, identiche in tutte le aperture.
+ 
+ ## 4. MVP e peggiore di una partita
+ - `mvpPerf = voto + gol×0,5 + assist×0,3 − autogol×0,3 − rigori sbagliati×0,3` (`mvpPerf`).
+diff --git a/docs/SALVATAGGI_ATOMICI.md b/docs/SALVATAGGI_ATOMICI.md
+index b677835..480b0bb 100644
+--- a/docs/SALVATAGGI_ATOMICI.md
++++ b/docs/SALVATAGGI_ATOMICI.md
+@@ -5,11 +5,27 @@ soli testi della redazione vengono salvati con comandi PostgreSQL transazionali.
+ Un errore annulla tutte le scritture del comando, compresi audit, firma e marcatori delle notifiche.
+ I testi non modificati dall'amministratore vengono conservati; l'intestazione viene riscritta solo se modificata.
+ 
+-Le quattro RPC sono SECURITY INVOKER: applicano le RLS e i trigger esistenti, oltre al controllo esplicito
++Le RPC di salvataggio atomico sono SECURITY INVOKER: applicano le RLS e i trigger esistenti, oltre al controllo esplicito
+ sul ruolo nella lega. Le funzioni non sono eseguibili da utenti anonimi.
+ I caricamenti Storage restano operazioni separate e non fanno parte di queste transazioni SQL.
+ L'atomicita non introduce una risoluzione automatica dei conflitti fra modifiche concorrenti.
+ 
++## Partite in programma
++
++`update_planned_match` salva giorno, ora, luogo, descrizione e convocati nella stessa transazione.
++È riservata agli admin della lega, anche Standard. La presenza di un risultato (anche zero), un voto,
++un gol, altri contatori o testi di pagella impedisce la modifica del programma e dei convocati.
++I nuovi giocatori devono essere nella Rosa della lega; gli attuali convocati possono restare anche se
++nel frattempo sono usciti dalla Rosa. Non sono ammessi duplicati o squadre vuote.
++
++Il comando blocca la partita e verifica che programma e squadre coincidano con la copia aperta
++dall'utente. Se un altro admin li ha già cambiati, rifiuta il salvataggio e chiede di riaprire la scheda.
++Se cambiano le squadre, la previsione originaria viene annullata e la proposta marcata come modificata a mano.
++Il semplice cambio del programma conserva la previsione. Il limite dello storico Standard non nasconde incontri futuri rinviati a un'altra stagione.
++
++La migrazione `20261203000000_modifica_programma_partita.sql` va applicata prima del frontend con il nuovo editor.
++Le prove sono in `tests/db/planned-match.test.ts`, `tests/domain/planned-match.test.ts` ed `e2e/programma-partita.spec.ts`.
++
+ ## Verifiche
+ 
+ - `npm test`: include i test in `tests/db/atomic-saves.test.ts`.
+diff --git a/docs/TEST.md b/docs/TEST.md
+index 42957c7..b24c987 100644
+--- a/docs/TEST.md
++++ b/docs/TEST.md
+@@ -5,7 +5,13 @@
+ - `npm run lint`: controlli statici sul codice.
+ - `npm run e2e -- entrambi`: schermate nei browser emulati iPhone, Android e 360 px. Per un'area specifica si puo aggiungere il percorso del file, per esempio `npm run e2e -- entrambi e2e/immagini.spec.ts`.
+ 
+-Alcuni test in `tests/golden/` confrontano ancora formule e casi di dominio con la vecchia app: servono a proteggere i risultati finche quelle regole restano valide. Non sono una richiesta di mantenere la vecchia grafica. Quando cambia una regola, aggiornare i test in base alla decisione attuale.
++I test in `tests/domain/` verificano le regole attuali con esempi, soglie e invarianti espliciti. I confronti con la vecchia applicazione e il caricamento del suo codice sono stati rimossi. Le fixture storiche restano dati per le prove e per l'importazione, senza usare la vecchia app come risultato atteso.
++
++Playwright usa l'app compilata, un server preview dedicato sulla porta 4173 e due worker. Non riutilizza server aperti a mano e non esegue retry automatici. I contesti dei test con più telefoni vengono chiusi dopo ogni test; i service worker reali sono bloccati per mantenere le richieste nel database simulato. In caso di errore rimangono screenshot e trace in `test-results/`. Le prove PWA simulano gli eventi: non certificano installazione e aggiornamento su un telefono fisico.
++
++`npm run e2e` compila prima di avviare il runner: la durata della build non consuma il tempo di avvio del server. Per chiamare direttamente Playwright eseguire prima `npm run build`.
++
++Il collaudo Premium è descritto in `docs/COLLAUDO.md`. `tests/db/premium-collaudo.test.ts` esegue anche `supabase/tests/premium.sql` e verifica il ROLLBACK. Per ripeterlo sul progetto collegato: `supabase db query --linked -f supabase/tests/premium.sql`.
+ 
+ Le immagini condivisibili sono provate nel browser: generazione, dimensioni, visualizzatore e salvataggio. Queste prove non confrontano i pixel e non garantiscono da sole che ogni elemento grafico sia corretto: per modifiche visive serve anche un controllo delle immagini generate. Le vecchie prove che confrontavano ogni istruzione canvas e le schermate di partita col markup storico sono state rimosse per permettere l'evoluzione grafica.
+ 
+diff --git a/e2e/collegamento.spec.ts b/e2e/collegamento.spec.ts
+index 1fa01d7..9c0d890 100644
+--- a/e2e/collegamento.spec.ts
++++ b/e2e/collegamento.spec.ts
+@@ -1,6 +1,6 @@
+ // Collegamento account: invito personale (/invito/<token>), Inviti giocatori, Unisci giocatori,
+ // «Questo sono io», richieste dell'amministratore, profilo, privacy.
+-import { expect, test, type Page } from '@playwright/test';
++import { expect, test, type Page } from './fixtures';
+ import { fixturePlayer, lastWrite, mineAs, noOverflow, openApp, openPanel, setup, openProfile } from './helpers';
+ 
+ const status = (player_id: string, name: string, over: Record<string, unknown> = {}) => ({
+diff --git a/e2e/fakeBackend.ts b/e2e/fakeBackend.ts
+index 4556002..978d972 100644
+--- a/e2e/fakeBackend.ts
++++ b/e2e/fakeBackend.ts
+@@ -258,6 +258,16 @@ export class FakeBackend {
+       case 'is_super_admin': return { status: 200, body: !!actor && this.supers.has(actor) };
+       // Premium attivo e tutte le funzioni aperte: i test sui dati non dipendono dalle restrizioni dello storico.
+       case 'my_premium_status': return { status: 200, body: [{ active: true, expires_at: null, trial: false, trial_expires_at: null, lifetime: true }] };
++      case 'update_planned_match': {
++        const m = this.matches.find((row) => row.id === a.p_match);
++        if (!m || !this.isAdmin(String(m.league_id), actor)) return err(400, 'Permesso negato', 'P0001');
++        m.date=a.p_date; m.play_time=a.p_time; m.place=a.p_place; m.notes=a.p_notes;
++        this.mplayers=this.mplayers.filter((row) => row.match_id!==m.id);
++        for (const [team, ids] of [['A',a.p_team_a],['B',a.p_team_b]] as const) {
++          (ids as string[]).forEach((id, position) => this.mplayers.push({match_id:m.id,player_id:id,team,position,rating:null,goals:0,assist:0,autogol:0,meta:0,rigori_sbagliati:0,titolo:null,descrizione:null}));
++        }
++        return {status:200,body:null};
++      }
+       case 'my_feature_modes': return { status: 200, body: ['compare', 'couples', 'records', 'statistics', 'history', 'albo'].map((feature) => ({ feature, mode: 'standard', allowed: true })) };
+       case 'log_event': return { status: 200, body: null };
+       case 'player_history': return { status: 200, body: [] };
+@@ -452,6 +462,17 @@ export class FakeBackend {
+ 
+   /** Collega un telefono (contesto del browser) a questo database finto, come `userId` (o senza accesso). */
+   async attach(ctx: BrowserContext, userId: string | null): Promise<void> {
++    // Foto e Gazzette sono fixture: nessuna richiesta deve dipendere dallo Storage reale.
++    await ctx.route('**/storage/v1/object/**', (r) => {
++      const req = r.request();
++      if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS });
++      if (new URL(req.url()).pathname.includes('/object/sign/')) return r.fulfill({
++        status: 200, headers: CORS, contentType: 'application/json',
++        body: JSON.stringify({ signedURL: '/object/public/gazzette/fixture.jpg?token=fake' }),
++      });
++      if (req.method() !== 'GET') return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: '{"Key":"fixture"}' });
++      return r.fulfill({ status: 200, headers: CORS, contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64') });
++    });
+     if (userId) {
+       const u = this.users.find((x) => x.id === userId)!;
+       await ctx.addInitScript(([ref, jwt, id, email, name]) => {
+diff --git a/e2e/helpers.ts b/e2e/helpers.ts
+index e182869..7fdb26a 100644
+--- a/e2e/helpers.ts
++++ b/e2e/helpers.ts
+@@ -1,6 +1,6 @@
+ // Aiuti comuni per le prove sulle schermate di menu, leghe, ruoli e inviti.
+ // L'accesso è simulato (nessun account vero) e tutte le scritture vengono intercettate e registrate: sul database vero non si scrive niente.
+-// Le letture della lega pubblica vanno ai dati veri (serve la rete); la lega finta `L2` è sempre vuota.
++// Tutte le letture usano fixture locali; la lega finta `L2` è vuota salvo i dati impostati dal test.
+ import { expect, type Page, type Route } from '@playwright/test';
+ import { FakeBackend } from './fakeBackend';
+ 
+diff --git a/e2e/impostazioni.spec.ts b/e2e/impostazioni.spec.ts
+index ad9b075..0c25568 100644
+--- a/e2e/impostazioni.spec.ts
++++ b/e2e/impostazioni.spec.ts
+@@ -1,5 +1,5 @@
+ // Impostazioni (passo 3.8): versione, formazioni, forma recente, pesi in sola lettura, account.
+-import { expect, test, type Page } from '@playwright/test';
++import { expect, test, type Page } from './fixtures';
+ import { fixturePlayer, lastWrite, openApp, openSettings as openSettingsFromMenu, setup } from './helpers';
+ 
+ // l'app si apre solo con l'accesso: la prova entra come membro della lega pubblica vera (accesso simulato, letture vere)
+diff --git a/e2e/leghe.spec.ts b/e2e/leghe.spec.ts
+index 01f6368..b6a3f47 100644
+--- a/e2e/leghe.spec.ts
++++ b/e2e/leghe.spec.ts
+@@ -1,5 +1,5 @@
+ // Leghe dal menu ☰: crea lega, entra con il codice, cambio lega (anche dall'indirizzo /l/<slug>), lega vuota con guida, esci.
+-import { expect, test } from '@playwright/test';
++import { expect, test } from './fixtures';
+ import { lastWrite, mineAs, noOverflow, openApp, openMenu, openPanel, setup, openProfile } from './helpers';
+ 
+ test('Crea lega: controlli sul nome, poi codice d\'invito e lega scelta', async ({ page }) => {
+diff --git a/e2e/pagelle-foto.spec.ts b/e2e/pagelle-foto.spec.ts
+index 73ed7d3..6a31ea5 100644
+--- a/e2e/pagelle-foto.spec.ts
++++ b/e2e/pagelle-foto.spec.ts
+@@ -1,6 +1,6 @@
+ // Pagelle da saltare (elenco, scheda partita, conteggio nel menu della redazione) e foto nei pallini (Rosa, Gioca, menu, intestazione).
+ // Database finto condiviso con i dati veri di prova.
+-import { expect, test, type Browser, type TestInfo } from '@playwright/test';
++import { expect, test, type Browser, type TestInfo } from './fixtures';
+ import { FakeBackend } from './fakeBackend';
+ import { openMenu } from './helpers';
+ 
+@@ -34,6 +34,12 @@ function needs(be: FakeBackend, id: string): boolean {
+ 
+ function strip(be: FakeBackend): number {
+   const played = [...be.matches].filter((x) => x.score_a != null && x.score_b != null).sort((a, b) => String(b.date).localeCompare(String(a.date)));
++  // Due incontri recenti e gli altri oltre i sette giorni, anche quando cambia il calendario.
++  played.forEach((m, i) => {
++    const date = new Date();
++    date.setDate(date.getDate() - (i < 2 ? i + 1 : 14 + (i - 2) * 7));
++    m.date = date.toLocaleDateString('sv-SE');
++  });
+   const ids = played.slice(0, 2).map((x) => String(x.id));
+   for (const r of be.mplayers) if (ids.includes(String(r.match_id))) { r.titolo = null; r.descrizione = null; }
+   return played.filter((x) => needs(be, String(x.id))).length;
+diff --git a/e2e/panchina.spec.ts b/e2e/panchina.spec.ts
+index 87317f4..5cd22a2 100644
+--- a/e2e/panchina.spec.ts
++++ b/e2e/panchina.spec.ts
+@@ -1,6 +1,6 @@
+ // Panchina: l'amministratore toglie un giocatore dalla lega (non si «archivia»); la storia resta, finisce in Panchina,
+ // da lì si riporta in Rosa. Database finto condiviso, con i dati veri di prova (22 giocatori, 16 partite).
+-import { expect, test } from '@playwright/test';
++import { expect, test } from './fixtures';
+ import { FakeBackend } from './fakeBackend';
+ import { noOverflow, openMenu } from './helpers';
+ 
+diff --git a/e2e/profilo.spec.ts b/e2e/profilo.spec.ts
+index 98759f2..ac54849 100644
+--- a/e2e/profilo.spec.ts
++++ b/e2e/profilo.spec.ts
+@@ -1,6 +1,6 @@
+ // «Il mio profilo» = pagina iniziale: le mie leghe, la scheda, la prossima partita, la mia ultima partita (coriandoli / pioggia),
+ // il riepilogo, il mio giocatore, uscire da una lega. Footer a sole icone con la mia faccia. Database finto con i dati veri di prova.
+-import { expect, test, type Browser, type Page, type TestInfo } from '@playwright/test';
++import { expect, test, type Browser, type Page, type TestInfo } from './fixtures';
+ import { FakeBackend } from './fakeBackend';
+ import { noOverflow, openMenu, openProfile } from './helpers';
+ 
+diff --git a/e2e/scenario.spec.ts b/e2e/scenario.spec.ts
+index 64a64c8..e6b1975 100644
+--- a/e2e/scenario.spec.ts
++++ b/e2e/scenario.spec.ts
+@@ -4,7 +4,7 @@
+ // il creatore approva → la redazione importa le pagelle da WhatsApp → l'admin salva la partita → il registro attività contiene tutte le azioni.
+ // (I permessi veri e il registro scritto dai trigger si provano sul database vero in supabase/tests/*.sql.)
+ import { readFileSync } from 'node:fs';
+-import { expect, test, type Page } from '@playwright/test';
++import { expect, test, type Page } from './fixtures';
+ import { FakeBackend } from './fakeBackend';
+ import { noOverflow, openMenu } from './helpers';
+ 
+diff --git a/eslint.config.js b/eslint.config.js
+index ce162e1..d7d5a6d 100644
+--- a/eslint.config.js
++++ b/eslint.config.js
+@@ -4,7 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
+ import tseslint from 'typescript-eslint';
+ 
+ export default tseslint.config(
+-  { ignores: ['dist', 'legacy', 'dev-dist', '.claude'] },
++  { ignores: ['dist', 'legacy', 'dev-dist', '.claude', 'test-results', 'playwright-report'] },
+   {
+     extends: [js.configs.recommended, ...tseslint.configs.recommended],
+     files: ['**/*.{ts,tsx}'],
+diff --git a/package.json b/package.json
+index dfcbbe8..2ed3c0b 100644
+--- a/package.json
++++ b/package.json
+@@ -11,7 +11,7 @@
+     "test": "vitest run",
+     "import": "tsx scripts/import/run.ts",
+     "import:verify": "tsx scripts/import/verify.ts",
+-    "e2e": "node scripts/e2e.mjs",
++    "e2e": "npm run build && node scripts/e2e.mjs",
+     "push:setup": "node scripts/push-setup.mjs",
+     "push:deploy": "supabase functions deploy push --project-ref ivrwqpuikbnvnxgvgegd --no-verify-jwt --use-api"
+   },
+diff --git a/playwright.config.ts b/playwright.config.ts
+index 98d0d9d..0b79f79 100644
+--- a/playwright.config.ts
++++ b/playwright.config.ts
+@@ -2,8 +2,20 @@ import { defineConfig, devices } from '@playwright/test';
+ 
+ export default defineConfig({
+   testDir: 'e2e',
+-  webServer: { command: 'npm run dev -- --port 5173', url: 'http://localhost:5173', reuseExistingServer: true },
+-  use: { baseURL: 'http://localhost:5173' },
++  workers: 2,
++  retries: 0,
++  webServer: {
++    command: 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
++    url: 'http://127.0.0.1:4173',
++    reuseExistingServer: false,
++    timeout: 60_000,
++  },
++  use: {
++    baseURL: 'http://127.0.0.1:4173',
++    serviceWorkers: 'block',
++    trace: 'retain-on-failure',
++    screenshot: 'only-on-failure',
++  },
+   projects: [
+     { name: 'iphone', use: { ...devices['iPhone 14'] } },
+     { name: 'android', use: { ...devices['Pixel 7'] } },
+diff --git a/src/data/mutations.ts b/src/data/mutations.ts
+index 26efdcc..b6accd8 100644
+--- a/src/data/mutations.ts
++++ b/src/data/mutations.ts
+@@ -1,9 +1,19 @@
+ // Scritture su Supabase (solo per chi ha il permesso: lo garantisce il database con le regole RLS, non lo schermo).
+ import type { RatingRow } from '../domain/matchEdit';
++import { plannedSnapshot } from '../domain/plannedMatch';
++import type { Match } from '../domain/types';
+ import { supabase } from './supabase';
+ 
+ const fail = (what: string, e: { message: string }) => new Error(`${what}: ${e.message}`);
+ 
++export async function updatePlannedMatch(original: Match, plan: { date: string; time: string; place: string; notes: string; teamA: string[]; teamB: string[] }): Promise<void> {
++  const { error } = await supabase.rpc('update_planned_match', {
++    p_match: original.id, p_date: plan.date, p_time: plan.time, p_place: plan.place.trim(), p_notes: plan.notes.trim(),
++    p_team_a: plan.teamA, p_team_b: plan.teamB, p_original: plannedSnapshot(original),
++  });
++  if (error) throw fail('programma partita', error);
++}
++
+ export interface MatchHeader {
+   score_a: number | null;
+   score_b: number | null;
+diff --git a/src/data/types.ts b/src/data/types.ts
+index 9372604..ed50306 100644
+--- a/src/data/types.ts
++++ b/src/data/types.ts
+@@ -984,6 +984,10 @@ export type Database = {
+         Args: { p_match: Json; p_team_a: string[]; p_team_b: string[] }
+         Returns: string
+       }
++      update_planned_match: {
++        Args: { p_match: string; p_date: string; p_time: string; p_place: string; p_notes: string; p_team_a: string[]; p_team_b: string[]; p_original: Json }
++        Returns: undefined
++      }
+       create_player_in_league: {
+         Args: { p_league: string; p_name: string }
+         Returns: string
+diff --git a/src/domain/tiers.ts b/src/domain/tiers.ts
+index 40e355d..95348a3 100644
+--- a/src/domain/tiers.ts
++++ b/src/domain/tiers.ts
+@@ -1,5 +1,5 @@
+ // Aspetto delle fasce delle figurine e degli stati di forma. GENERATO dalle costanti FUT_TIERS e FORM_STATES
+-// di legacy/index.html (nessuna copia a mano); i test golden le confrontano con legacy.
++// della prima versione; i test verificano le soglie attuali senza eseguire il codice storico.
+ import type { FutTier } from './ovr';
+ 
+ export interface TierStyle {
+diff --git a/src/features/partite/MatchCard.tsx b/src/features/partite/MatchCard.tsx
+index ca3d1bb..955ec7c 100644
+--- a/src/features/partite/MatchCard.tsx
++++ b/src/features/partite/MatchCard.tsx
+@@ -3,6 +3,8 @@
+ // Modifica di voti, gol, risultato e pagelle: passo 3.7b. Importazione WhatsApp e Gazzetta: 3.7c e 3.7e.
+ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+ import { HourSelect } from '../../app/HourSelect';
++import { canPlanMatch } from '../../domain/plannedMatch';
++import { PlannedMatchEditor } from './PlannedMatchEditor';
+ import { useQueryClient } from '@tanstack/react-query';
+ import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
+ import { formOn } from '../../data/gameSettings';
+@@ -281,16 +283,17 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
+   const confirm = useConfirm();
+   const qc = useQueryClient();
+   const [balanceOpen, setBalanceOpen] = useState(false);
++  const [planning, setPlanning] = useState(false);
+   const [draft, setDraft] = useState<Draft | null>(null);
+   const [textOnly, setTextOnly] = useState(false);
+   const [pagella, setPagella] = useState<{ key: string; name: string } | null>(null);
+   const [busy, setBusy] = useState(false);
+   const gazInput = useRef<HTMLInputElement>(null);
+   useEffect(() => {
+-    const k = (e: KeyboardEvent) => e.key === 'Escape' && !pagella && onClose();
++    const k = (e: KeyboardEvent) => e.key === 'Escape' && !pagella && !planning && onClose();
+     document.addEventListener('keydown', k);
+     return () => document.removeEventListener('keydown', k);
+-  }, [onClose, pagella]);
++  }, [onClose, pagella, planning]);
+   // dal menu della redazione la scheda si apre già pronta per scrivere le pagelle
+   const started = useRef(false);
+   useEffect(() => {
+@@ -489,6 +492,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
+             </div>
+           ) : null}
+           <div id="match-fields" style={{ opacity: editing ? 1 : 0.92 }}>
++            {canEdit && !editing && canPlanMatch(data.dataset, m) ? <button type="button" className="btn btn-secondary btn-full" style={{ marginBottom: 12 }} onClick={() => setPlanning(true)}>Modifica programma e squadre</button> : null}
+             {full ? (
+               <div style={{ marginBottom: 8 }}>
+                 <div style={{ ...LABEL, marginBottom: 6 }}>⏰ Ora</div>
+@@ -564,6 +568,7 @@ export function MatchCard({ data, matchId, onClose, act, canEdit = false, canEdi
+           </div>
+         </div>
+       </div>
++      {planning ? <PlannedMatchEditor data={data} match={m} onClose={() => setPlanning(false)} onSaved={onClose} /> : null}
+       {pagella && draft ? (
+         <PagellaDialog
+           key={pagella.key}
+diff --git a/tests/fixtures/README.md b/tests/fixtures/README.md
+index dfd64ff..c6f7c73 100644
+--- a/tests/fixtures/README.md
++++ b/tests/fixtures/README.md
+@@ -14,7 +14,7 @@
+ | `2026-10-14_contropagelle_corsivo.txt` | 2026-10-14 (8-9) | `_NOME voto 5,5_` + titolo MAIUSCOLO |
+ | `2026-10-07_contropagelle_semplici.txt` | 2026-10-07 (9-10) | `NOME 6,5` / `NOME voto 5,5` |
+ 
+-**Risultato atteso** (verificato sulla versione legacy): 40 pagelle su 40 abbinate al giocatore giusto,
++**Risultato atteso nei messaggi di prova**: 40 pagelle su 40 abbinate al giocatore giusto,
+ voto letto uguale a quello in `app_data.json`, titoli corretti (es. «RISPARMIO ENERGETICO 🔋»,
+ «MVP 🥇», «ANTIDOPING 💉», «TROY MCLURE», «SI’, CHEF!», «IN(PS)FERNALE», «É UN BEL PRODOTTINO»).
+ "Gianluca" = **Cioccolata** (per esclusione la prima volta, poi ricordato come alias). I corsivi in
+diff --git a/tests/golden/awards.test.ts b/tests/golden/awards.test.ts
+deleted file mode 100644
+index ae67473..0000000
+--- a/tests/golden/awards.test.ts
++++ /dev/null
+@@ -1,148 +0,0 @@
+-// Test golden: premi di stagione, imprese, Occasionali e albo — stessi dati, stessi risultati di legacy.
+-import { describe, expect, it } from 'vitest';
+-import {
+-  ALBO_MIN_MATCHES, ALBO_MIN_MVP, ALBO_NEW_KEYS, AWARDS, FEATS,
+-  alboRows, alboSeasons, computeSeasonAwards, isFrozen, matchEvents, seasonFromRows, type AlboRow,
+-} from '../../src/domain/awards';
+-import { seasonsList } from '../../src/domain/seasons';
+-import type { Dataset } from '../../src/domain/types';
+-import { real } from './data';
+-import { synthetic } from './synthetic';
+-import { loadLegacy, type LegacyData } from './legacy';
+-
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-type Fn = (...a: any[]) => any;
+-interface L extends Record<string, unknown> {
+-  computeSeasonAwards: Fn; matchEvents: Fn; alboRows: Fn; seasonFromRows: Fn; isFrozen: Fn; alboSeasons: Fn;
+-  seasonsList: Fn; AWARDS: unknown; FEATS: unknown; ALBO_MIN_MATCHES: number; ALBO_MIN_MVP: number; ALBO_NEW_KEYS: string[];
+-}
+-
+-const FUNCS = [
+-  'computeSeasonAwards', 'matchEvents', 'alboRows', 'seasonFromRows', 'alboSeasons', 'seasonsList',
+-  'seasonOf', 'seasonStatus', 'playerKey', 'normalizeTeam', 'validVote', 'mvpPerf',
+-];
+-const CONSTS = ['ALBO_GRACE_DAYS', 'ALBO_MIN_MATCHES', 'ALBO_MIN_MVP', 'AWARDS', 'ALBO_NEW_KEYS', 'FEATS', 'isFrozen'];
+-const TODAY = '2026-10-31';
+-
+-const legacyOf = (d: LegacyData, today = TODAY) => loadLegacy<L>(FUNCS, CONSTS, d, today);
+-const asDataset = (d: LegacyData): Dataset => d as unknown as Dataset;
+-
+-describe('costanti dei premi', () => {
+-  const legacy = legacyOf(real);
+-  it('premi, imprese e soglie uguali a legacy', () => {
+-    expect(AWARDS).toEqual(legacy.AWARDS);
+-    expect(FEATS).toEqual(legacy.FEATS);
+-    expect(ALBO_MIN_MATCHES).toBe(legacy.ALBO_MIN_MATCHES);
+-    expect(ALBO_MIN_MVP).toBe(legacy.ALBO_MIN_MVP);
+-    expect(ALBO_NEW_KEYS).toEqual(legacy.ALBO_NEW_KEYS);
+-  });
+-});
+-
+-describe('imprese (matchEvents) e premi di stagione sui dati reali', () => {
+-  const legacy = legacyOf(real);
+-  const data = asDataset(real);
+-
+-  it('matchEvents identico a legacy', () => {
+-    expect(matchEvents(data)).toEqual(legacy.matchEvents());
+-  });
+-
+-  it('computeSeasonAwards identico per ogni stagione', () => {
+-    const seasons = seasonsList(data.matches, [], TODAY);
+-    expect(seasons.length).toBeGreaterThanOrEqual(3);
+-    for (const s of seasons) expect(computeSeasonAwards(data, s)).toEqual(legacy.computeSeasonAwards(s));
+-  });
+-
+-  it('i dati reali assegnano davvero dei premi e delle imprese (il confronto non è vuoto)', () => {
+-    const seasons = seasonsList(data.matches, [], TODAY).map((s) => computeSeasonAwards(data, s));
+-    const winners = seasons.flatMap((s) => s.awards.filter((a) => a.winners.length));
+-    expect(winners.length).toBeGreaterThan(5);
+-    const featCount = seasons.flatMap((s) => Object.values(s.feats).flat()).length;
+-    expect(featCount).toBeGreaterThan(0);
+-  });
+-
+-  it('alboRows identico a legacy', () => {
+-    for (const s of seasonsList(data.matches, [], TODAY)) {
+-      const mine = alboRows(computeSeasonAwards(data, s));
+-      expect(mine).toEqual(legacy.alboRows(legacy.computeSeasonAwards(s)));
+-      expect(mine.length).toBeGreaterThan(0);
+-    }
+-  });
+-});
+-
+-describe('dati inventati: parità, stagioni corte, ospiti non in rosa, voti strani', () => {
+-  it.each([1, 2, 3, 4, 5, 6, 7, 8])('seme %i: premi, imprese e albo identici a legacy', (seed) => {
+-    const d = synthetic(seed);
+-    const legacy = legacyOf(d);
+-    const data = asDataset(d);
+-    expect(matchEvents(data)).toEqual(legacy.matchEvents());
+-    const seasons = seasonsList(data.matches, [], TODAY);
+-    expect(seasons).toEqual(legacy.seasonsList());
+-    expect(seasons.length).toBeGreaterThanOrEqual(4);
+-    for (const s of seasons) {
+-      const mine = computeSeasonAwards(data, s);
+-      expect(mine).toEqual(legacy.computeSeasonAwards(s));
+-      expect(alboRows(mine)).toEqual(legacy.alboRows(legacy.computeSeasonAwards(s)));
+-    }
+-  });
+-
+-  it('copre davvero i casi particolari', () => {
+-    const all = [1, 2, 3, 4, 5, 6, 7, 8].flatMap((seed) => {
+-      const data = asDataset(synthetic(seed));
+-      return seasonsList(data.matches, [], TODAY).map((s) => computeSeasonAwards(data, s));
+-    });
+-    const keysWon = new Set(all.flatMap((s) => s.awards.filter((a) => a.winners.length).map((a) => a.k)));
+-    // premi principali, vergogna e Occasionali vengono assegnati almeno una volta
+-    for (const k of ['goleador', 'assistman', 'media', 'stelle', 'stakanov', 'flop', 'cucchiaio', 'rigori', 'autogol', 'occMedia', 'occPendolare']) {
+-      expect(keysWon.has(k), 'premio mai assegnato: ' + k).toBe(true);
+-    }
+-    expect(all.some((s) => s.n < ALBO_MIN_MATCHES)).toBe(true); // stagione troppo corta
+-    expect(all.some((s) => s.awards.some((a) => a.winners.length > 1))).toBe(true); // almeno un pari merito
+-    const feats = new Set(all.flatMap((s) => Object.entries(s.feats).filter(([, v]) => v.length).map(([k]) => k)));
+-    for (const k of ['tripletta', 'manita', 'regista', 'fuoriclasse', 'ritorno', 'debutto']) {
+-      expect(feats.has(k), 'impresa mai assegnata: ' + k).toBe(true);
+-    }
+-  });
+-});
+-
+-describe('albo salvato e stagioni congelate', () => {
+-  const data = asDataset(real);
+-  const legacy = legacyOf(real);
+-  const seasons = seasonsList(data.matches, [], TODAY);
+-
+-  // Albo come era alla chiusura: tutte le righe "chiusa", ma senza le categorie aggiunte dopo (Occasionali, imprese nuove)
+-  const closedSeasons = seasons.filter((s) => s.status === 'chiusa');
+-  const stored: AlboRow[] = closedSeasons.flatMap((s) =>
+-    legacy
+-      .alboRows(legacy.computeSeasonAwards(s))
+-      .filter((r: AlboRow) => !ALBO_NEW_KEYS.includes(r.premio as string))
+-      .map((r: AlboRow) => ({ ...r, stato: 'chiusa' })),
+-  );
+-
+-  it('c\'è almeno una stagione chiusa da congelare', () => {
+-    expect(closedSeasons.length).toBeGreaterThanOrEqual(1);
+-    expect(stored.length).toBeGreaterThan(0);
+-  });
+-
+-  it('isFrozen e seasonFromRows identici a legacy', () => {
+-    const lg = legacyOf({ ...real, albo: stored });
+-    for (const s of seasons) {
+-      const st = stored.filter((r) => r.chiave === s.key);
+-      expect(isFrozen(s, st)).toBe(lg.isFrozen(s, st));
+-      if (st.length) expect(seasonFromRows(data, s, st)).toEqual(lg.seasonFromRows(s, st));
+-    }
+-  });
+-
+-  it('alboSeasons: congelate dall\'albo + categorie nuove dal calcolo dal vivo, identico a legacy', () => {
+-    const lg = legacyOf({ ...real, albo: stored });
+-    const mine = alboSeasons(data, stored, TODAY);
+-    expect(mine).toEqual(lg.alboSeasons());
+-    expect(mine.some((s) => s.frozen)).toBe(true);
+-    expect(mine.some((s) => !s.frozen)).toBe(true);
+-    // newest first
+-    expect(mine.map((s) => s.ord)).toEqual([...mine.map((s) => s.ord)].sort((a, b) => b - a));
+-  });
+-
+-  it('senza albo salvato, alboSeasons = tutte calcolate dal vivo', () => {
+-    expect(alboSeasons(data, [], TODAY)).toEqual(legacy.alboSeasons());
+-  });
+-});
+diff --git a/tests/golden/balancing.test.ts b/tests/golden/balancing.test.ts
+deleted file mode 100644
+index 13c68fb..0000000
+--- a/tests/golden/balancing.test.ts
++++ /dev/null
+@@ -1,216 +0,0 @@
+-// Test golden: sorteggio delle squadre — stessi giocatori, stesse proposte (stesso ordine, stessi punteggi) di legacy.
+-// Si esegue il vero generateTeams di legacy in una pagina finta e si confronta la lista delle proposte.
+-import { describe, expect, it } from 'vitest';
+-import {
+-  DEFAULT_MODULES, GOALS_PER_POINT, SLOT_FALLBACK, balanceScores, combos, comboMetrics, distribLabel, generateTeams,
+-  getModulesForSize, goalsLabel, goalsLevel, makeSlots, predGoals, recomputeCombo, roleCountPenalty, roleFitScore,
+-  teamSpread, type Combo, type Module,
+-} from '../../src/domain/balancing';
+-import type { Dataset, Player } from '../../src/domain/types';
+-import { real } from './data';
+-import { loadLegacy, type LegacyData } from './legacy';
+-
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-type Fn = (...a: any[]) => any;
+-interface L extends Record<string, unknown> {
+-  __useForm: (b: boolean) => void;
+-  __gen: (sa: number, sb: number, sel: number[]) => { combos: Combo[]; genBest: number | null };
+-  makeSlots: Fn; roleFitScore: Fn; getModulesForSize: Fn; roleCountPenalty: Fn; comboMetrics: Fn; recomputeCombo: Fn;
+-  combos: Fn; teamSpread: Fn; goalsLabel: Fn; predGoals: Fn; goalsLevel: Fn; distribLabel: Fn; wScore: Fn;
+-  MODULES: Record<number, Module[]>; SLOT_FALLBACK: Record<number, unknown>; GOALS_PER_POINT: number;
+-}
+-
+-const FUNCS = [
+-  'makeSlots', 'roleFitScore', 'getModulesForSize', 'roleCountPenalty', 'comboMetrics', 'recomputeCombo', 'generateTeams',
+-  'combos', 'teamSpread', 'goalsLabel', 'neededTotal', 'wScore', 'effectiveScore', 'playerRatingAvg', 'playerSeason',
+-  'seasonStats', 'playerKey', 'normalizeTeam', 'getPlayerMatchResult', 'validVote', 'seasonOf', 'calcOvr', 'formWeight',
+-];
+-const CONSTS = ['MODULES', 'SLOT_FALLBACK', 'GOALS_PER_POINT', 'predGoals', 'goalsLevel', 'distribLabel',
+-  'FORM_MAX_WEIGHT', 'FORM_MIN_RATINGS', 'FORM_FULL_RATINGS'];
+-
+-function rng(seed: number) {
+-  let s = seed >>> 0;
+-  return () => {
+-    s = (s * 1664525 + 1013904223) >>> 0;
+-    return s / 2 ** 32;
+-  };
+-}
+-const shuffle = <T,>(a: T[], r: () => number) => a.map((x) => [r(), x] as const).sort((x, y) => x[0] - y[0]).map((x) => x[1]);
+-
+-/** Rosa vera, oppure una rosa con ruoli e statistiche cambiati (anche giocatori senza ruolo o con tutti e tre). */
+-function roster(variant: number): LegacyData {
+-  if (variant === 0) return real as unknown as LegacyData;
+-  const r = rng(variant * 977);
+-  const roleSets = [['ATT'], ['MED'], ['DIF'], ['ATT', 'MED'], ['MED', 'DIF'], ['ATT', 'DIF'], ['ATT', 'MED', 'DIF'], []];
+-  const players = real.players.map((p) => ({
+-    ...p,
+-    roles: roleSets[Math.floor(r() * roleSets.length)] as string[],
+-    stats: p.stats.map(() => 2 + Math.floor(r() * 8)),
+-  }));
+-  return { ...(real as unknown as LegacyData), players };
+-}
+-
+-const TODAY = '2026-10-31';
+-const legacyOf = (d: LegacyData) => loadLegacy<L>(FUNCS, CONSTS, d, TODAY);
+-const asDataset = (d: LegacyData): Dataset => d as unknown as Dataset;
+-
+-describe('moduli e schieramenti', () => {
+-  const legacy = legacyOf(real as unknown as LegacyData);
+-  it('makeSlots, moduli predefiniti e schieramenti di riserva uguali a legacy', () => {
+-    for (const [d, m, a] of [[1, 2, 1], [1, 1, 2], [2, 2, 2], [3, 1, 1], [0, 0, 0], [2, 2, 0]] as const) {
+-      expect(makeSlots(1, d, m, a)).toEqual(legacy.makeSlots(1, d, m, a));
+-    }
+-    expect(DEFAULT_MODULES).toEqual(legacy.MODULES);
+-    expect(SLOT_FALLBACK).toEqual(legacy.SLOT_FALLBACK);
+-    for (let n = 0; n <= 9; n++) expect(getModulesForSize(n)).toEqual(legacy.getModulesForSize(n));
+-  });
+-  it('combos: stessi sottoinsiemi nello stesso ordine', () => {
+-    for (const [n, k] of [[5, 2], [6, 3], [8, 4], [4, 0], [4, 4]] as const) {
+-      const arr = Array.from({ length: n }, (_, i) => i * 3);
+-      expect(combos(arr, k)).toEqual(legacy.combos(arr, k));
+-    }
+-  });
+-});
+-
+-describe('gol attesi', () => {
+-  const legacy = legacyOf(real as unknown as LegacyData);
+-  it('predGoals, etichetta, livello e distribuzione come legacy', () => {
+-    expect(GOALS_PER_POINT).toBe(legacy.GOALS_PER_POINT);
+-    for (const v of [0, 0.01, 0.05, 0.0555, -0.0555, 0.0556, 0.1, -0.1, 0.11, 0.2777, 0.2778, 0.5, -0.5, 1, -2.4]) {
+-      expect(predGoals(v)).toBe(legacy.predGoals(v));
+-      expect(goalsLabel(v)).toBe(legacy.goalsLabel(v));
+-      expect(goalsLevel(v)).toBe(legacy.goalsLevel(v));
+-    }
+-    for (const d of [0, 0.5, 0.51, 1.2, 1.21, 3]) expect(distribLabel(d)).toBe(legacy.distribLabel(d));
+-  });
+-  it('soglie: < 0,5 gol "pari"; < 1 verde; < 2,5 giallo', () => {
+-    expect(goalsLabel(0.05)).toBe('≈ pari');
+-    expect(goalsLabel(-0.2)).toBe('≈ +1.8 gol per i Bianchi');
+-    expect(goalsLabel(0.2)).toBe('≈ +1.8 gol per i Blu');
+-    expect(goalsLevel(0.1)).toBe('ok');
+-    expect(goalsLevel(0.2)).toBe('warn');
+-    expect(goalsLevel(0.3)).toBe('bad');
+-  });
+-});
+-
+-describe.each([0, 1, 2, 3])('rosa %i (0 = vera, altre = ruoli e statistiche cambiati)', (variant) => {
+-  const raw = roster(variant);
+-  const data = asDataset(raw);
+-  const legacy = legacyOf(raw);
+-  const n = data.players.length;
+-  const players = data.players;
+-
+-  const scoresOf = (useForm: boolean) => balanceScores(data, real.weights, useForm);
+-
+-  it('valori di bilanciamento di tutti i giocatori uguali a legacy', () => {
+-    for (const useForm of [true, false]) {
+-      legacy.__useForm(useForm);
+-      const s = scoresOf(useForm);
+-      players.forEach((p, i) => expect(s[i]).toBeCloseTo(legacy.wScore(p), 12));
+-    }
+-    legacy.__useForm(true);
+-  });
+-
+-  it('roleFitScore, roleCountPenalty, teamSpread e comboMetrics identici su 200 divisioni casuali', () => {
+-    const r = rng(100 + variant);
+-    const scores = scoresOf(true);
+-    const ctx = { players, scores };
+-    for (let t = 0; t < 200; t++) {
+-      const sizeA = 3 + Math.floor(r() * 5);
+-      const sizeB = 3 + Math.floor(r() * 5);
+-      const pick = shuffle(Array.from({ length: n }, (_, i) => i), r).slice(0, sizeA + sizeB);
+-      const tA = pick.slice(0, sizeA);
+-      const tB = pick.slice(sizeA);
+-      const mA = getModulesForSize(sizeA);
+-      const mB = getModulesForSize(sizeB);
+-      const modA = mA[Math.floor(r() * mA.length)] as Module;
+-      const modB = mB[Math.floor(r() * mB.length)] as Module;
+-      expect(roleFitScore(players, tA, modA.slots)).toBe(legacy.roleFitScore(tA, modA.slots));
+-      expect(roleCountPenalty(players, tA, tB)).toBe(legacy.roleCountPenalty(tA, tB));
+-      expect(teamSpread(tA, scores)).toEqual(legacy.teamSpread(tA));
+-      expect(comboMetrics(ctx, tA, tB, modA, modB)).toEqual(legacy.comboMetrics(tA, tB, modA, modB));
+-      expect(comboMetrics(ctx, tA, tB, null, null)).toEqual(legacy.comboMetrics(tA, tB, null, null));
+-    }
+-  });
+-
+-  const formats: Array<[string, number, number]> = [['5 vs 5', 5, 5], ['6 vs 6', 6, 6], ['5 vs 6', 5, 6], ['4 vs 6', 4, 6], ['3 vs 5', 3, 5], ['2 vs 3', 2, 3]];
+-  it.each(formats)('generateTeams %s: stesse proposte, stesso ordine, stessi punteggi, con e senza "usa la forma"', (_l, sa, sb) => {
+-    for (const useForm of [true, false]) {
+-      legacy.__useForm(useForm);
+-      const scores = scoresOf(useForm);
+-      for (let seed = 1; seed <= 2; seed++) {
+-        const selected = shuffle(Array.from({ length: n }, (_, i) => i), rng(seed * 31 + sa)).slice(0, sa + sb);
+-        const mine = generateTeams({ players, scores, selected, sizeA: sa, sizeB: sb }) as NonNullable<ReturnType<typeof generateTeams>>;
+-        const theirs = legacy.__gen(sa, sb, selected);
+-        expect(mine.combos.length).toBeGreaterThan(0);
+-        expect(mine.combos.length).toBeLessThanOrEqual(50);
+-        expect(mine.combos).toEqual(theirs.combos);
+-        expect(mine.genBest).toBe(theirs.genBest);
+-      }
+-    }
+-    legacy.__useForm(true);
+-  });
+-
+-  it('generateTeams 7 vs 7 (14 giocatori) identico', () => {
+-    if (variant > 1) return; // il caso più pesante: basta su due rose
+-    const scores = scoresOf(true);
+-    const selected = shuffle(Array.from({ length: n }, (_, i) => i), rng(7)).slice(0, 14);
+-    const mine = generateTeams({ players, scores, selected, sizeA: 7, sizeB: 7 }) as NonNullable<ReturnType<typeof generateTeams>>;
+-    const theirs = legacy.__gen(7, 7, selected);
+-    expect(mine.combos).toEqual(theirs.combos);
+-    expect(mine.genBest).toBe(theirs.genBest);
+-  });
+-
+-  it('numero sbagliato di convocati: nessuna proposta', () => {
+-    const scores = scoresOf(true);
+-    expect(generateTeams({ players, scores, selected: [0, 1, 2], sizeA: 5, sizeB: 5 })).toBeNull();
+-  });
+-
+-  it('moduli personalizzati: identico a legacy', () => {
+-    const scores = scoresOf(true);
+-    const custom: Record<number, Module[]> = {
+-      5: [{ notation: '1-0-2-2', desc: 'prova', slots: makeSlots(1, 0, 2, 2) }],
+-      6: DEFAULT_MODULES[6] as Module[],
+-    };
+-    legacy.MODULES[5] = custom[5] as Module[];
+-    const selected = shuffle(Array.from({ length: n }, (_, i) => i), rng(5)).slice(0, 10);
+-    const mine = generateTeams({ players, scores, selected, sizeA: 5, sizeB: 5, modules: { ...DEFAULT_MODULES, ...custom } });
+-    const theirs = legacy.__gen(5, 5, selected);
+-    expect(mine?.combos).toEqual(theirs.combos);
+-    expect(mine?.combos.every((c) => c.modA?.notation === '1-0-2-2')).toBe(true);
+-  });
+-
+-  it('recomputeCombo dopo uno scambio a mano identico a legacy', () => {
+-    const scores = scoresOf(true);
+-    const selected = shuffle(Array.from({ length: n }, (_, i) => i), rng(3)).slice(0, 10);
+-    const theirs = legacy.__gen(5, 5, selected);
+-    const c = theirs.combos[0] as Combo;
+-    // scambio il primo di A con il primo di B
+-    const swapped: Combo = { ...c, tA: [c.tB[0] as number, ...c.tA.slice(1)], tB: [c.tA[0] as number, ...c.tB.slice(1)] };
+-    const legacyCopy = { ...swapped };
+-    legacy.recomputeCombo(legacyCopy);
+-    expect(recomputeCombo({ players, scores }, swapped)).toEqual(legacyCopy);
+-    expect(legacyCopy.custom).toBe(true);
+-  });
+-});
+-
+-describe('copertura', () => {
+-  it('le proposte hanno differenze di media diverse e più moduli (il confronto non è banale)', () => {
+-    const data = asDataset(real as unknown as LegacyData);
+-    const scores = balanceScores(data, real.weights, true);
+-    const selected = Array.from({ length: 10 }, (_, i) => i);
+-    const out = generateTeams({ players: data.players as Player[], scores, selected, sizeA: 5, sizeB: 5 }) as NonNullable<ReturnType<typeof generateTeams>>;
+-    expect(new Set(out.combos.map((c) => c.diff.toFixed(6))).size).toBeGreaterThan(10);
+-    expect(out.combos).toHaveLength(50);
+-    // con rose diverse (ruoli diversi) vincono moduli diversi: il confronto con legacy li esercita davvero
+-    const notations = new Set<string>();
+-    for (const v of [0, 1, 2, 3]) {
+-      const d = asDataset(roster(v));
+-      const o = generateTeams({ players: d.players, scores: balanceScores(d, real.weights, true), selected, sizeA: 5, sizeB: 5 });
+-      o?.combos.forEach((c) => notations.add((c.modA as Module).notation + '|' + (c.modB as Module).notation));
+-    }
+-    expect(notations.size).toBeGreaterThan(1);
+-    // la prima proposta è tra le più equilibrate
+-    expect(out.combos[0]!.diff).toBeLessThan(0.2);
+-  });
+-});
+diff --git a/tests/golden/canvasRecorder.ts b/tests/golden/canvasRecorder.ts
+deleted file mode 100644
+index ef85cd3..0000000
+--- a/tests/golden/canvasRecorder.ts
++++ /dev/null
+@@ -1,40 +0,0 @@
+-// Tela finta che registra tutto ciò che viene disegnato (chiamate e impostazioni, in ordine).
+-// Lo stesso identico codice gira dentro legacy e per la nuova versione: se i registri sono uguali, le immagini sono uguali.
+-// È una stringa di codice (non una funzione) perché deve poter essere eseguita anche dentro l'ambiente isolato di legacy.
+-export const recorderSource = `
+-function __mkCanvas(){
+-  var log=[], state={};
+-  var canvas={width:0,height:0,__log:log};
+-  var ctx={};
+-  ['save','restore','translate','rotate','scale','beginPath','closePath','moveTo','lineTo','arc','arcTo','rect',
+-   'bezierCurveTo','quadraticCurveTo','fill','stroke','clip','fillRect','strokeRect','fillText','drawImage'].forEach(function(n){
+-    ctx[n]=function(){ log.push([n].concat([].slice.call(arguments))); };
+-  });
+-  ctx.measureText=function(t){
+-    var m=/(\\d+(?:\\.\\d+)?)px/.exec(state.font||''); var s=m?parseFloat(m[1]):10;
+-    return {width:String(t).length*s*0.55};
+-  };
+-  function grad(kind){ return function(){
+-    return {kind:kind,args:[].slice.call(arguments),stops:[],addColorStop:function(o,c){ this.stops.push([o,c]); }};
+-  }; }
+-  ctx.createLinearGradient=grad('linear');
+-  ctx.createRadialGradient=grad('radial');
+-  ['font','fillStyle','strokeStyle','textAlign','lineWidth','globalAlpha','globalCompositeOperation','shadowColor','shadowBlur',
+-   'shadowOffsetY','lineCap'].forEach(function(n){
+-    Object.defineProperty(ctx,n,{get:function(){return state[n];},set:function(v){ state[n]=v; log.push(['=',n,v]); }});
+-  });
+-  canvas.getContext=function(){ return ctx; };
+-  return canvas;
+-}
+-`;
+-
+-/** Foto finta: serve solo il formato (larghezza e altezza) e un nome per riconoscerla nel registro. */
+-export const fakeImage = (id: string, w = 200, h = 300) => ({ id, naturalWidth: w, naturalHeight: h, complete: true });
+-
+-/** Crea una tela registratrice nell'ambiente di Node (per la nuova versione). */
+-export function makeRecorderCanvas(): HTMLCanvasElement & { __log: unknown[] } {
+-  return new Function(`${recorderSource}; return __mkCanvas();`)() as HTMLCanvasElement & { __log: unknown[] };
+-}
+-
+-/** Il registro in forma di testo, pronto da confrontare. */
+-export const logOf = (c: unknown): string => JSON.stringify({ w: (c as { width: number }).width, h: (c as { height: number }).height, log: (c as { __log: unknown[] }).__log });
+diff --git a/tests/golden/classifiche.test.tsx b/tests/golden/classifiche.test.tsx
+deleted file mode 100644
+index 51c609d..0000000
+--- a/tests/golden/classifiche.test.tsx
++++ /dev/null
+@@ -1,101 +0,0 @@
+-// Test golden: schede delle Classifiche — il testo che scrive la nuova schermata è uguale a quello della vecchia.
+-// Si esegue la vera schermata legacy (renderScorersList, renderMediaList, renderCoppie, renderRecord)
+-// in una pagina finta e si confronta, riga per riga, con il testo dei nuovi componenti.
+-import { renderToStaticMarkup } from 'react-dom/server';
+-import { describe, expect, it } from 'vitest';
+-import type { LeagueData } from '../../src/data/queries';
+-import { seasonsList } from '../../src/domain/seasons';
+-import type { Dataset } from '../../src/domain/types';
+-import { CoppieList, MediaList, RecordList, ScorersList } from '../../src/features/classifiche/lists';
+-import { real } from './data';
+-import { loadLegacy, type LegacyData } from './legacy';
+-import { synthetic } from './synthetic';
+-
+-interface L extends Record<string, unknown> {
+-  __run: (fn: () => void, scope: string) => string;
+-  __tab: (t: string) => void;
+-  renderScorersList: () => void; renderMediaList: () => void; renderCoppie: () => void; renderRecord: () => void;
+-}
+-
+-const FUNCS = [
+-  'renderScorersList', 'renderMediaList', 'renderCoppie', 'renderRecord', 'clRow', 'scopePairs', 'seasonStats',
+-  'playerKey', 'normalizeTeam', 'getPlayerMatchResult', 'validVote', 'seasonOf', 'seasonStatus', 'seasonsList', 'esc', 'formatDate',
+-];
+-const CONSTS = ['clEmpty', 'clMedal', 'scopeMatches', 'scopeMinPres'];
+-const TODAY = '2026-10-31';
+-
+-const datasets: Array<[string, LegacyData]> = [
+-  ['dati reali', real as unknown as LegacyData],
+-  ...[1, 2, 3].map((s) => [`dati inventati (seme ${s})`, synthetic(s)] as [string, LegacyData]),
+-];
+-
+-const ENT: Record<string, string> = { '&#039;': "'", '&#x27;': "'", '&amp;': '&', '&quot;': '"', '&lt;': '<', '&gt;': '>' };
+-/** Solo il testo che si legge: ogni tag è un confine, <br> è "|", le entità sono decodificate, gli spazi uniformati. */
+-const plain = (html: string) =>
+-  html
+-    .replace(/<div class="ranking-insight">[^<]*<\/div>/g, '')
+-    .replace(/<br\s*\/?>/g, ' | ')
+-    .replace(/<[^>]+>/g, ' ')
+-    .replace(/&#039;|&#x27;|&amp;|&quot;|&lt;|&gt;/g, (m) => ENT[m] as string)
+-    .replace(/\s+/g, ' ')
+-    .trim();
+-
+-const toLeagueData = (d: Dataset): LeagueData =>
+-  ({ league: { id: 'L', name: 'Lega', is_public: true, slug: 'calciolercio', owner_id: null }, dataset: d, weights: real.weights, photos: {}, albo: [], gazzette: {} });
+-const noop = () => undefined;
+-
+-describe.each(datasets)('%s', (_label, raw) => {
+-  const data = raw as unknown as Dataset;
+-  const ld = toLeagueData(data);
+-  const legacy = loadLegacy<L>(FUNCS, CONSTS, raw, TODAY);
+-  const scopes = ['all', ...seasonsList(data.matches, [], TODAY).map((s) => s.key)];
+-  const legacyText = (fn: () => void, scope: string, tab?: string) => {
+-    if (tab) legacy.__tab(tab);
+-    return plain(legacy.__run(fn, scope));
+-  };
+-
+-  it.each([['marcatori', 'goals'], ['assist', 'assist']] as const)('classifica %s', (tab, field) => {
+-    let rows = 0;
+-    for (const sc of scopes) {
+-      const mine = plain(renderToStaticMarkup(<ScorersList data={ld} scope={sc} field={field} onOpenPlayer={noop} />));
+-      expect(mine).toBe(legacyText(legacy.renderScorersList, sc, tab));
+-      rows += mine.length;
+-    }
+-    expect(rows).toBeGreaterThan(100);
+-  });
+-
+-  it('classifica media voto, con gli Occasionali a parte', () => {
+-    for (const sc of scopes) {
+-      const mine = plain(renderToStaticMarkup(<MediaList data={ld} scope={sc} onOpenPlayer={noop} />));
+-      expect(mine).toBe(legacyText(legacy.renderMediaList, sc));
+-    }
+-  });
+-
+-  it("coppie d'oro e maledette", () => {
+-    for (const sc of scopes) {
+-      const mine = plain(renderToStaticMarkup(<CoppieList data={ld} scope={sc} onOpenPlayer={noop} />));
+-      expect(mine).toBe(legacyText(legacy.renderCoppie, sc));
+-    }
+-  });
+-
+-  it('record', () => {
+-    for (const sc of scopes) {
+-      const mine = plain(renderToStaticMarkup(<RecordList data={ld} scope={sc} onOpenPlayer={noop} onOpenMatch={noop} />));
+-      // nei record a pari merito l'ordine dei nomi può cambiare (vedi docs/DECISIONI.md): qui i dati sono gli stessi
+-      // di legacy, quindi l'ordine è identico
+-      expect(mine).toBe(legacyText(legacy.renderRecord, sc));
+-    }
+-  });
+-});
+-
+-describe('casi vuoti', () => {
+-  it('senza partite: nessun numero, elenchi vuoti con i messaggi di legacy', () => {
+-    const empty: Dataset = { players: (real as unknown as Dataset).players, matches: [], ratings: [] };
+-    const ld = toLeagueData(empty);
+-    expect(plain(renderToStaticMarkup(<ScorersList data={ld} scope="all" field="goals" onOpenPlayer={noop} />))).toContain('Nessun gol registrato ancora');
+-    expect(plain(renderToStaticMarkup(<ScorersList data={ld} scope="all" field="assist" onOpenPlayer={noop} />))).toContain('Nessun assist registrato ancora');
+-    expect(plain(renderToStaticMarkup(<MediaList data={ld} scope="all" onOpenPlayer={noop} />))).toContain('Nessun voto ancora');
+-    expect(plain(renderToStaticMarkup(<CoppieList data={ld} scope="all" onOpenPlayer={noop} />))).toContain('Servono almeno 3 partite giocate insieme');
+-    expect(plain(renderToStaticMarkup(<RecordList data={ld} scope="all" onOpenPlayer={noop} onOpenMatch={noop} />))).toContain('Nessuna partita con risultato');
+-  });
+-});
+diff --git a/tests/golden/classifiche2.test.tsx b/tests/golden/classifiche2.test.tsx
+deleted file mode 100644
+index b04ac9c..0000000
+--- a/tests/golden/classifiche2.test.tsx
++++ /dev/null
+@@ -1,152 +0,0 @@
+-// Test golden (passo 3.3b): tabella Statistiche, Confronto testa a testa e Albo d'oro — il testo che scrive la nuova
+-// schermata è uguale a quello della vecchia (vera schermata legacy eseguita in una pagina finta).
+-import { readFileSync } from 'node:fs';
+-import { join } from 'node:path';
+-import { renderToStaticMarkup } from 'react-dom/server';
+-import { describe, expect, it } from 'vitest';
+-import type { LeagueData } from '../../src/data/queries';
+-import { compareBars, compareLeads, cmpLead, resolveCompare } from '../../src/domain/h2h';
+-import { FUT_STATS, futStat } from '../../src/domain/ovr';
+-import { nextStatsSort, STATS_SORT_DEFAULT, type StatsCol, type StatsFilter } from '../../src/domain/rankings';
+-import { seasonsList } from '../../src/domain/seasons';
+-import type { Dataset } from '../../src/domain/types';
+-import { AlboList } from '../../src/features/classifiche/Albo';
+-import { Confronto } from '../../src/features/classifiche/Confronto';
+-import { StatsTable } from '../../src/features/classifiche/StatsTable';
+-import { real } from './data';
+-import { loadLegacy, type LegacyData } from './legacy';
+-import { synthetic } from './synthetic';
+-
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-type Fn = (...a: any[]) => any;
+-interface L extends Record<string, unknown> {
+-  __run: (fn: () => void, scope: string) => string;
+-  __stats: (c: string, d: number, f: string) => void;
+-  __cmp: (a: string | null, b: string | null) => void;
+-  renderStatsTable: () => void; renderAlbo: () => void; renderConfronto: () => void;
+-  FUT_STATS: unknown; futStat: Fn; cmpLead: Fn;
+-}
+-
+-const FUNCS = [
+-  'renderStatsTable', 'statsFilterTabs', 'renderAlbo', 'nameLink', 'renderConfronto', 'cmpIdx', 'headToHead', 'compareRows',
+-  'scopeMvp', 'scopeTrophies', 'futMiniHTML', 'initialsAvatar', 'avCls', 'ini', 'esc', 'formatDate', 'rosaOrder', 'calcOvr',
+-  'futTier', 'onFire', 'inCrisi', 'formState', 'getPlayerPagInfo', 'playerRatingAvg', 'playerSeason', 'seasonStats',
+-  'playerKey', 'normalizeTeam', 'getPlayerMatchResult', 'validVote', 'seasonOf', 'seasonStatus', 'seasonsList', 'alboSeasons',
+-  'computeSeasonAwards', 'matchEvents', 'seasonFromRows', 'mvpPerf', 'playerTrophies', 'playerPairs', 'effectiveScore',
+-  'formWeight',
+-];
+-const CONSTS = [
+-  'clEmpty', 'clMedal', 'scopeMatches', 'scopeMinPres', 'winnersHTML', 'scopeLabel', 'cmpLead', 'idxById', 'noVS', 'SEASON_ICON',
+-  'FUT_STATS', 'futStat', 'futRating', 'FUT_TIERS', 'FORM_STATES', 'FEATS', 'AWARDS', 'ALBO_GRACE_DAYS', 'ALBO_MIN_MATCHES',
+-  'ALBO_MIN_MVP', 'ALBO_NEW_KEYS', 'isFrozen', 'FORM_DELTA', 'FORM_MAX_WEIGHT', 'FORM_MIN_RATINGS', 'FORM_FULL_RATINGS',
+-];
+-const TODAY = '2026-10-31';
+-const liveAlbo = (JSON.parse(readFileSync(join(process.cwd(), 'tests/fixtures/live_feed.json'), 'utf8')) as { albo: unknown[] }).albo;
+-
+-const datasets: Array<[string, LegacyData]> = [
+-  ['dati reali', real as unknown as LegacyData],
+-  ['dati reali con albo salvato (stagioni chiuse congelate)', { ...(real as unknown as LegacyData), albo: liveAlbo }],
+-  ...[1, 2, 3].map((s) => [`dati inventati (seme ${s})`, synthetic(s)] as [string, LegacyData]),
+-];
+-
+-const ENT: Record<string, string> = { '&#039;': "'", '&#x27;': "'", '&amp;': '&', '&quot;': '"', '&lt;': '<', '&gt;': '>' };
+-const plain = (html: string) =>
+-  html
+-    .replace(/<br\s*\/?>/g, ' | ')
+-    .replace(/<[^>]+>/g, ' ')
+-    .replace(/&#039;|&#x27;|&amp;|&quot;|&lt;|&gt;/g, (m) => ENT[m] as string)
+-    .replace(/\s+/g, ' ')
+-    .trim();
+-const noop = () => undefined;
+-// La legenda è testo dell'interfaccia e può cambiare; confrontiamo dati e ordinamento.
+-const statsWithoutHelp = (s: string) => s
+-  .replace('Scorri la tabella ↔ · tocca una colonna per ordinare ', '')
+-  .replace(/(?:Tocca un'intestazione per riordinare · PG presenze|PG presenze · V\/N\/P).*$/, '')
+-  .trim();
+-// Le miniature hanno una regola di forma aggiornata: il resto del confronto resta verificato.
+-const withoutMiniatures = (s: string) => s.replace(/( ▾ ⇄ .*? ▾) .*? (⚔️ Da avversari)/, '$1 $2');
+-const toLd = (d: Dataset, albo: unknown[] = []): LeagueData => ({
+-  league: { id: 'L', name: 'Lega', is_public: true, slug: 'calciolercio', owner_id: null }, dataset: d, weights: real.weights, photos: {}, albo: albo as LeagueData['albo'], gazzette: {},
+-});
+-
+-describe.each(datasets)('%s', (_label, raw) => {
+-  const data = raw as unknown as Dataset;
+-  const ld = toLd(data, raw.albo);
+-  const legacy = loadLegacy<L>(FUNCS, CONSTS, raw, TODAY);
+-  const scopes = ['all', ...seasonsList(data.matches, [], TODAY).map((s) => s.key)];
+-  const run = (fn: () => void, scope: string) => plain(legacy.__run(fn, scope));
+-
+-  it('tabella Statistiche: ogni filtro e ogni ordinamento', () => {
+-    const sorts: Array<[StatsCol, 1 | -1]> = [['goals', -1], ['name', 1], ['voto', -1], ['winpct', -1], ['pres', 1], ['w', -1], ['l', 1], ['d', -1]];
+-    const filters: StatsFilter[] = ['all', 'regulars', 'occ'];
+-    let rows = 0;
+-    for (const sc of scopes) {
+-      for (const f of filters) {
+-        for (const [col, dir] of sorts) {
+-          legacy.__stats(col, dir, f);
+-          const mine = plain(renderToStaticMarkup(
+-            <StatsTable data={ld} scope={sc} filter={f} sort={{ col, dir }} onFilter={noop} onSort={noop} onOpenPlayer={noop} />,
+-          ));
+-          expect(statsWithoutHelp(mine)).toBe(statsWithoutHelp(run(legacy.renderStatsTable, sc)));
+-          rows += mine.length;
+-        }
+-      }
+-    }
+-    expect(rows).toBeGreaterThan(1000);
+-  });
+-
+-  it("albo d'oro: ogni stagione e 'sempre'", () => {
+-    let some = 0;
+-    for (const sc of scopes) {
+-      const mine = plain(renderToStaticMarkup(<AlboList data={ld} scope={sc} onOpenPlayer={noop} />));
+-      expect(mine).toBe(run(legacy.renderAlbo, sc));
+-      if (mine.includes('Premi')) some++;
+-    }
+-    expect(some).toBeGreaterThan(0);
+-  });
+-
+-  it('confronto: giocatori di partenza e coppie scelte, ogni stagione', () => {
+-    const ps = data.players;
+-    const pairs: Array<[number | null, number | null]> = [[null, null], [0, 1], [1, 0], [2, 5], [3, ps.length - 1], [ps.length - 1, 4], [4, 4], [0, null]];
+-    let checked = 0;
+-    for (const sc of scopes) {
+-      for (const [i, j] of pairs) {
+-        const a = i == null ? null : (ps[i] as { id: string }).id;
+-        const b = j == null ? null : (ps[j] as { id: string }).id;
+-        legacy.__cmp(a, b);
+-        const mine = plain(renderToStaticMarkup(<Confronto data={ld} scope={sc} a={a} b={b} onChange={noop} />));
+-        expect(withoutMiniatures(mine)).toBe(withoutMiniatures(run(legacy.renderConfronto, sc)));
+-        checked++;
+-      }
+-    }
+-    expect(checked).toBeGreaterThan(10);
+-  });
+-});
+-
+-describe('piccole regole', () => {
+-  const legacy = loadLegacy<L>(FUNCS, CONSTS, real as unknown as LegacyData, TODAY);
+-  it('le 6 statistiche della figurina e chi è avanti come legacy', () => {
+-    expect(FUT_STATS).toEqual(legacy.FUT_STATS);
+-    for (const p of real.players) for (const [, idx] of FUT_STATS) expect(futStat(p.stats, idx)).toBe(legacy.futStat(p, idx));
+-    for (const [a, b, low] of [[1, 2, false], [2, 1, false], [1, 1, false], [null, 3, false], [3, null, true], [1, 2, true], [2, 1, true], [1, 1 + 1e-12, false]] as const) {
+-      expect(cmpLead(a, b, low)).toBe(legacy.cmpLead(a, b, low));
+-    }
+-  });
+-  it('giocatori del confronto: scelti, altrimenti i due più forti; barre e riepilogo', () => {
+-    const ps = real.players;
+-    const r = resolveCompare(ps, real.weights, null, null) as [number, number];
+-    expect(r[0]).not.toBe(r[1]);
+-    expect((resolveCompare(ps, real.weights, (ps[5] as { id: string }).id, (ps[5] as { id: string }).id) as [number, number])[1]).not.toBe(5);
+-    expect(resolveCompare([ps[0] as (typeof ps)[number]], real.weights, null, null)).toBeNull();
+-    expect(compareBars(10, 5)).toEqual({ wa: 100, wb: 50 });
+-    expect(compareBars(0, 0)).toEqual({ wa: 0, wb: 0 });
+-    expect(compareBars(null, 4)).toEqual({ wa: 0, wb: 100 });
+-    expect(compareLeads([{ label: 'x', a: 3, b: 1, text: String }, { label: 'y', a: 3, b: 1, text: String, lowerIsBetter: true }])).toEqual({ leads: [1, -1], la: 1, lb: 1 });
+-  });
+-  it('ordinamento: stessa colonna inverte, altra colonna riparte (nomi A–Z, numeri dal più alto)', () => {
+-    expect(nextStatsSort(STATS_SORT_DEFAULT, 'goals')).toEqual({ col: 'goals', dir: 1 });
+-    expect(nextStatsSort({ col: 'goals', dir: 1 }, 'goals')).toEqual({ col: 'goals', dir: -1 });
+-    expect(nextStatsSort(STATS_SORT_DEFAULT, 'name')).toEqual({ col: 'name', dir: 1 });
+-    expect(nextStatsSort(STATS_SORT_DEFAULT, 'voto')).toEqual({ col: 'voto', dir: -1 });
+-  });
+-});
+diff --git a/tests/golden/data.ts b/tests/golden/data.ts
+deleted file mode 100644
+index 6c669df..0000000
+--- a/tests/golden/data.ts
++++ /dev/null
+@@ -1,14 +0,0 @@
+-import { readFileSync } from 'node:fs';
+-import { join } from 'node:path';
+-
+-const root = process.cwd();
+-const app = JSON.parse(readFileSync(join(root, 'tests/fixtures/app_data.json'), 'utf8'));
+-const rosa = JSON.parse(readFileSync(join(root, 'legacy/rosa_calcetto.json'), 'utf8'));
+-
+-/** Dati reali del gruppo: rosa, pesi OVR, partite e pagelle. */
+-export const real = {
+-  players: rosa.players as Array<{ id: string; name: string; roles: string[]; stats: number[] }>,
+-  weights: rosa.weights as number[],
+-  matches: app.matches as Array<Record<string, unknown>>,
+-  ratings: app.ratings as Array<Record<string, unknown>>,
+-};
+diff --git a/tests/golden/gioca.test.tsx b/tests/golden/gioca.test.tsx
+deleted file mode 100644
+index 17bb576..0000000
+--- a/tests/golden/gioca.test.tsx
++++ /dev/null
+@@ -1,179 +0,0 @@
+-// Test golden (passo 3.5): Gioca — convocati, risultato del sorteggio (campo, squadre, riepilogo), scambi a mano e
+-// precisione del bilanciamento, confrontati con la vera schermata legacy (renderResult, renderPitch, buildConvList…).
+-import { renderToStaticMarkup } from 'react-dom/server';
+-import { describe, expect, it } from 'vitest';
+-import type { LeagueData } from '../../src/data/queries';
+-import { balanceScores, generateTeams, type Combo } from '../../src/domain/balancing';
+-import { balancePrecision, comboSummary, swapPlayers, teamPlayers } from '../../src/domain/gioca';
+-import { pitchSvg } from '../../src/domain/pitch';
+-import type { Dataset } from '../../src/domain/types';
+-import { GiocaPage, PrecisionCard, ResultView, type Result } from '../../src/features/gioca/GiocaPage';
+-import { real } from './data';
+-import { loadLegacy, type LegacyData } from './legacy';
+-import { synthetic } from './synthetic';
+-
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-type Fn = (...a: any[]) => any;
+-interface El { innerHTML: string; textContent: string; style: Record<string, string>; attrs: Record<string, string> }
+-interface L extends Record<string, unknown> {
+-  __gen: (sa: number, sb: number, sel: number[]) => { combos: Combo[]; genBest: number | null };
+-  __multiOn: (b: boolean) => void; __getEl: (id: string) => El | undefined; __idx: (i: number) => void;
+-  __swap: (a: number, b: number) => void; __combo: () => Combo; __sel: (a: number[]) => void;
+-  buildConvList: () => void; balancePrecisionHTML: Fn; renderGiocaPrecision: () => void;
+-}
+-
+-const FUNCS = [
+-  'renderResult', 'renderPitch', 'renderGiocaPrecision', 'balancePrecisionHTML', 'statCompareHTML', 'swapPlayers', 'recomputeCombo',
+-  'buildConvList', 'updateCnt', 'neededTotal', 'comboMetrics', 'teamSpread', 'roleFitScore', 'roleCountPenalty', 'wScore',
+-  'effectiveScore', 'playerRatingAvg', 'playerSeason', 'seasonStats', 'playerKey', 'normalizeTeam', 'getPlayerMatchResult',
+-  'validVote', 'seasonOf', 'primaryRole', 'rosaOrder', 'calcOvr', 'getPlayerPagInfo', 'initialsAvatar', 'avCls', 'ini', 'esc',
+-  'goalsLabel', 'formWeight', 'generateTeams', 'combos', 'makeSlots', 'getModulesForSize',
+-];
+-const CONSTS = [
+-  'ROLE_ORDER', 'MODULES', 'SLOT_FALLBACK', 'GOALS_PER_POINT', 'predGoals', 'goalsLevel', 'distribLabel', 'STATS', 'ICONS',
+-  'FORM_MAX_WEIGHT', 'FORM_MIN_RATINGS', 'FORM_FULL_RATINGS',
+-];
+-const TODAY = '2026-10-31';
+-
+-/** Dati veri con qualche previsione salvata, perché la precisione mostri tutte le sue parti. */
+-function realWithPred(): LegacyData {
+-  const matches = real.matches.map((m, i) => ({ ...m, ...(i % 2 ? { pred: 0.12 * ((i % 5) - 2), predRank: i % 4 } : {}) }));
+-  return { players: real.players, weights: real.weights, matches, ratings: real.ratings } as unknown as LegacyData;
+-}
+-const datasets: Array<[string, LegacyData]> = [
+-  ['dati reali con previsioni salvate', realWithPred()],
+-  ['dati reali senza previsioni', real as unknown as LegacyData],
+-  ['dati inventati (seme 2)', synthetic(2)],
+-];
+-
+-const ENT: Record<string, string> = { '&#039;': "'", '&#x27;': "'", '&amp;': '&', '&quot;': '"', '&lt;': '<', '&gt;': '>' };
+-const plain = (html: string) =>
+-  html
+-    .replace(/<br\s*\/?>/g, ' | ')
+-    .replace(/<[^>]+>/g, ' ')
+-    .replace(/&#039;|&#x27;|&amp;|&quot;|&lt;|&gt;/g, (m) => ENT[m] as string)
+-    .replace(/\s+/g, ' ')
+-    .trim();
+-const noop = () => undefined;
+-const toLd = (raw: LegacyData): LeagueData => ({
+-  league: { id: 'L', name: 'Lega', is_public: true, slug: 'calciolercio', owner_id: null }, dataset: raw as unknown as Dataset, weights: real.weights,
+-  // chi ha la foto nei dati di prova la ha anche qui (il campo mostra la foto e il nome sotto)
+-  photos: Object.fromEntries((raw.players as Array<{ id: string; photo?: string }>).filter((p) => p.photo).map((p) => [p.id, 'p.jpg'])),
+-  albo: [], gazzette: {},
+-});
+-const shuffle = <T,>(a: T[], seed: number) => {
+-  let s = seed >>> 0;
+-  const r = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+-  return a.map((x) => [r(), x] as const).sort((x, y) => x[0] - y[0]).map((x) => x[1]);
+-};
+-
+-describe.each(datasets)('%s', (_label, raw) => {
+-  const ld = toLd(raw);
+-  const data = ld.dataset;
+-  const legacy = loadLegacy<L>(FUNCS, CONSTS, raw, TODAY);
+-  const n = data.players.length;
+-  const formats: Array<[number, number]> = [[5, 5], [6, 6], [5, 6], [4, 6], [3, 5]];
+-
+-  it('risultato del sorteggio: campo (SVG identico), squadre, riepilogo, per ogni proposta e per ogni formato', () => {
+-    const scores = balanceScores(data, real.weights, true);
+-    legacy.__multiOn(true);
+-    let svgChecked = 0;
+-    for (const [sa, sb] of formats) {
+-      const selected = shuffle(Array.from({ length: n }, (_, i) => i), sa * 10 + sb).slice(0, sa + sb);
+-      const mine = generateTeams({ players: data.players, scores, selected, sizeA: sa, sizeB: sb }) as NonNullable<ReturnType<typeof generateTeams>>;
+-      legacy.__gen(sa, sb, selected); // esegue anche renderResult (la proposta 1)
+-      for (const idx of [0, 1, Math.min(5, mine.combos.length - 1)]) {
+-        legacy.__idx(idx);
+-        const g = (id: string) => legacy.__getEl(id) as El;
+-        const c = mine.combos[idx] as Combo;
+-        const players = data.players.map((p) => ({ ...p, photo: (p as { photo?: string }).photo ?? null }));
+-        const pA = teamPlayers(players, scores, c.tA);
+-        const pB = teamPlayers(players, scores, c.tB);
+-        // campo: stesso identico SVG
+-        const svg = pitchSvg(pA, pB, c.modA, c.modB);
+-        expect(svg.viewBox).toBe(g('pitch-svg').attrs.viewBox);
+-        expect(svg.inner).toBe(g('pitch-svg').innerHTML);
+-        svgChecked++;
+-        // testi del riepilogo
+-        const sum = comboSummary(c, mine.genBest, idx, mine.combos.length);
+-        expect(sum.avgA).toBe(g('avg-a').textContent);
+-        expect(sum.avgB).toBe(g('avg-b').textContent);
+-        expect(sum.modLabelA).toBe(g('mod-label-a').textContent);
+-        expect(sum.modLabelB).toBe(g('mod-label-b').textContent);
+-        expect(sum.idxText).toBe(g('combo-idx').textContent);
+-        expect(sum.quality.text).toBe(g('combo-quality').textContent);
+-        const colors = { ok: 'var(--green)', warn: 'var(--amber)', bad: 'var(--red)' };
+-        expect(colors[sum.quality.level]).toBe(g('combo-quality').style.color);
+-        const cost = sum.balance.cost ? `<div class="bal-cost">${sum.balance.cost}</div>` : '';
+-        const balHtml = `<span class="pill-${sum.balance.level}">${sum.balance.level === 'ok' ? '⚖️' : '⚠'} ${sum.balance.label} <span class="pill-sub">· diff ${sum.balance.diff}</span></span>${cost}`;
+-        expect(plain(balHtml)).toBe(plain(g('bal-row').innerHTML));
+-        // squadre e confronto statistiche: lo stesso testo
+-        const res: Result = { combos: mine.combos, genBest: mine.genBest, idx };
+-        const html = plain(renderToStaticMarkup(<ResultView data={ld} res={res} scores={scores} onChange={noop} />));
+-        const expected = plain(
+-          [
+-            'Campo Blu Bianchi', g('pitch-svg').innerHTML, '✋ Trascina un giocatore sull\'altra squadra per scambiarlo',
+-            '🔵 Blu', g('avg-a').textContent, g('mod-label-a').textContent, g('chips-a').innerHTML,
+-            '⚪ Bianchi', g('avg-b').textContent, g('mod-label-b').textContent, g('chips-b').innerHTML,
+-            '📲 Condividi 🖨️ Foglio 📅 Crea partita Confronto statistiche',
+-            g('stat-cmp').innerHTML, g('bal-row').innerHTML, '◀', g('combo-idx').textContent, g('combo-quality').textContent, '▶',
+-            g('gioca-precision').innerHTML,
+-          ].join(' '),
+-        );
+-        expect(html).toBe(expected);
+-      }
+-    }
+-    expect(svgChecked).toBe(formats.length * 3);
+-  });
+-
+-  it('scambi a mano: stesse squadre, stesso punteggio, stesso aspetto del risultato', () => {
+-    const scores = balanceScores(data, real.weights, true);
+-    legacy.__multiOn(true);
+-    const selected = shuffle(Array.from({ length: n }, (_, i) => i), 77).slice(0, 10);
+-    const mine = generateTeams({ players: data.players, scores, selected, sizeA: 5, sizeB: 5 }) as NonNullable<ReturnType<typeof generateTeams>>;
+-    legacy.__gen(5, 5, selected);
+-    let c = mine.combos[0] as Combo;
+-    for (const [i, j] of [[0, 0], [1, 2], [4, 3], [2, 4]] as const) {
+-      const a = c.tA[i] as number;
+-      const b = c.tB[j] as number;
+-      legacy.__swap(a, b);
+-      const next = swapPlayers({ players: data.players, scores }, c, a, b) as Combo;
+-      expect(next.custom).toBe(true);
+-      expect(next).toEqual(legacy.__combo());
+-      c = next;
+-      const combos = [c, ...mine.combos.slice(1)];
+-      const sum = comboSummary(c, mine.genBest, 0, combos.length);
+-      expect(sum.idxText).toBe((legacy.__getEl('combo-idx') as El).textContent);
+-      expect(plain(`${sum.balance.cost ?? ''}`)).toBe(plain(((legacy.__getEl('bal-row') as El).innerHTML.match(/<div class="bal-cost">(.*?)<\/div>/) ?? [])[1] ?? ''));
+-    }
+-    // due giocatori della stessa squadra: nessuno scambio
+-    expect(swapPlayers({ players: data.players, scores }, c, c.tA[0] as number, c.tA[1] as number)).toBeNull();
+-  });
+-
+-  it('precisione del bilanciamento: stessi numeri', () => {
+-    const mineText = plain(renderToStaticMarkup(<PrecisionCard data={ld} />));
+-    const theirs = plain(legacy.balancePrecisionHTML(data.matches));
+-    expect(mineText).toBe(theirs);
+-    expect(balancePrecision(data.matches) !== null).toBe(theirs !== '');
+-  });
+-
+-  it('convocati: lista, selezione e contatore', () => {
+-    legacy.__multiOn(true);
+-    const order = [...data.players.keys()];
+-    const selIdx = order.slice(0, 7);
+-    legacy.__sel(selIdx);
+-    legacy.buildConvList();
+-    const html = plain(renderToStaticMarkup(<GiocaPage data={ld} initialSelected={selIdx.map((i) => (data.players[i] as { id: string }).id)} />));
+-    const conv = plain((legacy.__getEl('conv-list') as El).innerHTML);
+-    expect(html).toContain(conv);
+-    expect(html).toContain('Selezionati: 7 / 10 richiesti'); // formato di partenza 5 vs 5
+-  });
+-});
+-
+-describe('casi particolari', () => {
+-  it('senza partite con risultato non c\'è la precisione', () => {
+-    const d: Dataset = { players: (real as unknown as Dataset).players, matches: [], ratings: [] };
+-    expect(balancePrecision(d.matches)).toBeNull();
+-    expect(renderToStaticMarkup(<PrecisionCard data={toLd(d as unknown as LegacyData)} />)).toBe('');
+-  });
+-});
+diff --git a/tests/golden/legacy.ts b/tests/golden/legacy.ts
+deleted file mode 100644
+index 1eb4dd4..0000000
+--- a/tests/golden/legacy.ts
++++ /dev/null
+@@ -1,225 +0,0 @@
+-// Carica funzioni dall'app attuale (legacy/index.html) in un ambiente isolato, così i test
+-// possono confrontare i risultati della versione legacy con quelli della nuova.
+-import { readFileSync } from 'node:fs';
+-import { join } from 'node:path';
+-import vm from 'node:vm';
+-import { oneMonthBefore } from '../../src/domain/form';
+-import { recorderSource } from './canvasRecorder';
+-import { TEST_TODAY } from '../today';
+-
+-/**
+- * Cambiamenti VOLUTI rispetto alla vecchia app (decisioni di novembre 2026). Il confronto con la vecchia app resta fedele su tutto il resto:
+- * si applicano al suo testo prima di caricarla, così i test provano che il nuovo codice fa esattamente quello che ha deciso Luciano.
+- */
+-const DELIBERATE: Array<[string | RegExp, string]> = [
+-  // fasce della figurina: Bronzo 51–59, Cacca 41–50, sotto: MARCIO VOMITO
+-  ["r>=55?'bronze':r>=40?'cacca':'marcia'", "r>=51?'bronze':r>=41?'cacca':'marcia'"],
+-  ["marcia:{label:'MARCIA',", "marcia:{label:'MARCIO VOMITO',"],
+-  // stato di forma: ultime 2 pagelle (non 3)
+-  ['a.votes.slice(-3).reduce((s,x)=>s+x.v,0)/3 - a.voteAvg', 'a.votes.slice(-2).reduce((s,x)=>s+x.v,0)/2 - a.voteAvg'],
+-  // stato di forma: se l'ultima pagella ha più di un mese non vale
+-  ["if(since && a.votes[a.votes.length-1].date<since) return null;", `if(since && a.votes[a.votes.length-1].date<since) return null; if(a.votes[a.votes.length-1].date<'${oneMonthBefore(TEST_TODAY)}') return null;`],
+-  // figurina: niente logo sotto il ruolo
+-  ["if(logo && logo.complete && logo.naturalWidth){ ctx.save(); ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowBlur=8; ctx.drawImage(logo,lx-28,y+364,56,56); ctx.restore(); }", ''],
+-  // stagioni scritte «Estate 26» (anno a due cifre; l'inverno con l'anno di inizio), senza sigle («Est 26»)
+-  ["label:'Primavera '+y,", "label:'Primavera '+String(y).slice(2),"],
+-  ["label:'Estate '+y,", "label:'Estate '+String(y).slice(2),"],
+-  ["label:'Autunno '+y,", "label:'Autunno '+String(y).slice(2),"],
+-  ['label:`Inverno ${sy}/${String(sy+1).slice(2)}`', 'label:`Inverno ${String(sy).slice(2)}`'],
+-  [/const seasonShort=label=>label\.replace\(.*\);/, 'const seasonShort=label=>label;'],
+-  [/const shortSeason=s=>String\(s\)\.replace\(.*\);/, 'const shortSeason=s=>String(s);'],
+-  // riquadri del voto: rosso sotto 5,5 come il badge PAG
+-  ["if(v<5){ bg='#fde8e8'", "if(v<5.5){ bg='#fde8e8'"],
+-];
+-const html = DELIBERATE.reduce((h, [from, to]) => {
+-  if (typeof from === 'string' ? !h.includes(from) : !from.test(h)) throw new Error(`Cambiamento voluto non applicabile (legacy cambiato?): ${String(from)}`);
+-  return h.replace(from, to);
+-}, readFileSync(join(process.cwd(), 'legacy', 'index.html'), 'utf8'));
+-
+-/** Salta una stringa tra apici e restituisce l'indice dopo la chiusura. */
+-function skipQuoted(s: string, i: number): number {
+-  const q = s[i];
+-  for (i++; i < s.length && s[i] !== q; i++) if (s[i] === '\\') i++;
+-  return i + 1;
+-}
+-
+-/** Salta un template tra backtick, compresi quelli annidati dentro ${…}, e restituisce l'indice dopo la chiusura. */
+-function skipTemplate(s: string, i: number): number {
+-  for (i++; i < s.length; i++) {
+-    const c = s[i];
+-    if (c === '\\') i++;
+-    else if (c === '`') return i + 1;
+-    else if (c === '$' && s[i + 1] === '{') i = skipCode(s, i + 2) - 1;
+-  }
+-  return i;
+-}
+-
+-/** Scorre codice fino alla `}` che chiude il livello corrente; restituisce l'indice dopo di essa. */
+-function skipCode(s: string, i: number): number {
+-  let depth = 1;
+-  while (i < s.length) {
+-    const c = s[i];
+-    if (c === '"' || c === "'") i = skipQuoted(s, i);
+-    else if (c === '`') i = skipTemplate(s, i);
+-    else if (c === '/' && s[i + 1] === '/') i = s.indexOf('\n', i) + 1 || s.length;
+-    else if (c === '/' && s[i + 1] === '*') i = s.indexOf('*/', i) + 2;
+-    else {
+-      if (c === '{') depth++;
+-      else if (c === '}' && --depth === 0) return i + 1;
+-      i++;
+-    }
+-  }
+-  throw new Error('Parentesi non bilanciate');
+-}
+-
+-/** Testo di `function nome(...) {...}` (parentesi graffe bilanciate, ignorando stringhe, template e commenti). */
+-function extractFunction(name: string): string {
+-  // l'ultima dichiarazione, come a runtime (se una funzione è scritta due volte vale l'ultima)
+-  const start = [...html.matchAll(new RegExp(`^(?:async )?function ${name}\\(`, 'gm'))].pop()?.index ?? -1;
+-  if (start < 0) throw new Error(`Funzione legacy non trovata: ${name}`);
+-  const open = html.indexOf('{', html.indexOf(')', start));
+-  return html.slice(start, skipCode(html, open + 1));
+-}
+-
+-/** `const NOME = ...;` su una riga, oppure su più righe fino alla riga che inizia con `];` o `};`. */
+-function extractConst(name: string): string {
+-  const m = html.match(new RegExp(`^const ${name}\\s*=.*`, 'm'));
+-  if (!m || m.index === undefined) throw new Error(`Costante legacy non trovata: ${name}`);
+-  if (/;\s*(\/\/.*)?$/.test(m[0])) return m[0];
+-  // su più righe: fino al primo `;` fuori da parentesi, stringhe e template
+-  let i = m.index + m[0].indexOf('=') + 1;
+-  let depth = 0;
+-  while (i < html.length) {
+-    const c = html[i];
+-    if (c === '"' || c === "'") i = skipQuoted(html, i);
+-    else if (c === '`') i = skipTemplate(html, i);
+-    else if (c === '/' && html[i + 1] === '/') i = html.indexOf('\n', i) + 1 || html.length;
+-    else {
+-      if (c === '{' || c === '[' || c === '(') depth++;
+-      else if (c === '}' || c === ']' || c === ')') depth--;
+-      else if (c === ';' && depth === 0) return html.slice(m.index, i + 1);
+-      i++;
+-    }
+-  }
+-  throw new Error(`Fine della costante legacy non trovata: ${name}`);
+-}
+-
+-export interface LegacyData {
+-  players: unknown[];
+-  weights: number[];
+-  matches: unknown[];
+-  ratings: unknown[];
+-  albo?: unknown[];
+-  gazzette?: unknown[];
+-}
+-
+-/** Ambiente legacy con le funzioni richieste e i dati caricati. */
+-export function loadLegacy<T extends Record<string, unknown>>(
+-  functions: string[],
+-  consts: string[],
+-  data: LegacyData,
+-  today?: string,
+-): T {
+-  const prelude = `
+-    var players=[], weights=[], matches=[], matchesCache={timestamp:0,data:null}, _seasonMemo={}, useFormInBalance=true, _formCache=null, _evMemo=null;
+-    function __useForm(b){useFormInBalance=b;}
+-    var __el={innerHTML:'',textContent:'',style:{},scrollIntoView:function(){},querySelectorAll:function(){return [];}}, __scope='all', document={getElementById:function(id){ if(!__multi) return __el; return __els[id]||(__els[id]={innerHTML:'',textContent:'',style:{},attrs:{},setAttribute:function(k,v){this.attrs[k]=v;},scrollIntoView:function(){},querySelectorAll:function(){return [];}}); },querySelectorAll:function(){return [];}}, __els={}, __multi=false, backendUrl='x';
+-    function __multiOn(b){__multi=b;__els={};}
+-    function __getEl(id){return __els[id];}
+-    function __idx(i){currentIdx=i;renderResult();}
+-    function __swap(a,b){swapPlayers(a,b);}
+-    function __combo(){return allCombos[currentIdx];}
+-    function __sel(arr){selected=new Set(arr);}
+-    function renderScorers(){}
+-    var sizeA=5, sizeB=5, selected=new Set(), allCombos=[], currentIdx=0, genBest=null, bachecaOpen=false, clTab='marcatori', statsSort={col:'goals',dir:-1}, statsFilter='regulars', cmpA=null, cmpB=null;
+-    function futPreload(){}
+-    var __logo=null, __viewer=null, futPhotoCache={};
+-    function __setLogo(l){__logo=l;}
+-    document.createElement=function(){return __mkCanvas();};
+-    document.querySelector=function(){return __logo;};
+-    function openImageViewer(t,c,n,x){__viewer={title:t,canvas:c,name:n,text:x};}
+-    function shareCanvas(c,n,x){__viewer={title:null,canvas:c,name:n,text:x};}
+-    function __viewerGet(){return __viewer;}
+-    function __stats(c,d,f){statsSort={col:c,dir:d};statsFilter=f;}
+-    function __cmp(a,b){cmpA=a;cmpB=b;}
+-    function __tab(t){clTab=t;}
+-    var __toasts=[], __calls=[], __confirms=[], __confirmAnswer=true;
+-    function toast(m){__toasts.push(m);}
+-    async function backendCall(n,p){__calls.push([n,p]);return {};}
+-    function confirmModal(o){__confirms.push(o);return Promise.resolve(__confirmAnswer);}
+-    function closeMatchModal(){}
+-    async function loadMatches(){}
+-    function __setVals(o){Object.keys(o).forEach(function(k){document.getElementById(k).value=o[k];});}
+-    function __cap(){return {toasts:__toasts,calls:__calls,confirms:__confirms};}
+-    function __answer(b){__confirmAnswer=b;}
+-    function __reset(){__toasts=[];__calls=[];__confirms=[];}
+-    function __players(){return players;}
+-    var rosaCardIdx=null;
+-    function futMiniHTML(){return '';}
+-    function fitPhotoBand(){}
+-    function buildRosa(){}
+-    function buildConvList(){}
+-    function openRosaCard(){}
+-    function save(){}
+-    function pgtViewHTML(){return '';}
+-    function waRenderPreview(){}
+-    var _wa=null;
+-    function __wa(id,txt){__el.value=txt;__el.checked=true;waAnalyze(id);return _wa;}
+-    function __waApply(){waApply();}
+-    function __draw(i){var c={innerHTML:''};drawPagelle(i,players[i],c);return c.innerHTML;}
+-    function renderResult(){}
+-    function setTimeout(){}
+-    function __gen(sa,sb,sel){sizeA=sa;sizeB=sb;selected=new Set(sel);allCombos=[];genBest=null;generateTeams();return {combos:allCombos,genBest:genBest};}
+-    function clCurrentScope(){return __scope;}
+-    function __run(fn,scope){__scope=scope;__el.innerHTML='';fn();return __el.innerHTML;}
+-    function __set(p,w,m,r,a,g){players=p;weights=w;matches=m;matchesCache={timestamp:0,data:{ratings:r,albo:a||[],gazzette:g||[]}};_seasonMemo={};_evMemo=null;}
+-  `;
+-  const src = [recorderSource, prelude, ...consts.map(extractConst), ...functions.map(extractFunction)].join('\n');
+-  const names = functions.concat(consts).join(',');
+-  const store = new Map<string, string>(); // memoria del telefono (soprannomi imparati, ecc.)
+-  const localStorage = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: unknown) => void store.set(k, String(v)) };
+-  const sandbox: Record<string, unknown> = { localStorage, console };
+-  if (today) {
+-    // data "di oggi" fissa, per seasonStatus
+-    const RealDate = Date;
+-    class FixedDate extends RealDate {
+-      constructor(...a: unknown[]) {
+-        // @ts-expect-error argomenti variabili
+-        super(...(a.length ? a : [today + 'T12:00:00']));
+-      }
+-      static now() {
+-        return new RealDate(today + 'T12:00:00').getTime();
+-      }
+-    }
+-    sandbox.Date = FixedDate;
+-  }
+-  vm.createContext(sandbox);
+-  vm.runInContext(src, sandbox);
+-  const api = vm.runInContext(`({__players,__setVals,__cap,__answer,__reset,__setLogo,__viewerGet,__set,__useForm,__run,__gen,__wa,__waApply,__draw,__tab,__stats,__cmp,__multiOn,__getEl,__idx,__swap,__combo,__sel,${names}})`, sandbox) as T & {
+-    __set: (...a: unknown[]) => void;
+-    __setLogo: (l: unknown) => void;
+-    __players: () => Array<{ stats: number[]; roles: string[] }>;
+-    __setVals: (o: Record<string, string>) => void;
+-    __cap: () => { toasts: string[]; calls: Array<[string, Record<string, unknown>]>; confirms: Array<Record<string, unknown>> };
+-    __answer: (b: boolean) => void;
+-    __reset: () => void;
+-    __viewerGet: () => { title: string | null; canvas: unknown; name: string; text: string } | null;
+-    __useForm: (b: boolean) => void;
+-    __run: (fn: () => void, scope: string) => string;
+-    __gen: (sa: number, sb: number, sel: number[]) => { combos: unknown[]; genBest: number | null };
+-    __wa: (id: string, txt: string) => unknown;
+-    __waApply: () => void;
+-    __draw: (i: number) => string;
+-    __tab: (t: string) => void;
+-    __multiOn: (b: boolean) => void;
+-    __getEl: (id: string) => { innerHTML: string; textContent: string; style: Record<string, string>; attrs: Record<string, string> } | undefined;
+-    __idx: (i: number) => void;
+-    __swap: (a: number, b: number) => void;
+-    __combo: () => unknown;
+-    __sel: (a: number[]) => void;
+-    __stats: (c: string, d: number, f: string) => void;
+-    __cmp: (a: string | null, b: string | null) => void;
+-  };
+-  api.__set(data.players, data.weights, data.matches, data.ratings, data.albo, data.gazzette);
+-  return api;
+-}
+diff --git a/tests/golden/match-edit.test.ts b/tests/golden/match-edit.test.ts
+deleted file mode 100644
+index 1bd248f..0000000
+--- a/tests/golden/match-edit.test.ts
++++ /dev/null
+@@ -1,132 +0,0 @@
+-// Test golden (passo 3.7b): salvataggio della scheda partita. Si riempiono i campi della vera schermata di legacy
+-// (voti, gol, assist, pagelle, risultato), si preme "Salva" e si confronta ciò che legacy salverebbe con il piano della nuova versione.
+-import { describe, expect, it } from 'vitest';
+-import { clampInt, planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../src/domain/matchEdit';
+-import { normalizeTeam } from '../../src/domain/stats';
+-import type { Match } from '../../src/domain/types';
+-import { real } from './data';
+-import { loadLegacy, type LegacyData } from './legacy';
+-import { synthetic } from './synthetic';
+-
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-type Fn = (...a: any[]) => any;
+-interface L extends Record<string, unknown> {
+-  saveRatings: Fn; clampInt: Fn; scoreStep: Fn; rateStep: Fn; goalStep: Fn;
+-  __multiOn: (b: boolean) => void; __reset: () => void; __answer: (b: boolean) => void; __getEl: (id: string) => unknown;
+-  __cap: () => { toasts: string[]; calls: Array<[string, Record<string, unknown>]>; confirms: Array<Record<string, unknown>> };
+-  __setVals: (o: Record<string, string>) => void;
+-}
+-const FUNCS = ['saveRatings', 'normalizeTeam', 'clampInt', 'clampRating', 'esc', 'rateStep', 'rateColor', 'goalStep', 'scoreStep'];
+-const CONSTS: string[] = [];
+-
+-const datasets: Array<[string, LegacyData]> = [
+-  ['dati reali', real as unknown as LegacyData],
+-  ...[1, 2, 3].map((s) => [`dati inventati (seme ${s})`, synthetic(s)] as [string, LegacyData]),
+-];
+-
+-const POOL = {
+-  rating: ['', '', '6', '7.5', '10', '0', '11', 'abc', '5.3', '6.25', '1', '8,5'],
+-  count: ['', '', '', '0', '1', '2', '3', '25', '-2', 'x', '4.7'],
+-  small: ['', '', '0', '1', '11', '3'],
+-  tit: ['', '', '', ' Il Muro ', 'x'.repeat(70)],
+-  desc: ['', '', '', ' bravo *tanto* ', 'y'.repeat(2100)],
+-  score: ['', '', '0', '3', '5', '120', 'x', '-1'],
+-};
+-function rng(seed: number) {
+-  let s = seed >>> 0;
+-  return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+-}
+-
+-describe.each(datasets)('%s', (_label, raw) => {
+-  const legacy = loadLegacy<L>(FUNCS, CONSTS, raw);
+-  const matches = raw.matches as Match[];
+-
+-  it('salvataggio: pagelle, controlli e risultato come legacy', async () => {
+-    const r = rng(7);
+-    const pick = <T,>(a: T[]) => a[Math.floor(r() * a.length)] as T;
+-    let saved = 0, blocked = 0, asked = 0;
+-    for (const m of matches.slice(0, 12)) {
+-      for (let round = 0; round < 12; round++) {
+-        const tA = normalizeTeam(m.teamA), tB = normalizeTeam(m.teamB);
+-        // più spesso valori sensati: in un giro su due niente valori strani
+-        const calm = round % 2 === 0;
+-        const fields = (list: Array<{ id: string | null; name: string }>): PlayerFields[] =>
+-          list.map((p) => ({
+-            id: p.id, name: p.name,
+-            rating: calm ? pick(['', '6', '7', '5.5', '8']) : pick(POOL.rating),
+-            goals: calm ? pick(['', '', '1', '2']) : pick(POOL.count),
+-            assist: calm ? pick(['', '', '', '1', '2']) : pick(POOL.count),
+-            autogol: calm ? pick(['', '', '', '', '1']) : pick(POOL.small),
+-            rigori: calm ? pick(['', '', '', '', '1']) : pick(POOL.small),
+-            meta: calm ? pick(['', '', '', '2']) : pick(POOL.count),
+-            tit: calm ? pick(['', '', 'Il Muro']) : pick(POOL.tit),
+-            desc: calm ? pick(['', '', 'bravo']) : pick(POOL.desc),
+-          }));
+-        const A = fields(tA), B = fields(tB);
+-        const scA = calm ? pick(['', '2', '4']) : pick(POOL.score), scB = calm ? pick(['', '1', '3']) : pick(POOL.score);
+-        // schermata di legacy
+-        const vals: Record<string, string> = { 'sc-a': scA, 'sc-b': scB, 'edit-notes': 'nota' };
+-        [...A.map((p) => [p, 'bl'] as const), ...B.map((p) => [p, 'bi'] as const)].forEach(([p, cls], i) => {
+-          Object.assign(vals, {
+-            [`rate-${cls}-${i}`]: p.rating, [`goal-${cls}-${i}`]: p.goals, [`ast-${cls}-${i}`]: p.assist, [`og-${cls}-${i}`]: p.autogol,
+-            [`rig-${cls}-${i}`]: p.rigori, [`meta-${cls}-${i}`]: p.meta, [`tit-${cls}-${i}`]: p.tit, [`desc-${cls}-${i}`]: p.desc,
+-          });
+-        });
+-        legacy.__multiOn(true);
+-        legacy.__setVals(vals);
+-        legacy.__reset();
+-        legacy.__answer(true);
+-        await legacy.saveRatings(m.id);
+-        const cap = legacy.__cap();
+-        // l'avviso sui titoli riguarda solo lo script Google di legacy: qui i titoli vanno nel database
+-        cap.confirms = cap.confirms.filter((c) => (c as { title: string }).title !== 'Titoli non salvati');
+-
+-        const plan = planSave(A, B, scA, scB);
+-        if (plan.missingRating.length) {
+-          blocked++;
+-          expect(cap.toasts).toEqual([`⚠️ Metti il voto a: ${plan.missingRating.join(', ')} (ha gol, assist, autogol, rigori o pagella)`]);
+-          expect(cap.calls).toEqual([]);
+-          continue;
+-        }
+-        if (plan.overAssist.length) {
+-          asked++;
+-          expect(cap.confirms.length).toBe(1);
+-          const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+-          expect((cap.confirms[0] as { msg: string }).msg).toBe(plan.overAssist.map(esc).join('<br>') + '<br><br>Controlla i dati inseriti. Vuoi salvare comunque?');
+-        } else expect(cap.confirms).toEqual([]);
+-        saved++;
+-        const first = cap.calls[0] as [string, { matchId: string; ratings: unknown[] }];
+-        expect(first[0]).toBe('saveRatings');
+-        expect(first[1].matchId).toBe(m.id);
+-        expect(JSON.parse(JSON.stringify(first[1].ratings))).toEqual(JSON.parse(JSON.stringify(plan.rows)));
+-        const upd = cap.calls.find((c) => c[0] === 'updateScore') as [string, { scoreA: unknown; scoreB: unknown }] | undefined;
+-        if (upd) {
+-          expect(upd[1].scoreA).toBe(plan.scoreA);
+-          expect(upd[1].scoreB).toBe(plan.scoreB);
+-        }
+-      }
+-    }
+-    // le prove devono aver toccato tutti e tre i casi
+-    expect(saved).toBeGreaterThan(0);
+-    expect(blocked).toBeGreaterThan(0);
+-    expect(asked).toBeGreaterThanOrEqual(0);
+-  });
+-
+-  it('pulsanti − e +: stessi valori di legacy', () => {
+-    // legacy lavora sui campi: si usa un campo finto per id
+-    const run = (fn: 'scoreStep' | 'rateStep' | 'goalStep', cur: string, d: number) => {
+-      legacy.__multiOn(true);
+-      legacy.__setVals({ f: cur });
+-      legacy[fn]('f', d);
+-      return (legacy.__getEl('f') as unknown as { value: string }).value;
+-    };
+-    for (const cur of ['', '0', '1', '5', '98', '99', '10', '9.5', 'x', '20', '19']) {
+-      for (const d of [-1, 1]) {
+-        expect(stepScore(cur, d)).toBe(String(run('scoreStep', cur, d)));
+-        expect(stepRating(cur, d)).toBe(String(run('rateStep', cur, d)));
+-        expect(stepCount(cur, d, 20)).toBe(String(run('goalStep', cur, d)));
+-      }
+-    }
+-    for (const v of ['', '3', '-4', '200', 'x', '7.9']) expect(clampInt(v, 0, 99, 0)).toBe(legacy.clampInt(v, 0, 99, 0));
+-  });
+-});
+diff --git a/tests/golden/modules.test.ts b/tests/golden/modules.test.ts
+deleted file mode 100644
+index a305400..0000000
+--- a/tests/golden/modules.test.ts
++++ /dev/null
+@@ -1,67 +0,0 @@
+-// Test golden (passo 3.8): moduli di gioco — composizione e formazioni predefinite come legacy; aggiunta, rimozione e salvataggio sul telefono.
+-import { describe, expect, it } from 'vitest';
+-import { DEFAULT_MODULES, makeSlots } from '../../src/domain/balancing';
+-import { addModule, defaultModules, moduleComposition, parseModules, removeModule, serializeModules } from '../../src/domain/modules';
+-import { real } from './data';
+-import { loadLegacy, type LegacyData } from './legacy';
+-
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-type Fn = (...a: any[]) => any;
+-interface L extends Record<string, unknown> {
+-  moduleComposition: Fn; makeSlots: Fn; MODULES: Record<number, Array<{ notation: string; desc: string; slots: unknown[] }>>;
+-}
+-
+-describe('moduli come legacy', () => {
+-  const legacy = loadLegacy<L>(['makeSlots', 'moduleComposition'], ['MODULES'], real as unknown as LegacyData);
+-  it('formazioni predefinite e composizione', () => {
+-    for (const n of [5, 6, 7]) {
+-      const mine = DEFAULT_MODULES[n] ?? [];
+-      const theirs = legacy.MODULES[n] ?? [];
+-      expect(mine.map((m) => m.notation)).toEqual(theirs.map((m) => m.notation));
+-      expect(mine.map((m) => m.desc)).toEqual(theirs.map((m) => m.desc));
+-      mine.forEach((m, i) => {
+-        expect(m.slots).toEqual(JSON.parse(JSON.stringify(theirs[i]?.slots)));
+-        expect(moduleComposition(m.slots)).toEqual(legacy.moduleComposition(theirs[i]?.slots));
+-      });
+-    }
+-  });
+-  it('schieramenti nuovi uguali a makeSlots di legacy', () => {
+-    for (const [d, m, a] of [[0, 4, 0], [2, 2, 1], [3, 1, 2], [1, 0, 5]]) {
+-      expect(makeSlots(1, d as number, m as number, a as number)).toEqual(JSON.parse(JSON.stringify(legacy.makeSlots(1, d, m, a))));
+-    }
+-  });
+-});
+-
+-describe('aggiungi e togli formazioni', () => {
+-  it('la somma deve fare n − 1', () => {
+-    const r = addModule(defaultModules(), 5, 2, 2, 1, '');
+-    expect(r.error).toBe('Difensori+Med+Att devono sommare 4 (ora: 5)');
+-  });
+-  it('doppione rifiutato', () => {
+-    expect(addModule(defaultModules(), 5, 1, 2, 1, '').error).toBe('Formazione 1-1-2-1 già presente');
+-  });
+-  it('aggiunta valida, con campi vuoti letti come 0', () => {
+-    const r = addModule(defaultModules(), 5, 0, 4, NaN, '  solo centrocampo ');
+-    expect(r.error).toBeNull();
+-    expect(r.notation).toBe('1-0-4-0');
+-    const added = r.modules[5]?.at(-1);
+-    expect(added?.desc).toBe('solo centrocampo');
+-    expect(added?.slots).toEqual(makeSlots(1, 0, 4, 0));
+-    expect(DEFAULT_MODULES[5]?.length).toBe(3); // i predefiniti non si toccano
+-  });
+-  it('ne resta sempre almeno una', () => {
+-    let mods = defaultModules();
+-    mods = removeModule(mods, 5, 0).modules;
+-    mods = removeModule(mods, 5, 0).modules;
+-    expect(mods[5]?.length).toBe(1);
+-    expect(removeModule(mods, 5, 0).error).toBe('Almeno una formazione è richiesta');
+-  });
+-  it('salvataggio e lettura (stesso formato di legacy)', () => {
+-    const mods = addModule(defaultModules(), 6, 1, 2, 2, 'x').modules;
+-    const raw = serializeModules(mods);
+-    expect(JSON.parse(raw)[6].at(-1)).toEqual({ notation: '1-1-2-2', desc: 'x', counts: { por: 1, def: 1, med: 2, att: 2 } });
+-    expect(parseModules(raw)).toEqual(mods);
+-    expect(parseModules(null)).toEqual(defaultModules());
+-    expect(parseModules('{rotto')).toEqual(defaultModules());
+-  });
+-});
+diff --git a/tests/golden/ovr-form-stats.test.ts b/tests/golden/ovr-form-stats.test.ts
+deleted file mode 100644
+index ce0e9a9..0000000
+--- a/tests/golden/ovr-form-stats.test.ts
++++ /dev/null
+@@ -1,211 +0,0 @@
+-// Test golden: ovr, seasons, stats, form — stessi dati, stessi risultati della versione legacy.
+-import { describe, expect, it } from 'vitest';
+-import { formState, formWeight, effectiveScore, inCrisi, onFire } from '../../src/domain/form';
+-import { calcOvr, futRating, futTier } from '../../src/domain/ovr';
+-import { seasonOf, seasonStatus, seasonsList } from '../../src/domain/seasons';
+-import { seasonStats, playerKey, validVote, clampRating, mvpPerf } from '../../src/domain/stats';
+-import type { Dataset, Player } from '../../src/domain/types';
+-import { real } from './data';
+-import { loadLegacy } from './legacy';
+-
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-type Fn = (...a: any[]) => any;
+-interface L extends Record<string, unknown> {
+-  __useForm: (b: boolean) => void;
+-  calcOvr: Fn; formWeight: Fn; effectiveScore: Fn; playerRatingAvg: Fn; playerSeason: Fn; seasonStats: Fn;
+-  playerKey: Fn; validVote: Fn; clampRating: Fn; mvpPerf: Fn; seasonOf: Fn; seasonStatus: Fn; seasonsList: Fn;
+-  formState: Fn; onFire: Fn; inCrisi: Fn; futTier: Fn; futRating: Fn;
+-}
+-
+-const FUNCS = [
+-  'calcOvr', 'formWeight', 'effectiveScore', 'playerRatingAvg', 'playerSeason', 'seasonStats', 'playerKey',
+-  'normalizeTeam', 'getPlayerMatchResult', 'validVote', 'clampRating', 'mvpPerf', 'seasonOf', 'seasonStatus',
+-  'seasonsList', 'formState', 'onFire', 'inCrisi', 'futTier',
+-];
+-const CONSTS = ['ALBO_GRACE_DAYS', 'FORM_MAX_WEIGHT', 'FORM_MIN_RATINGS', 'FORM_FULL_RATINGS', 'FORM_DELTA', 'futRating'];
+-
+-const TODAY = '2026-10-31';
+-const data: Dataset = { players: real.players, matches: real.matches as Dataset['matches'], ratings: real.ratings as Dataset['ratings'] };
+-const legacy = loadLegacy<L>(FUNCS, CONSTS, real, TODAY);
+-
+-describe('dati di prova', () => {
+-  it('sono quelli attesi: 22 giocatori, 16 partite, 162 pagelle', () => {
+-    expect(real.players).toHaveLength(22);
+-    expect(real.matches).toHaveLength(16);
+-    expect(real.ratings).toHaveLength(162);
+-  });
+-});
+-
+-describe('ovr', () => {
+-  it.each(real.players.map((p) => [p.name, p] as const))('OVR, valutazione e fascia di %s', (_n, p) => {
+-    expect(calcOvr(p.stats, real.weights)).toBeCloseTo(legacy.calcOvr(p.stats), 12);
+-    expect(futRating(p.stats, real.weights)).toBe(legacy.futRating(p));
+-    expect(futTier(p.stats, real.weights)).toBe(legacy.futTier(p));
+-  });
+-
+-  it('fasce ai confini (73/74, 67/68, 59/60, 50/51, 40/41): Bronzo 51–59, Cacca 41–50, sotto MARCIO VOMITO', () => {
+-    // pesi uguali e statistiche uguali: OVR = valore → valutazione = valore × 10
+-    const w = real.weights.map(() => 1);
+-    const tier = (v: number) => futTier(w.map(() => v), w);
+-    expect([7.3, 7.4, 6.7, 6.8, 5.9, 6.0, 5.0, 5.1, 4.0, 4.1].map(tier)).toEqual([
+-      'gold', 'top', 'silver', 'gold', 'bronze', 'silver', 'cacca', 'bronze', 'marcia', 'cacca',
+-    ]);
+-    // gli estremi: 50 è ancora Cacca, 41 è la Cacca più bassa, 40 e meno è MARCIO VOMITO
+-    expect([5.0, 4.1, 4.0, 0].map(tier)).toEqual(['cacca', 'cacca', 'marcia', 'marcia']);
+-  });
+-});
+-
+-describe('peso dei voti', () => {
+-  it('formWeight come legacy per 0–30 pagelle', () => {
+-    for (let n = 0; n <= 30; n++) expect(formWeight(n)).toBeCloseTo(legacy.formWeight(n), 12);
+-  });
+-  it('0 fino a 2 pagelle, 25% da 18', () => {
+-    expect(formWeight(2)).toBe(0);
+-    expect(formWeight(18)).toBe(0.25);
+-    expect(formWeight(40)).toBe(0.25);
+-  });
+-});
+-
+-describe('stagioni', () => {
+-  const dates = ['2026-03-01', '2026-05-31', '2026-06-01', '2026-08-31', '2026-09-01', '2026-11-30', '2026-12-01',
+-    '2027-01-15', '2027-02-28', '2028-02-29', '2028-02-10', '2026-02-28', 'x', '', null, undefined];
+-  it.each(dates.map((d) => [String(d), d] as const))('seasonOf(%s)', (_l, d) => {
+-    expect(seasonOf(d)).toEqual(legacy.seasonOf(d));
+-  });
+-  it('seasonStatus: in corso / in chiusura / chiusa', () => {
+-    for (const t of ['2026-11-30', '2026-12-01', '2026-12-14', '2026-12-15', '2027-01-01']) {
+-      const l = loadLegacy<L>(['seasonStatus', 'seasonOf'], ['ALBO_GRACE_DAYS'], real, t);
+-      for (const d of ['2026-10-05', '2026-06-10', '2026-03-10']) {
+-        expect(seasonStatus(seasonOf(d)!, t)).toBe(l.seasonStatus(l.seasonOf(d)));
+-      }
+-    }
+-  });
+-  it('seasonsList sulle partite reali', () => {
+-    expect(seasonsList(data.matches, [], TODAY)).toEqual(legacy.seasonsList());
+-  });
+-});
+-
+-describe('voti', () => {
+-  const vals = [6, '6,5', '7.5', 0, 11, 10, 1, '', null, undefined, 'abc', 6.26, 6.25, 6.24, '8'];
+-  it.each(vals.map((v) => [String(v), v] as const))('validVote / clampRating di %s', (_l, v) => {
+-    expect(validVote(v)).toBe(legacy.validVote(v));
+-    expect(clampRating(v)).toBe(legacy.clampRating(v));
+-  });
+-  it('mvpPerf su tutte le pagelle', () => {
+-    for (const r of data.ratings) expect(mvpPerf(r)).toBe(legacy.mvpPerf(r));
+-  });
+-});
+-
+-describe('seasonStats', () => {
+-  const scopes = [undefined, 'all', '2026-PRI', '2026-EST', '2026-AUT', '2026-INV'];
+-  it.each(scopes.map((s) => [String(s), s] as const))('scope %s identico a legacy', (_l, scope) => {
+-    expect(seasonStats(data, scope)).toEqual(legacy.seasonStats(scope));
+-  });
+-  it('playerKey: id in rosa, poi nome, poi orfano', () => {
+-    const p = real.players[0] as Player;
+-    for (const [id, nm] of [[p.id, 'x'], ['id-vecchio', p.name], ['zzz', 'Sconosciuto'], [null, null], [undefined, 'A']] as const) {
+-      expect(playerKey(data.players, id, nm)).toEqual(legacy.playerKey(id, nm));
+-    }
+-  });
+-});
+-
+-describe('stato di forma', () => {
+-  it('formState, onFire, inCrisi per tutti i giocatori', () => {
+-    const all = seasonStats(data);
+-    const states = new Set<unknown>();
+-    for (const p of data.players) {
+-      expect(formState(data, p, all)).toBe(legacy.formState(p));
+-      expect(onFire(data, p, all)).toBe(legacy.onFire(p) === 1);
+-      expect(inCrisi(data, p, all)).toBe(legacy.inCrisi(p) === 1);
+-      states.add(formState(data, p, all));
+-    }
+-    // il test è utile solo se i dati reali coprono più di un caso
+-    expect(states.size).toBeGreaterThan(1);
+-  });
+-
+-  it('effectiveScore (con e senza "usa la forma") per tutti i giocatori', () => {
+-    const all = seasonStats(data);
+-    for (const useForm of [true, false]) {
+-      legacy.__useForm(useForm);
+-      for (const p of data.players) {
+-        expect(effectiveScore(data, real.weights, p, useForm, all)).toBeCloseTo(legacy.effectiveScore(p), 12);
+-      }
+-    }
+-    legacy.__useForm(true);
+-  });
+-
+-  it('stato di forma: soglie ±0,2 e regola delle 5 partite recenti', () => {
+-    const mk = (votes: number[], dates: string[]): Dataset => ({
+-      players: [{ id: 'p1', name: 'Test', stats: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5] }],
+-      matches: dates.map((d, i) => ({ id: 'm' + i, date: d, scoreA: 1, scoreB: 0, teamA: [{ id: 'p1', name: 'Test' }], teamB: [] })),
+-      ratings: votes.map((v, i) => ({ matchId: 'm' + i, playerId: 'p1', player: 'Test', rating: v })),
+-    });
+-    const d5 = ['2026-10-01', '2026-10-08', '2026-10-15', '2026-10-22', '2026-10-29'];
+-    const p = mk([6, 6, 6, 6, 6], d5).players[0] as Player;
+-    expect(formState(mk([6, 6, 6, 6, 6], d5), p)).toBe('flat');
+-    expect(formState(mk([5, 5, 7, 7, 7], d5), p)).toBe('up');
+-    expect(formState(mk([7, 7, 5, 5, 5], d5), p)).toBe('down');
+-    expect(formState(mk([6, 6, 6], d5.slice(0, 3)), p)).toBeNull(); // meno di 4 pagelle
+-    // ultima pagella fuori dalle 5 partite più recenti del gruppo → nessuno stato
+-    const old = mk([7, 7, 7, 7], ['2026-01-01', '2026-01-08', '2026-01-15', '2026-01-22']);
+-    old.matches.push(...d5.map((d, i) => ({ id: 'n' + i, date: d, scoreA: 1, scoreB: 0, teamA: [], teamB: [] })));
+-    expect(formState(old, p)).toBeNull();
+-  });
+-});
+-
+-describe('stato di forma: contano le ultime 2 pagelle', () => {
+-  /** Un giocatore con questi voti, uno per partita, in 5 partite consecutive (le più recenti del gruppo). */
+-  const withVotes = (votes: number[]) => {
+-    const player = { id: 'p', name: 'P', roles: ['MED'], stats: Array(11).fill(6) };
+-    const matches = votes.map((_, i) => ({ id: `m${i}`, date: `2026-10-${String(i + 1).padStart(2, '0')}`, teamA: [{ id: 'p', name: 'P' }], teamB: [], scoreA: 5, scoreB: 3 }));
+-    const ratings = votes.map((v, i) => ({ matchId: `m${i}`, player: 'P', playerId: 'p', rating: v }));
+-    const ds = { players: [player], matches, ratings } as unknown as Dataset;
+-    return formState(ds, player as never, seasonStats(ds));
+-  };
+-  it('le ultime 2 pagelle sopra la media di sempre di almeno 0,2 → in forma (con 3 non lo sarebbe)', () => {
+-    // media 6,2; ultime 2 = 6,5 (+0,3) → su; ultime 3 = 6,33 (+0,13) → costante
+-    expect(withVotes([6, 6, 6, 5, 8])).toBe('up');
+-  });
+-  it('le ultime 2 sotto di almeno 0,2 → in calo', () => {
+-    // media 6,4; ultime 2 = 5,5 (−0,9)
+-    expect(withVotes([7, 7, 7, 6, 5])).toBe('down');
+-  });
+-  it('vicine alla media → costante; la terzultima non conta', () => {
+-    expect(withVotes([6, 6, 6, 6, 6])).toBe('flat');
+-    // la terzultima (2) non pesa: ultime 2 = 6,5, media 5,5 → in forma
+-    expect(withVotes([5, 5, 2, 7, 6])).toBe('up');
+-  });
+-  it('servono almeno 4 pagelle', () => {
+-    expect(withVotes([6, 6, 9])).toBeNull();
+-  });
+-});
+-
+-describe('nome della stagione: «Estate 26» (anno a due cifre)', () => {
+-  it.each([
+-    ['2026-03-01', 'Primavera 26'], ['2025-05-31', 'Primavera 25'],
+-    ['2026-07-15', 'Estate 26'], ['2025-08-31', 'Estate 25'],
+-    ['2025-10-05', 'Autunno 25'], ['2026-11-30', 'Autunno 26'],
+-    ['2025-12-01', 'Inverno 25'], ['2026-01-20', 'Inverno 25'], ['2026-02-28', 'Inverno 25'], ['2026-12-10', 'Inverno 26'],
+-  ])('%s → %s', (date, label) => {
+-    expect(seasonOf(date)?.label).toBe(label);
+-  });
+-  it('la chiave e le date non cambiano', () => {
+-    expect(seasonOf('2026-07-15')).toMatchObject({ key: '2026-EST', start: '2026-06-01', end: '2026-08-31' });
+-    expect(seasonOf('2026-01-20')).toMatchObject({ key: '2025-INV', start: '2025-12-01', end: '2026-02-28' });
+-  });
+-});
+-
+-describe('stato di forma: dopo più di un mese dall\'ultima pagella non vale', () => {
+-  const player = { id: 'p', name: 'P', roles: ['MED'], stats: Array(11).fill(6) };
+-  const votes = [6, 6, 6, 5, 8];
+-  const ds = {
+-    players: [player],
+-    matches: votes.map((_, i) => ({ id: `m${i}`, date: `2026-10-${String(i + 1).padStart(2, '0')}`, teamA: [{ id: 'p', name: 'P' }], teamB: [], scoreA: 5, scoreB: 3 })),
+-    ratings: votes.map((v, i) => ({ matchId: `m${i}`, player: 'P', playerId: 'p', rating: v })),
+-  } as unknown as Dataset; // ultima pagella: 5 ottobre 2026
+-  it('entro un mese c\'è lo stato, oltre no', () => {
+-    const all = seasonStats(ds);
+-    expect(formState(ds, player as never, all, '2026-11-05')).toBe('up'); // esattamente un mese: vale ancora
+-    expect(formState(ds, player as never, all, '2026-11-06')).toBeNull(); // un giorno in più: non vale
+-  });
+-});
+diff --git a/tests/golden/pairs-records-h2h.test.ts b/tests/golden/pairs-records-h2h.test.ts
+deleted file mode 100644
+index e6cad06..0000000
+--- a/tests/golden/pairs-records-h2h.test.ts
++++ /dev/null
+@@ -1,185 +0,0 @@
+-// Test golden: coppie, record e confronto testa a testa — stessi dati, stessi risultati di legacy.
+-// Per classifica coppie e record si esegue la vera schermata legacy (renderCoppie / renderRecord)
+-// in una pagina finta e se ne legge il testo, così si verificano anche ordine e tagli (8/5 coppie, 4 nomi…).
+-import { describe, expect, it } from 'vitest';
+-import { alboSeasons } from '../../src/domain/awards';
+-import { formatDate, noVS } from '../../src/domain/format';
+-import { cmpLead, compareRows, defaultRival, headToHead, scopeMvp, scopeTrophies } from '../../src/domain/h2h';
+-import { rosaOrder } from '../../src/domain/ovr';
+-import { pairsRanking, playerPairs, scopePairs } from '../../src/domain/pairs';
+-import { computeRecords, type RecordRow } from '../../src/domain/records';
+-import { seasonsList } from '../../src/domain/seasons';
+-import type { Dataset, Player } from '../../src/domain/types';
+-import { real } from './data';
+-import { loadLegacy, type LegacyData } from './legacy';
+-import { synthetic } from './synthetic';
+-
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-type Fn = (...a: any[]) => any;
+-interface L extends Record<string, unknown> {
+-  __run: (fn: () => void, scope: string) => string;
+-  playerPairs: Fn; scopePairs: Fn; renderCoppie: () => void; renderRecord: () => void; headToHead: Fn; scopeMvp: Fn;
+-  scopeTrophies: Fn; compareRows: Fn; defaultRival: Fn; rosaOrder: Fn; cmpLead: Fn; formatDate: Fn; noVS: Fn;
+-}
+-
+-const FUNCS = [
+-  'playerPairs', 'scopePairs', 'renderCoppie', 'renderRecord', 'headToHead', 'scopeMvp', 'scopeTrophies', 'compareRows',
+-  'defaultRival', 'rosaOrder', 'formatDate', 'esc', 'calcOvr', 'playerKey', 'normalizeTeam', 'validVote', 'mvpPerf',
+-  'getPlayerMatchResult',
+-  'seasonOf', 'seasonStatus', 'seasonsList', 'seasonStats', 'matchEvents', 'computeSeasonAwards', 'seasonFromRows', 'alboSeasons',
+-];
+-const CONSTS = [
+-  'scopeMatches', 'noVS', 'clEmpty', 'clMedal', 'cmpLead', 'FEATS', 'AWARDS', 'ALBO_GRACE_DAYS', 'ALBO_MIN_MATCHES',
+-  'ALBO_MIN_MVP', 'ALBO_NEW_KEYS', 'isFrozen',
+-];
+-const TODAY = '2026-10-31';
+-
+-const legacyOf = (d: LegacyData) => loadLegacy<L>(FUNCS, CONSTS, d, TODAY);
+-const asDataset = (d: LegacyData): Dataset => d as unknown as Dataset;
+-
+-const datasets: Array<[string, LegacyData]> = [
+-  ['dati reali', real as unknown as LegacyData],
+-  ...[1, 2, 3, 4, 5, 6].map((s) => [`dati inventati (seme ${s})`, synthetic(s)] as [string, LegacyData]),
+-];
+-
+-const scopesOf = (d: Dataset) => ['all', ...seasonsList(d.matches, [], TODAY).map((s) => s.key)];
+-
+-/** Testo semplice di un pezzo di HTML: <br> → "|", via tutti i tag, spazi normalizzati. */
+-const plain = (html: string) =>
+-  html.replace(/<br>/g, '|').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+-
+-describe.each(datasets)('%s', (_label, raw) => {
+-  const data = asDataset(raw);
+-  const legacy = legacyOf(raw);
+-  const scopes = scopesOf(data);
+-
+-  it('playerPairs identico per ogni giocatore', () => {
+-    for (const p of data.players) expect(playerPairs(data, p)).toEqual(legacy.playerPairs(p));
+-  });
+-
+-  it('scopePairs identico per ogni stagione e per "sempre"', () => {
+-    for (const sc of scopes) expect(scopePairs(data, sc)).toEqual(legacy.scopePairs(sc));
+-  });
+-
+-  it('classifica coppie: stesso ordine e stessi tagli della schermata legacy', () => {
+-    for (const sc of scopes) {
+-      const html = legacy.__run(legacy.renderCoppie, sc);
+-      const [goldHtml, badHtml = ''] = html.split('Coppie maledette');
+-      const rows = (h: string) =>
+-        h
+-          .split(/(?=<div class="cl-row">)/)
+-          .filter((x) => x.startsWith('<div class="cl-row">'))
+-          .map((r) => {
+-          const names = plain((r.match(/<div class="cl-name">([\s\S]*?)<\/div>/) as RegExpMatchArray)[1] as string);
+-          const sub = plain((r.match(/<div class="cl-sub">([\s\S]*?)<\/div>/) as RegExpMatchArray)[1] as string);
+-          return `${names} | ${sub}`;
+-        });
+-      const fmt = (c: { a: string; b: string; w: number; d: number; l: number; gd: number }) =>
+-        `${c.a} & ${c.b} | ${c.w}V · ${c.d}N · ${c.l}P · ${c.gd > 0 ? '+' : ''}${c.gd} gol`;
+-      const { gold, bad } = pairsRanking(data, sc);
+-      expect(gold.map(fmt)).toEqual(rows(goldHtml as string));
+-      expect(bad.map(fmt)).toEqual(rows(badHtml));
+-    }
+-  });
+-
+-  it('record: stesse righe, stessi valori, stessi nomi della schermata legacy', () => {
+-    for (const sc of scopes) {
+-      const html = legacy.__run(legacy.renderRecord, sc);
+-      const legacyRows = html
+-        .split(/(?=<div class="rec-row">)/)
+-        .filter((x) => x.startsWith('<div class="rec-row">'))
+-        .map((r) => ({
+-        icon: plain((r.match(/<span class="rec-ic">([\s\S]*?)<\/span>/) as RegExpMatchArray)[1] as string),
+-        title: plain((r.match(/<div class="rec-t">([\s\S]*?)<\/div>/) as RegExpMatchArray)[1] as string),
+-        who: plain((r.match(/<div class="rec-who">([\s\S]*?)<\/div>/) as RegExpMatchArray)[1] as string),
+-        value: plain((r.match(/<span class="rec-v">([\s\S]*?)<\/span>/) as RegExpMatchArray)[1] as string),
+-      }));
+-      const who = (r: RecordRow) => {
+-        if (r.kind === 'streak') return r.entries.map((e) => e.name).join(', ');
+-        const lines = r.entries.map((e) => {
+-          const m = e.match as NonNullable<typeof e.match>;
+-          return r.kind === 'match' ? `${m.scoreA}-${m.scoreB} · ${formatDate(m.date)}` : `${e.name} · ${formatDate(m.date)}`;
+-        });
+-        return lines.join('|');
+-      };
+-      const mine = computeRecords(data, sc).map((r) => ({ icon: r.icon, title: r.title, who: who(r), value: r.value }));
+-      expect(mine).toEqual(legacyRows);
+-    }
+-  });
+-
+-  it('headToHead identico per tutte le coppie di giocatori', () => {
+-    const ps = data.players;
+-    for (const sc of ['all', scopes[scopes.length - 1] as string]) {
+-      for (const a of ps) for (const b of ps) if (a !== b) expect(headToHead(data, a, b, sc)).toEqual(legacy.headToHead(a, b, sc));
+-    }
+-  });
+-
+-  it('scopeMvp identico', () => {
+-    for (const sc of scopes) expect(scopeMvp(data, sc)).toEqual(legacy.scopeMvp(sc));
+-  });
+-
+-  it('scopeTrophies identico', () => {
+-    const seasons = alboSeasons(data, [], TODAY);
+-    for (const sc of scopes) for (const p of data.players) expect(scopeTrophies(data, p, sc, seasons)).toEqual(legacy.scopeTrophies(p, sc));
+-  });
+-
+-  it('compareRows identico (etichette, valori, testo mostrato, "meno è meglio")', () => {
+-    const ps = data.players;
+-    const pairsToTest: Array<[number, number]> = [[0, 1], [1, 0], [2, 5], [3, ps.length - 1], [ps.length - 1, 4]];
+-    for (const sc of scopes) {
+-      for (const [i, j] of pairsToTest) {
+-        const mine = compareRows(data, ps[i] as Player, ps[j] as Player, sc, [], TODAY);
+-        const theirs = legacy.compareRows(i, j, sc);
+-        expect(mine.length).toBe(theirs.length);
+-        mine.forEach((row, k) => {
+-          const t = theirs[k] as [string, number | null, number | null, (v: number | null) => string, boolean?];
+-          expect(row.label).toBe(t[0]);
+-          expect(row.a).toEqual(t[1]);
+-          expect(row.b).toEqual(t[2]);
+-          expect(row.text(row.a)).toBe(t[3](t[1]));
+-          expect(row.text(row.b)).toBe(t[3](t[2]));
+-          expect(!!row.lowerIsBetter).toBe(!!t[4]);
+-          expect(cmpLead(row.a, row.b, row.lowerIsBetter)).toBe(legacy.cmpLead(t[1], t[2], t[4]));
+-        });
+-      }
+-    }
+-  });
+-
+-  it('defaultRival identico per ogni giocatore', () => {
+-    const order = rosaOrder(data.players, real.weights);
+-    expect(order).toEqual(legacy.rosaOrder());
+-    const candidates = order.map((i) => data.players[i] as Player);
+-    data.players.forEach((p, i) => {
+-      const mine = defaultRival(data, p, candidates);
+-      const r = legacy.defaultRival(i);
+-      expect(mine).toBe(r == null ? null : data.players[r]);
+-    });
+-  });
+-});
+-
+-describe('formattazione', () => {
+-  const legacy = legacyOf(real as unknown as LegacyData);
+-  it('formatDate e noVS come legacy', () => {
+-    for (const d of ['2026-10-28', '2026-10-28T10:00', '', null, undefined, 'boh', '28/10/2026']) {
+-      expect(formatDate(d)).toBe(legacy.formatDate(d));
+-    }
+-    for (const s of ['🅰️ Assistman', '✒️ x', 'a', 7]) expect(noVS(s)).toBe(legacy.noVS(s));
+-    expect(noVS('🅰️')).not.toContain('️');
+-  });
+-});
+-
+-describe('copertura: i dati di prova esercitano davvero queste funzioni', () => {
+-  it('ci sono coppie, record, serie e rivali', () => {
+-    const all = [real as unknown as LegacyData, ...[1, 2, 3, 4, 5, 6].map((s) => synthetic(s))].map(asDataset);
+-    expect(all.some((d) => pairsRanking(d, 'all').gold.length > 0)).toBe(true);
+-    expect(all.some((d) => pairsRanking(d, 'all').bad.length > 0)).toBe(true);
+-    const kinds = new Set(all.flatMap((d) => computeRecords(d, 'all').map((r) => r.title)));
+-    for (const t of ['Partita con più gol', 'Vittoria più larga', 'Più gol in una partita', 'Voto più alto', 'Più vittorie di fila']) {
+-      expect(kinds.has(t), 'record mai prodotto: ' + t).toBe(true);
+-    }
+-    expect(all.some((d) => d.players.some((p) => playerPairs(d, p).friend !== null))).toBe(true);
+-    expect(all.some((d) => d.players.some((p) => playerPairs(d, p).nemesis !== null))).toBe(true);
+-    expect(all.some((d) => headToHead(d, d.players[0] as Player, d.players[1] as Player, 'all').vs.n > 0)).toBe(true);
+-    expect(all.some((d) => headToHead(d, d.players[0] as Player, d.players[1] as Player, 'all').tog.n > 0)).toBe(true);
+-  });
+-});
+diff --git a/tests/golden/partite.test.tsx b/tests/golden/partite.test.tsx
+deleted file mode 100644
+index 0355903..0000000
+--- a/tests/golden/partite.test.tsx
++++ /dev/null
+@@ -1,144 +0,0 @@
+-// Calcoli di partita, pagelle e firma della redazione.
+-import { readFileSync } from 'node:fs';
+-import { join } from 'node:path';
+-import { renderToStaticMarkup } from 'react-dom/server';
+-import { describe, expect, it } from 'vitest';
+-import type { LeagueData } from '../../src/data/queries';
+-import { matchBalance, matchHighlights, pagelleText, rateColors } from '../../src/domain/matches';
+-import type { Dataset } from '../../src/domain/types';
+-import { BalanceBody } from '../../src/features/partite/MatchCard';
+-import { GazArchiveBody, GazStrip, LastMatch, MatchesList, type MatchActions } from '../../src/features/partite/parts';
+-import { real } from './data';
+-import { loadLegacy, type LegacyData } from './legacy';
+-import { synthetic } from './synthetic';
+-
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-type Fn = (...a: any[]) => any;
+-interface L extends Record<string, unknown> {
+-  pagelleText: Fn; matchHighlights: Fn; matchBalanceHTML: Fn;
+-}
+-
+-const FUNCS = [
+-  'matchHighlights', 'pagelleText', 'matchBalanceHTML', 'statCompareHTML',
+-  'comboMetrics', 'teamSpread', 'roleFitScore', 'roleCountPenalty', 'wScore', 'effectiveScore', 'playerRatingAvg', 'playerSeason',
+-  'seasonStats', 'playerKey', 'normalizeTeam', 'getPlayerMatchResult', 'validVote', 'seasonOf', 'formatDate', 'esc', 'calcOvr',
+-  'mvpPerf', 'goalsLabel', 'formWeight',
+-];
+-const CONSTS = [
+-  'gazList', 'gazOf', 'gazImg', 'SEASON_ICON', 'waHTML', 'predGoals', 'goalsLevel', 'distribLabel', 'FORM_MAX_WEIGHT',
+-  'FORM_MIN_RATINGS', 'FORM_FULL_RATINGS', 'GOALS_PER_POINT', 'STATS', 'ICONS',
+-];
+-const TODAY = '2026-10-31';
+-
+-const live = JSON.parse(readFileSync(join(process.cwd(), 'tests/fixtures/live_feed.json'), 'utf8')) as {
+-  gazzette: Array<{ matchId: string; fileId: string; data: string; url: string; nome: string }>;
+-  ratings: Array<Record<string, unknown>>;
+-  matches: Array<Record<string, unknown>>;
+-};
+-/** Dati veri, ma con titoli, descrizioni, note e una previsione salvata (come le vere partite di oggi). */
+-function realFull(): LegacyData {
+-  const notes: Record<string, string> = {};
+-  for (const lm of live.matches) notes[lm.id as string] = String(lm.notes ?? '');
+-  const byKey = new Map(live.ratings.map((r) => [`${r.matchId}|${r.playerId}`, r]));
+-  const matches = real.matches.map((m, i) => ({ ...m, notes: notes[m.id as string] || (i % 3 === 0 ? "Serata al Sole d'estate" : ''), ...(i % 2 ? { pred: 0.15 * (i % 5 - 2), predRank: i % 4 } : {}) }));
+-  const ratings = real.ratings.map((r) => {
+-    const x = byKey.get(`${r.matchId}|${r.playerId}`);
+-    return x ? { ...r, notes: x.notes, titolo: x.titolo } : r;
+-  });
+-  return { players: real.players, weights: real.weights, matches, ratings, gazzette: live.gazzette } as unknown as LegacyData;
+-}
+-
+-const datasets: Array<[string, LegacyData]> = [
+-  ['dati reali, con titoli, descrizioni e Gazzette', realFull()],
+-  ...[1, 2, 3].map((s) => {
+-    const d = synthetic(s);
+-    // qualche partita senza risultato, con nota e previsione, e due Gazzette
+-    const matches: Array<Record<string, unknown>> = (d.matches as Array<Record<string, unknown>>).map((m, i) => ({ ...m, notes: i % 4 === 0 ? `Nota ${i} & "prova"` : '', ...(i % 3 === 0 ? { pred: -0.2, predRank: 2 } : {}) }));
+-    const gazzette = matches.slice(2, 4).map((m) => ({ matchId: m.id as string, fileId: 'f', data: m.date as string, url: '', nome: '' }));
+-    return [`dati inventati (seme ${s})`, { ...d, matches, gazzette }] as [string, LegacyData];
+-  }),
+-];
+-
+-const ENT: Record<string, string> = { '&#039;': "'", '&#x27;': "'", '&amp;': '&', '&quot;': '"', '&lt;': '<', '&gt;': '>' };
+-/** Testo che si legge: valori dei campi compresi; tag come confini; entità decodificate. */
+-const plain = (html: string) =>
+-  html
+-    .replace(/<input[^>]*?value="([^"]*)"[^>]*>/g, ' $1 ')
+-    .replace(/<br\s*\/?>/g, ' | ')
+-    .replace(/<[^>]+>/g, ' ')
+-    .replace(/&#039;|&#x27;|&amp;|&quot;|&lt;|&gt;/g, (m) => ENT[m] as string)
+-    .replace(/\s+/g, ' ')
+-    .trim();
+-const noop = () => undefined;
+-const act: MatchActions = { openMatch: noop, openGazzetta: noop, openPagelleText: noop };
+-const toLd = (raw: LegacyData): LeagueData => {
+-  const gaz = Object.fromEntries(((raw.gazzette ?? []) as Array<{ matchId: string }>).map((g) => [g.matchId, `L/${g.matchId}.jpg`]));
+-  return { league: { id: 'L', name: 'Lega', is_public: true, slug: 'calciolercio', owner_id: null }, dataset: raw as unknown as Dataset, weights: real.weights, photos: {}, albo: [], gazzette: gaz };
+-};
+-
+-describe.each(datasets)('%s', (_label, raw) => {
+-  const ld = toLd(raw);
+-  const data = ld.dataset;
+-  const legacy = loadLegacy<L>(FUNCS, CONSTS, raw, TODAY);
+-
+-  it('testo unico delle pagelle e highlights di ogni partita: identici', () => {
+-    let withText = 0;
+-    for (const m of data.matches) {
+-      expect(pagelleText(data, m, 'Avv. Peppe Rella')).toBe(legacy.pagelleText(m)); // la firma ora è di chi ha scritto: con lo stesso nome di una volta il testo è identico
+-      expect(matchHighlights(data, m)).toEqual(legacy.matchHighlights(m));
+-      if (/«/.test(pagelleText(data, m, 'Avv. Peppe Rella'))) withText++;
+-    }
+-    expect(data.matches.length).toBeGreaterThan(5);
+-    if (_label.startsWith('dati reali')) expect(withText).toBeGreaterThan(2); // le partite con titoli
+-  });
+-
+-  it('equilibrio squadre di ogni partita: previsione, valori di oggi, verdetto, 11 statistiche', () => {
+-    let ok = 0;
+-    for (const m of data.matches) {
+-      const mine = plain(renderToStaticMarkup(<BalanceBody b={matchBalance(data, real.weights, m, true)} />));
+-      expect(mine).toBe(plain(legacy.matchBalanceHTML(m)));
+-      if (mine.includes('Squilibrio')) ok++;
+-    }
+-    expect(ok).toBeGreaterThan(3);
+-  });
+-});
+-
+-describe('casi particolari', () => {
+-  it('colore del riquadro del voto come rateColor', () => {
+-    for (const v of ['', 4, 4.5, 5, 5.4, 5.5, 6, 6.5, 8, 10, 'x', null]) {
+-      const { background } = rateColors(v);
+-      const bg = parseFloat(v as string);
+-      expect(background).toBe(isNaN(bg) ? 'var(--gray)' : bg < 5.5 ? '#fde8e8' : bg < 6.5 ? '#fff4d6' : '#e4f7ec');
+-    }
+-  });
+-  it('nessuna partita: messaggio come legacy', () => {
+-    const empty: Dataset = { players: (real as unknown as Dataset).players, matches: [], ratings: [] };
+-    const ld = toLd({ players: empty.players, weights: real.weights, matches: [], ratings: [] } as unknown as LegacyData);
+-    expect(plain(renderToStaticMarkup(<MatchesList data={ld} act={act} />))).toContain('Nessuna partita ancora.');
+-    expect(renderToStaticMarkup(<LastMatch data={ld} act={act} />)).toBe('');
+-    expect(renderToStaticMarkup(<GazStrip data={ld} act={act} onArchive={noop} />)).toBe('');
+-    expect(plain(renderToStaticMarkup(<GazArchiveBody data={ld} act={act} />))).toBe('Ancora nessuna Gazzetta');
+-  });
+-  it('squadre non più in rosa: equilibrio non disponibile', () => {
+-    const d = real as unknown as Dataset;
+-    const m = { ...(d.matches[0] as Dataset['matches'][number]), teamA: [{ id: 'fantasma', name: 'Nessuno' }], teamB: [{ id: 'f2', name: 'Altro' }] };
+-    expect(matchBalance(d, real.weights, m).kind).toBe('unavailable');
+-    expect(plain(renderToStaticMarkup(<BalanceBody b={matchBalance(d, real.weights, m)} />))).toContain('Squadre non disponibili');
+-  });
+-});
+-
+-describe('firma della redazione', () => {
+-  const data = toLd(datasets[0]![1]).dataset;
+-  const m = data.matches.find((x) => data.ratings.some((r) => r.matchId === x.id && r.titolo)) ?? data.matches[0]!;
+-  it('senza sapere chi ha scritto non c\u2019è nessuna firma (né quella fissa di una volta)', () => {
+-    const t = pagelleText(data, m);
+-    expect(t).not.toContain('a cura della Redazione');
+-    expect(t).not.toContain('Avv. Peppe Rella');
+-    expect(t.trimEnd().endsWith('\n')).toBe(false);
+-  });
+-  it('con il nome di chi ha scritto la firma è quella persona', () => {
+-    const t = pagelleText(data, m, 'Luca Rossi');
+-    expect(t.trimEnd().endsWith('✒️ _a cura della Redazione Luca Rossi_')).toBe(true);
+-    expect(t).not.toContain('Avv. Peppe Rella');
+-  });
+-});
+diff --git a/tests/golden/player-card.test.ts b/tests/golden/player-card.test.ts
+deleted file mode 100644
+index 9307836..0000000
+--- a/tests/golden/player-card.test.ts
++++ /dev/null
+@@ -1,244 +0,0 @@
+-// Test golden: scheda giocatore — trofei, bacheca, pagelle, grafico e peso dei voti come legacy.
+-// Si esegue il vero codice legacy (drawPagelle, bachecaHTML, formWeightCell…) e se ne leggono i numeri.
+-import { describe, expect, it } from 'vitest';
+-import { alboSeasons } from '../../src/domain/awards';
+-import { formatDate } from '../../src/domain/format';
+-import {
+-  PG_CHART_MAX, bachecaView, formWeightTip, formWeightView, pagelleView, playerPagelleList, playerTrophies, shortSeason, voteColor,
+-  type BachecaView, type PagCell, type PagelleView,
+-} from '../../src/domain/playerCard';
+-import { FORM_STATES, FUT_TIERS } from '../../src/domain/tiers';
+-import type { Dataset } from '../../src/domain/types';
+-import { real } from './data';
+-import { loadLegacy, type LegacyData } from './legacy';
+-import { synthetic } from './synthetic';
+-
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-type Fn = (...a: any[]) => any;
+-interface L extends Record<string, unknown> {
+-  __draw: (i: number) => string;
+-  __useForm: (b: boolean) => void;
+-  playerPagelleList: Fn; playerTrophies: Fn; bachecaHTML: Fn; formWeightCell: Fn; shortSeason: Fn; pgVoteCol: Fn;
+-  FUT_TIERS: unknown; FORM_STATES: unknown; PG_CHART_MAX: number;
+-}
+-
+-const FUNCS = [
+-  'playerPagelleList', 'playerTrophies', 'bachecaHTML', 'formWeightCell', 'formWeightCellInner', 'drawPagelle', 'playerRatingAvg',
+-  'playerSeason', 'seasonStats', 'playerKey', 'normalizeTeam', 'getPlayerMatchResult', 'validVote', 'seasonOf', 'seasonStatus',
+-  'seasonsList', 'alboSeasons', 'computeSeasonAwards', 'matchEvents', 'seasonFromRows', 'mvpPerf', 'formState', 'formWeight',
+-  'calcOvr', 'formatDate', 'esc',
+-];
+-const CONSTS = [
+-  'FUT_TIERS', 'FORM_STATES', 'PG_CHART_MAX', 'shortSeason', 'pgVoteCol', 'FORM_DELTA', 'FORM_MAX_WEIGHT', 'FORM_MIN_RATINGS',
+-  'FORM_FULL_RATINGS', 'FEATS', 'AWARDS', 'ALBO_GRACE_DAYS', 'ALBO_MIN_MATCHES', 'ALBO_MIN_MVP', 'ALBO_NEW_KEYS', 'isFrozen',
+-  '_pgSeries',
+-];
+-const TODAY = '2026-10-31';
+-/** Dati veri con due casi limite: un giocatore senza nessuna pagella, uno con pagelle ma senza voto (solo gol e presenze). */
+-function casiLimite(): LegacyData {
+-  const [senza, senzaVoto] = real.players;
+-  const ratings = real.ratings
+-    .filter((r) => r.playerId !== senza?.id)
+-    .map((r) => (r.playerId === senzaVoto?.id ? { ...r, rating: 0 } : r));
+-  return { players: real.players, weights: real.weights, matches: real.matches, ratings } as unknown as LegacyData;
+-}
+-const datasets: Array<[string, LegacyData]> = [
+-  ['dati reali', real as unknown as LegacyData],
+-  ['dati reali con casi limite', casiLimite()],
+-  ...[1, 2, 3].map((s) => [`dati inventati (seme ${s})`, synthetic(s)] as [string, LegacyData]),
+-];
+-
+-const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
+-
+-/** Casella del grafico → testo (come si legge dall'HTML di legacy). */
+-function parseCells(html: string): Array<{ label: string; value: string; style: string }> {
+-  return (html.match(/<div class="pg-cell">[\s\S]*?<\/div><\/div>/g) || []).map((c) => {
+-    const label = ((c.match(/<div class="pg-lbl">([\s\S]*?)<\/div>/) as RegExpMatchArray)[1] as string).trim();
+-    const val = c.match(/<div class="pg-val"(?: style="([^"]*)")?>([\s\S]*?)<\/div>/);
+-    const form = c.match(/<div class="pg-form">([\s\S]*?)<\/div>/);
+-    if (form) {
+-      const dots = (form[1] as string).match(/background:(#[0-9a-f]{6})/g) || [];
+-      return { label, value: dots.map((d) => d.slice(11)).join(',') || '—', style: '' };
+-    }
+-    return { label, value: ((val as RegExpMatchArray)[2] as string).trim(), style: ((val as RegExpMatchArray)[1] as string | undefined) ?? '' };
+-  });
+-}
+-const mineCells = (cells: PagCell[]) =>
+-  cells.map((c) => ({
+-    label: c.label,
+-    value: c.dots !== undefined ? (c.dots ? c.dots.join(',') : '—') : (c.value as string),
+-    style: [c.color ? 'color:' + c.color : '', c.size ? 'font-size:' + c.size + 'px' : ''].filter(Boolean).join(';'),
+-  }));
+-
+-describe('costanti', () => {
+-  const legacy = loadLegacy<L>(FUNCS, CONSTS, real as unknown as LegacyData, TODAY);
+-  it('fasce delle figurine, stati di forma e soglie uguali a legacy', () => {
+-    expect(FUT_TIERS).toEqual(legacy.FUT_TIERS);
+-    expect(FORM_STATES).toEqual(legacy.FORM_STATES);
+-    expect(PG_CHART_MAX).toBe(legacy.PG_CHART_MAX);
+-  });
+-  it('colore del voto, stagione (per intero, senza sigle), formato data', () => {
+-    for (const v of [1, 5, 5.49, 5.5, 6, 6.49, 6.5, 8, 10]) expect(voteColor(v)).toBe(legacy.pgVoteCol(v));
+-    for (const s of ['Estate 26', 'Autunno 26', 'Inverno 26', 'Primavera 25', 'boh']) expect(shortSeason(s)).toBe(legacy.shortSeason(s));
+-    expect(shortSeason('Estate 26')).toBe('Estate 26'); // niente più sigle («Est 26»): la stagione si scrive per intero
+-  });
+-});
+-
+-describe.each(datasets)('%s', (_label, raw) => {
+-  const data = raw as unknown as Dataset;
+-  const legacy = loadLegacy<L>(FUNCS, CONSTS, raw, TODAY);
+-  const weights = real.weights;
+-
+-  it('elenco delle pagelle di ogni giocatore identico', () => {
+-    let tot = 0;
+-    for (const p of data.players) {
+-      const mine = playerPagelleList(data, p);
+-      expect(mine).toEqual(legacy.playerPagelleList(p));
+-      tot += mine.length;
+-    }
+-    expect(tot).toBeGreaterThan(20);
+-  });
+-
+-  it('trofei di ogni giocatore identici', () => {
+-    let tot = 0;
+-    const seasons = alboSeasons(data, [], TODAY);
+-    for (const p of data.players) {
+-      const mine = playerTrophies(data, p, [], TODAY, seasons);
+-      expect(mine).toEqual(legacy.playerTrophies(p));
+-      tot += mine.awards.length + mine.feats.length;
+-    }
+-    expect(tot).toBeGreaterThan(5);
+-  });
+-
+-  it('bacheca: stessa riga riassuntiva, trofei raggruppati, premi in lizza e imprese', () => {
+-    const seasons = alboSeasons(data, [], TODAY);
+-    for (const p of data.players) {
+-      const v = bachecaView(playerTrophies(data, p, [], TODAY, seasons));
+-      const html = norm(legacy.bachecaHTML(p) as string);
+-      if (v.empty) {
+-        expect(html).toContain('Ancora nessun trofeo');
+-        continue;
+-      }
+-      expect(html).toContain(`<span class="bach-sumt">${v.summary}</span>`);
+-      expect(html).toBe(norm(renderBacheca(v)));
+-    }
+-  });
+-
+-  it('peso dei voti (12ª casella) con e senza "usa la forma"', () => {
+-    for (const useForm of [true, false]) {
+-      legacy.__useForm(useForm);
+-      for (const p of data.players) {
+-        const v = formWeightView(data, p, useForm);
+-        const html = norm(legacy.formWeightCell(p) as string);
+-        if (v.off) expect(html).toContain('stat-ro" style="color:var(--text3);-webkit-text-fill-color:var(--text3)">Off</span>');
+-        else {
+-          expect(html).toContain(`<span class="stat-input stat-ro">${v.pct}%</span>`);
+-          expect(html).toContain(`width:${v.fill}%;background:var(--amber)`);
+-        }
+-        expect(html).toContain(`title="${formWeightTip}"`);
+-      }
+-    }
+-    legacy.__useForm(true);
+-  });
+-
+-  it('numeri e grafico "📈 Pagelle" di ogni giocatore identici', () => {
+-    const kinds = new Set<string>();
+-    const all = data.players.map((p, i) => ({ p, i, v: pagelleView(data, weights, p) }));
+-    for (const { i, v } of all) {
+-      kinds.add(v.kind);
+-      const html = legacy.__draw(i) as string;
+-      checkPagelle(v, html);
+-    }
+-    expect(kinds.has('full')).toBe(true);
+-  });
+-});
+-
+-describe('copertura', () => {
+-  it('i dati veri e inventati producono tutti i tipi di scheda: nessuna pagella, solo gol, con grafico', () => {
+-    const kinds = new Set<string>();
+-    for (const [, raw] of datasets) {
+-      const d = raw as unknown as Dataset;
+-      d.players.forEach((p) => kinds.add(pagelleView(d, real.weights, p).kind));
+-    }
+-    expect(kinds).toEqual(new Set(['none', 'noVotes', 'full']) as Set<string>);
+-    // il grafico mostra al massimo 10 barre
+-    const d = real as unknown as Dataset;
+-    for (const p of d.players) {
+-      const v = pagelleView(d, real.weights, p);
+-      if (v.kind === 'full') expect(v.chart.bars.length).toBeLessThanOrEqual(PG_CHART_MAX);
+-    }
+-  });
+-  it('senza voti ma con presenze: casella "AG · Meta" e nessun grafico', () => {
+-    const d = real as unknown as Dataset;
+-    // un giocatore con presenze ma senza alcun voto valido
+-    const data: Dataset = {
+-      ...d,
+-      ratings: d.ratings.map((r) => ({ ...r, rating: 0 })),
+-    };
+-    const v = pagelleView(data, real.weights, d.players[0] as Dataset['players'][number]);
+-    expect(['noVotes', 'none']).toContain(v.kind);
+-    const nv = data.players.map((p) => pagelleView(data, real.weights, p)).find((x) => x.kind === 'noVotes');
+-    expect(nv?.kind).toBe('noVotes');
+-    if (nv?.kind === 'noVotes') expect(nv.cells.map((c) => c.label)).toEqual(['Partite', '⚽ Gol', '⚽ Gol/P', '% Vittorie', 'Forma', '🙃 AG · 🚀 Meta']);
+-  });
+-});
+-
+-/** HTML della bacheca come lo scrive legacy, a partire dai dati calcolati (specchio del modello in bachecaHTML). */
+-function renderBacheca(v: BachecaView): string {
+-  const chips = v.chips
+-    .map((x) => `<span class="trophy${x.shame ? ' shame' : ''}">${x.t}${x.seasons.length > 1 ? ` <b>×${x.seasons.length}</b>` : ''}<small>${x.seasons.join(', ')}</small></span>`)
+-    .join('');
+-  const lizza = v.live
+-    ? `<div class="bach-live" onclick="this.classList.toggle('open')" title="Premi della stagione in corso: possono ancora cambiare">
+-      <span class="bach-lbl">${v.live.label}</span>
+-      <span class="bach-emo">${v.live.emojis}</span><span class="bach-names">${v.live.names.replace(/'/g, '&#039;')}</span><span class="bach-more">›</span></div>`
+-    : '';
+-  const feats = v.feats.length ? `<div class="bach-feats">${v.feats.map((f) => `<span title="${f.d}">${f.t} <b>×${f.count}</b></span>`).join('')}</div>` : '';
+-  return `<div class="pe-sec bach">
+-      <div class="bach-sum" onclick="toggleBacheca(this)"><span class="pe-title" style="margin:0">🏆 Bacheca</span><span class="bach-sumt">${v.summary}</span><span class="bach-arr">▾</span></div>
+-      <div class="bach-body">${chips ? `<div class="trophies">${chips}</div>` : ''}${lizza}${feats}</div>
+-    </div>`;
+-}
+-
+-/** Confronta la vista calcolata con l'HTML scritto da legacy. */
+-function checkPagelle(v: PagelleView, html: string) {
+-  if (v.kind === 'none') {
+-    expect(norm(html)).toContain('Nessuna pagella ancora');
+-    return;
+-  }
+-  expect(parseCells(html)).toEqual(mineCells(v.cells));
+-  if (v.kind === 'noVotes') {
+-    expect(norm(html)).toContain('Nessun voto ancora registrato');
+-    expect(html).not.toContain('pg-chart');
+-    return;
+-  }
+-  const c = v.chart;
+-  // Lo stato di forma segue la regola attuale, verificata in form-league.test.ts.
+-  // barre
+-  const bars = [...html.matchAll(/<rect class="pg-bar" data-j="(\d+)" x="([\d.-]+)" y="([\d.-]+)" width="([\d.-]+)" height="([\d.-]+)" rx="2.5" fill="(#[0-9a-f]{6})"/g)];
+-  expect(bars.map((m) => [Number(m[1]), m[2], m[3], m[4], m[5], m[6]])).toEqual(
+-    c.bars.map((b) => [b.j, b.x.toFixed(1), b.y.toFixed(1), b.width.toFixed(1), b.height.toFixed(1), b.fill]),
+-  );
+-  // numero sopra ogni barra
+-  const labels = [...html.matchAll(/<text x="([\d.-]+)" y="([\d.-]+)" font-size="7.5" font-weight="800" fill="var\(--text2\)" text-anchor="middle">([\d.]+)<\/text>/g)];
+-  expect(labels.map((m) => [m[1], m[2], m[3]])).toEqual(c.bars.map((b) => [b.cx.toFixed(1), (b.y - 3).toFixed(1), String(b.rating)]));
+-  // linee della griglia
+-  const grid = [...html.matchAll(/<line x1="([\d.-]+)" y1="([\d.-]+)" x2="([\d.-]+)" y2="[\d.-]+" stroke="var\(--gray3\)"/g)];
+-  expect(grid.map((m) => [m[1], m[2], m[3]])).toEqual(c.grid.map((g) => [String(g.x1), g.y.toFixed(1), String(g.x2)]));
+-  // linea di tendenza
+-  const tl = html.match(/<line x1="([\d.-]+)" y1="([\d.-]+)" x2="([\d.-]+)" y2="([\d.-]+)" stroke="#5aa9ff"/);
+-  if (c.trend) expect(tl && [tl[1], tl[2], tl[3], tl[4]]).toEqual([c.trend.x1.toFixed(1), c.trend.y1.toFixed(1), c.trend.x2.toFixed(1), c.trend.y2.toFixed(1)]);
+-  else expect(tl).toBeNull();
+-  // aree toccabili
+-  const hits = [...html.matchAll(/<rect class="pg-hit" x="([\d.-]+)" y="0" width="([\d.-]+)"/g)];
+-  expect(hits.map((m) => [m[1], m[2]])).toEqual(c.hits.map((h) => [h.x.toFixed(1), h.width.toFixed(1)]));
+-  // didascalia e ultima pagella scritta
+-  expect(norm(html.match(/<div class="pg-cap">([\s\S]*?)<\/div>/)?.[1] as string)).toBe(norm(c.caption));
+-  const last = html.match(/<button type="button" class="pg-last"[^>]*>([\s\S]*?)<\/button>/);
+-  if (v.last) {
+-    const L = v.last;
+-    const expected = `📝 Ultima pagella: ${L.tit ? `<b>«${L.tit}»</b>` : `<i>${L.descPreview}</i>`} · ${L.date} <span class="pg-last-n">${L.n > 1 ? L.n + ' ›' : '›'}</span>`;
+-    expect(norm(last?.[1] as string).replace(/&#039;/g, "'")).toBe(norm(expected));
+-  } else expect(last).toBeNull();
+-  expect(formatDate(c.series[0]?.date)).toBeTruthy();
+-}
+diff --git a/tests/golden/player-edit.test.ts b/tests/golden/player-edit.test.ts
+deleted file mode 100644
+index 29e43ec..0000000
+--- a/tests/golden/player-edit.test.ts
++++ /dev/null
+@@ -1,44 +0,0 @@
+-// Test golden (passo 3.7d): modifica di un giocatore — statistiche scritte a mano e ruoli, come legacy (upStat, toggleRole).
+-import { describe, expect, it } from 'vitest';
+-import { clampStat, toggleRole } from '../../src/domain/playerEdit';
+-import { real } from './data';
+-import { loadLegacy, type LegacyData } from './legacy';
+-
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-type Fn = (...a: any[]) => any;
+-interface L extends Record<string, unknown> {
+-  upStat: Fn; toggleRole: Fn;
+-  __multiOn: (b: boolean) => void;
+-  __players: () => Array<{ stats: number[]; roles: string[] }>;
+-  __cap: () => { toasts: string[] };
+-  __reset: () => void;
+-}
+-
+-describe('modifica giocatore come legacy', () => {
+-  const clone = () => JSON.parse(JSON.stringify(real)) as typeof real;
+-  it('statistica scritta a mano: stesso valore tra 1 e 10', () => {
+-    const d = clone();
+-    const legacy = loadLegacy<L>(['upStat', 'calcOvr', 'toggleRole'], [], d as unknown as LegacyData);
+-    legacy.__multiOn(true);
+-    for (const v of ['', '0', '1', '5', '7.5', '10', '11', '-3', 'abc', '9.99', '0.2']) {
+-      legacy.upStat(0, 3, v);
+-      expect(clampStat(v)).toBe(legacy.__players()[0]?.stats[3]);
+-    }
+-  });
+-  it('ruoli: si aggiunge, si toglie, ma non si toglie l\'ultimo', () => {
+-    const d = clone();
+-    const legacy = loadLegacy<L>(['upStat', 'calcOvr', 'toggleRole'], [], d as unknown as LegacyData);
+-    legacy.__multiOn(true);
+-    let mine: string[] = [...(legacy.__players()[0]?.roles ?? [])];
+-    const ev = { stopPropagation() { /* come l'evento del tocco */ } };
+-    for (const r of ['ATT', 'MED', 'DIF', 'ATT', 'MED', 'DIF', 'DIF', 'ATT', 'MED']) {
+-      legacy.__reset();
+-      legacy.toggleRole(0, r, ev);
+-      const next = toggleRole(mine, r);
+-      if (next) mine = next;
+-      else expect(legacy.__cap().toasts).toEqual(['Almeno un ruolo è richiesto']);
+-      expect([...mine].sort()).toEqual([...(legacy.__players()[0]?.roles ?? [])].sort());
+-      expect(mine.length).toBeGreaterThan(0);
+-    }
+-  });
+-});
+diff --git a/tests/golden/synthetic.ts b/tests/golden/synthetic.ts
+deleted file mode 100644
+index 67ac219..0000000
+--- a/tests/golden/synthetic.ts
++++ /dev/null
+@@ -1,58 +0,0 @@
+-// Dati inventati (ma ripetibili, con un seme) per coprire i casi che i dati reali non hanno:
+-// pari merito, stagioni corte, ospiti non in rosa, voti e gol strani, rosa grande con tanti Occasionali.
+-import { real } from './data';
+-import type { LegacyData } from './legacy';
+-
+-function rng(seed: number) {
+-  let s = seed >>> 0;
+-  return () => {
+-    s = (s * 1664525 + 1013904223) >>> 0;
+-    return s / 2 ** 32;
+-  };
+-}
+-
+-export function synthetic(seed: number): LegacyData {
+-  const r = rng(seed);
+-  const pick = <T,>(a: T[]) => a[Math.floor(r() * a.length)] as T;
+-  const players = Array.from({ length: 20 }, (_, i) => ({
+-    id: 'p' + i, name: 'G' + i, roles: ['MED'], stats: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+-  }));
+-  const orphans = ['Ospite1', 'Ospite2']; // non in rosa: raggruppati per nome
+-  const entry = (i: number) =>
+-    i < 20
+-      ? r() < 0.15 ? (players[i] as { name: string }).name : { id: 'p' + i, name: (players[i] as { name: string }).name }
+-      : { id: null, name: orphans[i - 20] };
+-  const dates: string[] = [];
+-  for (const [y, m] of [[2025, 12], [2026, 1], [2026, 2], [2026, 3], [2026, 4], [2026, 6], [2026, 9], [2026, 10]] as const) {
+-    const k = 2 + Math.floor(r() * 5);
+-    for (let j = 0; j < k; j++) dates.push(`${y}-${String(m).padStart(2, '0')}-${String(1 + Math.floor(r() * 28)).padStart(2, '0')}`);
+-  }
+-  dates.push('2026-05-01'); // una stagione con una sola partita (troppo corta per i premi)
+-  const matches = dates.map((date, idx) => {
+-    const all = Array.from({ length: 22 }, (_, i) => i).sort(() => r() - 0.5);
+-    const sz = 5 + Math.floor(r() * 2);
+-    const a = all.slice(0, sz).map(entry);
+-    const b = all.slice(sz, sz * 2).map(entry);
+-    const noScore = r() < 0.12;
+-    const score = () => (r() < 0.1 ? String(Math.floor(r() * 9)) : Math.floor(r() * 9));
+-    return {
+-      id: 'm' + String(idx).padStart(3, '0'), date, teamA: a, teamB: b,
+-      scoreA: noScore ? null : score(), scoreB: noScore ? '' : score(),
+-    };
+-  });
+-  const ratings: Array<Record<string, unknown>> = [];
+-  matches.forEach((m) => {
+-    [...m.teamA, ...m.teamB].forEach((e) => {
+-      if (r() < 0.2) return; // pagella mancante
+-      const id = typeof e === 'string' ? null : e.id;
+-      const name = typeof e === 'string' ? e : e.name;
+-      const rawVote = pick([4, 5, 5.5, 6, 6, 6.5, 7, 7, 7.5, 8, 8.5, 9, '', null, 0, 'x', '7.5']);
+-      ratings.push({
+-        matchId: m.id, player: name, playerId: id, rating: rawVote,
+-        goals: pick([0, 0, 0, 0, 1, 1, 2, 3, 5, '2', null]), assist: pick([0, 0, 0, 1, 1, 3, null]),
+-        autogol: pick([0, 0, 0, 0, 1]), rigoriSbagliati: pick([0, 0, 0, 0, 1, 2]), meta: pick([0, 0, 0, 1, 2]),
+-      });
+-    });
+-  });
+-  return { players, weights: real.weights, matches, ratings };
+-}
+diff --git a/tests/golden/ui-helpers.test.ts b/tests/golden/ui-helpers.test.ts
+deleted file mode 100644
+index c45a046..0000000
+--- a/tests/golden/ui-helpers.test.ts
++++ /dev/null
+@@ -1,159 +0,0 @@
+-// Test golden: iniziali, colore dell'avatar e badge PAG — stessi risultati di legacy sulla rosa vera.
+-import { describe, expect, it } from 'vitest';
+-import { pagInfo, playerRatingAvg } from '../../src/domain/form';
+-import { avatarClass, formatTime, initials, whenWhere } from '../../src/domain/format';
+-import { needsRatings, pendingRatings, ratingsCoverage, skippedRatings } from '../../src/domain/matches';
+-import { myLastMatch, myNextMatch, myTeam } from '../../src/domain/profile';
+-import { playerSeason, seasonStats } from '../../src/domain/stats';
+-import type { Dataset } from '../../src/domain/types';
+-import { real } from './data';
+-import { loadLegacy, type LegacyData } from './legacy';
+-
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-type Fn = (...a: any[]) => any;
+-interface L extends Record<string, unknown> {
+-  ini: Fn; avCls: Fn; getPlayerPagInfo: Fn; esc: Fn;
+-}
+-
+-const FUNCS = [
+-  'ini', 'avCls', 'getPlayerPagInfo', 'esc', 'playerRatingAvg', 'playerSeason', 'seasonStats', 'playerKey', 'normalizeTeam',
+-  'getPlayerMatchResult', 'validVote', 'seasonOf',
+-];
+-const legacy = loadLegacy<L>(FUNCS, [], real as unknown as LegacyData, '2026-10-31');
+-const data = real as unknown as Dataset;
+-
+-describe('iniziali, colore e badge PAG', () => {
+-  it('iniziali come legacy per tutti i nomi della rosa e per nomi strani', () => {
+-    const names = [...real.players.map((p) => p.name), 'Vito Azz', 'FabioFicarelli', 'Rella', 'x', '', null, undefined, '  Anna  Maria ', "D'Angelo", 'éric', 'McDonald', '123'];
+-    for (const n of names) expect(legacy.esc(initials(n))).toBe(legacy.ini(n));
+-    expect(initials('Vito Azz')).toBe('VA');
+-    expect(initials('FabioFicarelli')).toBe('FF');
+-    expect(initials('Rella')).toBe('RE');
+-  });
+-
+-  it('colore dell\'avatar come legacy', () => {
+-    const cases: Array<string[] | undefined | null> = [[], ['ATT'], ['DIF'], ['MED'], ['ATT', 'MED'], ['MED', 'DIF', 'ATT'], undefined, null, ['XXX']];
+-    for (const r of cases) expect(avatarClass(r)).toBe(legacy.avCls({ roles: r }));
+-    for (const p of real.players) expect(avatarClass(p.roles)).toBe(legacy.avCls(p));
+-  });
+-
+-  it('badge PAG di ogni giocatore come legacy', () => {
+-    const all = seasonStats(data);
+-    const seen = new Set<string>();
+-    for (const p of data.players) {
+-      const mine = pagInfo(playerRatingAvg(playerSeason(data, p, all)).avg);
+-      const theirs = legacy.getPlayerPagInfo(p);
+-      expect(mine).toEqual(theirs);
+-      seen.add(mine.cls);
+-    }
+-    expect(seen.size).toBeGreaterThan(1); // i dati veri usano più colori
+-  });
+-
+-  it('soglie del PAG: ≥ 6,5 verde · < 5,5 rosso · in mezzo giallo · senza voti grigio', () => {
+-    expect(pagInfo(6.5).cls).toBe('pag-good');
+-    expect(pagInfo(6.49).cls).toBe('pag-mid');
+-    expect(pagInfo(5.5).cls).toBe('pag-mid');
+-    expect(pagInfo(5.49).cls).toBe('pag-bad');
+-    expect(pagInfo(null)).toEqual({ label: 'PAG —', cls: 'pag-none', avg: null });
+-    expect(pagInfo(7.04).label).toBe('PAG 7.0');
+-  });
+-});
+-
+-describe('ora e luogo della partita', () => {
+-  it('formatTime: hh:mm:ss → hh:mm, vuoto se manca', () => {
+-    expect(formatTime('21:00:00')).toBe('21:00');
+-    expect(formatTime('9:05')).toBe('09:05');
+-    expect(formatTime(null)).toBe('');
+-    expect(formatTime('')).toBe('');
+-  });
+-  it('whenWhere: «alle 21:00 · Campo», parti mancanti saltate', () => {
+-    expect(whenWhere({ time: '21:00', place: 'Campo Sole' })).toBe('alle 21:00 · Campo Sole');
+-    expect(whenWhere({ time: '', place: ' Campo ' })).toBe('Campo');
+-    expect(whenWhere({ time: '08:30:00', place: '' })).toBe('alle 08:30');
+-    expect(whenWhere({})).toBe('');
+-  });
+-});
+-
+-describe('pagelle da scrivere e pagelle saltate (meno della metà delle descrizioni)', () => {
+-  const team = (id: string, side: string) => Array.from({ length: 5 }, (_, i) => ({ id: `${id}${side}${i}`, name: `${side}${i}` }));
+-  const m = (id: string, date: string, over: Record<string, unknown> = {}) => ({ id, date, scoreA: 5, scoreB: 3, teamA: team(id, 'A'), teamB: team(id, 'B'), ...over });
+-  /** n giocatori della partita con una descrizione */
+-  const written = (id: string, n: number) => Array.from({ length: n }, (_, i) => ({ matchId: id, player: `A${i}`, rating: 6, notes: 'bravo' }));
+-  const ds = {
+-    players: [],
+-    matches: [
+-      m('a', '2026-10-01'),                                  // 0 descrizioni su 10 → da scrivere
+-      m('b', '2026-10-08'),                                  // 5 su 10 = esattamente la metà → a posto
+-      m('c', '2026-10-15'),                                  // 4 su 10 → meno della metà → da scrivere
+-      m('d', '2026-10-22'),                                  // 8 su 10: ne mancano un paio → a posto
+-      m('e', '2026-10-29', { ratingsSkipped: true }),        // saltata, 0 su 10 → tra le saltate
+-      m('f', '2026-11-05', { ratingsSkipped: true }),        // saltata ma poi ne hanno scritte 6 su 10 → non è più tra le saltate
+-      m('g', '2026-11-12', { scoreA: null, scoreB: null }),  // non giocata → niente
+-      m('h', '2026-11-19', { ratingsSkipped: true }),        // saltata, 4 su 10 → ancora tra le saltate
+-    ],
+-    ratings: [...written('b', 5), ...written('c', 4), ...written('d', 8), ...written('f', 6), ...written('h', 4)],
+-  } as unknown as Dataset;
+-
+-  it('copertura: giocatori in squadra e descrizioni scritte', () => {
+-    expect(ratingsCoverage(ds, ds.matches[3] as never)).toEqual({ written: 8, total: 10 });
+-    expect(ratingsCoverage(ds, ds.matches[0] as never)).toEqual({ written: 0, total: 10 });
+-  });
+-  it('da scrivere: meno della metà delle descrizioni, non saltate (dalla più recente)', () => {
+-    expect(pendingRatings(ds).map((x) => x.id)).toEqual(['c', 'a']);
+-  });
+-  it('a metà esatta o con solo un paio di mancanti la partita è a posto', () => {
+-    expect(needsRatings(ds, ds.matches[1] as never)).toBe(false);
+-    expect(needsRatings(ds, ds.matches[3] as never)).toBe(false);
+-  });
+-  it('saltate: segnate come saltate e ancora sotto la metà (dalla più recente)', () => {
+-    expect(skippedRatings(ds).map((x) => x.id)).toEqual(['h', 'e']);
+-  });
+-  it('una partita non giocata non è mai «da scrivere»', () => {
+-    expect(needsRatings(ds, ds.matches[6] as never)).toBe(false);
+-  });
+-});
+-
+-describe('le mie partite (pagina Il mio profilo)', () => {
+-  const t = (...ids: string[]) => ids.map((id) => ({ id, name: id.toUpperCase() }));
+-  const m = (id: string, date: string, a: string[], b: string[], over: Record<string, unknown> = {}) => ({ id, date, teamA: t(...a), teamB: t(...b), scoreA: 5, scoreB: 3, ...over });
+-  const ds = {
+-    players: [],
+-    matches: [
+-      m('vecchia', '2026-10-01', ['me', 'x'], ['y', 'z']),                                      // giocata: Blu 5-3 → vinta
+-      m('persa', '2026-10-08', ['x', 'y'], ['me', 'z']),                                        // giocata: Bianchi (io) perdo 5-3
+-      m('altrui', '2026-10-15', ['x', 'y'], ['z', 'w']),                                        // non gioco io
+-      m('pari', '2026-10-22', ['me'], ['x'], { scoreA: 2, scoreB: 2 }),                         // pareggio (la più recente giocata)
+-      m('futura', '2026-12-20', ['x'], ['me'], { scoreA: null, scoreB: null }),                // in programma, io Bianchi
+-      m('piulontana', '2027-01-10', ['me'], ['x'], { scoreA: null, scoreB: null }),            // più avanti
+-      m('senzadime', '2026-11-30', ['x'], ['y'], { scoreA: null, scoreB: null }),              // in programma ma non gioco
+-      m('ieri', '2026-11-01', ['me'], ['x'], { scoreA: null, scoreB: null }),                  // senza risultato ma già passata
+-    ],
+-    ratings: [],
+-  } as unknown as Dataset;
+-  it('in che squadra gioco', () => {
+-    expect(myTeam(ds.matches[0] as never, 'me', 'ME')).toBe('A');
+-    expect(myTeam(ds.matches[1] as never, 'me', 'ME')).toBe('B');
+-    expect(myTeam(ds.matches[2] as never, 'me', 'ME')).toBeNull();
+-  });
+-  it('ultima partita giocata: la più recente con risultato in cui ci sono, con l\u2019esito', () => {
+-    const r = myLastMatch(ds, 'me', 'ME');
+-    expect(r?.m.id).toBe('pari');
+-    expect(r?.result).toBe('P');
+-  });
+-  it('esiti: vinta con Blu, persa con Bianchi', () => {
+-    const only = (id: string) => ({ ...ds, matches: ds.matches.filter((x) => x.id === id) }) as Dataset;
+-    expect(myLastMatch(only('vecchia'), 'me', 'ME')?.result).toBe('V');
+-    expect(myLastMatch(only('persa'), 'me', 'ME')?.result).toBe('S');
+-    expect(myLastMatch(only('altrui'), 'me', 'ME')).toBeNull();
+-  });
+-  it('prossima partita: la più vicina di oggi o futura, senza risultato, in cui sono in squadra', () => {
+-    const r = myNextMatch(ds, 'me', 'ME', '2026-11-02');
+-    expect(r?.m.id).toBe('futura');
+-    expect(r?.team).toBe('B');
+-  });
+-  it('oggi conta ancora come «prossima»; una partita già passata senza risultato no', () => {
+-    expect(myNextMatch(ds, 'me', 'ME', '2026-12-20')?.m.id).toBe('futura');
+-    expect(myNextMatch(ds, 'me', 'ME', '2026-12-21')?.m.id).toBe('piulontana');
+-    expect(myNextMatch(ds, 'me', 'ME', '2027-02-01')).toBeNull();
+-  });
+-});
+diff --git a/tests/golden/whatsapp.test.ts b/tests/golden/whatsapp.test.ts
+deleted file mode 100644
+index eb92145..0000000
+--- a/tests/golden/whatsapp.test.ts
++++ /dev/null
+@@ -1,304 +0,0 @@
+-// Test golden: importazione pagelle da WhatsApp — i 4 messaggi veri della Redazione (40 pagelle su 40),
+-// catena dei soprannomi ricordati, e confronto con legacy su messaggi "rovinati" a caso.
+-import { readdirSync, readFileSync } from 'node:fs';
+-import { join } from 'node:path';
+-import { describe, expect, it } from 'vitest';
+-import {
+-  analyzePagelle, parseWhatsAppPagelle, waApply, waAssign, waBest, waHTML, waIsTitle, waNameScore, waNorm, waRemember,
+-  waSlotsOfMatch, waWords, type AliasMap, type WaAnalysis, type WaBlock, type WaPlayer, type WaSlot,
+-} from '../../src/domain/whatsapp';
+-import type { Dataset, Match, Player } from '../../src/domain/types';
+-import { real } from './data';
+-import { loadLegacy, type LegacyData } from './legacy';
+-
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-type Fn = (...a: any[]) => any;
+-interface L extends Record<string, unknown> {
+-  __wa: (id: string, txt: string) => { id: string; res: { blocks: unknown[]; score: unknown }; slots: unknown[] };
+-  __waApply: () => void;
+-  waNorm: Fn; waWords: Fn; waNameScore: Fn; waBest: Fn; waIsTitle: Fn; parseWhatsAppPagelle: Fn; waAliasMap: () => AliasMap; waHTML: Fn;
+-}
+-
+-const FUNCS = [
+-  'waAliasMap', 'waRemember', 'waNameScore', 'waBest', 'waIsTitle', 'parseWhatsAppPagelle', 'waAnalyze', 'waApply',
+-  'esc', 'playerKey', 'normalizeTeam',
+-];
+-const CONSTS = ['waNorm', 'waWords', 'WA_EMO', 'waHTML'];
+-
+-const fixDir = join(process.cwd(), 'tests/fixtures/whatsapp');
+-const files = readdirSync(fixDir).filter((f) => f.endsWith('.txt')).sort(); // in ordine di data
+-const messages = files.map((f) => ({
+-  file: f,
+-  date: f.slice(0, 10),
+-  text: readFileSync(join(fixDir, f), 'utf8'),
+-}));
+-
+-/** Copie separate della rosa: legacy aggiunge soprannomi ai giocatori, non deve sporcare l'altra parte. */
+-/** `senzaSoprannomi` = come era la rosa PRIMA che l'app imparasse "Gianluca" = Cioccolata (la rosa di prova li ha già). */
+-const fresh = (senzaSoprannomi = false): LegacyData => {
+-  const d = structuredClone(real) as unknown as LegacyData;
+-  if (senzaSoprannomi) (d.players as Array<{ aliases?: string[] }>).forEach((p) => delete p.aliases);
+-  return d;
+-};
+-const asDataset = (d: LegacyData): Dataset => d as unknown as Dataset;
+-const matchOf = (d: Dataset, date: string) => d.matches.find((m) => m.date === date) as Match;
+-
+-/** Forma neutra di una pagella per confrontare legacy e nuova versione. */
+-const plainBlock = (b: WaBlock) => ({
+-  written: b.written, vote: b.vote, lines: b.lines, title: b.title, desc: b.desc,
+-  assign: b.assign ?? undefined, guess: b.guess ?? undefined,
+-  score: b.m.score, slot: b.m.slot ? b.m.slot.pk : null, ambiguous: b.m.ambiguous ? b.m.ambiguous.map((s) => s.pk) : null,
+-});
+-const plainSlots = (slots: Array<{ pk: string; name: string; team: string; player: { id: string } | null }>) =>
+-  slots.map((s) => ({ pk: s.pk, name: s.name, team: s.team, playerId: s.player ? s.player.id : null }));
+-
+-describe('messaggi veri della Redazione', () => {
+-  it('ci sono i 4 messaggi attesi e le loro partite', () => {
+-    expect(messages.map((m) => m.date)).toEqual(['2026-10-07', '2026-10-14', '2026-10-21', '2026-10-28']);
+-    for (const m of messages) expect(matchOf(asDataset(fresh()), m.date)).toBeTruthy();
+-  });
+-
+-  it.each([['con i soprannomi già nella rosa', false], ['senza soprannomi: li impara strada facendo', true]] as const)('40 pagelle su 40, %s: ogni nome al giocatore giusto, voto uguale a quello registrato, come legacy', (_l, senza) => {
+-    const legacyData = fresh(senza);
+-    const legacy = loadLegacy<L>(FUNCS, CONSTS, legacyData, '2026-10-31');
+-    const data = asDataset(fresh(senza));
+-
+-    let map: AliasMap = {};
+-    const aliases: Record<string, string[]> = {};
+-    let total = 0;
+-    let recognized = 0;
+-    const titles = new Set<string>();
+-
+-    for (const msg of messages) {
+-      const m = matchOf(data, msg.date);
+-      const mine = analyzePagelle(msg.text, m, data, map, aliases) as WaAnalysis;
+-      const theirs = legacy.__wa(m.id, msg.text);
+-
+-      // 1) uguale a legacy, pagella per pagella
+-      expect(plainSlots(mine.slots)).toEqual(plainSlots(theirs.slots as never));
+-      expect(mine.res.score).toEqual(theirs.res.score);
+-      expect(mine.res.blocks.map(plainBlock)).toEqual((theirs.res.blocks as WaBlock[]).map(plainBlock));
+-
+-      // 2) giusto davvero: il giocatore abbinato ha preso proprio quel voto in quella partita
+-      const ratings = real.ratings.filter((r) => r.matchId === m.id);
+-      for (const b of mine.res.blocks) {
+-        total++;
+-        expect(b.assign, `non abbinata: ${b.written} (${msg.file})`).toBeTruthy();
+-        const slot = mine.slots.find((s) => s.pk === b.assign) as WaSlot;
+-        const rating = ratings.find((r) => r.playerId === slot.player?.id);
+-        expect(rating, `nessun voto registrato per ${slot.name}`).toBeTruthy();
+-        expect(b.vote, `voto di ${slot.name} (${msg.file})`).toBe(Number(rating?.rating));
+-        recognized++;
+-        if (b.title) titles.add(b.title);
+-      }
+-
+-      // 3) applica come fa la schermata e ricorda i soprannomi (stesso comportamento di legacy)
+-      legacy.__waApply();
+-      const applied = waApply(mine, () => true, map);
+-      for (const r of applied.remember) {
+-        const upd = waRemember(map, r.written, r.player);
+-        if (upd) {
+-          map = upd.map;
+-          aliases[r.player.id] = upd.aliases;
+-        }
+-      }
+-      expect(map).toEqual(legacy.waAliasMap());
+-    }
+-
+-    expect(total).toBe(40);
+-    expect(recognized).toBe(40);
+-    // titoli veri citati nel README dei dati di prova
+-    for (const t of ['RISPARMIO ENERGETICO 🔋', 'MVP 🥇', 'ANTIDOPING 💉', 'TROY MCLURE', 'SI’, CHEF!', 'IN(PS)FERNALE', 'É UN BEL PRODOTTINO']) {
+-      expect(titles.has(t), 'titolo mancante: ' + t).toBe(true);
+-    }
+-  });
+-
+-  it('"Gianluca" = Cioccolata: la prima volta per esclusione (da controllare), poi ricordato', () => {
+-    const data = asDataset(fresh(true));
+-    const cioccolata = data.players.find((p) => p.name === 'Cioccolata') as Player;
+-    let map: AliasMap = {};
+-    const aliases: Record<string, string[]> = {};
+-    let firstGuess: string | null = null;
+-    let afterwards: { guess: boolean | undefined; score: number } | null = null;
+-    for (const msg of messages) {
+-      const a = analyzePagelle(msg.text, matchOf(data, msg.date), data, map, aliases) as WaAnalysis;
+-      const g = a.res.blocks.find((b) => waNorm(b.written) === 'gianluca');
+-      if (g && firstGuess === null) {
+-        firstGuess = (a.slots.find((s) => s.pk === g.assign) as WaSlot).name;
+-        expect(g.guess).toBe(true); // per esclusione
+-        expect(g.m.score).toBe(0);
+-      } else if (g && afterwards === null) {
+-        afterwards = { guess: g.guess, score: g.m.score };
+-      }
+-      const ap = waApply(a, () => true, map);
+-      for (const r of ap.remember) {
+-        const upd = waRemember(map, r.written, r.player);
+-        if (upd) {
+-          map = upd.map;
+-          aliases[r.player.id] = upd.aliases;
+-        }
+-      }
+-    }
+-    expect(firstGuess).toBe('Cioccolata');
+-    expect(map['gianluca']).toBe(cioccolata.id);
+-    expect(aliases[cioccolata.id]).toContain('Gianluca');
+-    expect(afterwards).toEqual({ guess: undefined, score: 100 }); // poi riconosciuto subito, punteggio massimo
+-  });
+-
+-  it('i corsivi in mezzo al testo restano nella descrizione', () => {
+-    const data = asDataset(fresh());
+-    const all = messages.flatMap((msg) => (analyzePagelle(msg.text, matchOf(data, msg.date), data, {}, {}) as WaAnalysis).res.blocks);
+-    expect(all.some((b) => b.desc.includes('_non abbiamo ruoli_'))).toBe(true);
+-    expect(all.some((b) => b.desc.includes('_amaro in bocca_'))).toBe(true);
+-  });
+-});
+-
+-describe('messaggi rovinati a caso: stessi risultati di legacy', () => {
+-  const legacy = loadLegacy<L>(FUNCS, CONSTS, fresh(), '2026-10-31');
+-  const data = asDataset(fresh());
+-
+-  function rng(seed: number) {
+-    let s = seed >>> 0;
+-    return () => {
+-      s = (s * 1664525 + 1013904223) >>> 0;
+-      return s / 2 ** 32;
+-    };
+-  }
+-  const NOISE = ['Altri 3 gol per lui', 'BLU 8 🔵', '⚪ *BIANCHI 2*', '', '   ', '*Peppe 6,5* ', 'NICO voto 5,5', 'MVP 🥇', 'boh 7', '_Rella 10_', 'Steppata 6½', 'Luciano 7+', 'Nico 5-', '*ZZ 3*'];
+-  function mangle(text: string, r: () => number): string {
+-    const lines = text.split('\n');
+-    const out: string[] = [];
+-    for (let i = 0; i < lines.length; i++) {
+-      const x = r();
+-      const line = lines[i] as string;
+-      if (x < 0.08) continue; // riga persa
+-      if (x < 0.14) out.push(line, line); // riga doppia
+-      else if (x < 0.2) out.push(NOISE[Math.floor(r() * NOISE.length)] as string, line);
+-      else if (x < 0.25) out.push(line.toUpperCase());
+-      else if (x < 0.29) out.push(line.replace(/\s+/g, ' ').trim());
+-      else if (x < 0.32 && i + 1 < lines.length) {
+-        out.push(lines[i + 1] as string, line); // scambio con la riga dopo
+-        i++;
+-      }
+-      else out.push(line);
+-    }
+-    return out.join(r() < 0.3 ? '\r\n' : '\n');
+-  }
+-
+-  it('parseWhatsAppPagelle: 300 varianti dei messaggi veri', () => {
+-    let blocksSeen = 0;
+-    for (const msg of messages) {
+-      const m = matchOf(data, msg.date);
+-      const slots = waSlotsOfMatch(data, m);
+-      for (let seed = 1; seed <= 75; seed++) {
+-        const text = mangle(msg.text, rng(seed * 7919 + msg.date.length + Number(msg.date.slice(-2))));
+-        const mine = parseWhatsAppPagelle(text, slots, {});
+-        const theirs = legacy.parseWhatsAppPagelle(text, slots) as { blocks: WaBlock[]; score: unknown };
+-        expect(mine.score).toEqual(theirs.score);
+-        expect(mine.blocks.map(plainBlock)).toEqual(theirs.blocks.map(plainBlock));
+-        blocksSeen += mine.blocks.length;
+-      }
+-    }
+-    expect(blocksSeen).toBeGreaterThan(1000);
+-  });
+-
+-  it('analisi completa (abbinamento + per esclusione) su varianti, uguale a legacy', () => {
+-    for (const msg of messages) {
+-      const m = matchOf(data, msg.date);
+-      for (let seed = 1; seed <= 25; seed++) {
+-        const text = mangle(msg.text, rng(seed * 104729));
+-        if (!text.trim()) continue;
+-        const mine = analyzePagelle(text, m, data, {}, {}) as WaAnalysis;
+-        const theirs = legacy.__wa(m.id, text);
+-        expect(mine.res.blocks.map(plainBlock)).toEqual((theirs.res.blocks as WaBlock[]).map(plainBlock));
+-      }
+-    }
+-  });
+-});
+-
+-describe('nomi, titoli e formattazione', () => {
+-  const legacy = loadLegacy<L>(FUNCS, CONSTS, fresh(), '2026-10-31');
+-  const names = ['Rella', 'MartinoNico', 'Cioccolata', 'Peppe', 'Luciano', 'Steppata', 'Nico', 'André', "D'Angelo", 'Anna Maria', 'x'];
+-
+-  it('waNorm e waWords come legacy', () => {
+-    for (const s of [...names, 'Èric', 'SI’, CHEF!', '  doppio   spazio ', '', null, 12]) {
+-      expect(waNorm(s)).toBe(legacy.waNorm(s));
+-      expect(waWords(s)).toEqual(legacy.waWords(s));
+-    }
+-    expect(waWords('MartinoNico')).toEqual(['martino', 'nico']);
+-  });
+-
+-  it('waNameScore: 100 soprannome · 90 intero · 70 primo nome · 60 una parola · 40 inizio · 0', () => {
+-    const p: WaPlayer = { id: 'p1', name: 'MartinoNico', aliases: ['Il Capo'] };
+-    const cases: Array<[string, number, AliasMap]> = [
+-      ['il capo', 100, {}], ['Gianni', 100, { gianni: 'p1' }], ['martinonico', 90, {}], ['Martino', 70, {}], ['NICO', 60, {}],
+-      ['Mart', 40, {}], ['Ma', 0, {}], ['xyz', 0, {}], ['', 0, {}],
+-    ];
+-    for (const [cand, expected, map] of cases) {
+-      expect(waNameScore(cand, p, map)).toBe(expected);
+-      expect(waNameScore(cand, p, map)).toBe(legacy.waNameScore(cand, p, map));
+-    }
+-    expect(waNameScore('Martino', null, {})).toBe(0);
+-  });
+-
+-  it('waBest: unico, ambiguo o nessuno — come legacy', () => {
+-    const slots: WaSlot[] = [
+-      { pk: 'bl-0', name: 'Nico Rossi', team: 'A', player: { id: 'a', name: 'Nico Rossi' } },
+-      { pk: 'bl-1', name: 'Nico Verdi', team: 'A', player: { id: 'b', name: 'Nico Verdi' } },
+-      { pk: 'bi-2', name: 'Luca', team: 'B', player: null },
+-    ];
+-    for (const n of ['Nico', 'Rossi', 'Luca', 'nico rossi', 'zzz', 'Ni']) {
+-      expect(waBest(n, slots, {})).toEqual(legacy.waBest(n, slots, {}));
+-    }
+-    expect(waBest('Nico', slots, {}).ambiguous).toHaveLength(2);
+-    expect(waBest('Luca', slots, {}).slot?.pk).toBe('bi-2');
+-  });
+-
+-  it('waIsTitle come legacy', () => {
+-    const samples = ['RISPARMIO ENERGETICO 🔋', 'SI’, CHEF!', 'IN(PS)FERNALE', 'É UN BEL PRODOTTINO', 'Titolo normale', 'A', 'ok',
+-      'UNO DUE TRE QUATTRO CINQUE SEI SETTE OTTO NOVE DIECI', 'X'.repeat(61), '*MVP* 🥇', '_TROY MCLURE_', 'Mezzo MAIUSCOLO ok', '🔋🔋'];
+-    for (const s of samples) expect(waIsTitle(s)).toBe(legacy.waIsTitle(s));
+-    expect(waIsTitle('RISPARMIO ENERGETICO 🔋')).toBe(true);
+-    expect(waIsTitle('Titolo normale')).toBe(false);
+-  });
+-
+-  it('waHTML: grassetto, corsivo e protezione dei caratteri speciali come legacy', () => {
+-    const samples = ['*grassetto* e _corsivo_', 'a _b_, c', '_inizio_ riga', "O'Neil <b>x</b> & \"y\"", '*a*\n_b_', 'snake_case_name', '', null, 'x * y * z'];
+-    for (const s of samples) expect(waHTML(s)).toBe(legacy.waHTML(s));
+-    expect(waHTML('<script>')).toBe('&lt;script&gt;');
+-  });
+-});
+-
+-describe('abbinamento manuale', () => {
+-  const data = asDataset(fresh(true));
+-  it('waAssign: un giocatore non può ricevere due pagelle, e l\'abbinamento a mano non è più "da controllare"', () => {
+-    const msg = messages[2] as (typeof messages)[number]; // 21 ottobre: prima volta di "Gianluca"
+-    const a = analyzePagelle(msg.text, matchOf(data, msg.date), data, {}, {}) as WaAnalysis;
+-    const g = a.res.blocks.findIndex((b) => b.guess);
+-    expect(g).toBeGreaterThanOrEqual(0);
+-    const other = a.res.blocks.findIndex((b, i) => i !== g && b.assign);
+-    const target = a.res.blocks[other]?.assign as string;
+-    const b = waAssign(a, g, target);
+-    expect(b.res.blocks[g]?.assign).toBe(target);
+-    expect(b.res.blocks[g]?.guess).toBe(false);
+-    expect(b.res.blocks[other]?.assign).toBe(''); // tolto all'altra
+-    expect(a.res.blocks[other]?.assign).toBe(target); // l'originale non è stato modificato
+-    const c = waAssign(b, g, '');
+-    expect(c.res.blocks[g]?.assign).toBe('');
+-  });
+-
+-  it('waApply: solo titolo e descrizione, solo le pagelle spuntate e assegnate', () => {
+-    const msg = messages[1] as (typeof messages)[number];
+-    const a = analyzePagelle(msg.text, matchOf(data, msg.date), data, {}, {}) as WaAnalysis;
+-    const r = waApply(a, (k) => k % 2 === 0, {});
+-    expect(r.items.length).toBe(a.res.blocks.filter((b, k) => k % 2 === 0 && b.assign).length);
+-    for (const it of r.items) expect(Object.keys(it).sort()).toEqual(['desc', 'pk', 'slot', 'title', 'written']); // niente voti, gol, risultato
+-  });
+-
+-  it('messaggio vuoto: nessuna analisi; waRemember ignora nomi vuoti', () => {
+-    const m = matchOf(data, '2026-10-28');
+-    expect(analyzePagelle('   \n ', m, data)).toBeNull();
+-    expect(waRemember({}, '  ', { id: 'x', name: 'X' })).toBeNull();
+-    expect(waRemember({}, 'Gianluca', { id: 'x', name: 'X', aliases: ['Gianluca'] })?.aliases).toEqual(['Gianluca']);
+-  });
+-});
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 7071e43..b194ff5 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -1,4 +1,4 @@
+-// I test confrontano con legacy usando i dati veri (ultima partita: 28/10/2026): l'«oggi» è fermo al giorno dopo,
++// I test usano fixture con ultima partita al 28/10/2026: l'«oggi» è fermo al giorno dopo,
+ // così la regola «niente stato di forma se l'ultima pagella ha più di un mese» non cambia i risultati col passare del tempo.
+ import { vi } from 'vitest';
+ import { TEST_TODAY } from './today';

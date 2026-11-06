@@ -210,7 +210,12 @@ test('Profilo: statistiche e ultime dieci partite seguono la lega scelta', async
   await openMenu(page);
   await page.locator('#menu-leagues .menu-lgrow[data-slug="calcetto-del-giovedi"]').click();
   await expect(page.locator('#league-pill')).toContainText('Calcetto del');
+  await expect(page.locator('#profile-recent-matches .profile-match')).toHaveCount(5);
+  await expect(page.locator('#profile-recent-matches .recent-summary')).toContainText('Media voto');
+  await page.locator('#profile-more-matches').click();
   await expect(page.locator('#profile-recent-matches .profile-match')).toHaveCount(10);
+  await page.getByRole('button', { name: 'Mostra meno', exact: true }).click();
+  await expect(page.locator('#profile-recent-matches .profile-match')).toHaveCount(5);
   await expect(page.locator('#profile-recent-matches')).toContainText('99 - 0');
   await expect(card.locator('.fut-mini-ovr')).toHaveText(overall);
   await expect(card).toContainText('Stagione in corso');

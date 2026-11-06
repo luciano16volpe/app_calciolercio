@@ -1,8 +1,10 @@
+import { LoadingIndicator } from '../../app/LoadingIndicator';
 // Pagina d'ingresso per chi non è loggato: il logo al centro e le opzioni Accedi / Registrati (e «password dimenticata»).
 import { InstallHint } from '../../app/InstallHint';
 import { AccountCard } from '../impostazioni/AccountCard';
 
 export function LoginPage({ waiting = false }: { waiting?: boolean }) {
+  if (waiting) return <LoadingIndicator />;
   return (
     <div
       id="login-page"
@@ -12,7 +14,7 @@ export function LoginPage({ waiting = false }: { waiting?: boolean }) {
       <div style={{ fontSize: 26, fontWeight: 800, marginTop: 6, color: 'var(--text)' }}>CalcioLercio</div>
       <div style={{ fontSize: 13, color: 'var(--text3)', margin: '4px 0 18px', textAlign: 'center' }}>Il calcetto tra amici</div>
       <div style={{ width: '100%', maxWidth: 380 }}>
-        {waiting ? <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text3)' }}>⏳ Un attimo…</div> : <AccountCard leagueId={undefined} />}
+        {<AccountCard leagueId={undefined} />}
         {waiting ? null : <div style={{ fontSize: 12, color: 'var(--text3)', textAlign: 'center', marginTop: 8, lineHeight: 1.4 }}>Hai ricevuto un link d’invito? Aprilo da qui: ti registri e il tuo giocatore è già collegato.</div>}
         {waiting ? null : <InstallHint inPage />}
       </div>

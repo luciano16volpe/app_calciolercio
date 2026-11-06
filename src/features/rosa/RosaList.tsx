@@ -1,3 +1,4 @@
+import { FireChip } from '../player/FireChip';
 // Elenco della rosa: carte compatte, la più forte per prima (come legacy: buildRosa).
 import { useMemo } from 'react';
 import { photoUrl, type LeagueData } from '../../data/queries';
@@ -8,11 +9,7 @@ import { playerSeason, seasonStats } from '../../domain/stats';
 import { profileSeasonData } from '../../domain/profile';
 
 /** 🔥 In forma / 🌧️ In crisi accanto al nome. */
-export function FireChip({ state }: { state: 'up' | 'flat' | 'down' | null }) {
-  if (state === 'up') return <span className="fire-chip" title="In forma: le ultime pagelle sono sopra la sua media">🔥</span>;
-  if (state === 'down') return <span className="fire-chip crisi-chip" title="In crisi: le ultime pagelle sono sotto la sua media">🌧️</span>;
-  return null;
-}
+export { FireChip } from '../player/FireChip';
 
 // Le statistiche di un periodo non cambiano finché il periodo (oggetto in cache) è lo stesso.
 const periodStats = new WeakMap<object, ReturnType<typeof seasonStats>>();

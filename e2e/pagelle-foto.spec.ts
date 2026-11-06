@@ -156,20 +156,24 @@ test('Foto: dentro il pallino in Rosa, in Gioca, nel menu e nell’intestazione 
   await page.reload();
   const urlOf = (loc: ReturnType<typeof page.locator>) => loc.evaluate((el) => getComputedStyle(el).backgroundImage);
   // Rosa: immagine caricata davvero e iniziali se il file manca.
-  const rosaPhoto = page.locator('#players-list .card-compact', { hasText: me.name }).locator('.avatar');
+  const rosaPhoto = page.locator('#players-list .card-compact').filter({ has: page.getByText(me.name, { exact: true }) }).locator('.avatar');
+  await rosaPhoto.scrollIntoViewIfNeeded();
   await expect(rosaPhoto.locator('img')).toHaveAttribute('src', /foto-di-prova\.jpg/);
   await expect.poll(() => rosaPhoto.locator('img').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
-  const rosaBroken = page.locator('#players-list .card-compact', { hasText: broken.name }).locator('.avatar');
+  const rosaBroken = page.locator('#players-list .card-compact').filter({ has: page.getByText(broken.name, { exact: true }) }).locator('.avatar');
+  await rosaBroken.scrollIntoViewIfNeeded();
   await expect(rosaBroken).not.toHaveClass(/has-photo/);
   await expect(rosaBroken).not.toHaveText('');
   // footer: la mia foto
   expect(await urlOf(page.locator('.bottom-nav .bn-face'))).toContain('foto-di-prova.jpg');
   // Gioca (amministratore): il pallino della lista di convocazione
   await page.locator('.bottom-nav').getByRole('button', { name: 'Gioca', exact: true }).click();
-  const giocaPhoto = page.locator('#conv-list .conv-item', { hasText: me.name }).locator('.conv-avatar');
+  const giocaPhoto = page.locator('#conv-list .conv-item').filter({ has: page.getByText(me.name, { exact: true }) }).locator('.conv-avatar');
+  await giocaPhoto.scrollIntoViewIfNeeded();
   await expect(giocaPhoto.locator('img')).toHaveAttribute('src', /foto-di-prova\.jpg/);
   await expect.poll(() => giocaPhoto.locator('img').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
-  const giocaBroken = page.locator('#conv-list .conv-item', { hasText: broken.name }).locator('.conv-avatar');
+  const giocaBroken = page.locator('#conv-list .conv-item').filter({ has: page.getByText(broken.name, { exact: true }) }).locator('.conv-avatar');
+  await giocaBroken.scrollIntoViewIfNeeded();
   await expect(giocaBroken).not.toHaveClass(/has-photo/);
   await expect(giocaBroken).not.toHaveText('');
   // menu: il cerchio in alto mostra la foto, non l'iniziale

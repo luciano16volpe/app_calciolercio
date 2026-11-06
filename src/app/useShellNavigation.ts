@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { scrollPageToTop } from './scroll';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import type { PageName } from './BottomNav';
 import { buildPath, HOME_PAGE, navigate, parsePath, rememberLeague } from './league';
 import { rosterView, type LeagueData } from '../data/queries';
@@ -17,9 +18,10 @@ export function useShellNavigation(data: LeagueData | undefined, isAdmin: boolea
       rememberLeague(slug);
     }
   }, [slug, page, inviteToken]);
+  useLayoutEffect(scrollPageToTop, [page, slug]);
   const go = (p: PageName) => {
     setChosen(p);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollPageToTop();
   };
   return { page, go };
 }

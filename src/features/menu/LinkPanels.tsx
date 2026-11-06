@@ -119,10 +119,20 @@ export function MergePanel({ data, onClose }: { data: LeagueData; onClose: () =>
   const [keep, setKeep] = useState('');
   const [drop, setDrop] = useState('');
   const [busy, setBusy] = useState(false);
+  const status = usePlayersStatus(data.league.id, true);
+  const findStatus = (id: string) => status.data?.find((p) => p.playerId === id);
+  const bothLinked = !!findStatus(keep)?.linked && !!findStatus(drop)?.linked;
+  const statusKnown = status.isSuccess && !!findStatus(keep) && !!findStatus(drop);
+  const label = (id: string) => {
+    const p = findStatus(id);
+    return !p ? 'stato non disponibile' : p.linked ? 'assegnato a ' + p.linkedName : 'non assegnato';
+  };
   const name = (id: string) => players.find((p) => p.id === id)?.name ?? '';
   const go = async () => {
     if (!keep || !drop) return toast('Scegli i due giocatori');
     if (keep === drop) return toast('Scegli due giocatori diversi');
+    if (!statusKnown || status.isFetching) return toast('Attendi la verifica degli account collegati');
+    if (bothLinked) return toast('Non puoi unire due giocatori entrambi assegnati a un account');
     const ok = await confirm({
       icon: '🔀', title: 'Unire i giocatori?',
       lines: [`${name(drop)} viene assorbito da ${name(keep)}: leghe, partite, pagelle e storico passano a ${name(keep)}, poi ${name(drop)} viene eliminato.`, 'Le statistiche di ' + name(keep) + ' non cambiano. L’operazione non si annulla.'],
@@ -145,19 +155,22 @@ export function MergePanel({ data, onClose }: { data: LeagueData; onClose: () =>
     <Sheet title="Unisci giocatori" onClose={onClose} id="sheet-merge">
       <div className="card">
         <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.4 }}>
-          Per i doppioni (uno stesso amico inserito due volte). Scegli <b>chi tenere</b> e <b>chi assorbire</b>. Serve essere amministratore di tutte le leghe del doppione; se i due hanno giocato la stessa partita non si possono unire.
+          Per i doppioni (uno stesso amico inserito due volte). Scegli <b>chi tenere</b> e <b>chi assorbire</b>. Serve essere amministratore di tutte le leghe del doppione; se i due hanno giocato la stessa partita non si possono unire. Almeno uno dei due deve essere non assegnato a un account.
         </div>
         <div className="f-lab">Giocatore da tenere</div>
-        <select id="mg-keep" className="f-inp" value={keep} onChange={(e) => setKeep(e.target.value)} aria-label="Giocatore da tenere">
+        <select id="mg-keep" className="f-inp" value={keep} disabled={busy || !status.isSuccess} onChange={(e) => setKeep(e.target.value)} aria-label="Giocatore da tenere">
           <option value="">— scegli —</option>
-          {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          {players.map((p) => <option key={p.id} value={p.id} disabled={!findStatus(p.id) || p.id === drop || (!!findStatus(p.id)?.linked && !!findStatus(drop)?.linked)}>{p.name} ({label(p.id)})</option>)}
         </select>
         <div className="f-lab">Doppione da assorbire</div>
-        <select id="mg-drop" className="f-inp" value={drop} onChange={(e) => setDrop(e.target.value)} aria-label="Doppione da assorbire">
+        <select id="mg-drop" className="f-inp" value={drop} disabled={busy || !status.isSuccess} onChange={(e) => setDrop(e.target.value)} aria-label="Doppione da assorbire">
           <option value="">— scegli —</option>
-          {players.filter((p) => p.id !== keep).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          {players.filter((p) => p.id !== keep).map((p) => <option key={p.id} value={p.id} disabled={!findStatus(p.id) || (!!findStatus(keep)?.linked && !!findStatus(p.id)?.linked)}>{p.name} ({label(p.id)})</option>)}
         </select>
-        <button type="button" className="f-btn" id="mg-submit" disabled={busy} onClick={() => void go()}>Unisci</button>
+        {status.isPending || status.isFetching ? <p role="status" className="f-hint">Verifica degli account collegati...</p> : null}
+        {status.isError ? <p role="alert" className="f-hint">Impossibile verificare gli account. <button type="button" className="mini-btn" onClick={() => void status.refetch()}>Riprova</button></p> : null}
+        {bothLinked ? <p role="alert" className="f-hint">Non puoi unire due giocatori entrambi assegnati a un account.</p> : null}
+        <button type="button" className="f-btn" id="mg-submit" disabled={busy || status.isFetching || !statusKnown || bothLinked || keep === drop} onClick={() => void go()}>Unisci</button>
       </div>
     </Sheet>
   );

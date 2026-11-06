@@ -109,6 +109,12 @@ export class FakeBackend {
 
   // ── lettura (GET) ────────────────────────────────────────────────────────
   private table(name: string): Row[] {
+    if (name === 'match_player_summaries') return this.mplayers.map(({ titolo, descrizione, ...r }) => ({ ...r, has_text: !!(String(titolo ?? '').trim() || String(descrizione ?? '').trim()) }));
+    if (name === 'league_data_versions') return this.leagues.map((l) => {
+      const matches = this.matches.filter((m) => m.league_id === l.id);
+      const ids = new Set(matches.map((m) => m.id));
+      return { league_id: l.id, version: JSON.stringify([matches, this.mplayers.filter((p) => ids.has(p.match_id)), this.gaz.filter((g) => ids.has(g.match_id)), this.editors.filter((e) => e.league_id === l.id), this.albo.filter((a) => a.league_id === l.id)]) };
+    });
     const t: Record<string, Row[]> = { leagues: this.leagues, league_members: this.members, players: this.players, league_players: this.lplayers, matches: this.matches, match_players: this.mplayers, audit_log: this.audit, albo: this.albo, gazzette: this.gaz, match_editors: this.editors, app_settings: this.settings, player_claims: [] };
     return t[name] ?? [];
   }
@@ -137,6 +143,7 @@ export class FakeBackend {
   }
   private get(name: string, q: URLSearchParams, actor: string | null, single: boolean): Reply {
     let rows = this.table(name);
+    if (name === 'league_data_versions') rows = rows.filter((r) => { const l = this.league(String(r.league_id)); return !!l && this.visible(l, actor); });
     if (name === 'leagues') rows = rows.filter((l) => this.visible(l, actor));
     if (name === 'league_members') rows = rows.filter((m) => m.user_id === actor || this.role(m.league_id as string, actor) !== null);
     if (name === 'audit_log' && !(actor && this.supers.has(actor))) rows = [];

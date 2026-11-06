@@ -1,3 +1,4 @@
+import { LoadingProvider } from './app/LoadingIndicator';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AuthProvider } from './app/auth';
@@ -20,6 +21,6 @@ document.addEventListener('focusout', (e) => {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider><ToastProvider><SessionCache><App /></SessionCache><UpdateNotice /></ToastProvider></AuthProvider>
+    <LoadingProvider><AuthProvider><ToastProvider><SessionCache><App /></SessionCache><UpdateNotice /></ToastProvider></AuthProvider></LoadingProvider>
   </StrictMode>,
 );

@@ -1,5 +1,5 @@
 // Pannello a tutto schermo con intestazione "‹ titolo" (si chiude con ‹ o Esc). Lo usano le voci del menu laterale.
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
 
 export function Sheet({ title, onClose, children, id, swipeBack = true }: { title: string; onClose: () => void; children: ReactNode; id?: string; swipeBack?: boolean }) {
   const start = useRef<{ x: number; y: number; time: number } | null>(null);
@@ -7,12 +7,24 @@ export function Sheet({ title, onClose, children, id, swipeBack = true }: { titl
   const timer = useRef<number | undefined>(undefined);
   const close = useRef(onClose);
   const closing = useRef(false);
-  useEffect(() => { close.current = onClose; }, [onClose]);
+  useLayoutEffect(() => { close.current = onClose; }, [onClose]);
   useEffect(() => {
     const k = (e: KeyboardEvent) => e.key === 'Escape' && close.current();
     document.addEventListener('keydown', k);
     return () => { document.removeEventListener('keydown', k); window.clearTimeout(timer.current); };
   }, []);
+  useLayoutEffect(() => {
+    start.current = null;
+    closing.current = false;
+    window.clearTimeout(timer.current);
+    const el = sheet.current;
+    if (!el) return;
+    el.style.transition = 'none';
+    el.style.transform = '';
+    el.style.willChange = '';
+    el.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    el.querySelector('.sheet-b')?.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [id, title]);
   const finish = () => {
     if (!closing.current) return;
     closing.current = false;
@@ -52,12 +64,12 @@ export function Sheet({ title, onClose, children, id, swipeBack = true }: { titl
         const remaining = success ? Math.max(0, width - dx) : Math.max(0, dx);
         if (!remaining) { el.style.willChange = ''; if (success) close.current(); return; }
         const speed = Math.max(1.5, dx / Math.max(1, performance.now() - origin.time));
-        const duration = Math.min(180, Math.max(50, remaining / speed));
+        const duration = Math.min(90, Math.max(30, remaining / speed));
         el.style.transition = `transform ${duration}ms ease-out`;
         el.style.transform = success ? 'translateX(100%)' : 'translateX(0)';
         if (success) {
           closing.current = true;
-          timer.current = window.setTimeout(finish, duration + 50);
+          timer.current = window.setTimeout(finish, duration + 16);
         }
       }}
       onTransitionEnd={(e) => {

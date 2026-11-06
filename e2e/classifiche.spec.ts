@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 
 async function openClassifiche(page: Page, tab: string) {
   await page.goto('/');
-  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await expect(page.locator('#page-profilo #myplayer-card')).toBeVisible({ timeout: 20_000 });
   await page.locator('.bottom-nav').getByRole('button', { name: 'Classifiche', exact: true }).click();
   await page.locator('#cl-tabs .chip', { hasText: tab }).click();
   return page.locator('#page-classifiche');
@@ -51,7 +51,7 @@ test('Statistiche: filtri Titolari/Occasionali/Tutti e ordinamento toccando le i
 
 test('Confronto: due giocatori, scambio, scelta dall\'elenco e righe con barre', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await expect(page.locator('#page-profilo #myplayer-card')).toBeVisible({ timeout: 20_000 });
   await openPanel(page, '#menu-compare', '#sheet-compare');
   const box = page.locator('#cmp-box');
   await expect(box.locator('.section-header')).toContainText('Confronto testa a testa');
@@ -82,7 +82,7 @@ test('Confronto: due giocatori, scambio, scelta dall\'elenco e righe con barre',
 
 test('Albo d\'oro: stagioni con premi, Occasionali, vergogna e imprese', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await expect(page.locator('#page-profilo #myplayer-card')).toBeVisible({ timeout: 20_000 });
   await openPanel(page, '#menu-albo', '#sheet-albo');
   // "Sempre": tutte le stagioni
   await page.locator('#panel-seasons .chip').last().click();

@@ -1,7 +1,8 @@
 // Pagina iniziale: lega selezionata, scheda, partite recenti e gestione del giocatore.
 import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../../app/auth';
+import { AdBanner } from '../../app/AdBanner';
 import { Palloni } from '../../app/Palloni';
 import { useConfirm } from '../../app/Dialogs';
 import { setSelectedLeague } from '../../app/league';
@@ -50,25 +51,53 @@ function NextMatch({ data, m, team, myId }: { data: LeagueData; m: Match; team: 
 
 /** Ultime partite del giocatore nella lega attiva. */
 function RecentMatches({ data, player, onOpen, active }: { data: LeagueData; player: { id: string; name: string }; onOpen: (id: string) => void; active: boolean }) {
-  const matches = myRecentMatches(data.dataset, player.id, player.name);
+  const [visible, setVisible] = useState(5);
+  const matches = useMemo(() => myRecentMatches(data.dataset, player.id, player.name, data.dataset.matches.length), [data.dataset, player.id, player.name]);
+  const ratings = useMemo(() => {
+    const values = new Map<string, number>();
+    for (const r of data.dataset.ratings) {
+      if (r.playerId !== player.id && (r.playerId || r.player !== player.name)) continue;
+      if (r.rating == null || String(r.rating).trim() === '') continue;
+      const value = Number(r.rating);
+      if (Number.isFinite(value)) values.set(r.matchId, value);
+    }
+    return values;
+  }, [data.dataset.ratings, player.id, player.name]);
+  const recent = matches.slice(0, 5);
+  const results = recent.map((m) => getPlayerMatchResult(m, player.id, player.name));
+  const votes = recent.flatMap((m) => ratings.has(m.id) ? [ratings.get(m.id)!] : []);
+  const average = votes.length ? (votes.reduce((a, b) => a + b, 0) / votes.length).toFixed(2) : '\u2014';
   if (!matches.length) return null;
   return (
     <div className="card fx-card fx-balls" id="profile-recent-matches" style={{ position: 'relative' }}>
       {active ? <Palloni /> : null}
       <div className="section-header">Ultime partite</div>
-      {matches.map((m) => {
+      <p className="recent-caption">Riepilogo sulle ultime {recent.length} partite nella lega</p>
+      <div className="recent-summary">
+        <div><b>{results.filter((r) => r === 'W').length}</b><span>Vittorie</span></div>
+        <div><b>{results.filter((r) => r === 'D').length}</b><span>Pareggi</span></div>
+        <div><b>{results.filter((r) => r === 'L').length}</b><span>Sconfitte</span></div>
+        <div><b>{average}</b><span>Media voto</span></div>
+      </div>
+      {votes.length < recent.length ? <p className="recent-caption">Media su {votes.length} {votes.length === 1 ? 'voto disponibile' : 'voti disponibili'}</p> : null}
+      <div className="recent-columns" aria-hidden="true"><span>Esito</span><span>Data</span><span>Blu - Bianchi</span><span>Voto</span></div>
+      {matches.slice(0, visible).map((m) => {
         const result = getPlayerMatchResult(m, player.id, player.name);
-        const label = result === 'W' ? 'V' : result === 'L' ? 'S' : result === 'D' ? 'P' : String.fromCharCode(8212);
-        const color = result === 'W' ? 'var(--green)' : result === 'L' ? 'var(--red)' : 'var(--text3)';
-        const rating = data.dataset.ratings.find((r) => r.matchId === m.id && (r.playerId === player.id || (!r.playerId && r.player === player.name)))?.rating;
+        const label = result === 'W' ? 'Vinta' : result === 'L' ? 'Persa' : result === 'D' ? 'Pari' : '\u2014';
+        const color = result === 'W' ? 'var(--green)' : result === 'L' ? 'var(--red)' : 'var(--text2)';
+        const rating = ratings.get(m.id);
         return <button key={m.id} type="button" className="profile-match" onClick={() => onOpen(m.id)}
-          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', border: 0, borderBottom: '1px solid var(--gray2)', background: 'transparent', color: 'var(--text)', width: '100%', textAlign: 'left', fontSize: 12 }}>
-          <span style={{ width: 16, fontWeight: 800, color }}>{label}</span>
-          <span style={{ flex: 1 }}>{formatDate(m.date)}</span>
-          <span>{m.scoreA} - {m.scoreB}</span>
-          <span style={{ width: 34, textAlign: 'right', fontWeight: 700 }}>{rating ?? String.fromCharCode(8212)}</span>
+          aria-label={label + ', ' + formatDate(m.date) + ', Blu ' + m.scoreA + ' - Bianchi ' + m.scoreB + ', voto ' + (rating ?? 'non disponibile')}>
+          <span className="recent-outcome" style={{ color }}>{label}</span>
+          <span>{formatDate(m.date)}</span>
+          <span className="recent-score">{m.scoreA} - {m.scoreB}</span>
+          <span className="recent-rating">{rating ?? '\u2014'}</span>
         </button>;
       })}
+      <div className="recent-actions">
+        {visible < matches.length ? <button type="button" className="btn btn-secondary btn-sm" id="profile-more-matches" onClick={() => setVisible((n) => n + 5)}>Vedi altre</button> : null}
+        {visible > 5 ? <button type="button" className="mini-btn" onClick={() => setVisible(5)}>Mostra meno</button> : null}
+      </div>
     </div>
   );
 }
@@ -128,6 +157,8 @@ export function ProfiloPage({ data, active, act }: { data: LeagueData; active: b
 
       {last && me ? <LastMatchCard data={data} m={last.m} act={act} title="🏆 La mia ultima partita" id="my-last-match" mine={{ id: me.id, name: me.name }} active={active} /> : null}
 
+      <AdBanner placement="profilo-feed" />
+
       {linked && me && inRoster ? (
         <div id="profilo-scheda" style={{ marginBottom: 12 }}>
           {viewId && viewId !== linked.id ? (
@@ -141,7 +172,7 @@ export function ProfiloPage({ data, active, act }: { data: LeagueData; active: b
         </div>
       ) : null}
 
-      {me ? <RecentMatches data={data} player={me} onOpen={act.openMatch} active={active} /> : null}
+      {me ? <RecentMatches key={data.league.id + me.id} data={data} player={me} onOpen={act.openMatch} active={active} /> : null}
 
       <MyPlayerCard data={data} />
       {linked ? <MyProfileTools data={data} playerId={linked.id} name={linked.name} /> : null}

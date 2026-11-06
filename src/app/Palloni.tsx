@@ -1,3 +1,4 @@
+import { animateWhenVisible } from './visibleAnimation';
 // Palloni di calcio che cadono piano dall'alto verso il basso sullo sfondo di un riquadro (il genitore deve essere `position: relative`).
 // Come la pioggia e i coriandoli: stanno DIETRO al contenuto, restano nel riquadro, non bloccano i tocchi e si fermano da soli
 // quando il riquadro non c'è più. Con «meno animazioni» attivo restano fermi. Sono disegnati (non emoji): uguali su iPhone e Android.
@@ -88,12 +89,7 @@ export function Palloni() {
         ctx.restore();
       }
     };
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-      draw();
-      return;
-    }
-    let raf = 0;
-    const frame = () => {
+    return animateWhenVisible(canvas, () => {
       for (const b of balls) {
         b.y += b.vy;
         b.phase += 0.02;
@@ -101,11 +97,7 @@ export function Palloni() {
         b.rot += b.vr;
         if (b.y - b.r > h) Object.assign(b, make(-b.r - Math.random() * 40)); // uscito in basso: riparte dall'alto in un punto nuovo
       }
-      draw();
-      raf = requestAnimationFrame(frame);
-    };
-    raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
+    }, draw);
   }, []);
 
   return <canvas ref={ref} id="recent-balls-fx" aria-hidden="true" style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0, borderRadius: 'inherit' }} />;

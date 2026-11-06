@@ -1,3 +1,4 @@
+import { animateWhenVisible } from './visibleAnimation';
 // Pioggia leggera sullo sfondo di un riquadro (il genitore deve essere `position: relative`): per la partita persa.
 // Sta DIETRO al contenuto, non blocca i tocchi e si ferma da sola quando il riquadro non c'è più.
 // Con «meno animazioni» attivo resta solo un'ombra fissa.
@@ -35,22 +36,13 @@ export function Rain() {
         ctx.stroke();
       }
     };
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-      draw();
-      return;
-    }
-    let raf = 0;
-    const frame = () => {
+    return animateWhenVisible(canvas, () => {
       for (const d of drops) {
         d.y += d.speed;
         d.x -= d.speed * 0.28;
         if (d.y > h + 10) { d.y = -10 - Math.random() * 30; d.x = Math.random() * (w + 40); }
       }
-      draw();
-      raf = requestAnimationFrame(frame);
-    };
-    raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
+    }, draw);
   }, []);
 
   return <canvas ref={ref} id="rain-fx" aria-hidden="true" style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0, borderRadius: 'inherit' }} />;

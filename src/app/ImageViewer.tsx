@@ -13,9 +13,9 @@ interface Shown {
 
 interface ImageTools {
   /** Mostra l'immagine a schermo intero, con Condividi e Salva. */
-  showImage: (title: string, canvas: HTMLCanvasElement, name: string, text: string) => void;
+  showImage: (title: string, canvas: HTMLCanvasElement | Promise<HTMLCanvasElement>, name: string, text: string) => void;
   /** Condivide subito l'immagine (o la salva, se il telefono non ha la finestra di condivisione). */
-  shareCanvas: (canvas: HTMLCanvasElement, name: string, text: string) => void;
+  shareCanvas: (canvas: HTMLCanvasElement | Promise<HTMLCanvasElement>, name: string, text: string) => void;
 }
 
 const ImageContext = createContext<ImageTools>({ showImage: () => undefined, shareCanvas: () => undefined });
@@ -59,7 +59,12 @@ export function ImageProvider({ children }: { children: ReactNode }) {
     if (prev && prev !== shown) URL.revokeObjectURL(prev.url);
   }, [shown]);
 
-  const showImage = useCallback((title: string, canvas: HTMLCanvasElement, name: string, text: string) => {
+  const showImage = useCallback(function showCanvasImage(title: string, canvas: HTMLCanvasElement | Promise<HTMLCanvasElement>, name: string, text: string) {
+    if ('then' in canvas) {
+      toast('Preparo immagine...');
+      void canvas.then((ready) => showCanvasImage(title, ready, name, text)).catch(() => toast('Impossibile preparare l’immagine. Riprova.'));
+      return;
+    }
     canvas.toBlob((blob) => {
       if (!blob) {
         toast('Errore immagine');
@@ -70,8 +75,13 @@ export function ImageProvider({ children }: { children: ReactNode }) {
     }, 'image/png');
   }, [toast]);
 
-  const shareCanvas = useCallback((canvas: HTMLCanvasElement, name: string, text: string) => {
+  const shareCanvas = useCallback(function shareCanvasImage(canvas: HTMLCanvasElement | Promise<HTMLCanvasElement>, name: string, text: string) {
     toast('⏳ Genero immagine...');
+    if ('then' in canvas) {
+      toast('Preparo immagine...');
+      void canvas.then((ready) => shareCanvasImage(ready, name, text)).catch(() => toast('Impossibile preparare l’immagine. Riprova.'));
+      return;
+    }
     canvas.toBlob((blob) => {
       if (!blob) {
         toast('Errore immagine');
@@ -105,7 +115,7 @@ export function ImageProvider({ children }: { children: ReactNode }) {
             <button type="button" onClick={close} aria-label="Chiudi">✕</button>
           </div>
           <div className={`gv-img${zoom ? ' zoom' : ''}`} onClick={() => setZoom((z) => !z)}>
-            <img src={shown.url} alt={shown.title} />
+            <img src={shown.url} alt={shown.title} decoding="async" />
           </div>
           <div className="gv-note">Tocca l'immagine per ingrandirla.</div>
           <div className="gv-btns">

@@ -28,6 +28,8 @@ export interface Match {
 
 /** Una pagella (una riga per giocatore e partita). I numeri possono arrivare come testo. */
 export interface Rating {
+  /** Text exists on the server, even when its content has not been requested yet. */
+  hasText?: boolean;
   matchId: string;
   player?: string;
   playerId?: string | null;

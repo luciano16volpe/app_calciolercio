@@ -1,0 +1,1573 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Users\\luciano.volpe\\AppData\\Local\\JetBrains\\IntelliJIdea2026.2\\acp-agents\\.runtimes\\node\\24.19.0\\node.exe",
+      "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--project=iphone",
+      "--project=android",
+      "--project=piccolo-360",
+      "e2e/notifiche-premium.spec.ts",
+      "e2e/impostazioni.spec.ts",
+      "--reporter=line,json",
+      "--output=test-results/notifiche"
+    ],
+    "configFile": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\playwright.config.ts",
+    "rootDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 2
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/test-results/notifiche",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "iphone",
+        "name": "iphone",
+        "testDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/test-results/notifiche",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "android",
+        "name": "android",
+        "testDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/test-results/notifiche",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "piccolo-360",
+        "name": "piccolo-360",
+        "testDir": "C:/Users/luciano.volpe/Downloads/App_calc/app_calciolercio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\test-results\\notifiche",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "name": "iphone",
+        "testDir": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e",
+        "snapshotDir": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "serviceWorkers": "block",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+          "viewport": {
+            "width": 390,
+            "height": 664
+          },
+          "screen": {
+            "width": 390,
+            "height": 844
+          },
+          "deviceScaleFactor": 3,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "webkit"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "iphone"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\test-results\\notifiche",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "name": "android",
+        "testDir": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e",
+        "snapshotDir": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "serviceWorkers": "block",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "userAgent": "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 412,
+            "height": 839
+          },
+          "screen": {
+            "width": 412,
+            "height": 915
+          },
+          "deviceScaleFactor": 2.625,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "android"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\test-results\\notifiche",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "name": "piccolo-360",
+        "testDir": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e",
+        "snapshotDir": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "serviceWorkers": "block",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "userAgent": "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 360,
+            "height": 740
+          },
+          "screen": {
+            "width": 412,
+            "height": 915
+          },
+          "deviceScaleFactor": 2.625,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "piccolo-360"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 2,
+    "webServer": {
+      "command": "npm run preview -- --host 127.0.0.1 --port 4173 --strictPort",
+      "url": "http://127.0.0.1:4173",
+      "reuseExistingServer": false,
+      "timeout": 60000
+    }
+  },
+  "suites": [
+    {
+      "title": "impostazioni.spec.ts",
+      "file": "impostazioni.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Notifiche: al primo accesso chi ha un giocatore collegato riceve la domanda, con «Attiva» si iscrive",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "su iPhone servono la schermata Home",
+                  "location": {
+                    "file": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e\\impostazioni.spec.ts",
+                    "line": 30,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 4416,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:28:54.831Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "su iPhone servono la schermata Home",
+                      "location": {
+                        "file": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e\\impostazioni.spec.ts",
+                        "line": 30,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-b191038a3603694937c8",
+          "file": "impostazioni.spec.ts",
+          "line": 29,
+          "column": 1
+        },
+        {
+          "title": "Notifiche: «Non ora» non lo richiede più; senza giocatore collegato non compare",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "su iPhone servono la schermata Home",
+                  "location": {
+                    "file": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e\\impostazioni.spec.ts",
+                    "line": 42,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 3359,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:29:02.359Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "su iPhone servono la schermata Home",
+                      "location": {
+                        "file": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e\\impostazioni.spec.ts",
+                        "line": 42,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-d2789e839a0097951cda",
+          "file": "impostazioni.spec.ts",
+          "line": 41,
+          "column": 1
+        },
+        {
+          "title": "Notifiche: su iPhone senza l’app installata si spiega come installarla",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16068,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:29:05.799Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-e7b65fcb93335454d703",
+          "file": "impostazioni.spec.ts",
+          "line": 62,
+          "column": 1
+        },
+        {
+          "title": "Notifiche: si attivano e si tolgono da Impostazioni (iscrizione salvata con le funzioni sicure)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "su iPhone servono la schermata Home",
+                  "location": {
+                    "file": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e\\impostazioni.spec.ts",
+                    "line": 71,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 3196,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:29:21.973Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "su iPhone servono la schermata Home",
+                      "location": {
+                        "file": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e\\impostazioni.spec.ts",
+                        "line": 71,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-3ebd1045fc384ef56799",
+          "file": "impostazioni.spec.ts",
+          "line": 70,
+          "column": 1
+        },
+        {
+          "title": "Password: si cambia dalle impostazioni (controlli, poi salva)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18229,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:29:25.289Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-915d649913dcdece2b26",
+          "file": "impostazioni.spec.ts",
+          "line": 109,
+          "column": 1
+        },
+        {
+          "title": "Aspetto: chiaro, scuro e come il telefono; la scelta resta dopo il riavvio",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 25481,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:29:43.600Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-041055d6fa68023684df",
+          "file": "impostazioni.spec.ts",
+          "line": 140,
+          "column": 1
+        },
+        {
+          "title": "Aspetto: tema dark anche con il telefono in light",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10527,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:09.202Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-d883229c42da7001af73",
+          "file": "impostazioni.spec.ts",
+          "line": 161,
+          "column": 3
+        },
+        {
+          "title": "Aspetto: tema light anche con il telefono in dark",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15051,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:19.901Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-b4c05e23484a61e9579e",
+          "file": "impostazioni.spec.ts",
+          "line": 161,
+          "column": 3
+        },
+        {
+          "title": "Impostazioni: solo versione, aggiornamento e account (le regole di gioco sono nel menu)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13574,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:35.069Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-f3ba644c3591d0c4bacd",
+          "file": "impostazioni.spec.ts",
+          "line": 169,
+          "column": 1
+        },
+        {
+          "title": "Notifiche: al primo accesso chi ha un giocatore collegato riceve la domanda, con «Attiva» si iscrive",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "android",
+              "projectName": "android",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 13495,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:29:45.592Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-97b254dfc1fdfa7bc10b",
+          "file": "impostazioni.spec.ts",
+          "line": 29,
+          "column": 1
+        },
+        {
+          "title": "Notifiche: «Non ora» non lo richiede più; senza giocatore collegato non compare",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "android",
+              "projectName": "android",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 13141,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:02.466Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-d7e2439cac4507045f3c",
+          "file": "impostazioni.spec.ts",
+          "line": 41,
+          "column": 1
+        },
+        {
+          "title": "Notifiche: su iPhone senza l’app installata si spiega come installarla",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "solo iPhone",
+                  "location": {
+                    "file": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e\\impostazioni.spec.ts",
+                    "line": 63,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "android",
+              "projectName": "android",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 1,
+                  "status": "skipped",
+                  "duration": 1542,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:15.681Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "solo iPhone",
+                      "location": {
+                        "file": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e\\impostazioni.spec.ts",
+                        "line": 63,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-5fa645148909d8eb0a2e",
+          "file": "impostazioni.spec.ts",
+          "line": 62,
+          "column": 1
+        },
+        {
+          "title": "Notifiche: si attivano e si tolgono da Impostazioni (iscrizione salvata con le funzioni sicure)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "android",
+              "projectName": "android",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 4747,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:17.255Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-a3e7f73aed18338a7b23",
+          "file": "impostazioni.spec.ts",
+          "line": 70,
+          "column": 1
+        },
+        {
+          "title": "Password: si cambia dalle impostazioni (controlli, poi salva)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "android",
+              "projectName": "android",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 4606,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:22.039Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-03e23064c600ecf1ddaa",
+          "file": "impostazioni.spec.ts",
+          "line": 109,
+          "column": 1
+        },
+        {
+          "title": "Aspetto: chiaro, scuro e come il telefono; la scelta resta dopo il riavvio",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "android",
+              "projectName": "android",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 7671,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:26.680Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-57fad695997c20e14bcd",
+          "file": "impostazioni.spec.ts",
+          "line": 140,
+          "column": 1
+        },
+        {
+          "title": "Aspetto: tema dark anche con il telefono in light",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "android",
+              "projectName": "android",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 4263,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:34.397Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-2fd09933d50bdd2eec3f",
+          "file": "impostazioni.spec.ts",
+          "line": 161,
+          "column": 3
+        },
+        {
+          "title": "Aspetto: tema light anche con il telefono in dark",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "android",
+              "projectName": "android",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 4367,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:38.696Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-40abb2122fd2be10a20e",
+          "file": "impostazioni.spec.ts",
+          "line": 161,
+          "column": 3
+        },
+        {
+          "title": "Impostazioni: solo versione, aggiornamento e account (le regole di gioco sono nel menu)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "android",
+              "projectName": "android",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 4015,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:43.098Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-80fc26a4182f22348fb7",
+          "file": "impostazioni.spec.ts",
+          "line": 169,
+          "column": 1
+        },
+        {
+          "title": "Notifiche: al primo accesso chi ha un giocatore collegato riceve la domanda, con «Attiva» si iscrive",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "piccolo-360",
+              "projectName": "piccolo-360",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13220,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:52.469Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-f492598ce7096e4f7c3d",
+          "file": "impostazioni.spec.ts",
+          "line": 29,
+          "column": 1
+        },
+        {
+          "title": "Notifiche: «Non ora» non lo richiede più; senza giocatore collegato non compare",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "piccolo-360",
+              "projectName": "piccolo-360",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 20508,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:31:10.618Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-97a8c40457b28f5adfd5",
+          "file": "impostazioni.spec.ts",
+          "line": 41,
+          "column": 1
+        },
+        {
+          "title": "Notifiche: su iPhone senza l’app installata si spiega come installarla",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "solo iPhone",
+                  "location": {
+                    "file": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e\\impostazioni.spec.ts",
+                    "line": 63,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "piccolo-360",
+              "projectName": "piccolo-360",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 3115,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:31:31.197Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "solo iPhone",
+                      "location": {
+                        "file": "C:\\Users\\luciano.volpe\\Downloads\\App_calc\\app_calciolercio\\e2e\\impostazioni.spec.ts",
+                        "line": 63,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-a720b916035bad9e86d1",
+          "file": "impostazioni.spec.ts",
+          "line": 62,
+          "column": 1
+        },
+        {
+          "title": "Notifiche: si attivano e si tolgono da Impostazioni (iscrizione salvata con le funzioni sicure)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "piccolo-360",
+              "projectName": "piccolo-360",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5857,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:31:34.382Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-f81b50ab930dda3b8347",
+          "file": "impostazioni.spec.ts",
+          "line": 70,
+          "column": 1
+        },
+        {
+          "title": "Password: si cambia dalle impostazioni (controlli, poi salva)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "piccolo-360",
+              "projectName": "piccolo-360",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4130,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:31:40.270Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-4a88140c82cc0401de3b",
+          "file": "impostazioni.spec.ts",
+          "line": 109,
+          "column": 1
+        },
+        {
+          "title": "Aspetto: chiaro, scuro e come il telefono; la scelta resta dopo il riavvio",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "piccolo-360",
+              "projectName": "piccolo-360",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9072,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:31:44.427Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-f46e0a12fc3bbf12a044",
+          "file": "impostazioni.spec.ts",
+          "line": 140,
+          "column": 1
+        },
+        {
+          "title": "Aspetto: tema dark anche con il telefono in light",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "piccolo-360",
+              "projectName": "piccolo-360",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3042,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:31:53.525Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-444bf76bc54b69425833",
+          "file": "impostazioni.spec.ts",
+          "line": 161,
+          "column": 3
+        },
+        {
+          "title": "Aspetto: tema light anche con il telefono in dark",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "piccolo-360",
+              "projectName": "piccolo-360",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2986,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:31:56.579Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-cc69efc13211d33b186f",
+          "file": "impostazioni.spec.ts",
+          "line": 161,
+          "column": 3
+        },
+        {
+          "title": "Impostazioni: solo versione, aggiornamento e account (le regole di gioco sono nel menu)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "piccolo-360",
+              "projectName": "piccolo-360",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2525,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:31:59.579Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3493dc41d57df93a6da3-62d02f17482ad5a5f4c5",
+          "file": "impostazioni.spec.ts",
+          "line": 169,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "notifiche-premium.spec.ts",
+      "file": "notifiche-premium.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "notifiche Standard: interruttore generale gratuito e personalizzazione riservata",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 18033,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:28:55.987Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f8f9679684cf3abb08f4-76ba05cc2de2b24aa4bf",
+          "file": "notifiche-premium.spec.ts",
+          "line": 15,
+          "column": 1
+        },
+        {
+          "title": "notifiche Premium: tipi, anticipo e sospensione senza perdere le preferenze",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 13964,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:29:16.261Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f8f9679684cf3abb08f4-5157fcef48109c3f2afe",
+          "file": "notifiche-premium.spec.ts",
+          "line": 31,
+          "column": 1
+        },
+        {
+          "title": "notifiche: un errore di salvataggio ripristina la preferenza precedente",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 13068,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:29:30.339Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f8f9679684cf3abb08f4-f53702f0acc7373a92e0",
+          "file": "notifiche-premium.spec.ts",
+          "line": 54,
+          "column": 1
+        },
+        {
+          "title": "notifiche Standard: interruttore generale gratuito e personalizzazione riservata",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "android",
+              "projectName": "android",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 4877,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:47.191Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f8f9679684cf3abb08f4-2b3826c6033f85657baf",
+          "file": "notifiche-premium.spec.ts",
+          "line": 15,
+          "column": 1
+        },
+        {
+          "title": "notifiche Premium: tipi, anticipo e sospensione senza perdere le preferenze",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "android",
+              "projectName": "android",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 9194,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:30:52.136Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f8f9679684cf3abb08f4-99c22c8060d1adab75cb",
+          "file": "notifiche-premium.spec.ts",
+          "line": 31,
+          "column": 1
+        },
+        {
+          "title": "notifiche: un errore di salvataggio ripristina la preferenza precedente",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "android",
+              "projectName": "android",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 4418,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:31:01.351Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f8f9679684cf3abb08f4-25a651a2f3935329d41d",
+          "file": "notifiche-premium.spec.ts",
+          "line": 54,
+          "column": 1
+        },
+        {
+          "title": "notifiche Standard: interruttore generale gratuito e personalizzazione riservata",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "piccolo-360",
+              "projectName": "piccolo-360",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 10032,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:31:15.197Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f8f9679684cf3abb08f4-59c92f792048019af9e5",
+          "file": "notifiche-premium.spec.ts",
+          "line": 15,
+          "column": 1
+        },
+        {
+          "title": "notifiche Premium: tipi, anticipo e sospensione senza perdere le preferenze",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "piccolo-360",
+              "projectName": "piccolo-360",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 6045,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:31:27.850Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f8f9679684cf3abb08f4-baded74367d3d3b30c48",
+          "file": "notifiche-premium.spec.ts",
+          "line": 31,
+          "column": 1
+        },
+        {
+          "title": "notifiche: un errore di salvataggio ripristina la preferenza precedente",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "piccolo-360",
+              "projectName": "piccolo-360",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 7069,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-05T11:31:33.958Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f8f9679684cf3abb08f4-f51d48f612003948c107",
+          "file": "notifiche-premium.spec.ts",
+          "line": 54,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-05T11:28:38.819Z",
+    "duration": 205366.666,
+    "expected": 31,
+    "skipped": 5,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

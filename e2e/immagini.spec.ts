@@ -8,6 +8,8 @@ import { openPanel, setup } from './helpers';
 
 // «Gioca» c'è solo per gli amministratori: la prova entra come amministratore di San Marcello (accesso simulato, letture vere)
 test.beforeEach(async ({ page }) => {
+  // These tests verify the download fallback; avoid the operating system share dialog.
+  await page.addInitScript(() => Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => false }));
   await setup(page, { publicRole: 'admin' });
 });
 

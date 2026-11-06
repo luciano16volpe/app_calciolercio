@@ -1,15 +1,17 @@
+import { LoadingIndicator } from '../../app/LoadingIndicator';
+import { useElementVisibility } from '../../app/visibility';
+import { MatchTextBoundary } from './MatchTextBoundary';
+import { useMatchTexts, withMatchTexts } from '../../data/matchTexts';
 // Pezzi delle Partite: pulsanti della partita, ultima partita, elenco, Gazzette (striscia, archivio, visualizzatore),
 // testo delle pagelle. Fonte: matchShareButtons, renderLastMatch, renderMatchesList, renderGazStrip, openGazArchive,
 // openGazzetta, openPagelleText in legacy/index.html.
 import { Fragment, useState, type ReactNode } from 'react';
 import { useImageTools } from '../../app/ImageViewer';
 import { useToast } from '../../app/Toast';
-import { matchFormations, matchSheet, matchSummary } from '../../canvas/make';
+import { matchFormations, matchSheet, matchSummary } from '../../canvas/lazy';
 import { gazzettaThumbPath, useGazzettaUrl, type LeagueData } from '../../data/queries';
-import { useAuth } from '../../app/auth';
 import { Confetti } from '../../app/Confetti';
 import { Rain } from '../../app/Rain';
-import { useMyPlayer } from '../../data/claims';
 import { getPlayerMatchResult } from '../../domain/stats';
 import { formatDate, whenWhere } from '../../domain/format';
 import {
@@ -34,13 +36,20 @@ export interface MatchActions {
 /** Non giocata → Formazioni · Riepilogo · Foglio. Giocata → Riepilogo + 📰 Gazzetta (se c'è) + 📜 Pagelle (se ce ne sono). */
 export function MatchButtons({ data, m, act }: { data: LeagueData; m: Match; act: MatchActions }) {
   const { showImage, shareCanvas } = useImageTools();
+  const toast = useToast();
   const played = num(m.scoreA) != null && num(m.scoreB) != null;
   const fd = formatDate(m.date);
   const day = m.date || 'partita';
   const formations = () => showImage('⚽ Formazioni · ' + fd, matchFormations(data, m), 'formazioni_' + day + '.png', '⚽ Formazioni della partita del ' + fd);
-  const summary = () => showImage('🖼️ Riepilogo · ' + fd, matchSummary(data, m), 'riepilogo_' + day + '.png', '⚽ Riepilogo della partita del ' + fd);
+  const summaryTexts = useMatchTexts({ ...data, textsDeferred: false }, m.id);
+  const summary = async () => {
+    const loaded = data.textsDeferred ? await summaryTexts.refetch() : null;
+    if (loaded?.isError) { toast('Impossibile caricare le pagelle per il riepilogo. Riprova.'); return; }
+    const fullData = loaded?.data ? { ...data, dataset: withMatchTexts(data.dataset, loaded.data) } : data;
+    showImage('🖼️ Riepilogo · ' + fd, matchSummary(fullData, m), 'riepilogo_' + day + '.png', '⚽ Riepilogo della partita del ' + fd);
+  };
   const sheet = () => shareCanvas(matchSheet(data, m), 'foglio_partita_' + day + '.png', '📋 Foglio partita del ' + fd);
-  const sum = <button className="btn btn-primary btn-sm mbar-btn" onClick={summary}>🖼️ Riepilogo</button>;
+  const sum = <button className="btn btn-primary btn-sm mbar-btn" disabled={summaryTexts.isFetching} onClick={() => void summary()}>🖼️ Riepilogo</button>;
   if (!played) {
     return (
       <>
@@ -69,13 +78,7 @@ export function LastMatch({ data, act, mine, active = true }: { data: LeagueData
 }
 
 /** Il mio giocatore (se gioca in questa lega): serve a sapere se ho vinto o perso la partita. */
-export function useMyPlayerIn(data: LeagueData | undefined): { id: string; name: string } | null {
-  const { user } = useAuth();
-  const mine = useMyPlayer(user?.id ?? null);
-  const id = mine.data?.linked?.id;
-  const p = id && data ? data.dataset.players.find((x) => x.id === id) : undefined;
-  return p ? { id: p.id, name: p.name } : null;
-}
+export { useMyPlayerIn } from '../../app/useMyPlayerIn';
 
 /**
  * Il riquadro di una partita con risultato, pulsanti e tocco per i dettagli: l'ultima della lega (Partite) o la mia ultima (Profilo).
@@ -170,13 +173,19 @@ export function MatchesList({ data, act }: { data: LeagueData; act: MatchActions
 }
 
 /** Miniatura leggera; se manca (Gazzetta caricata prima delle miniature) si usa il file completo. */
-export function GazThumb({ path, className }: { path: string; className?: string }) {
+export function GazThumb(props: { path: string; className?: string }) {
+  return <GazPreview key={props.path} {...props} />;
+}
+function GazPreview({ path, className }: { path: string; className?: string }) {
+  const { ref, visible } = useElementVisibility<HTMLDivElement>({ rootMargin: '160px' });
   const [fallback, setFallback] = useState(false);
-  const thumb = useGazzettaUrl(gazzettaThumbPath(path));
+  const thumb = useGazzettaUrl(gazzettaThumbPath(path), visible);
   const useFull = fallback || thumb.isError;
-  const full = useGazzettaUrl(useFull ? path : undefined);
+  const full = useGazzettaUrl(useFull ? path : undefined, visible);
   const url = useFull ? full.data : thumb.data;
-  return url ? <img className={className} src={url} alt="La Gazzetta" loading="lazy" onError={() => setFallback(true)} /> : null;
+  return <div ref={ref} className={'gaz-preview' + (className ? ' gaz-preview-full' : '')}>
+    {url ? <img className={className} src={url} alt="La Gazzetta" loading="lazy" decoding="async" onError={() => setFallback(true)} /> : <div className="gaz-preview-placeholder" role="img" aria-label="Anteprima della Gazzetta" />}
+  </div>;
 }
 
 // ── Gazzette ───────────────────────────────────────────────────────────────
@@ -275,7 +284,7 @@ export function GazViewer({ data, matchId, fromArchive, onClose, onGoToMatch }: 
         <span>📰 {formatDate(m?.date)}{res}</span>
         <button type="button" onClick={onClose} aria-label="Chiudi">✕</button>
       </div>
-      <div className={`gv-img${zoom ? ' zoom' : ''}`} onClick={() => setZoom((z) => !z)}>{url ? <img src={url} alt="La Gazzetta" /> : <span>{signed.isError ? 'Impossibile caricare la Gazzetta' : 'Caricamento…'}</span>}</div>
+      <div className={`gv-img${zoom ? ' zoom' : ''}`} onClick={() => setZoom((z) => !z)}>{url ? <img src={url} alt="La Gazzetta" decoding="async" /> : signed.isError ? <span>Impossibile caricare la Gazzetta</span> : <LoadingIndicator />}</div>
       <div className="gv-btns">
         <button type="button" disabled={!url} onClick={() => void share()}>📲 Condividi o salva</button>
         {fromArchive && m ? <button type="button" onClick={() => onGoToMatch(matchId)}>📋 Vai alla partita</button> : null}
@@ -285,7 +294,10 @@ export function GazViewer({ data, matchId, fromArchive, onClose, onGoToMatch }: 
 }
 
 /** Finestra "📜 Tutte le pagelle": il testo in formato WhatsApp, da copiare o condividere. */
-export function PagelleTextDialog({ data, matchId, onClose }: { data: LeagueData; matchId: string; onClose: () => void }) {
+export function PagelleTextDialog(props: Parameters<typeof LoadedPagelleTextDialog>[0]) {
+  return <MatchTextBoundary data={props.data} matchId={props.matchId} onClose={props.onClose}>{(data) => <LoadedPagelleTextDialog {...props} data={data} />}</MatchTextBoundary>;
+}
+function LoadedPagelleTextDialog({ data, matchId, onClose }: { data: LeagueData; matchId: string; onClose: () => void }) {
   const toast = useToast();
   const m = data.dataset.matches.find((x) => x.id === matchId);
   if (!m) return null;

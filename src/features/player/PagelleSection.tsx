@@ -1,3 +1,4 @@
+import { PlayerPagellaText } from './PlayerPagellaText';
 // "📈 Pagelle": numeri, grafico a barre (ultime 10) con riquadro al tocco, ultima pagella scritta.
 // Fonte: drawPagelle e pgBarTap in legacy/index.html.
 import { useEffect, useRef, useState } from 'react';
@@ -75,7 +76,7 @@ export function PagelleSection({ data, player, formDataset, onOpenAll, onOpenMat
   const sel = pop ? pop.j : null;
   const d = sel != null ? c.series[sel] : undefined;
   const it = d ? items.find((x) => x.m.id === d.matchId) : undefined;
-  const hasText = !!(it && (it.tit || it.desc));
+  const hasText = !!(it && (it.hasText || it.tit || it.desc));
   const stats = it ? [it.g ? `⚽ ${it.g}` : '', it.a ? `🅰️ ${it.a}` : ''].filter(Boolean).join(' ') : '';
   const popStyle: React.CSSProperties = pop ? { display: 'block', width: pop.width, left: pop.left } : { display: 'none' };
   const tap = (j: number, e: React.MouseEvent) => {
@@ -127,8 +128,9 @@ export function PagelleSection({ data, player, formDataset, onOpenAll, onOpenMat
                 <b>{formatDate(d.date)}</b> · voto <b style={{ color: voteColor(d.rating) }}>{d.rating}</b>
                 {stats ? ` · ${stats}` : ''}
               </div>
-              {it?.tit ? <div className="pgp-tit">«{it.tit}»</div> : null}
-              {it?.desc ? <div className="pgp-desc" dangerouslySetInnerHTML={{ __html: waHTML(it.desc) }} /> : null}
+              {!data.textsDeferred && it?.tit ? <div className="pgp-tit">«{it.tit}»</div> : null}
+              {!data.textsDeferred && it?.desc ? <div className="pgp-desc" dangerouslySetInnerHTML={{ __html: waHTML(it.desc) }} /> : null}
+              {data.textsDeferred && hasText ? <PlayerPagellaText data={data} matchId={d.matchId} playerId={player.id} /> : null}
               <button
                 type="button"
                 className="pgp-go"
@@ -148,7 +150,7 @@ export function PagelleSection({ data, player, formDataset, onOpenAll, onOpenMat
       <div className="pg-cap">{c.caption}</div>
       {v.last ? (
         <button type="button" className="pg-last" onClick={() => onOpenAll()}>
-          📝 Ultima pagella: {v.last.tit ? <b>«{v.last.tit}»</b> : <i>{v.last.descPreview}</i>} · {v.last.date}{' '}
+          📝 Ultima pagella: {v.last.tit ? <b>«{v.last.tit}»</b> : <i>{v.last.descPreview || 'Leggi la pagella'}</i>} · {v.last.date}{' '}
           <span className="pg-last-n">{v.last.n > 1 ? v.last.n + ' ›' : '›'}</span>
         </button>
       ) : null}

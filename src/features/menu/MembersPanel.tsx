@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '../../app/LoadingIndicator';
 // "Membri e ruoli" (amministratore): chi c'è e che ruolo ha. Il creatore 👑 nomina e toglie gli admin e cede la proprietà;
 // gli altri admin possono proporre un admin (decide il creatore). Le regole vere stanno nel database: qui si mostra solo ciò che si può fare.
 import { useQueryClient } from '@tanstack/react-query';
@@ -42,7 +43,7 @@ export function MembersPanel({ data, onClose }: { data: LeagueData; onClose: () 
         <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 6, lineHeight: 1.4 }}>
           <b>Amministratore</b> gestisce tutto · <b>Redazione</b> scrive titoli e descrizioni delle pagelle · <b>Membro</b> guarda. Solo il <b>creatore</b> nomina e toglie gli amministratori.
         </div>
-        {q.isLoading ? <div style={{ fontSize: 12, color: 'var(--text3)' }}>⏳ Caricamento…</div> : null}
+        {q.isLoading ? <LoadingIndicator /> : null}
         {q.isError ? <div id="members-error" style={{ fontSize: 12, color: 'var(--red)', fontWeight: 700 }}>{(q.error as Error).message}</div> : null}
         {(q.data ?? []).map((m) => {
           const me = m.userId === user?.id;
