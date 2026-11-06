@@ -1,5 +1,5 @@
 import { LoadingIndicator } from './app/LoadingIndicator';
-import { lazy, useMemo, type ComponentProps } from 'react';
+import { lazy, useEffect, useMemo, type ComponentProps } from 'react';
 import { BottomNav } from './app/BottomNav';
 import { useShellNavigation } from './app/useShellNavigation';
 import { useShellWindows } from './app/useShellWindows';
@@ -40,6 +40,21 @@ const GazViewer = lazy(() => import('./features/partite/parts').then((m) => ({ d
 const PagelleTextDialog = lazy(() => import('./features/partite/parts').then((m) => ({ default: m.PagelleTextDialog })));
 const PlayerCard = lazy(() => import('./features/player/PlayerCard').then((m) => ({ default: m.PlayerCard })));
 const RosaList = lazy(() => import('./features/rosa/RosaList').then((m) => ({ default: m.RosaList })));
+
+/** A schermata ferma, scarica in anticipo il codice delle altre schermate: quando le apri sono già pronte (e restano anche offline). */
+function prefetchScreens() {
+  const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+  if (conn?.saveData || conn?.effectiveType === 'slow-2g' || conn?.effectiveType === '2g') return;
+  const loaders = [
+    () => import('./features/partite/PartitePage'), () => import('./features/classifiche/ClassifichePage'), () => import('./features/rosa/RosaList'),
+    () => import('./features/player/PlayerCard'), () => import('./features/partite/MatchCard'), () => import('./features/gioca/GiocaPage'),
+    () => import('./features/menu/MenuDrawer'), () => import('./features/impostazioni/SettingsPage'),
+  ];
+  const idle = (fn: () => void) => (typeof window.requestIdleCallback === 'function' ? void window.requestIdleCallback(fn, { timeout: 4000 }) : void globalThis.setTimeout(fn, 1500));
+  // uno alla volta, così non rallenta quello che stai guardando
+  const next = (i: number) => { const load = loaders[i]; if (load) idle(() => void load().catch(() => undefined).finally(() => next(i + 1))); };
+  next(0);
+}
 
 /** Gioca e scheda partita con i permessi di chi è entrato: la modifica si offre solo a chi può farla (il database la controlla comunque). */
 function GiocaGate({ data }: { data: LeagueData }) {
@@ -124,6 +139,8 @@ function Shell() {
   const { isAdmin, ready } = useRole(data?.league.id);
   const me = useMyPlayerIn(data); // la mia faccia (o foto) nel footer
   const { page, go } = useShellNavigation(data, isAdmin, ready, inviteToken);
+  const ready0 = !!data;
+  useEffect(() => { if (ready0) prefetchScreens(); }, [ready0]);
   const visualsActive = !view && !gazViewer && !ptDialog && !menuOpen && !panel && !inviteToken;
 
   return (

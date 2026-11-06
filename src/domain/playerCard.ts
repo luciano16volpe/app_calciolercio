@@ -1,5 +1,4 @@
 // Scheda giocatore: trofei, elenco delle pagelle, peso dei voti e dati del grafico "📈 Pagelle".
-// Fonte: playerTrophies, bachecaHTML, playerPagelleList, formWeightCell, drawPagelle in legacy/index.html.
 // Qui ci sono solo i calcoli: il disegno (HTML) è nei componenti.
 import { alboSeasons, FEATS, type AlboRow, type SeasonAwards } from './awards';
 import { FORM_FULL_RATINGS, FORM_MAX_WEIGHT, FORM_MIN_RATINGS, formState, formWeight, playerRatingAvg } from './form';

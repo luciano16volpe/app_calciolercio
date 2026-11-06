@@ -1,4 +1,4 @@
-// Foto del giocatore: ritaglio quadrato al centro, 200 px, JPEG qualità 0,7 (come legacy: onPhotoSelected).
+// Foto del giocatore: ritaglio quadrato al centro, 200 px, JPEG qualità 0,7.
 
 /** Legge un file immagine e lo restituisce ritagliato quadrato 200×200 in JPEG. */
 export function resizeSquare(file: File, size = 200): Promise<Blob> {

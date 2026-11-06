@@ -1,5 +1,4 @@
 // Coppie: compagni e avversari di un giocatore, classifica delle coppie.
-// Fonte: playerPairs, scopePairs (+ ordinamenti di renderCoppie) in legacy/index.html.
 import { normalizeTeam, playerKey, scopeMatches } from './stats';
 import type { Dataset, Player } from './types';
 

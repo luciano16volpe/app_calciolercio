@@ -1,4 +1,4 @@
-// Record di una stagione o di sempre. Fonte: renderRecord in legacy/index.html (solo i calcoli).
+// Record di una stagione o di sempre.
 import { normalizeTeam, playerKey, scopeMatches, validVote } from './stats';
 import type { Dataset, Match, Rating } from './types';
 

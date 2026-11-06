@@ -1,6 +1,6 @@
 // Scheda giocatore (sola lettura): foto, figurina, statistiche, pagelle, bacheca, compagni e avversari.
-// Fonte: openPlayerCardByIdx, bachecaHTML, playerExtrasHTML in legacy/index.html. Le modifiche arrivano con l'accesso admin.
-import { useEffect, useMemo, useState } from 'react';
+// Le modifiche arrivano con l'accesso admin.
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { formOn } from '../../data/gameSettings';
 import { photoUrl, type LeagueData } from '../../data/queries';
 import { formState } from '../../domain/form';
@@ -199,7 +199,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
                       <span className="stat-icon">{ICONS[j]}</span>
                       <span className="stat-name">{s}</span>
                       <span className="stat-input" style={{ border: 'none', background: 'transparent', WebkitTextFillColor: 'var(--text)' }}>{player.stats[j]}</span>
-                      <div className="mini-bar"><div className="mini-bar-fill" style={{ width: `${(player.stats[j] ?? 0) * 10}%` }} /></div>
+                      <div className="mini-bar"><div className="mini-bar-fill stat-anim" style={{ width: `${(player.stats[j] ?? 0) * 10}%`, '--i': j } as CSSProperties} /></div>
                     </div>
                   ))}
                   {weightRow}

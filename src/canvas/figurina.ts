@@ -1,4 +1,4 @@
-// Figurina in stile FIFA (720×1140, a doppia risoluzione). Fonte: drawFutCard, FUT_SHORT, seasonShort in legacy/index.html.
+// Figurina in stile FIFA (720×1140, a doppia risoluzione).
 // Valutazione = OVR × 10. Il disegno cambia con la fascia (Top, Oro, Argento, Bronzo, Cacca, Marcia) e con lo stato di forma
 // (🔥 ON FIRE, 🌧️ IN CRISI). In basso le medaglie dei trofei vinti.
 import { FEATS } from '../domain/awards';
@@ -626,7 +626,7 @@ export function drawFutCard(p: FutCardModel, photoImg: Img | null): HTMLCanvasEl
     if (gr) gr.count++;
     else grouped.push({ k: m.k, shame: m.shame, emoji: noVS((m.t.split(' ')[0] as string)), cap: FUT_SHORT[m.k] as string, sub: seasonShort(m.season), count: 1 });
   });
-  // come in legacy: senza "shame" il confronto non è un numero e l'ordine resta quello di arrivo (vedi docs/DECISIONI.md)
+  // senza "shame" il confronto non è un numero e l'ordine resta quello di arrivo (vedi docs/DECISIONI.md)
   grouped.sort((u, v) => Number(u.shame) - Number(v.shame));
   const featItems = tr.feats.map((f) => ({ k: f.k, emoji: noVS(f.t.split(' ')[0] as string), count: f.count }));
   // nessun premio ancora → le imprese diventano le medaglie

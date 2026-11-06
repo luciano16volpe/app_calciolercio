@@ -1,5 +1,4 @@
 // Dai dati dell'app alle immagini da condividere: prepara i numeri e chiama il disegno giusto.
-// Fonte: shareTeams, shareMatchFormations, shareMatchSummary, shareTeamsSheet, shareMatchSheet, openFutCard, shareCompare in legacy/index.html.
 import { photoUrl, type LeagueData } from '../data/queries';
 import type { Combo } from '../domain/balancing';
 import { balanceScores } from '../domain/balancing';
@@ -58,7 +57,7 @@ export const matchSummary = (ld: LeagueData, m: Match): HTMLCanvasElement => dra
 
 export const matchSheet = (ld: LeagueData, m: SheetMatch): HTMLCanvasElement => drawSheet(sheetInput(ld.dataset, m));
 
-/** Foglio della proposta mostrata in Gioca (senza dover creare prima la partita). La data è quella di oggi, come in legacy. */
+/** Foglio della proposta mostrata in Gioca (senza dover creare prima la partita). La data è quella di oggi. */
 export function comboSheet(ld: LeagueData, c: Combo, now = new Date()): { canvas: HTMLCanvasElement; date: string } {
   const players = ld.dataset.players;
   const date = now.toISOString().substring(0, 10);

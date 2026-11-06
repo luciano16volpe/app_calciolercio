@@ -1,5 +1,4 @@
 // Peso dei voti, valore di bilanciamento e stato di forma.
-// Fonte: formWeight, effectiveScore, formState, onFire, inCrisi in legacy/index.html.
 import { calcOvr } from './ovr';
 import { playerSeason, seasonStats, type PlayerSeason } from './stats';
 import type { Dataset, Player } from './types';

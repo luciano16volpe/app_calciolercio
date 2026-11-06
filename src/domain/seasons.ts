@@ -1,4 +1,4 @@
-// Stagioni a mesi interi. Fonte: seasonOf, seasonStatus, seasonsList in legacy/index.html.
+// Stagioni a mesi interi.
 import type { Match } from './types';
 
 /** Giorni dopo la fine di una stagione in cui l'albo si aggiorna ancora (pagelle in ritardo). */
@@ -55,7 +55,7 @@ export function seasonStatus(s: Season, today: string = new Date().toISOString()
 
 /**
  * Stagioni con almeno una partita salvata (o un albo salvato), dalla più vecchia.
- * `albo`: righe dell'albo già salvato, con `chiave` e `dal` (come in legacy).
+ * `albo`: righe dell'albo già salvato, con `chiave` e `dal`.
  */
 export function seasonsList(
   matches: Pick<Match, 'date'>[],

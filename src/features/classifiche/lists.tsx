@@ -1,5 +1,4 @@
 // Le schede a elenco delle Classifiche: Marcatori, Assist, Media voto, Coppie, Record.
-// Fonte: renderScorersList, renderMediaList, renderCoppie, renderRecord in legacy/index.html.
 import { Fragment, type ReactNode } from 'react';
 import type { LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';

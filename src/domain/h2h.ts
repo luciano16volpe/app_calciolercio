@@ -1,5 +1,4 @@
 // Confronto testa a testa tra due giocatori.
-// Fonte: headToHead, scopeMvp, scopeTrophies, compareRows, cmpLead, defaultRival in legacy/index.html.
 import { alboSeasons, FEATS, type AlboRow, type SeasonAwards } from './awards';
 import { noVS } from './format';
 import { rosaOrder } from './ovr';

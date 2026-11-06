@@ -1,4 +1,4 @@
-// Piccole funzioni di formattazione condivise. Fonte: formatDate, noVS in legacy/index.html.
+// Piccole funzioni di formattazione condivise.
 
 /** Data ISO (aaaa-mm-gg…) → gg/mm/aaaa. Senza data: "—". */
 export function formatDate(d: unknown): string {
@@ -25,7 +25,7 @@ export function avatarClass(roles: string[] | undefined | null): string {
   return roles[0] === 'ATT' ? 'av-att' : roles[0] === 'DIF' ? 'av-def' : 'av-mid';
 }
 
-/** Mette in sicurezza il testo per l'HTML (& < > " '), come esc() di legacy. */
+/** Mette in sicurezza il testo per l'HTML (& < > " '). */
 export const esc = (v: unknown): string =>
   String(v ?? '')
     .replaceAll('&', '&amp;')

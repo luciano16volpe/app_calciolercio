@@ -1,10 +1,9 @@
 # Dati di prova (REALI — tenere il repository privato)
 
-- `app_data.json` — 16 partite (20/05/2026 → 28/10/2026) e 162 pagelle come le legge l'app
-  legacy (`matches`, `ratings`). Squadre: `teamA` = Blu, `teamB` = Bianchi. Non contiene titoli e
+- `app_data.json` — 16 partite (20/05/2026 → 28/10/2026) e 162 pagelle (`matches`, `ratings`). Squadre: `teamA` = Blu, `teamB` = Bianchi. Non contiene titoli e
   descrizioni (salvati dopo).
-- `../../legacy/rosa_calcetto.json` — 22 giocatori (statistiche, ruoli, foto in base64, alias),
-  pesi dell'OVR, indirizzo dello script Google attuale.
+- `rosa.json` — 22 giocatori (statistiche, ruoli, foto in base64, alias),
+  pesi dell'OVR.
 - `whatsapp/` — 4 messaggi veri della Redazione, ognuno della sua partita:
 
 | File | Partita (`date`) | Stile |

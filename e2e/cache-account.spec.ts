@@ -12,8 +12,8 @@ test('accesso su telefono condiviso elimina la cache del precedente account', as
   });
   await openApp(page);
   await expect.poll(() => page.evaluate(() => ({
-    legacy: localStorage.getItem('calciolercio-cache'),
+    old: localStorage.getItem('calciolercio-cache'),
     other: localStorage.getItem('calciolercio-cache-user:altro-utente'),
     owner: localStorage.getItem('calciolercio-cache-owner'),
-  }))).toEqual({ legacy: null, other: null, owner: 'u1' });
+  }))).toEqual({ old: null, other: null, owner: 'u1' });
 });

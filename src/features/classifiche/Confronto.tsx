@@ -1,5 +1,4 @@
 // "⚔️ Confronto testa a testa": due giocatori, sfide dirette, 12 righe con barre, 6 statistiche della figurina.
-// Fonte: renderConfronto, pickCmp, setCmp in legacy/index.html. 
 import { useState } from 'react';
 import { useImageTools } from '../../app/ImageViewer';
 import { compareCanvas } from '../../canvas/lazy';

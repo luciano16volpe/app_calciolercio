@@ -1,6 +1,4 @@
 // Premi di stagione, imprese, Occasionali e albo d'oro.
-// Fonte: AWARDS, FEATS, matchEvents, computeSeasonAwards, alboRows, seasonFromRows, isFrozen, alboSeasons
-// in legacy/index.html. (syncAlbo, che scrive sul foglio Google, non è qui: riguarda la Fase 2.)
 import { seasonOf, seasonsList, type Season, type SeasonStatus } from './seasons';
 import { mvpPerf, normalizeTeam, playerKey, validVote } from './stats';
 import type { Dataset } from './types';
@@ -109,7 +107,7 @@ export interface AwardResult {
   k: string;
   t: string;
   shame: boolean;
-  /** Assente nel premio "Coppia d'oro", come in legacy. */
+  /** Assente nel premio "Coppia d'oro". */
   occ?: boolean;
   winners: string[];
   value: string;

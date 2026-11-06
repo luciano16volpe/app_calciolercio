@@ -12,7 +12,7 @@ test('Panchina: via dalla lega, resta nella storia, torna dalla Panchina', async
   const mem = be.addUser('u-mem', 'mem@example.com', 'Membro Semplice');
   be.leagues.push({ id: 'SM', name: 'San Marcello', slug: 'san-marcello', is_public: false, invite_code: 'smsmsmsm', owner_id: adm, settings: {}, created_at: '2026-01-01' });
   be.members.push({ league_id: 'SM', user_id: adm, role: 'admin', joined_at: '2026-01-01' }, { league_id: 'SM', user_id: mem, role: 'member', joined_at: '2026-01-02' });
-  be.seedLegacy('SM');
+  be.seedFixtures('SM');
   // un giocatore che ha giocato l'ultima partita
   const lastMatch = [...be.matches].sort((a, b) => String(b.date).localeCompare(String(a.date)))[0] as { id: string };
   const pid = (be.mplayers.find((x) => x.match_id === lastMatch.id) as { player_id: string }).player_id;

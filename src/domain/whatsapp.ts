@@ -1,6 +1,5 @@
 // Importazione delle pagelle da WhatsApp: lettura del messaggio e abbinamento dei nomi.
-// Fonte: waNorm, waWords, waNameScore, waBest, waIsTitle, parseWhatsAppPagelle, waAnalyze, waAssign, waApply,
-// waHTML in legacy/index.html. Assegna SOLO titolo e descrizione: voti, gol e risultato non si toccano.
+// Assegna SOLO titolo e descrizione: voti, gol e risultato non si toccano.
 //
 // Stili riconosciuti (da messaggi veri):
 //  • "*Peppe 6,5* descrizione…" + ultima riga "_TITOLO_ 🔋" (anche a fine frase, o "TITOLO 🔩")
@@ -97,7 +96,7 @@ export function waBest(name: string, slots: WaSlot[], map: AliasMap): WaMatch {
   return { score: best, slot: cands.length === 1 ? (cands[0] as WaSlot) : null, ambiguous: cands.length > 1 ? cands : null };
 }
 
-// Cerca anche i singoli caratteri invisibili di variante (FE0F), unione (200D) e riquadro (20E3), come legacy.
+// Cerca anche i singoli caratteri invisibili di variante (FE0F), unione (200D) e riquadro (20E3).
 // eslint-disable-next-line no-misleading-character-class
 const WA_EMO = /[\p{Extended_Pictographic}\ufe0f\u200d\u20e3]/gu;
 

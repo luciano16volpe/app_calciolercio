@@ -1,5 +1,5 @@
 // Suggerimento «Metti CalcioLercio nella schermata Home»: su iPhone/iPad (Safari) e su Android (Chrome), finché non lo si chiude
-// o l'app non è già installata. Compare in tutte le pagine e nella pagina d'accesso. Fonte: renderInstallHint in legacy/index.html.
+// o l'app non è già installata. Compare in tutte le pagine e nella pagina d'accesso.
 import { useState } from 'react';
 
 const KEY = 'calcio_install_hint';

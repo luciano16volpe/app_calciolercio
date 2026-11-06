@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { fixturePlayer, setup } from './helpers';
+import { fixturePlayer, settledText, setup } from './helpers';
 
 test('Profilo e scheda dalla Rosa mostrano gli stessi numeri e la stessa forma', async ({ page }) => {
   test.setTimeout(60_000);
@@ -9,7 +9,7 @@ test('Profilo e scheda dalla Rosa mostrano gli stessi numeri e la stessa forma',
   const profile = page.locator('#profile-player-card');
   await expect(profile.locator('.pg-grid')).toBeVisible();
   const pagelle = await profile.locator('.pg-grid').innerText();
-  const figurina = await profile.locator('.fut-mini').innerText();
+  const figurina = await settledText(profile.locator('.fut-mini'));
   const forma = await profile.locator('.fire-chip').allTextContents();
   const peso = await profile.locator('.stat-row-ro').innerText();
   await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();

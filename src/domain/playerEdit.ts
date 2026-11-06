@@ -1,4 +1,4 @@
-// Modifica di un giocatore: limiti dei valori. Fonte: upStat, toggleRole in legacy/index.html.
+// Modifica di un giocatore: limiti dei valori.
 
 /** Valore di una statistica scritto a mano: tra 1 e 10 (se non è un numero, 1). */
 export const clampStat = (v: unknown): number => Math.min(10, Math.max(1, parseFloat(v as string) || 1));

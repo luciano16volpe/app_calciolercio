@@ -6,7 +6,6 @@ classifiche, albo d'oro, Gazzette. Nuova versione multi-lega su Supabase.
 - Guida per lo sviluppo (Claude Code): `CLAUDE.md`
 - Test e copertura: `docs/TEST.md`
 - Regole dell'app: `docs/REGOLE.md` · Decisioni: `docs/DECISIONI.md` · Piano: `docs/PIANO.md`
-- Archivio storico e dati per l'importazione: `legacy/` (non usato come confronto nei test)
 
 ## Provare (Fase 4)
 - `npx tsc --noEmit`, `npx vitest run` (logica), `npm run build`, `npm run e2e` (schermate: ti chiede se provare su iOS, Android o entrambi; `npm run e2e -- ios`, `-- android`, `-- entrambi`).

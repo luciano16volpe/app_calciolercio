@@ -5,7 +5,7 @@ squadre equilibrate, partite con pagelle (voti + titolo e descrizione della "Red
 classifiche, albo d'oro per stagione, Gazzette. Lingua dell'interfaccia: **italiano**.
 
 Questo progetto è la **nuova versione multi-lega** dell'app, con database Supabase.
-L'app corrente è questa versione React/Supabase. `legacy/` conserva il materiale storico per l'importazione e non è un riferimento per i test.
+L'app corrente è questa versione React/Supabase. La vecchia app non esiste più nel repository e non è un riferimento per i test.
 
 ## Regola d'oro
 
@@ -44,12 +44,11 @@ src/
   canvas/        immagini condivisibili: figurina.ts  riepilogo.ts  formazioni.ts  foglio.ts  confronto.ts
   data/          accesso a Supabase (query, mutazioni, upload)
   features/      schermate: rosa/  gioca/  partite/  classifiche/  leghe/  auth/  impostazioni/
-  styles/        app.css (portato da legacy)
+  styles/        app.css
 tests/
   fixtures/      dati reali di prova (partite, pagelle, messaggi WhatsApp)
   domain/        regole attuali, esempi espliciti e casi limite
   db/            migrazioni, funzioni e RLS applicative
-legacy/          materiale storico per l'importazione
 supabase/        migrations/ (+ functions/ in futuro)
 ```
 
@@ -63,7 +62,7 @@ supabase/        migrations/ (+ functions/ in futuro)
 - Date in formato ISO `YYYY-MM-DD`. Stagioni con chiave `AAAA-PRI|EST|AUT|INV` (vedi REGOLE).
 - Le 11 statistiche hanno sempre questo ordine (array di 11 valori 0–10):
   `stamina, forza, dribling, velocità, tiro, passaggio, attacco, difesa, tecnica, porta, intelligenza`.
-- Una sola fonte per ogni calcolo (es. `seasonStats(scope)` in legacy): niente formule duplicate.
+- Una sola fonte per ogni calcolo (es. `seasonStats(scope)`): niente formule duplicate.
 - **Mai** la chiave `service_role`/secret di Supabase nel codice o nel repo. Nel client solo
   `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` (file `.env.local`, non committato).
 - I permessi li garantisce il database (Row Level Security), non l'interfaccia.
@@ -78,7 +77,7 @@ supabase/        migrations/ (+ functions/ in futuro)
 
 ## iPhone / Android — insidie note
 - Tastiera iOS: prima di chiudere una finestra togliere il focus dai campi, altrimenti la barra in
-  basso resta "sospesa" a metà schermo (in legacy: `releaseKeyboard()` + `repairViewport()`).
+  basso resta "sospesa" a metà schermo (`releaseKeyboard()` + `repairViewport()`).
 - Campi di testo con `font-size: 16px` (sotto, iOS fa zoom).
 - `overflow-x:hidden` solo su `html`, non su `body` (rompe `position:fixed` su iOS).
 - Schermi da 320 a 412 px: niente deve uscire in orizzontale (controllare sempre a 360 px).

@@ -1,5 +1,4 @@
 // Immagine del riepilogo di una partita: risultato, momenti chiave, pagelle di ogni giocatore con gol e assist.
-// Fonte: shareMatchSummary in legacy/index.html.
 import { formatDate } from '../domain/format';
 import { matchHighlights, type MatchHighlights } from '../domain/matches';
 import { normalizeTeam, playerKey } from '../domain/stats';

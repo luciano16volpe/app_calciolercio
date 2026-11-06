@@ -1,4 +1,4 @@
-// Immagine delle formazioni (usata da Gioca e dalle partite salvate). Fonte: drawFormationsCanvas in legacy/index.html.
+// Immagine delle formazioni (usata da Gioca e dalle partite salvate).
 import { fitText, newShareCanvas, drawShareHeader, drawTeamBlock, roundRect, SHARE_C, SHARE_FONT } from './share';
 
 export interface FormationPlayer {

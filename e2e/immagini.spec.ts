@@ -66,6 +66,36 @@ test('Figurina: si apre a schermo intero, a doppia risoluzione, con Condividi e 
   await noOverflow(page);
 });
 
+test('Figurina che brilla: il dito sposta la luce, il trascinamento non ingrandisce e il file condiviso non cambia', async ({ page }, testInfo) => {
+  await openApp(page);
+  await page.locator('#players-list .card-compact').first().click();
+  await page.locator('.fut-mini').first().click();
+  const { viewer } = await viewerImage(page, 'figurina-brilla', testInfo);
+  const card = viewer.locator('.tilt-card');
+  await expect(card).toBeVisible();
+  await expect(viewer.locator('.gv-note')).toContainText('Muovi il dito');
+  const box = (await card.boundingBox())!;
+  const before = await card.evaluate((el) => el.style.getPropertyValue('--mx'));
+  // trascinamento: la luce segue il dito e alla fine non si ingrandisce
+  await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.3);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.6, { steps: 6 });
+  const during = await card.evaluate((el) => ({ mx: el.style.getPropertyValue('--mx'), ry: el.style.getPropertyValue('--ry') }));
+  await page.mouse.up();
+  expect(during.mx).not.toBe(before);
+  expect(parseFloat(during.ry)).toBeGreaterThan(0);
+  await expect(viewer.locator('.gv-img')).not.toHaveClass(/zoom/);
+  // niente sbordamenti: la figurina sta tutta nello schermo
+  const after = (await card.boundingBox())!;
+  expect(after.x).toBeGreaterThanOrEqual(-1);
+  expect(after.x + after.width).toBeLessThanOrEqual((page.viewportSize() as { width: number }).width + 1);
+  if (process.env.SHOTS_DIR) await page.screenshot({ path: join(process.env.SHOTS_DIR, `brilla-${testInfo.project.name}.png`) });
+  // il file che si condivide è sempre l'immagine normale
+  const [dl] = await Promise.all([page.waitForEvent('download'), viewer.locator('.gv-btns button', { hasText: 'Salva' }).click()]);
+  expect(dl.suggestedFilename()).toMatch(/^figurina_.+\.png$/);
+  await noOverflow(page);
+});
+
 test('Gioca: formazioni a schermo intero e foglio da stampare scaricato', async ({ page }, testInfo) => {
   test.setTimeout(90_000); // le immagini grandi sono lente da generare mentre girano più prove insieme
   await openApp(page);

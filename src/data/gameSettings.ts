@@ -3,7 +3,7 @@ import { parseModules, type Modules } from '../domain/modules';
 import type { LeagueData } from './queries';
 import { supabase } from './supabase';
 
-/** «Forma recente» acceso? (se l'impostazione non c'è, sì: come in legacy) */
+/** «Forma recente» acceso? (se l'impostazione non c'è, sì) */
 export const formOn = (d: Pick<LeagueData, 'useForm'>): boolean => d.useForm !== false;
 
 /** Formazioni valide per questa app (quelle salvate, altrimenti le predefinite). */

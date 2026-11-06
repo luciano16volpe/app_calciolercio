@@ -1,5 +1,4 @@
-// Il campo (SVG) con le due formazioni. Fonte: renderPitch in legacy/index.html.
-// Costruisce lo stesso testo SVG di legacy (i test lo confrontano carattere per carattere).
+// Il campo (SVG) con le due formazioni.
 import type { Module, Slot } from './balancing';
 import { SLOT_FALLBACK } from './balancing';
 import { esc } from './format';

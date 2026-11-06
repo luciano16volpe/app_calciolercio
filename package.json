@@ -9,8 +9,6 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run",
-    "import": "tsx scripts/import/run.ts",
-    "import:verify": "tsx scripts/import/verify.ts",
     "e2e": "npm run build && node scripts/e2e.mjs",
     "push:setup": "node scripts/push-setup.mjs",
     "push:deploy": "supabase functions deploy push --project-ref ivrwqpuikbnvnxgvgegd --no-verify-jwt --use-api"
@@ -35,7 +33,6 @@
     "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
-    "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1",
     "vite": "^8.3.5",

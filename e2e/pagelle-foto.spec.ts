@@ -8,7 +8,7 @@ function league(be: FakeBackend, role: 'admin' | 'redazione') {
   const u = be.addUser('u-1', 'u1@example.com', 'Utente Prova');
   be.leagues.push({ id: 'SM', name: 'San Marcello', slug: 'san-marcello', is_public: false, invite_code: 'smsmsmsm', owner_id: role === 'admin' ? u : null, settings: {}, created_at: '2026-01-01' });
   be.members.push({ league_id: 'SM', user_id: u, role, joined_at: '2026-01-01' });
-  be.seedLegacy('SM');
+  be.seedFixtures('SM');
   return u;
 }
 async function open(browser: Browser, testInfo: TestInfo, be: FakeBackend, user: string, path = '/l/san-marcello/rosa') {

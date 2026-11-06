@@ -1,5 +1,4 @@
 // Finestra "📅 Nuova partita": salva le squadre appena sorteggiate (con la previsione, per misurare la precisione del bilanciamento).
-// Fonte: newMatch, saveNewMatch in legacy/index.html.
 import { useQueryClient } from '@tanstack/react-query';
 import { HourSelect } from '../../app/HourSelect';
 import { useState } from 'react';

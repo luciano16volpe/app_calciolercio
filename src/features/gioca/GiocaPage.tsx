@@ -1,5 +1,4 @@
 // Gioca: formato della partita, convocati, sorteggio delle squadre bilanciate, campo, scambi a mano.
-// Fonte: pagina "partita" di legacy/index.html (setBaseFormat, buildConvList, generateTeams, renderResult, dragStart…).
 // "Crea partita" arriva con il passo 3.7.
 import { Fragment, useMemo, useRef, useState } from 'react';
 import { useImageTools } from '../../app/ImageViewer';

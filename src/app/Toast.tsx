@@ -1,4 +1,4 @@
-// Messaggio a comparsa in basso (come toast() di legacy).
+// Messaggio a comparsa in basso.
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 
 const ToastContext = createContext<(msg: string) => void>(() => undefined);

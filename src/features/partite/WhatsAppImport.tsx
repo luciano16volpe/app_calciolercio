@@ -1,5 +1,5 @@
 // "📥 Importa pagelle da WhatsApp": si incolla il messaggio, l'app riconosce i giocatori e assegna SOLO titolo e descrizione.
-// Voti, gol e risultato restano quelli inseriti a mano. Fonte: waAnalyze, waRenderPreview, waAssign, waApply in legacy/index.html.
+// Voti, gol e risultato restano quelli inseriti a mano.
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useToast } from '../../app/Toast';
@@ -9,7 +9,7 @@ import { analyzePagelle, waApply, waAssign, waRemember, whatsappProblem, type Al
 import type { Match } from '../../domain/types';
 import { normalizeTeam } from '../../domain/stats';
 
-const ALIAS_KEY = 'calcio_alias'; // stessa chiave di legacy: i soprannomi già imparati restano validi
+const ALIAS_KEY = 'calcio_alias'; // i soprannomi già imparati restano validi
 function readAliasMap(): AliasMap {
   try {
     return JSON.parse(localStorage.getItem(ALIAS_KEY) || '{}') as AliasMap;

@@ -1,6 +1,5 @@
 // Partite: elenco, highlights, testo delle pagelle, equilibrio squadre, Gazzette.
-// Fonte: renderMatchesList, renderLastMatch, matchHighlights, pagelleText, matchBalanceHTML, statCompareHTML,
-// renderGazStrip, openGazArchive in legacy/index.html. Qui ci sono solo i calcoli: il disegno è nei componenti.
+// Qui ci sono solo i calcoli: il disegno è nei componenti.
 import { comboMetrics, distribLabel, goalsLabel, goalsLevel, predGoals, balanceScores, type ComboMetrics } from './balancing';
 import { formatDate } from './format';
 import { seasonOf } from './seasons';

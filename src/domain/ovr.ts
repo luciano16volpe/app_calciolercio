@@ -1,4 +1,4 @@
-// OVR e fasce delle figurine. Fonte: calcOvr, futRating, futTier in legacy/index.html.
+// OVR e fasce delle figurine.
 
 /** OVR = media pesata delle 11 statistiche. Non include le pagelle. */
 export function calcOvr(stats: number[], weights: number[]): number {

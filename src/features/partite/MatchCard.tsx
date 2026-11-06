@@ -1,6 +1,5 @@
 import { MatchTextBoundary } from './MatchTextBoundary';
 // Scheda partita (in lettura; con il ✏️ per chi ha il permesso diventa modificabile): pulsanti, risultato, highlights, Gazzetta, equilibrio squadre, pagelle di ogni giocatore.
-// Fonte: openMatch, matchHighlightsHTML, matchBalanceHTML, gazSectionHTML in legacy/index.html (stato "bloccato").
 // Modifica di voti, gol, risultato e pagelle: passo 3.7b. Importazione WhatsApp e Gazzetta: 3.7c e 3.7e.
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { HourSelect } from '../../app/HourSelect';

@@ -1,5 +1,4 @@
 // Parte alta della scheda giocatore quando si può modificare (dalla Rosa, per l'amministratore): foto, ruoli e statistiche.
-// Fonte: openRosaCard, upStat, toggleRole, photoActions, onPhotoSelected, fitPhotoBand in legacy/index.html.
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { releaseKeyboard, repairViewport } from '../../app/Dialogs';

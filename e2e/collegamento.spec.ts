@@ -253,7 +253,7 @@ test('Privacy: informativa con le righe sul registro; la cancellazione chiede di
 
 function mergeStatuses() {
   const b = new FakeBackend();
-  b.seedLegacy('SM');
+  b.seedFixtures('SM');
   return [...b.players].map((p) => status(String(p.id), String(p.name)));
 }
 

@@ -1,5 +1,4 @@
 // Gioca: giocatori delle squadre, scambi a mano, riepilogo di una proposta, precisione del bilanciamento.
-// Fonte: renderResult, swapPlayers, balancePrecisionHTML in legacy/index.html.
 import {
   distribLabel, goalsLabel, goalsLevel, predGoals, recomputeCombo, type BalanceContext, type Combo,
 } from './balancing';

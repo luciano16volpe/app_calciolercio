@@ -3,7 +3,7 @@
 // con le stesse regole di permesso. I permessi veri del database si provano in supabase/tests/*.sql.
 import { readFileSync } from 'node:fs';
 import type { BrowserContext, Route } from '@playwright/test';
-import { mapAlbo, mapMatchPlayers, mapMatches, mapPlayers, type LegacyFeed, type LegacyRosa } from '../scripts/import/map';
+import { mapAlbo, mapMatchPlayers, mapMatches, mapPlayers, type SeedFeed, type SeedRosa } from './seedMap';
 
 type Row = Record<string, unknown>;
 export interface Audit extends Row { id: number; at: string; action: string; actor_id: string | null; actor_name: string | null }
@@ -39,10 +39,10 @@ export class FakeBackend {
   private tx = 100;
   private aid = 0;
 
-  /** I dati veri di prova (22 giocatori, 16 partite, pagelle, albo) nella lega indicata, come li importerebbe lo script. */
-  seedLegacy(leagueId: string): void {
-    const rosa = JSON.parse(readFileSync('legacy/rosa_calcetto.json', 'utf8')) as LegacyRosa;
-    const feed = JSON.parse(readFileSync('tests/fixtures/live_feed.json', 'utf8')) as LegacyFeed;
+  /** I dati veri di prova (22 giocatori, 16 partite, pagelle, albo) nella lega indicata, . */
+  seedFixtures(leagueId: string): void {
+    const rosa = JSON.parse(readFileSync('tests/fixtures/rosa.json', 'utf8')) as SeedRosa;
+    const feed = JSON.parse(readFileSync('tests/fixtures/live_feed.json', 'utf8')) as SeedFeed;
     this.settings.push({ key: 'ovr_weights', value: rosa.weights });
     const rows = mapPlayers(rosa);
     const pid = new Map<string, string>();

@@ -1,5 +1,4 @@
 // Classifiche: i quattro numeri della stagione, marcatori e assist, media voto.
-// Fonte: scopeMinPres, renderSeasonDash, renderScorersList, renderMediaList in legacy/index.html.
 import { scopeMatches, seasonStats, type PlayerSeason } from './stats';
 import type { Dataset } from './types';
 

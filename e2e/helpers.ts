@@ -1,7 +1,7 @@
 // Aiuti comuni per le prove sulle schermate di menu, leghe, ruoli e inviti.
 // L'accesso è simulato (nessun account vero) e tutte le scritture vengono intercettate e registrate: sul database vero non si scrive niente.
 // Tutte le letture usano fixture locali; la lega finta `L2` è vuota salvo i dati impostati dal test.
-import { expect, type Page, type Route } from '@playwright/test';
+import { expect, type Locator, type Page, type Route } from '@playwright/test';
 import { FakeBackend } from './fakeBackend';
 
 const REF = 'ivrwqpuikbnvnxgvgegd';
@@ -57,7 +57,7 @@ export async function setup(page: Page, opts: Opts = {}): Promise<Write[]> {
   const stamp = '2026-01-01T00:00:00Z';
   if (smRole) {
     be.leagues.push({ id: 'SM', name: 'San Marcello', slug: 'san-marcello', is_public: false, invite_code: 'smsmsmsm', owner_id: null, settings: {}, created_at: stamp });
-    be.seedLegacy('SM');
+    be.seedFixtures('SM');
     be.members.push({ league_id: 'SM', user_id: 'u1', role: smRole, joined_at: stamp });
   }
   const addFake = (m: Mine) => {
@@ -133,7 +133,7 @@ export async function setup(page: Page, opts: Opts = {}): Promise<Write[]> {
 /** Un giocatore dei dati di prova (il primo in ordine di nome): id e nome. */
 export function fixturePlayer(): { id: string; name: string } {
   const b = new FakeBackend();
-  b.seedLegacy('SM');
+  b.seedFixtures('SM');
   const p = [...b.players].sort((x, y) => String(x.name).localeCompare(String(y.name)))[0] as { id: string; name: string };
   return { id: p.id, name: p.name };
 }
@@ -193,4 +193,16 @@ export async function openPanel(page: Page, itemId: string, sheetId: string) {
 export async function openProfile(page: Page) {
   await page.locator('.bottom-nav').getByRole('button', { name: 'Il mio profilo', exact: true }).click();
   await expect(page.locator('#page-profilo.active')).toBeVisible();
+}
+
+/** Il testo di un elemento quando non cambia più (il numero della figurina sale contando per meno di un secondo). */
+export async function settledText(locator: Locator): Promise<string> {
+  let last = '';
+  await expect.poll(async () => {
+    const now = await locator.innerText();
+    const same = now === last;
+    last = now;
+    return same;
+  }, { intervals: [250] }).toBe(true);
+  return last;
 }

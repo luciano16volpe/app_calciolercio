@@ -1,5 +1,5 @@
 import { FireChip } from '../player/FireChip';
-// Elenco della rosa: carte compatte, la più forte per prima (come legacy: buildRosa).
+// Elenco della rosa: carte compatte, la più forte per prima.
 import { useMemo } from 'react';
 import { photoUrl, type LeagueData } from '../../data/queries';
 import { calcOvr, rosaOrder } from '../../domain/ovr';

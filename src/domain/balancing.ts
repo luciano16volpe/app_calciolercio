@@ -1,8 +1,6 @@
 // Sorteggio delle squadre equilibrate (Gioca).
-// Fonte: makeSlots, MODULES, SLOT_FALLBACK, getModulesForSize, combos, teamSpread, roleFitScore,
-// roleCountPenalty, comboMetrics, recomputeCombo, generateTeams, predGoals… in legacy/index.html.
 //
-// Le squadre sono liste di INDICI nella rosa (come in legacy). `scores[i]` = valore di bilanciamento
+// Le squadre sono liste di INDICI nella rosa. `scores[i]` = valore di bilanciamento
 // del giocatore i (`effectiveScore`, vedi form.ts): si calcola una volta sola prima di sorteggiare.
 import { effectiveScore } from './form';
 import { seasonStats } from './stats';

@@ -1,5 +1,5 @@
 // Immagine "manifesto" del confronto testa a testa tra due giocatori (720×1290, a doppia risoluzione).
-// Fonte: drawCompareCard in legacy/index.html. Pensata per Safari: niente emoji nei testi centrati, numeri ancorati a destra/sinistra.
+// Pensata per Safari: niente emoji nei testi centrati, numeri ancorati a destra/sinistra.
 import { cmpLead, compareRows, headToHead, scopeLabel, type CompareRow, type HeadToHead } from '../domain/h2h';
 import { initials } from '../domain/format';
 import { futRating } from '../domain/ovr';
