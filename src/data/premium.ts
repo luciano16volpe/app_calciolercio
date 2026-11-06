@@ -7,7 +7,7 @@ export const premiumDate = (date: string) => new Intl.DateTimeFormat('it-IT', {
 
 export function useMyPremium(userId: string | null) {
   return useQuery({
-    queryKey: ['premium', userId], enabled: !!userId, staleTime: 0, refetchInterval: 60_000,
+    queryKey: ['premium', userId], enabled: !!userId, staleTime: 2 * 60_000, refetchInterval: 5 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('my_premium_status');
       if (error) throw error;

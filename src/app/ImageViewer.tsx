@@ -21,6 +21,12 @@ interface ImageTools {
 const ImageContext = createContext<ImageTools>({ showImage: () => undefined, shareCanvas: () => undefined });
 export const useImageTools = () => useContext(ImageContext);
 
+/** Libera la memoria di una tela già convertita in file (le figurine sono 1440×2280). */
+function releaseCanvas(c: HTMLCanvasElement): void {
+  c.width = 0;
+  c.height = 0;
+}
+
 function download(url: string, name: string): void {
   const a = document.createElement('a');
   a.href = url;
@@ -66,6 +72,7 @@ export function ImageProvider({ children }: { children: ReactNode }) {
       return;
     }
     canvas.toBlob((blob) => {
+      releaseCanvas(canvas); // su iPhone la memoria delle tele grandi è limitata: si libera subito
       if (!blob) {
         toast('Errore immagine');
         return;
@@ -83,6 +90,7 @@ export function ImageProvider({ children }: { children: ReactNode }) {
       return;
     }
     canvas.toBlob((blob) => {
+      releaseCanvas(canvas); // su iPhone la memoria delle tele grandi è limitata: si libera subito
       if (!blob) {
         toast('Errore immagine');
         return;

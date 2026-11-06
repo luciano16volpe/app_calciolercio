@@ -7,7 +7,7 @@ export const FEATURE_LABELS: Record<Feature, string> = {
   compare: 'Confronto', couples: 'Coppie', records: 'Record', statistics: 'Statistiche dettagliate', history: 'Stagioni precedenti', albo: "Albo d'oro",
 };
 export function useFeatures(userId: string | null) {
-  return useQuery({ queryKey: ['feature-modes', userId], enabled: !!userId, staleTime: 0, refetchInterval: 60_000,
+  return useQuery({ queryKey: ['feature-modes', userId], enabled: !!userId, staleTime: 2 * 60_000, refetchInterval: 5 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('my_feature_modes');
       if (error) throw error;
