@@ -57,6 +57,7 @@ test('programma: il membro non può cambiare i convocati',async ({browser},info)
 });
 
 test('programma: se il salvataggio fallisce conserva le modifiche per riprovare',async ({browser},info)=>{
+  test.setTimeout(60_000);
   const {page,context,be}=await openPlanned(browser,info);
   let submitted: unknown;
   await context.route('**/rest/v1/rpc/update_planned_match',r=>{
@@ -68,6 +69,8 @@ test('programma: se il salvataggio fallisce conserva le modifiche per riprovare'
   await editor.getByLabel('Luogo della partita').fill('Campo Luna');
   // Un aggiornamento in background non deve sostituire la copia originaria del modulo aperto.
   be.matches.find((m)=>m.id==='planned')!.place='Altro amministratore';
+  // Il controllo «ci sono novità?» si rinnova al ritorno nell'app solo se i dati hanno più di 15 secondi.
+  await page.waitForTimeout(15_500);
   await page.evaluate(()=>window.dispatchEvent(new Event('visibilitychange')));
   await expect(page.locator('#match-when')).toContainText('Altro amministratore');
   await editor.getByRole('button',{name:'Salva programma e squadre',exact:true}).click();

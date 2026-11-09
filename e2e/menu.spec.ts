@@ -92,6 +92,7 @@ test('Abbonamenti: lo swipe quasi completo termina senza attendere altri 200 ms'
   await setup(page, { rpc: { is_super_admin: true, admin_list_users: [], admin_premium_statuses: [] } });
   await openApp(page);
   await openMenu(page);
+  await page.locator('#menu-superadmin').click();
   await page.locator('#menu-premium').click();
   await page.getByRole('button', { name: /Abbonamenti/ }).click();
   const sheet = page.locator('#sheet-platform-users');
@@ -176,6 +177,7 @@ test('Menu: l\'amministratore supremo vede la sezione Piattaforma', async ({ pag
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openMenu(page);
   await expect(page.locator('.menu-chip.gold')).toContainText('Amministratore supremo');
+  await page.locator('#menu-superadmin').click();
   for (const id of ['#menu-audit', '#menu-platform-leagues', '#menu-platform-users', '#menu-premium']) await expect(page.locator(id)).toBeVisible();
   await page.locator('#menu-premium').click();
   await expect(page.locator('#sheet-premium')).toBeVisible();

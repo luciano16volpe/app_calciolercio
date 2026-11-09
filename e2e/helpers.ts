@@ -183,7 +183,7 @@ export async function openSettings(page: Page) {
 export async function openPanel(page: Page, itemId: string, sheetId: string) {
   await openMenu(page);
   if (['#menu-compare', '#menu-couples', '#menu-albo', '#menu-records'].includes(itemId)) await page.locator('#menu-players').click();
-  if (['#menu-audit', '#menu-platform-leagues', '#menu-platform-users', '#menu-premium', '#menu-game-settings'].includes(itemId) && await page.locator('#menu-superadmin').count()) await page.locator('#menu-superadmin').click();
+  if (['#menu-create', '#menu-audit', '#menu-platform-leagues', '#menu-platform-users', '#menu-premium', '#menu-game-settings'].includes(itemId) && await page.locator('#menu-superadmin').count()) await page.locator('#menu-superadmin').click();
   if (['#menu-invites', '#menu-claims', '#menu-bench', '#menu-proposals', '#menu-members', '#menu-merge'].includes(itemId)) await page.locator('#menu-league-admin').click();
   await page.locator(itemId).click();
   await expect(page.locator(sheetId)).toBeVisible();

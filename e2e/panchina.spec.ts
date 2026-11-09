@@ -46,6 +46,7 @@ test('Panchina: via dalla lega, resta nella storia, torna dalla Panchina', async
   await page.locator('#match-modal button', { hasText: '✕' }).first().click();
   // Panchina: c'è, con le sue partite; lo riporta in Rosa
   await openMenu(page);
+  await page.locator('#menu-league-admin').click();
   await page.locator('#menu-bench').click();
   const sheet = page.locator('#sheet-bench');
   await expect(sheet).toBeVisible();
@@ -54,7 +55,9 @@ test('Panchina: via dalla lega, resta nella storia, torna dalla Panchina', async
   await page.getByRole('button', { name: `Porta ${name} in San Marcello` }).click();
   await expect(page.locator('#toast')).toContainText('è ora nella Rosa');
   await expect(sheet.locator('#bench-empty')).toBeVisible();
-  await page.getByRole('button', { name: 'Indietro' }).click();
+  await page.getByRole('button', { name: 'Indietro' }).click(); // torna al riquadro ADMIN LEGA
+  await page.getByRole('button', { name: 'Indietro' }).click(); // torna al menu
+  await page.getByRole('button', { name: 'Chiudi il menu' }).click();
   await page.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click();
   await expect(page.locator('#players-list .card-compact')).toHaveCount(22);
 

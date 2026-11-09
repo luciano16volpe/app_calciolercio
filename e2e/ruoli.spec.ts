@@ -115,7 +115,8 @@ test('Piattaforma: tutte le leghe e utenti, per l\'amministratore supremo', asyn
   await expect(page.locator('#toast')).toContainText('Lega assegnata');
   expect(lastWrite(writes, 'admin_assign_owner').body).toEqual({ l: 'b', new_owner: 'u3' });
   await page.getByRole('button', { name: 'Indietro' }).click();
-  await openPanel(page, '#menu-platform-users', '#sheet-platform-users');
+  await page.locator('#menu-platform-users').click(); // «Indietro» riporta al riquadro SUPERADMIN
+  await expect(page.locator('#sheet-platform-users')).toBeVisible();
   await expect(page.locator('.platform-user')).toHaveCount(1);
   await noOverflow(page);
 });
