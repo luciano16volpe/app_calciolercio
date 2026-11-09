@@ -3,8 +3,8 @@
 import type { Database } from '../src/data/types';
 
 type Tables = Database['public']['Tables'];
-export type PlayerInsert = Tables['players']['Insert'];
-export type MatchInsert = Tables['matches']['Insert'];
+export type PlayerInsert = Tables['players']['Insert'] & { seed_id?: string };
+export type MatchInsert = Tables['matches']['Insert'] & { seed_id?: string };
 export type MatchPlayerInsert = Tables['match_players']['Insert'];
 export type AlboInsert = Tables['albo']['Insert'];
 
@@ -104,13 +104,13 @@ const textOrNull = (v: unknown): string | null => {
 };
 
 // ── giocatori ──────────────────────────────────────────────────────────────
-/** Riga `players` (senza la foto, che si carica a parte). `legacy_id` = id del giocatore nei dati di prova. */
+/** Riga `players` (senza la foto, che si carica a parte). `seed_id` = id del giocatore nei dati di prova (non è una colonna del database). */
 export function mapPlayers(rosa: SeedRosa): PlayerInsert[] {
   return rosa.players.map((p) => {
     const id = playerUuid(p.id);
     return {
       ...(id ? { id } : {}),
-      legacy_id: p.id,
+      seed_id: p.id,
       name: p.name,
       roles: p.roles ?? [],
       stats: p.stats,
@@ -123,13 +123,13 @@ export function mapPlayers(rosa: SeedRosa): PlayerInsert[] {
  * l'ordine tra i giocatori resta identico (da quell'ordine dipende, per esempio, come si scrivono i due nomi
  * della Coppia d'oro). Per id di altro formato: nessuno, lo assegna il database.
  */
-export function playerUuid(legacyId: string): string | undefined {
-  const m = legacyId.match(/^p_([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
+export function playerUuid(seedId: string): string | undefined {
+  const m = seedId.match(/^p_([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
   return m ? (m[1] as string).toLowerCase() : undefined;
 }
 
 // ── partite e squadre ──────────────────────────────────────────────────────
-/** Riga `matches` (senza id: lo assegna il database; si ritrova con `legacy_id`). */
+/** Riga `matches` (senza id: lo assegna il database; si ritrova con `seed_id`). */
 export function mapMatches(feed: SeedFeed, leagueId: string): { rows: MatchInsert[]; issues: Issue[] } {
   const issues: Issue[] = [];
   const rows: MatchInsert[] = [];
@@ -150,7 +150,7 @@ export function mapMatches(feed: SeedFeed, leagueId: string): { rows: MatchInser
     // un risultato a metà (solo un punteggio) non ha senso: si tiene vuoto e si segnala
     if ((sa == null) !== (sb == null)) issues.push(`partita ${m.id}: risultato incompleto (${m.scoreA}-${m.scoreB})`);
     rows.push({
-      legacy_id: m.id,
+      seed_id: m.id,
       league_id: leagueId,
       date,
       notes: textOrNull(m.notes),
@@ -170,8 +170,8 @@ export function mapMatches(feed: SeedFeed, leagueId: string): { rows: MatchInser
 export function mapMatchPlayers(
   feed: SeedFeed,
   rosa: SeedRosa,
-  matchIdOf: (legacyId: string) => string | undefined,
-  playerIdOf: (legacyId: string) => string | undefined,
+  matchIdOf: (seedId: string) => string | undefined,
+  playerIdOf: (seedId: string) => string | undefined,
 ): { rows: MatchPlayerInsert[]; issues: Issue[] } {
   const issues: Issue[] = [];
   const byId = new Map(rosa.players.map((p) => [p.id, p]));

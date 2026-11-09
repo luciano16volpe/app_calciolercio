@@ -593,7 +593,6 @@ export type Database = {
           date: string
           id: string
           league_id: string
-          legacy_id: string | null
           notes: string | null
           place: string | null
           play_time: string | null
@@ -609,7 +608,6 @@ export type Database = {
           date: string
           id?: string
           league_id: string
-          legacy_id?: string | null
           notes?: string | null
           place?: string | null
           play_time?: string | null
@@ -625,7 +623,6 @@ export type Database = {
           date?: string
           id?: string
           league_id?: string
-          legacy_id?: string | null
           notes?: string | null
           place?: string | null
           play_time?: string | null
@@ -802,7 +799,6 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
-          legacy_id: string | null
           name: string
           photo_path: string | null
           roles: string[]
@@ -814,7 +810,6 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
-          legacy_id?: string | null
           name: string
           photo_path?: string | null
           roles?: string[]
@@ -826,7 +821,6 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
-          legacy_id?: string | null
           name?: string
           photo_path?: string | null
           roles?: string[]
