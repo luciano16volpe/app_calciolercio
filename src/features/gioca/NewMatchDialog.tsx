@@ -1,4 +1,6 @@
 // Finestra "📅 Nuova partita": salva le squadre appena sorteggiate (con la previsione, per misurare la precisione del bilanciamento).
+import { PlaceField } from '../partite/PlaceField';
+import { NO_PLACE, placeOf, type PlaceValue } from '../../domain/place';
 import { useQueryClient } from '@tanstack/react-query';
 import { HourSelect } from '../../app/HourSelect';
 import { useState } from 'react';
@@ -21,7 +23,7 @@ export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData
   // ora e luogo: si propongono quelli dell'ultima partita che li ha (di solito si gioca sempre allo stesso posto)
   const last = [...data.dataset.matches].reverse().find((x) => x.place || x.time);
   const [time, setTime] = useState(() => String(last?.time ?? ''));
-  const [place, setPlace] = useState(() => String(last?.place ?? ''));
+  const [place, setPlace] = useState<PlaceValue>(() => (last ? placeOf(last) : NO_PLACE));
   const [notes, setNotes] = useState('');
   const [sa, setSa] = useState('');
   const [sb, setSb] = useState('');
@@ -35,12 +37,12 @@ export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData
   const save = async () => {
     if (!date) return toast('Scegli la data');
     if (!time) return toast('Scegli l’ora della partita');
-    if (!place.trim()) return toast('Scrivi dove si gioca');
+    if (!place.name.trim()) return toast('Scrivi dove si gioca');
     setBusy(true);
     try {
       toast('⏳ Salvataggio...');
       await createMatch({
-        leagueId: data.league.id, date, time, place: place.trim(), notes: notes.trim(),
+        leagueId: data.league.id, date, time, place: place.name.trim(), placeLat: place.lat, placeLng: place.lng, notes: notes.trim(),
         teamA: combo.tA.map((i) => (players[i] as { id: string }).id),
         teamB: combo.tB.map((i) => (players[i] as { id: string }).id),
         scoreA: sa !== '' ? clampInt(sa, 0, 99, 0) : '', scoreB: sb !== '' ? clampInt(sb, 0, 99, 0) : '',
@@ -74,7 +76,7 @@ export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData
           </div>
           <div>
             <label style={lbl} htmlFor="nm-place">📍 Luogo</label>
-            <input type="text" id="nm-place" maxLength={80} placeholder="es. Campo Sole" value={place} onChange={(e) => setPlace(e.target.value)} style={{ ...input, fontSize: 16 }} />
+            <PlaceField inputId="nm-place" placeholder="es. Campo Sole" value={place} onChange={setPlace} style={input} />
           </div>
           <div>
             <label style={lbl} htmlFor="nm-notes">📝 Note (opz.)</label>

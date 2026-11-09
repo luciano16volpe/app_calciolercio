@@ -78,3 +78,36 @@ test('programma: se il salvataggio fallisce conserva le modifiche per riprovare'
   await expect(editor.getByLabel('Luogo della partita')).toHaveValue('Campo Luna');
   expect(submitted).toMatchObject({p_original:{place:'Campo Sole'}});
 });
+
+test('programma: cerca il luogo su mappa, salva la posizione e la condivide',async ({browser},info)=>{
+  const {page,context,be}=await openPlanned(browser,info);
+  await context.route('https://nominatim.openstreetmap.org/**',(r)=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{name:'Campo Luna',display_name:'Campo Luna, Via Roma, Latina',lat:'41.46',lon:'12.9',address:{city:'Latina'}}])}));
+  await page.getByRole('button',{name:'Modifica programma e squadre'}).click();
+  const editor=page.locator('#sheet-planned-match');
+  await editor.getByLabel('Luogo della partita').fill('Campo Lu');
+  await editor.getByRole('button',{name:/Cerca su mappa/}).click();
+  await editor.getByRole('option',{name:/Campo Luna, Latina/}).click();
+  await expect(editor).toContainText('Posizione su mappa trovata');
+  await editor.getByRole('button',{name:'Salva programma e squadre',exact:true}).click();
+  await expect(editor).toHaveCount(0);
+  expect(be.matches.find((m)=>m.id==='planned')).toMatchObject({place:'Campo Luna, Latina',place_lat:41.46,place_lng:12.9});
+  await page.locator('#matches-list').getByText('Partita da organizzare',{exact:true}).click(); // la scheda si riapre con il luogo nuovo
+  await expect(page.locator('#share-place')).toBeVisible();
+  await page.evaluate(()=>{ Object.defineProperty(navigator,'share',{configurable:true,value:async (d:unknown)=>{ (window as unknown as {__shared:unknown}).__shared=d; }}); });
+  await page.locator('#share-place').click();
+  const shared=await page.evaluate(()=>(window as unknown as {__shared:{text:string}}).__shared);
+  expect(shared.text).toBe('📍 Campo Luna, Latina\nhttps://www.google.com/maps/search/?api=1&query=41.460000,12.900000');
+});
+
+test('programma: un luogo scritto a mano resta valido e senza pulsante di condivisione',async ({browser},info)=>{
+  const {page,be}=await openPlanned(browser,info);
+  await expect(page.locator('#share-place')).toHaveCount(0);
+  await page.getByRole('button',{name:'Modifica programma e squadre'}).click();
+  const editor=page.locator('#sheet-planned-match');
+  await editor.getByLabel('Luogo della partita').fill('Il campetto');
+  await editor.getByRole('button',{name:'Salva programma e squadre',exact:true}).click();
+  await expect(editor).toHaveCount(0);
+  expect(be.matches.find((m)=>m.id==='planned')).toMatchObject({place:'Il campetto',place_lat:null,place_lng:null});
+  await page.locator('#matches-list').getByText('Partita da organizzare',{exact:true}).click();
+  await expect(page.locator('#share-place')).toHaveCount(0);
+});

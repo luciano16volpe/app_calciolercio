@@ -70,3 +70,14 @@ test('la redazione non può modificare il programma né i convocati', async () =
   await db.exec(`reset role; select set_config('request.jwt.claim.sub','${editor}',true); set local role authenticated;`);
   await expect(save()).rejects.toThrow(/permesso/);
 });
+
+test('il luogo trovato su mappa salva anche le coordinate; scritto a mano le toglie', async () => {
+  await db.query('select update_planned_match($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',[match,targetDate,'20:00','Campo Sole, Latina','',[a],[b],original,41.46,12.9]);
+  expect((await db.query('select place,place_lat,place_lng from matches where id=$1',[match])).rows[0]).toEqual({place:'Campo Sole, Latina',place_lat:41.46,place_lng:12.9});
+  const again = { ...original, date: targetDate, time: '20:00', place: 'Campo Sole, Latina' };
+  await db.query('select update_planned_match($1,$2,$3,$4,$5,$6,$7,$8)',[match,targetDate,'20:00','Campo a mano','',[a],[b],again]);
+  expect((await db.query('select place,place_lat,place_lng from matches where id=$1',[match])).rows[0]).toEqual({place:'Campo a mano',place_lat:null,place_lng:null});
+});
+test('le coordinate vanno insieme e dentro i limiti', async () => {
+  await expect(db.query('update matches set place_lat=41.4 where id=$1',[match])).rejects.toThrow();
+});

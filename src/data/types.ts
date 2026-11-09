@@ -595,6 +595,8 @@ export type Database = {
           league_id: string
           notes: string | null
           place: string | null
+          place_lat: number | null
+          place_lng: number | null
           play_time: string | null
           pred: number | null
           pred_rank: number | null
@@ -610,6 +612,8 @@ export type Database = {
           league_id: string
           notes?: string | null
           place?: string | null
+          place_lat?: number | null
+          place_lng?: number | null
           play_time?: string | null
           pred?: number | null
           pred_rank?: number | null
@@ -625,6 +629,8 @@ export type Database = {
           league_id?: string
           notes?: string | null
           place?: string | null
+          place_lat?: number | null
+          place_lng?: number | null
           play_time?: string | null
           pred?: number | null
           pred_rank?: number | null
@@ -1508,6 +1514,8 @@ export type Database = {
           p_notes: string
           p_original: Json
           p_place: string
+          p_lat?: number
+          p_lng?: number
           p_team_a: string[]
           p_team_b: string[]
           p_time: string

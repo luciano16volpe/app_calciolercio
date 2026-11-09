@@ -124,7 +124,7 @@ async function fetchLeagueRoster(leagueId: string) {
 /** Lo storico resta completo per tutte le formule e si legge in pagine dal server. */
 async function fetchLeagueHistory(league: LeagueData['league']) {
   const [matches, albo, editorsRes] = await Promise.all([
-    fetchAll((a, b) => supabase.from('matches').select('id, date, play_time, place, ratings_skipped, notes, score_a, score_b, pred, pred_rank').eq('league_id', league.id).order('id').range(a, b), 'partite'),
+    fetchAll((a, b) => supabase.from('matches').select('id, date, play_time, place, place_lat, place_lng, ratings_skipped, notes, score_a, score_b, pred, pred_rank').eq('league_id', league.id).order('id').range(a, b), 'partite'),
     supabase.from('albo').select('rows').eq('league_id', league.id),
     supabase.from('match_editors').select('match_id, name').eq('league_id', league.id), // la firma delle pagelle: se non si legge, si omette
   ]);

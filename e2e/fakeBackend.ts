@@ -269,7 +269,7 @@ export class FakeBackend {
       case 'update_planned_match': {
         const m = this.matches.find((row) => row.id === a.p_match);
         if (!m || !this.isAdmin(String(m.league_id), actor)) return err(400, 'Permesso negato', 'P0001');
-        m.date=a.p_date; m.play_time=a.p_time; m.place=a.p_place; m.notes=a.p_notes;
+        m.date=a.p_date; m.play_time=a.p_time; m.place=a.p_place; m.place_lat=a.p_lat ?? null; m.place_lng=a.p_lng ?? null; m.notes=a.p_notes;
         this.mplayers=this.mplayers.filter((row) => row.match_id!==m.id);
         for (const [team, ids] of [['A',a.p_team_a],['B',a.p_team_b]] as const) {
           (ids as string[]).forEach((id, position) => this.mplayers.push({match_id:m.id,player_id:id,team,position,rating:null,goals:0,assist:0,autogol:0,meta:0,rigori_sbagliati:0,titolo:null,descrizione:null}));
