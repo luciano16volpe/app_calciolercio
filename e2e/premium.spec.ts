@@ -6,9 +6,11 @@ test('admin Standard mantiene la gestione ordinaria senza impostazioni avanzate 
   await openApp(page,'/l/san-marcello/rosa');
   await expect(page.locator('.bottom-nav').getByRole('button',{name:'Gioca',exact:true})).toBeVisible();
   await openMenu(page);
+  await page.locator('#menu-league-admin').click();
   await expect(page.locator('#menu-members')).toBeVisible();
   await expect(page.locator('#menu-invites')).toBeVisible();
   await expect(page.locator('#menu-league-settings')).toHaveCount(0);
+  await page.getByRole('button',{name:'Indietro'}).click();
   await page.getByRole('button',{name:'Chiudi il menu'}).click();
   await page.locator('.bottom-nav').getByRole('button',{name:'Partite',exact:true}).click();
   await page.locator('#last-match .card').click();

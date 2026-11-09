@@ -43,12 +43,16 @@ test('Scenario completo: lega, invito, collegamento, codice, ruoli, pagelle, reg
   };
   const createLeague = async (page: Page, name: string): Promise<string> => {
     await openMenu(page);
+    await page.locator('#menu-superadmin').click();
     await page.locator('#menu-create').click();
     await page.locator('#cl-name').fill(name);
     await page.locator('#cl-submit').click();
     await expect(page.locator('#sheet-created')).toBeVisible({ timeout: 15_000 });
     const code = (await page.locator('#created-code').textContent()) ?? '';
     await page.getByRole('button', { name: 'Vai alla lega' }).click();
+    // l'amministratore supremo ritrova il riquadro SUPERADMIN sotto il menu: si chiudono entrambi
+    await page.getByRole('button', { name: 'Indietro' }).click();
+    await page.getByRole('button', { name: 'Chiudi il menu' }).click();
     await expect(page.locator('#league-pill')).toContainText(name);
     return code;
   };
@@ -73,11 +77,14 @@ test('Scenario completo: lega, invito, collegamento, codice, ruoli, pagelle, reg
 
   // 2 · invito personale a Fabio
   await openMenu(owner);
+  await owner.locator('#menu-league-admin').click();
   await owner.locator('#menu-invites').click();
   await owner.getByRole('button', { name: 'Invita Fabio' }).click();
   await expect.poll(() => be.invites.length, { timeout: 10_000 }).toBe(1);
   const token = be.invites[0]!.token as string;
   await owner.getByRole('button', { name: 'Indietro' }).click();
+  await owner.getByRole('button', { name: 'Indietro' }).click();
+  await owner.getByRole('button', { name: 'Chiudi il menu' }).click();
 
   // 3 · l'amico apre il link, si registra e viene collegato al suo giocatore
   const friend = await phone(null);
@@ -110,6 +117,7 @@ test('Scenario completo: lega, invito, collegamento, codice, ruoli, pagelle, reg
   expect(be.lplayers.filter((lp) => lp.league_id === l2.id)).toHaveLength(1);
   expect(be.lplayers.find((lp) => lp.league_id === l2.id)?.player_id).toBe(fabio.id);
   await expect(friend.locator('#league-pill')).toContainText('Seconda Lega');
+  await friend.locator('.bottom-nav').getByRole('button', { name: 'Rosa', exact: true }).click(); // dopo l'ingresso si apre il profilo
   await expect(friend.locator('#players-list .card-compact')).toHaveCount(1, { timeout: 15_000 });
 
   // 5 · Xena e Rita entrano nella prima lega con il codice
@@ -126,6 +134,7 @@ test('Scenario completo: lega, invito, collegamento, codice, ruoli, pagelle, reg
   await owner.goto('/l/calcetto-scenario/rosa');
   await expect(owner.locator('#league-pill')).toContainText('Calcetto Scenario', { timeout: 20_000 });
   await openMenu(owner);
+  await owner.locator('#menu-league-admin').click();
   await owner.locator('#menu-members').click();
   const row = (name: string) => owner.locator('.member-row', { hasText: name });
   await expect(row('Xena Admin')).toBeVisible();
@@ -141,6 +150,7 @@ test('Scenario completo: lega, invito, collegamento, codice, ruoli, pagelle, reg
   await xena.goto('/l/calcetto-scenario/rosa');
   await expect(xena.locator('#league-pill')).toContainText('Calcetto Scenario', { timeout: 20_000 });
   await openMenu(xena);
+  await xena.locator('#menu-league-admin').click();
   await expect(xena.locator('#menu-proposals')).toHaveCount(0);
   await xena.locator('#menu-members').click();
   const xrow = xena.locator('.member-row', { hasText: 'Fabio Amico' });
@@ -152,7 +162,8 @@ test('Scenario completo: lega, invito, collegamento, codice, ruoli, pagelle, reg
   await owner.reload();
   await expect(owner.locator('#league-pill')).toContainText('Calcetto Scenario', { timeout: 20_000 });
   await openMenu(owner);
-  await expect(owner.locator('#menu-proposals .menu-bd')).toHaveText('1');
+  await owner.locator('#menu-league-admin').click();
+  await expect(owner.locator('#menu-proposals')).toContainText('(1)');
   await owner.locator('#menu-proposals').click();
   await expect(owner.locator('.proposal-row')).toHaveCount(1);
   await expect(owner.locator('.proposal-row')).toContainText('proposto da Xena Admin');
@@ -203,8 +214,10 @@ test('Scenario completo: lega, invito, collegamento, codice, ruoli, pagelle, reg
   await sara.goto('/');
   await expect(sara.locator('#menu-button')).toBeVisible({ timeout: 20_000 });
   await openMenu(sara);
+  await sara.locator('#menu-superadmin').click();
   await sara.locator('#menu-audit').click();
   await expect(sara.locator('#sheet-audit')).toBeVisible();
+  await sara.locator('#audit-search').click(); // il registro si carica solo dopo «Cerca attività»
   await expect(sara.locator('.audit-op').first()).toBeVisible({ timeout: 15_000 });
   const heads = sara.locator('.audit-head');
   for (let i = (await heads.count()) - 1; i >= 0; i--) await heads.nth(i).click(); // si aprono tutte le operazioni

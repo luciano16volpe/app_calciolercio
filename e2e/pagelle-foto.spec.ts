@@ -114,8 +114,7 @@ test('Pagelle: la redazione salta a gruppi (le più vecchie di 7 giorni, poi tut
   await expect(sheet.locator('#pending-skipped')).toHaveCount(0);
   expect(be.matches.some((x) => x.ratings_skipped === true)).toBe(false);
   // il menu della redazione torna al conteggio di prima
-  await page.getByRole('button', { name: 'Indietro' }).click();
-  await openMenu(page);
+  await page.getByRole('button', { name: 'Indietro' }).click(); // «Indietro» riporta al menu, già aperto
   await expect(page.locator('#menu-red-pending .menu-bd')).toHaveText(String(n));
 });
 
@@ -129,6 +128,7 @@ test('Pagelle: la redazione vede il conteggio senza le saltate, e salta dalla sc
   await page.locator('#menu-red-list').click();
   await expect(page.locator('#sheet-pending')).toBeVisible();
   await page.getByRole('button', { name: 'Indietro' }).click();
+  await page.getByRole('button', { name: 'Chiudi il menu' }).click();
   // dalla scheda dell'ultima partita
   await page.locator('.bottom-nav').getByRole('button', { name: 'Partite', exact: true }).click();
   await page.locator('#last-match .card').click();

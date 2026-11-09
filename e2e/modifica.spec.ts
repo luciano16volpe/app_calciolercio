@@ -145,7 +145,7 @@ test('Gioca: Crea partita salva squadre e previsione', async ({ page }) => {
 test('Gioca: da membro la scheda non c’è, nemmeno aprendo il suo indirizzo', async ({ page }) => {
   await login(page, 'member');
   await page.goto('/l/san-marcello/gioca');
-  await expect(page.locator('#players-list .card-compact')).toHaveCount(22, { timeout: 20_000 });
+  await expect(page.locator('#page-profilo.active')).toBeVisible({ timeout: 20_000 }); // l'indirizzo /gioca porta alla pagina iniziale
   await expect(page.locator('.bottom-nav').getByRole('button', { name: 'Gioca', exact: true })).toHaveCount(0);
   await expect(page.locator('#page-partita')).toHaveCount(0);
   await expect(page.locator('#page-profilo')).toHaveClass(/active/); // si torna alla pagina iniziale
