@@ -171,7 +171,7 @@ function Shell() {
       </DeferredPage></div>
       <div id="page-settings" data-visual-active={visualsActive} className={`page${page === 'settings' ? ' active' : ''}`}><DeferredPage active={page === 'settings'}><SettingsPage data={data} /></DeferredPage></div>
 
-      <BottomNav page={page} onGo={go} canPlay={isAdmin} me={me ? { photo: photoUrl(data?.photos[me.id]), initial: me.name.slice(0, 1).toUpperCase() } : null} />
+      <BottomNav page={page} onGo={(p) => { setPanel(null); setMenuOpen(false); go(p); }} canPlay={isAdmin} me={me ? { photo: photoUrl(data?.photos[me.id]), initial: me.name.slice(0, 1).toUpperCase() } : null} />
 
       <LazyContent>
       {data && view?.kind === 'player' ? (
