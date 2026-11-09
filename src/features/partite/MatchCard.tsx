@@ -20,6 +20,9 @@ import type { Match, Rating } from '../../domain/types';
 import { waHTML } from '../../domain/whatsapp';
 import { GazThumb, MatchButtons, type MatchActions } from './parts';
 import { WhatsAppImport } from './WhatsAppImport';
+import { PlaceField } from './PlaceField';
+import { PlaceShare } from './PlaceShare';
+import { placeOf } from '../../domain/place';
 
 const LABEL = { fontSize: 12, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase' as const, letterSpacing: '.5px' };
 
@@ -248,6 +251,8 @@ interface Draft {
   /** ora (hh:mm) e luogo */
   time: string;
   place: string;
+  placeLat: number | null;
+  placeLng: number | null;
   /** titolo e descrizione com'erano all'apertura: se non li tocchi, salvando non vengono riscritti (così non cancelli quelli appena scritti dalla redazione) */
   base: Record<string, { tit: string; desc: string }>;
 }
@@ -272,6 +277,8 @@ function startDraft(m: Match, ratings: Rating[]): Draft {
     notes: String(m.notes ?? ''),
     time: String(m.time ?? ''),
     place: String(m.place ?? ''),
+    placeLat: placeOf(m).lat,
+    placeLng: placeOf(m).lng,
   };
 }
 
@@ -376,7 +383,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
       if (!go) return;
     }
     const notes = draft.notes.trim();
-    const headerChanged = plan.scoreA !== (m.scoreA ?? '') || plan.scoreB !== (m.scoreB ?? '') || notes !== String(m.notes ?? '') || draft.time !== String(m.time ?? '') || draft.place.trim() !== String(m.place ?? '');
+    const headerChanged = plan.scoreA !== (m.scoreA ?? '') || plan.scoreB !== (m.scoreB ?? '') || notes !== String(m.notes ?? '') || draft.time !== String(m.time ?? '') || draft.place.trim() !== String(m.place ?? '') || draft.placeLat !== placeOf(m).lat || draft.placeLng !== placeOf(m).lng;
     setBusy(true);
     try {
       toast('⏳ Salvataggio...');
@@ -385,6 +392,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
         score_a: plan.scoreA === '' ? null : plan.scoreA,
         score_b: plan.scoreB === '' ? null : plan.scoreB,
         notes: notes || null, play_time: draft.time || null, place: draft.place.trim() || null,
+        place_lat: draft.placeLat, place_lng: draft.placeLng,
       } : undefined);
       releaseKeyboard();
       await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
@@ -505,14 +513,20 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
                   style={{ padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', marginBottom: 8 }}
                 />
                 <div style={{ ...LABEL, marginBottom: 6 }}>📍 Luogo</div>
-                <input
-                  type="text" id="edit-place" maxLength={80} value={draft ? draft.place : String(m.place ?? '')} placeholder="es. Campo Sole" disabled={!full} readOnly={!full}
-                  onChange={(e) => upd({ place: e.target.value })}
-                  style={{ width: '100%', padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', fontSize: 16, boxSizing: 'border-box' }}
-                />
+                {full ? (
+                  <PlaceField inputId="edit-place" placeholder="es. Campo Sole" value={draft ? { name: draft.place, lat: draft.placeLat, lng: draft.placeLng } : placeOf(m)}
+                    onChange={(p) => upd({ place: p.name, placeLat: p.lat, placeLng: p.lng })}
+                    style={{ width: '100%', padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', boxSizing: 'border-box' }} />
+                ) : (
+                  <input type="text" id="edit-place" value={String(m.place ?? '')} placeholder="es. Campo Sole" disabled readOnly
+                    style={{ width: '100%', padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', fontSize: 16, boxSizing: 'border-box' }} />
+                )}
               </div>
             ) : whenWhere(m) ? (
-              <div id="match-when" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text2)', marginBottom: 8 }}>⏰ {whenWhere(m)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
+                <div id="match-when" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text2)' }}>⏰ {whenWhere(m)}</div>
+                <PlaceShare place={placeOf(m)} />
+              </div>
             ) : null}
             <div style={{ ...LABEL, marginBottom: 6 }}>Descrizione</div>
             <input

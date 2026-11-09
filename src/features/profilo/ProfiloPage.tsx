@@ -1,4 +1,6 @@
 // Pagina iniziale: lega selezionata, scheda, partite recenti e gestione del giocatore.
+import { PlaceShare } from '../partite/PlaceShare';
+import { placeOf } from '../../domain/place';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { useAuth } from '../../app/auth';
@@ -42,6 +44,7 @@ function NextMatch({ data, m, team, myId }: { data: LeagueData; m: Match; team: 
       <div className="section-header">📅 Prossima partita</div>
       <div style={{ fontSize: 16, fontWeight: 800 }}>{dayName(m.date)}</div>
       {time || place ? <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text2)', marginTop: 2 }}>{time ? `⏰ ${time}` : ''}{time && place ? ' · ' : ''}{place ? `📍 ${place}` : ''}</div> : null}
+      <div style={{ marginTop: 4 }}><PlaceShare place={placeOf(m)} noMargin /></div>
       <div style={{ fontSize: 13, fontWeight: 800, marginTop: 6, color: team === 'A' ? 'var(--blue)' : 'var(--teamb)' }}>Giochi con i {TEAM_NAME[team]}</div>
       {mates.length ? <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 3 }}><b>Con te:</b> {mates.join(', ')}</div> : null}
       {rivals.length ? <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}><b>Contro:</b> {rivals.join(', ')}</div> : null}

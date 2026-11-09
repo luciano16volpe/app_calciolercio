@@ -7,6 +7,8 @@ import { updatePlannedMatch } from '../../data/mutations';
 import { LEAGUE_HISTORY_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { plannedSnapshot, replacePlannedPlayer } from '../../domain/plannedMatch';
 import type { Match } from '../../domain/types';
+import { placeOf, type PlaceValue } from '../../domain/place';
+import { PlaceField } from './PlaceField';
 
 const input = { width: '100%', padding: 10, border: '1px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', font: 'inherit', marginTop: 4 } as const;
 
@@ -15,7 +17,7 @@ export function PlannedMatchEditor({ data, match, onClose, onSaved }: { data: Le
   const original = plannedSnapshot(originalMatch);
   const [date, setDate] = useState(original.date);
   const [time, setTime] = useState(original.time);
-  const [place, setPlace] = useState(original.place);
+  const [place, setPlace] = useState<PlaceValue>(() => placeOf(originalMatch));
   const [notes, setNotes] = useState(original.notes);
   const [teams, setTeams] = useState({ teamA: original.teamA.filter((id): id is string => !!id), teamB: original.teamB.filter((id): id is string => !!id) });
   const [busy, setBusy] = useState(false);
@@ -24,11 +26,11 @@ export function PlannedMatchEditor({ data, match, onClose, onSaved }: { data: Le
   const qc = useQueryClient();
   const roster = data.dataset.players.filter((p) => !data.rosterIds || data.rosterIds.includes(p.id)).slice().sort((a, b) => a.name.localeCompare(b.name));
   const save = async () => {
-    if (!date || !time || !place.trim()) { setError('Indica giorno, ora e luogo della partita.'); return; }
+    if (!date || !time || !place.name.trim()) { setError('Indica giorno, ora e luogo della partita.'); return; }
     setBusy(true);
     setError('');
     try {
-      await updatePlannedMatch(originalMatch, { date, time, place, notes, ...teams });
+      await updatePlannedMatch(originalMatch, { date, time, place: place.name, lat: place.lat, lng: place.lng, notes, ...teams });
       await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
       toast('Programma e squadre aggiornati');
       onSaved();
@@ -41,7 +43,7 @@ export function PlannedMatchEditor({ data, match, onClose, onSaved }: { data: Le
         <div className="card" style={{ display: 'grid', gap: 12 }}>
           <label>Giorno<input aria-label="Giorno della partita" type="date" required value={date} onChange={(e) => setDate(e.target.value)} style={input} /></label>
           <label>Ora<HourSelect id="planned-time" value={time} onChange={setTime} style={input} /></label>
-          <label>Luogo<input aria-label="Luogo della partita" required maxLength={80} value={place} onChange={(e) => setPlace(e.target.value)} style={input} /></label>
+          <div>Luogo<PlaceField ariaLabel="Luogo della partita" value={place} onChange={setPlace} style={input} /></div>
           <label>Descrizione<input aria-label="Descrizione della partita" value={notes} onChange={(e) => setNotes(e.target.value)} style={input} /></label>
         </div>
         <p style={{ fontSize: 13 }}>Scegli un sostituto dalla Rosa. Se scegli un giocatore già convocato, i due si scambiano di posto.</p>

@@ -198,3 +198,9 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Standard: promemoria alle 7, variazioni di programma/convocazione, risultato e pagelle. Gazzette solo ai Premium che possono leggerle.
 - Premium: promemoria alle 7 oppure 1/2/3/24 ore prima. Preferenze per lega e fascia silenziosa in una fase successiva.
 - Dettagli e ordine di rilascio in `docs/specifiche/notifiche-standard-premium.md`. Sostituisce la precedente regola degli interruttori per tipo disponibili a tutti.
+
+## Luogo della partita su mappa
+- Il luogo resta un testo (massimo 80 caratteri); volendo si cerca su **OpenStreetMap** (gratis, senza chiave) con «🔎 Cerca su mappa» e si salvano anche le coordinate (`place_lat`, `place_lng`, sempre insieme).
+- Un luogo scritto a mano resta valido, senza coordinate e senza pulsante di condivisione. Cambiando il testo le coordinate si tolgono.
+- «📍 Condividi posizione» manda nome + link `google.com/maps/search/?api=1&query=lat,lng` (nessuna chiave Google). Scartato: Google Places (richiede conto e carta).
+- La ricerca parte solo su comando (una richiesta alla volta), come chiede il servizio OpenStreetMap.

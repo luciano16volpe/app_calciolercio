@@ -6,9 +6,9 @@ import { supabase } from './supabase';
 
 const fail = (what: string, e: { message: string }) => new Error(`${what}: ${e.message}`);
 
-export async function updatePlannedMatch(original: Match, plan: { date: string; time: string; place: string; notes: string; teamA: string[]; teamB: string[] }): Promise<void> {
+export async function updatePlannedMatch(original: Match, plan: { date: string; time: string; place: string; lat?: number | null; lng?: number | null; notes: string; teamA: string[]; teamB: string[] }): Promise<void> {
   const { error } = await supabase.rpc('update_planned_match', {
-    p_match: original.id, p_date: plan.date, p_time: plan.time, p_place: plan.place.trim(), p_notes: plan.notes.trim(),
+    p_match: original.id, p_date: plan.date, p_time: plan.time, p_place: plan.place.trim(), p_lat: plan.lat ?? undefined, p_lng: plan.lng ?? undefined, p_notes: plan.notes.trim(),
     p_team_a: plan.teamA, p_team_b: plan.teamB, p_original: plannedSnapshot(original),
   });
   if (error) throw fail('programma partita', error);
@@ -20,6 +20,8 @@ export interface MatchHeader {
   notes: string | null;
   play_time: string | null;
   place: string | null;
+  place_lat?: number | null;
+  place_lng?: number | null;
 }
 
 /**
@@ -60,6 +62,8 @@ export interface NewMatch {
   /** ora (hh:mm) e luogo: obbligatori per una partita nuova */
   time: string;
   place: string;
+  placeLat?: number | null;
+  placeLng?: number | null;
   notes: string;
   teamA: string[];
   teamB: string[];
@@ -74,7 +78,7 @@ export interface NewMatch {
 export async function createMatch(m: NewMatch): Promise<string> {
   const { data, error } = await supabase.rpc('create_match_with_teams', {
     p_match: { league_id: m.leagueId, date: m.date, play_time: m.time || null,
-      place: m.place.trim() || null, notes: m.notes || null,
+      place: m.place.trim() || null, place_lat: m.placeLat ?? null, place_lng: m.placeLng ?? null, notes: m.notes || null,
       score_a: m.scoreA === '' ? null : m.scoreA, score_b: m.scoreB === '' ? null : m.scoreB,
       pred: m.pred, pred_rank: m.predRank },
     p_team_a: m.teamA, p_team_b: m.teamB,
