@@ -49,14 +49,15 @@ export class FakeBackend {
     rosa.players.forEach((p, i) => {
       const id = (rows[i]?.id as string | undefined) ?? uid();
       pid.set(p.id, id);
-      this.players.push({ id, name: p.name, roles: p.roles ?? [], stats: p.stats.map((v) => Math.round(v)), photo_path: null, user_id: null, legacy_id: p.id });
+      this.players.push({ id, name: p.name, roles: p.roles ?? [], stats: p.stats.map((v) => Math.round(v)), photo_path: null, user_id: null });
       this.lplayers.push({ league_id: leagueId, player_id: id, aliases: p.aliases ?? [] });
     });
     const mid = new Map<string, string>();
     for (const m of mapMatches(feed, leagueId).rows) {
       const id = uid();
-      mid.set(String(m.legacy_id), id);
-      this.matches.push({ ...m, id });
+      const { seed_id, ...row } = m;
+      mid.set(String(seed_id), id);
+      this.matches.push({ ...row, id });
     }
     this.mplayers.push(...(mapMatchPlayers(feed, rosa, (l) => mid.get(l), (l) => pid.get(l)).rows as Row[]));
     for (const r of mapAlbo(feed, leagueId).rows) this.albo.push({ ...r });

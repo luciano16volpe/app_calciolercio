@@ -62,7 +62,7 @@ Gli incontri futuri devono restare visibili anche se rinviati alla stagione succ
 | Swipe e Abbonamenti | `e2e/menu.spec.ts` |
 | Più telefoni e ruoli | `e2e/scenario.spec.ts` |
 
-Non vengono più confrontati codice, markup o risultati prodotti dalla vecchia app. I test di dominio verificano esempi, soglie e invarianti delle regole attuali. Le fixture storiche restano dati per le prove e per l'importazione.
+Non vengono più confrontati codice, markup o risultati prodotti dalla vecchia app. I test di dominio verificano esempi, soglie e invarianti delle regole attuali. Le fixture storiche restano dati per le prove.
 
 ## Esito dell'ultima esecuzione
 
@@ -70,9 +70,9 @@ Verifiche completate il 5 novembre 2026 sulle modifiche locali:
 
 - Unitari e database in memoria: **202 test passati in 28 file**.
 - Lint e build: superati.
-- Suite browser completa, due worker e nessun retry: **469 passati, 5 esclusi intenzionalmente, 0 errori** su iPhone, Android e 360 px (25,5 minuti). Report salvato in `test-checkpoints/2026-11-05/collaudo-finale.json`.
+- Suite browser completa, due worker e nessun retry: **469 passati, 5 esclusi intenzionalmente, 0 errori** su iPhone, Android e 360 px (25,5 minuti).
 - I cinque casi esclusi riguardano tre prove push che richiedono l'installazione PWA su iPhone e due varianti Android della spiegazione specifica per iPhone.
-- Ripetizione mirata dei cinque percorsi iPhone che avevano avuto timeout (Panchina, collegamenti alle partite, caricamento Gazzetta, footer e statistiche del profilo), due esecuzioni ciascuno: **10 passati, 0 errori**, con due worker e nessun retry. Report: `test-checkpoints/2026-11-05/collaudo-stabilita.json`.
+- Ripetizione mirata dei cinque percorsi iPhone che avevano avuto timeout (Panchina, collegamenti alle partite, caricamento Gazzetta, footer e statistiche del profilo), due esecuzioni ciascuno: **10 passati, 0 errori**, con due worker e nessun retry.
 - Prove browser mirate su foto/pagelle ed editor del programma partita: **27 passate** sui tre formati, compreso il conflitto con aggiornamenti in background.
 - Collaudo Premium sul progetto Supabase collegato: superato; dati e configurazioni di prova annullati con `ROLLBACK`.
 - Dopo la migrazione in produzione: superata anche `supabase/tests/programma_partita.sql` con un admin Standard (sostituto dalla Rosa, rifiuto esterno, conflitto, risultato zero, visibilità futura e permessi). Collaudo Premium ripetuto e superato. Entrambe le prove annullano i dati temporanei con `ROLLBACK`.
@@ -87,7 +87,7 @@ Sviluppo successivo al rilascio `145dd2a`. Notifiche Standard per tutti; Premium
 
 - Suite unitari/DB: **218 test passati in 29 file**, comprese le 14 prove SQL delle nuove regole e dei trigger.
 - Build e lint: passati.
-- Browser, impostazioni e nuove preferenze sui tre formati: **31 passati, 5 esclusi intenzionalmente, zero errori e nessun retry**. Report: `test-checkpoints/2026-11-05/notifiche-premium-browser.json`.
+- Browser, impostazioni e nuove preferenze sui tre formati: **31 passati, 5 esclusi intenzionalmente, zero errori e nessun retry**.
 - Un timeout nel precedente test del tema con due sessioni consecutive è stato risolto separando i due scenari e riutilizzando la pagina del test, senza alzare i timeout.
 - Funzione Edge aggiornata e migrazione `20261204000000_notifiche_standard_premium.sql` applicate in produzione. La transazione ha verificato che le preferenze precedenti restassero identiche. Tipi rigenerati, build e lint nuovamente superati.
 - Collaudo aggiuntivo `supabase/tests/notifiche_premium.sql`: superato sia in PGlite sia sul database reale, con ROLLBACK. Nessun invio reale durante il collaudo; il nuovo test `tests/db/push-collaudo.test.ts` verifica l'annullamento dei dati.
@@ -99,4 +99,4 @@ Sviluppo successivo al rilascio `145dd2a`. Notifiche Standard per tutti; Premium
 3. Richiesta di lega: approvazione/rifiuto e scadenza del richiedente prima della decisione.
 4. Cambio modalità su una sessione aperta: lo storico non deve restare accessibile tramite cache dopo una revoca.
 5. Telefoni fisici: installazione e aggiornamento PWA, push, foto/miniature, tema scuro, swipe e larghezza 412 px.
-6. Seguire `docs/passaggio/PIANO_PASSAGGIO.md` solo con il via al passaggio. Backup, importazione finale, inviti e modifica del vecchio sito restano azioni distinte.
+6. Seguire `docs/passaggio/PIANO_PASSAGGIO.md` solo con il via al passaggio. Backup, inviti e modifica del vecchio sito restano azioni distinte.

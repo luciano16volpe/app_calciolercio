@@ -5,7 +5,7 @@
 - `npm run lint`: controlli statici sul codice.
 - `npm run e2e -- entrambi`: schermate nei browser emulati iPhone, Android e 360 px. Per un'area specifica si puo aggiungere il percorso del file, per esempio `npm run e2e -- entrambi e2e/immagini.spec.ts`.
 
-I test in `tests/domain/` verificano le regole attuali con esempi, soglie e invarianti espliciti. I confronti con la vecchia applicazione e il caricamento del suo codice sono stati rimossi. Le fixture storiche restano dati per le prove e per l'importazione, senza usare la vecchia app come risultato atteso.
+I test in `tests/domain/` verificano le regole attuali con esempi, soglie e invarianti espliciti. I confronti con la vecchia applicazione e il caricamento del suo codice sono stati rimossi. Le fixture storiche restano dati per le prove, senza usare la vecchia app come risultato atteso.
 
 Playwright usa l'app compilata, un server preview dedicato sulla porta 4173 e due worker. Non riutilizza server aperti a mano e non esegue retry automatici. I contesti dei test con più telefoni vengono chiusi dopo ogni test; i service worker reali sono bloccati per mantenere le richieste nel database simulato. In caso di errore rimangono screenshot e trace in `test-results/`. Le prove PWA simulano gli eventi: non certificano installazione e aggiornamento su un telefono fisico.
 

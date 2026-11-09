@@ -55,7 +55,9 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
   const proposals = useAdminRequests(lid, isOwner);
   const startX = useRef<number | null>(null);
   const coveredRef = useRef(covered);
-  coveredRef.current = covered;
+  useEffect(() => {
+    coveredRef.current = covered;
+  }, [covered]);
 
   useEffect(() => {
     document.documentElement.classList.add('menu-open');

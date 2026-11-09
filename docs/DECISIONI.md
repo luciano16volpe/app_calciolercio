@@ -183,7 +183,7 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Nome già usato nella lega (o come «altro nome») = rifiutato. Le funzioni sono nel database (`supabase/migrations/20261124000000_invito_per_email.sql`), provate in `tests/db/invito-per-email.test.ts`.
 
 ## Rosa, scheda e figurina: periodo breve (novembre 2026)
-- Su richiesta di Luciano, **Rosa, scheda giocatore e figurina usano lo stesso periodo del profilo**: stagione in corso se il giocatore ha almeno 5 presenze con risultato, altrimenti le sue ultime 5 partite giocate. Vale per la media pagelle (e il suo colore) e per i numeri della figurina; è una differenza voluta rispetto a `legacy`, che usava tutto lo storico.
+- Su richiesta di Luciano, **Rosa, scheda giocatore e figurina usano lo stesso periodo del profilo**: stagione in corso se il giocatore ha almeno 5 presenze con risultato, altrimenti le sue ultime 5 partite giocate. Vale per la media pagelle (e il suo colore) e per i numeri della figurina; prima si usava tutto lo storico.
 - Da non cambiare senza chiedere. Il calcolo è in `profileSeasonData` (`src/domain/profile.ts`) e viene messo in cache per dati/giocatore/giorno, così Rosa, scheda e figurina non lo rifanno a ogni schermata.
 
 ## Admin senza Premium (novembre 2026)
