@@ -43,9 +43,18 @@ describe('turnazione: massimo 3 partite di fila insieme', () => {
       expect(c.tB.includes(0) && c.tB.includes(1)).toBe(false);
     }
   });
-  it('se nessuna divisione rispetta la regola, non propone nulla', () => {
+  it('con la regola rispettabile, nessuna coppia vietata resta insieme', () => {
+    const r = generateTeams({ players, scores: [5, 5.5, 6, 6.5, 7, 7.5], selected: all, sizeA: 3, sizeB: 3, blocked: [[0, 1]] });
+    expect(r?.violations).toBe(0);
+  });
+  it('se nessuna divisione rispetta la regola, propone quelle con meno coppie insieme', () => {
     // 0-1, 1-2 e 0-2 vietate: tre giocatori non possono stare in due squadre senza che due si ritrovino insieme
-    const r = generateTeams({ players, scores: [5, 5, 5, 5, 5, 5], selected: all, sizeA: 3, sizeB: 3, blocked: [[0, 1], [1, 2], [0, 2]] });
-    expect(r?.combos).toEqual([]);
+    const r = generateTeams({ players, scores: [5, 5, 5, 5, 5, 5], selected: all, sizeA: 3, sizeB: 3, blocked: [[0, 1], [1, 2], [0, 2]] })!;
+    expect(r.violations).toBe(1);
+    expect(r.combos.length).toBeGreaterThan(0);
+    for (const c of r.combos) {
+      const together = [[0, 1], [1, 2], [0, 2]].filter(([x, y]) => (c.tA.includes(x!) && c.tA.includes(y!)) || (c.tB.includes(x!) && c.tB.includes(y!)));
+      expect(together).toHaveLength(1); // mai peggio del minimo possibile
+    }
   });
 });

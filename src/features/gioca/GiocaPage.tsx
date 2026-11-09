@@ -264,10 +264,7 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
     const idx = live.map((id) => dataset.players.findIndex((p) => p.id === id));
     const out = generateTeams({ players: dataset.players, scores: sc, selected: idx, sizeA: fmt.sizeA, sizeB: fmt.sizeB, modules: modulesOf(data), blocked: blockedPairs(dataset, idx) });
     if (!out) return;
-    if (!out.combos.length) {
-      toast('Nessuna divisione rispetta la turnazione: due giocatori non possono stare insieme per più di 3 partite di fila. Cambia i convocati.');
-      return;
-    }
+    if (out.violations > 0) toast(`Turnazione non rispettabile del tutto: ${out.violations === 1 ? 'una coppia resta insieme' : `${out.violations} coppie restano insieme`} per più di 3 partite di fila.`);
     setScores(sc);
     setRes({ combos: out.combos, genBest: out.genBest, idx: 0 });
     window.setTimeout(() => document.getElementById('partita-result')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
