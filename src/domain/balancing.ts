@@ -268,9 +268,10 @@ export interface GenerateInput extends BalanceContext {
  * di media è vicina alla migliore (margine 0,20 fino a 10 convocati, 0,15 oltre), poi le altre, ognuna
  * ordinata per punteggio; si tengono le prime 50. `genBest` = Blu − Bianchi della prima proposta.
  * Se i convocati non sono esattamente sizeA + sizeB restituisce null. Con `blocked`, le divisioni che mettono
- * insieme una coppia vietata sono escluse (se non resta nulla, `combos` è vuoto).
+ * insieme una coppia vietata sono escluse; se è impossibile evitarle tutte, restano solo le divisioni che ne
+ * uniscono il minor numero (`violations` = quante coppie vietate restano insieme, 0 se la turnazione è rispettata).
  */
-export function generateTeams(input: GenerateInput): { combos: Combo[]; genBest: number | null } | null {
+export function generateTeams(input: GenerateInput): { combos: Combo[]; genBest: number | null; violations: number } | null {
   const { selected, sizeA, sizeB } = input;
   if (selected.length !== sizeA + sizeB) return null;
   const idx = [...selected];
@@ -280,9 +281,14 @@ export function generateTeams(input: GenerateInput): { combos: Combo[]; genBest:
   const seen = new Set<string>();
 
   const blocked = input.blocked ?? [];
+  const together = (tA: number[], tB: number[]) => blocked.filter(([x, y]) => (tA.includes(x) && tA.includes(y)) || (tB.includes(x) && tB.includes(y))).length;
+  // regola intera se possibile; altrimenti si accettano le divisioni con meno coppie vietate possibile
+  const violations = blocked.length
+    ? Math.min(...subsetsA.map((tA) => together(tA, idx.filter((i) => !tA.includes(i)))))
+    : 0;
   subsetsA.forEach((tA) => {
     const tB = idx.filter((i) => !tA.includes(i));
-    if (blocked.some(([x, y]) => (tA.includes(x) && tA.includes(y)) || (tB.includes(x) && tB.includes(y)))) return;
+    if (blocked.length && together(tA, tB) > violations) return;
     const modsA = getModulesForSize(tA.length, input.modules);
     const modsB = getModulesForSize(tB.length, input.modules);
     modsA.forEach((modA) => {
@@ -336,7 +342,7 @@ export function generateTeams(input: GenerateInput): { combos: Combo[]; genBest:
     result = [...near, ...rest].slice(0, 50);
   }
   const first = result[0];
-  return { combos: result, genBest: first ? first.sA - first.sB : null };
+  return { combos: result, genBest: first ? first.sA - first.sB : null, violations };
 }
 
 /** Valore di bilanciamento di tutti i giocatori della rosa, nell'ordine della rosa (calcolato una volta sola). */
