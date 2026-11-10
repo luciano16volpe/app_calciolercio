@@ -87,7 +87,7 @@ test('programma: cerca il luogo su mappa, salva la posizione e la condivide',asy
   await editor.getByLabel('Luogo della partita').fill('Campo Lu');
   await editor.getByRole('button',{name:/Cerca su mappa/}).click();
   await editor.getByRole('option',{name:/Campo Luna, Latina/}).click();
-  await expect(editor).toContainText('Posizione su mappa trovata');
+  await expect(editor).toContainText('Posizione salvata');
   await editor.getByRole('button',{name:'Salva programma e squadre',exact:true}).click();
   await expect(editor).toHaveCount(0);
   expect(be.matches.find((m)=>m.id==='planned')).toMatchObject({place:'Campo Luna, Latina',place_lat:41.46,place_lng:12.9});
@@ -110,4 +110,24 @@ test('programma: un luogo scritto a mano resta valido e senza pulsante di condiv
   expect(be.matches.find((m)=>m.id==='planned')).toMatchObject({place:'Il campetto',place_lat:null,place_lng:null});
   await page.locator('#matches-list').getByText('Partita da organizzare',{exact:true}).click();
   await expect(page.locator('#share-place')).toHaveCount(0);
+});
+
+test('programma: incolla il link di Google Maps e lo condivide così com’è',async ({browser},info)=>{
+  const {page,be}=await openPlanned(browser,info);
+  await page.getByRole('button',{name:'Modifica programma e squadre'}).click();
+  const editor=page.locator('#sheet-planned-match');
+  await editor.getByLabel('Luogo della partita').fill('Centro Rossi');
+  await editor.getByRole('button',{name:/Incolla link di Google Maps/}).click();
+  await editor.getByLabel('Link di Google Maps').fill('Prova https://example.com/x');
+  await expect(editor).toContainText('Questo non sembra un link di Google Maps');
+  await editor.getByLabel('Link di Google Maps').fill('Centro Rossi https://maps.app.goo.gl/AbC123xyz');
+  await expect(editor).toContainText('Posizione salvata');
+  await editor.getByRole('button',{name:'Salva programma e squadre',exact:true}).click();
+  await expect(editor).toHaveCount(0);
+  expect(be.matches.find((m)=>m.id==='planned')).toMatchObject({place:'Centro Rossi',place_url:'https://maps.app.goo.gl/AbC123xyz'});
+  await page.locator('#matches-list').getByText('Partita da organizzare',{exact:true}).click();
+  await page.evaluate(()=>{ Object.defineProperty(navigator,'share',{configurable:true,value:async (d:unknown)=>{ (window as unknown as {__shared:unknown}).__shared=d; }}); });
+  await page.locator('#share-place').click();
+  const shared=await page.evaluate(()=>(window as unknown as {__shared:{text:string}}).__shared);
+  expect(shared.text).toBe('📍 Centro Rossi'+String.fromCharCode(10)+'https://maps.app.goo.gl/AbC123xyz');
 });

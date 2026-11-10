@@ -253,6 +253,7 @@ interface Draft {
   place: string;
   placeLat: number | null;
   placeLng: number | null;
+  placeUrl: string | null;
   /** titolo e descrizione com'erano all'apertura: se non li tocchi, salvando non vengono riscritti (così non cancelli quelli appena scritti dalla redazione) */
   base: Record<string, { tit: string; desc: string }>;
 }
@@ -279,6 +280,7 @@ function startDraft(m: Match, ratings: Rating[]): Draft {
     place: String(m.place ?? ''),
     placeLat: placeOf(m).lat,
     placeLng: placeOf(m).lng,
+    placeUrl: placeOf(m).url,
   };
 }
 
@@ -383,7 +385,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
       if (!go) return;
     }
     const notes = draft.notes.trim();
-    const headerChanged = plan.scoreA !== (m.scoreA ?? '') || plan.scoreB !== (m.scoreB ?? '') || notes !== String(m.notes ?? '') || draft.time !== String(m.time ?? '') || draft.place.trim() !== String(m.place ?? '') || draft.placeLat !== placeOf(m).lat || draft.placeLng !== placeOf(m).lng;
+    const headerChanged = plan.scoreA !== (m.scoreA ?? '') || plan.scoreB !== (m.scoreB ?? '') || notes !== String(m.notes ?? '') || draft.time !== String(m.time ?? '') || draft.place.trim() !== String(m.place ?? '') || draft.placeLat !== placeOf(m).lat || draft.placeLng !== placeOf(m).lng || draft.placeUrl !== placeOf(m).url;
     setBusy(true);
     try {
       toast('⏳ Salvataggio...');
@@ -392,7 +394,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
         score_a: plan.scoreA === '' ? null : plan.scoreA,
         score_b: plan.scoreB === '' ? null : plan.scoreB,
         notes: notes || null, play_time: draft.time || null, place: draft.place.trim() || null,
-        place_lat: draft.placeLat, place_lng: draft.placeLng,
+        place_lat: draft.placeLat, place_lng: draft.placeLng, place_url: draft.placeUrl,
       } : undefined);
       releaseKeyboard();
       await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
@@ -514,8 +516,8 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
                 />
                 <div style={{ ...LABEL, marginBottom: 6 }}>📍 Luogo</div>
                 {full ? (
-                  <PlaceField inputId="edit-place" placeholder="es. Campo Sole" value={draft ? { name: draft.place, lat: draft.placeLat, lng: draft.placeLng } : placeOf(m)}
-                    onChange={(p) => upd({ place: p.name, placeLat: p.lat, placeLng: p.lng })}
+                  <PlaceField inputId="edit-place" placeholder="es. Campo Sole" value={draft ? { name: draft.place, lat: draft.placeLat, lng: draft.placeLng, url: draft.placeUrl } : placeOf(m)}
+                    onChange={(p) => upd({ place: p.name, placeLat: p.lat, placeLng: p.lng, placeUrl: p.url })}
                     style={{ width: '100%', padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 8, background: 'var(--gray)', color: 'var(--text)', boxSizing: 'border-box' }} />
                 ) : (
                   <input type="text" id="edit-place" value={String(m.place ?? '')} placeholder="es. Campo Sole" disabled readOnly

@@ -597,6 +597,7 @@ export type Database = {
           place: string | null
           place_lat: number | null
           place_lng: number | null
+          place_url: string | null
           play_time: string | null
           pred: number | null
           pred_rank: number | null
@@ -614,6 +615,7 @@ export type Database = {
           place?: string | null
           place_lat?: number | null
           place_lng?: number | null
+          place_url?: string | null
           play_time?: string | null
           pred?: number | null
           pred_rank?: number | null
@@ -631,6 +633,7 @@ export type Database = {
           place?: string | null
           place_lat?: number | null
           place_lng?: number | null
+          place_url?: string | null
           play_time?: string | null
           pred?: number | null
           pred_rank?: number | null
@@ -1516,6 +1519,7 @@ export type Database = {
           p_place: string
           p_lat?: number
           p_lng?: number
+          p_url?: string
           p_team_a: string[]
           p_team_b: string[]
           p_time: string

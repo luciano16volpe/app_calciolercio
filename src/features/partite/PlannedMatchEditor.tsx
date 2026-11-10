@@ -30,7 +30,7 @@ export function PlannedMatchEditor({ data, match, onClose, onSaved }: { data: Le
     setBusy(true);
     setError('');
     try {
-      await updatePlannedMatch(originalMatch, { date, time, place: place.name, lat: place.lat, lng: place.lng, notes, ...teams });
+      await updatePlannedMatch(originalMatch, { date, time, place: place.name, lat: place.lat, lng: place.lng, url: place.url, notes, ...teams });
       await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
       toast('Programma e squadre aggiornati');
       onSaved();
