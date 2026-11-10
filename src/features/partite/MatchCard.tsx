@@ -576,6 +576,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
                 data={data} m={m}
                 hasRating={(k) => clampRating((draft.fields[k] as PlayerFields | undefined)?.rating) !== null}
                 onAssign={(k, tit, desc) => ed?.set(k, { tit, desc })}
+                defaultOpen={startText}
               />
             ) : null}
             {editing ? (

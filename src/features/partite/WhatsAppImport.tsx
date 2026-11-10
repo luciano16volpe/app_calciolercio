@@ -24,15 +24,18 @@ export function slotKey(pk: string, sizeA: number): string {
   return pk.startsWith('bl') ? `A${i}` : `B${i - sizeA}`;
 }
 
-export function WhatsAppImport({ data, m, hasRating, onAssign }: {
+export function WhatsAppImport({ data, m, hasRating, onAssign, defaultOpen = false }: {
   data: LeagueData;
   m: Match;
   /** il giocatore (chiave dei campi) ha già un voto nella scheda? */
   hasRating: (key: string) => boolean;
   onAssign: (key: string, title: string, desc: string) => void;
+  /** parte aperto (es. quando la redazione sceglie «Importa da WhatsApp» dal menu); di norma è chiuso */
+  defaultOpen?: boolean;
 }) {
   const toast = useToast();
   const qc = useQueryClient();
+  const [open, setOpen] = useState(defaultOpen);
   const [text, setText] = useState('');
   const [an, setAn] = useState<WaAnalysis | null>(null);
   const [on, setOn] = useState<Record<number, boolean>>({});
@@ -78,9 +81,12 @@ export function WhatsAppImport({ data, m, hasRating, onAssign }: {
   const assigned = new Set(blocks.filter((b) => b.assign).map((b) => b.assign));
   const missing = an ? an.slots.filter((s) => !assigned.has(s.pk)).map((s) => s.name) : [];
   return (
-    <div id="wa-import" className="wa-import" style={{ display: 'block' }}>
-      <div className="wa-h">📥 Importa pagelle da WhatsApp</div>
-      <div className="mb-note" style={{ margin: '0 0 8px' }}>
+    <div id="wa-import" className={`wa-import${open ? ' open' : ''}`} style={{ display: 'block' }}>
+      <button type="button" id="wa-toggle" className="wa-h wa-toggle" aria-expanded={open} aria-controls="wa-body" onClick={() => setOpen((o) => !o)}>
+        <span>📥 Importa pagelle da WhatsApp</span><span aria-hidden="true">{open ? '▴' : '▾'}</span>
+      </button>
+      <div id="wa-body" hidden={!open}>
+      <div className="mb-note" style={{ margin: '8px 0 8px' }}>
         Incolla qui tutto il messaggio delle pagelle: l'app riconosce i giocatori e assegna a ciascuno <b>titolo e descrizione</b>. Voti, gol e risultato restano quelli che inserisci tu. Prima di assegnare ti mostra cosa ha capito.
       </div>
       <textarea id="wa-text" rows={5} placeholder="Incolla il messaggio di WhatsApp…" value={text} onChange={(e) => setText(e.target.value)} />
@@ -119,6 +125,7 @@ export function WhatsAppImport({ data, m, hasRating, onAssign }: {
             <button type="button" className="btn btn-primary btn-full" style={{ marginTop: 8 }} onClick={apply}>✅ Assegna titoli e descrizioni</button>
           </>
         ) : null}
+      </div>
       </div>
     </div>
   );
