@@ -131,3 +131,16 @@ test('programma: incolla il link di Google Maps e lo condivide così com’è',a
   const shared=await page.evaluate(()=>(window as unknown as {__shared:{text:string}}).__shared);
   expect(shared.text).toBe('📍 Centro Rossi'+String.fromCharCode(10)+'https://maps.app.goo.gl/AbC123xyz');
 });
+
+test('prossima partita: niente Riepilogo, c’è Condividi posizione solo se il luogo ha la posizione',async ({browser},info)=>{
+  const {page,be}=await openPlanned(browser,info);
+  const last=page.locator('#last-match');
+  await expect(last).toContainText('Prossima partita');
+  await expect(last.getByRole('button',{name:/Formazioni/})).toBeVisible();
+  await expect(last.getByRole('button',{name:/Riepilogo/})).toHaveCount(0);
+  await expect(last.locator('.place-share')).toHaveCount(0);
+  be.matches.find((m)=>m.id==='planned')!.place_url='https://maps.app.goo.gl/AbC123xyz';
+  await page.reload();
+  await expect(page.locator('#last-match .place-share')).toBeVisible();
+  await expect(page.locator('#last-match').getByRole('button',{name:/Riepilogo/})).toHaveCount(0);
+});

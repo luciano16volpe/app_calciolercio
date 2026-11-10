@@ -96,6 +96,12 @@ test('Profilo: la prossima partita mostra giorno, ora, luogo, squadra, compagni 
   await expect(card).toContainText(`Con te: ${others[0]!.name}`);
   await expect(card).toContainText(others[1]!.name as string);
   await expect(card).toContainText('Contro:');
+  // «Apri posizione» compare solo se il luogo ha la posizione, e apre la mappa (non condivide)
+  await expect(card.locator('#open-place')).toHaveCount(0);
+  be.matches.find((x) => x.id === 'futura')!.place_url = 'https://maps.app.goo.gl/AbC123xyz';
+  await page.reload();
+  await expect(page.locator('#next-match #open-place')).toHaveAttribute('href', 'https://maps.app.goo.gl/AbC123xyz');
+  await expect(page.locator('#next-match #share-place')).toHaveCount(0);
   // La partita resta in programma, ma non compare se non sono convocato.
   be.mplayers = be.mplayers.filter((r) => !(r.match_id === 'futura' && r.player_id === me.id));
   await page.reload();

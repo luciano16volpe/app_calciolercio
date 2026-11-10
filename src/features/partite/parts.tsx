@@ -1,3 +1,5 @@
+import { PlaceShare } from './PlaceShare';
+import { placeOf } from '../../domain/place';
 import { LoadingIndicator } from '../../app/LoadingIndicator';
 import { useElementVisibility } from '../../app/visibility';
 import { MatchTextBoundary } from './MatchTextBoundary';
@@ -32,8 +34,8 @@ export interface MatchActions {
 }
 
 // ── pulsanti sotto la partita ──────────────────────────────────────────────
-/** Non giocata → Formazioni · Riepilogo · Foglio. Giocata → Riepilogo + 📰 Gazzetta (se c'è) + 📜 Pagelle (se ce ne sono). */
-export function MatchButtons({ data, m, act }: { data: LeagueData; m: Match; act: MatchActions }) {
+/** Non giocata → Formazioni · Foglio · 📍 Condividi posizione (se il luogo ha la posizione). Giocata → Riepilogo + 📰 Gazzetta (se c'è) + 📜 Pagelle (se ce ne sono). */
+export function MatchButtons({ data, m, act, withPlace = true }: { data: LeagueData; m: Match; act: MatchActions; /** il pulsante della posizione (se la scheda lo mostra già altrove: false) */ withPlace?: boolean }) {
   const { showImage, shareCanvas } = useImageTools();
   const toast = useToast();
   const played = num(m.scoreA) != null && num(m.scoreB) != null;
@@ -53,8 +55,8 @@ export function MatchButtons({ data, m, act }: { data: LeagueData; m: Match; act
     return (
       <>
         <button className="btn btn-primary btn-sm mbar-btn" onClick={formations} style={{ background: '#25D366', borderColor: '#25D366' }}>📲 Formazioni</button>
-        {sum}
         <button className="btn btn-secondary btn-sm mbar-btn" onClick={sheet} title="Foglio A4 in bianco e nero da stampare e compilare in campo">🖨️ Foglio</button>
+        {withPlace ? <PlaceShare place={placeOf(m)} compact /> : null}
       </>
     );
   }
