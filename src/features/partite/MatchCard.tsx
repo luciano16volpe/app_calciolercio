@@ -480,7 +480,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
         </div>
         <div id="match-modal-body">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 10 }}>
-            <div id="mbar-share" style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}><MatchButtons data={data} m={m} act={act} /></div>
+            <div id="mbar-share" style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}><MatchButtons data={data} m={m} act={act} withPlace={false} /></div>
             {canEdit && !editing ? (
               <button
                 id="edit-toggle-btn" className="btn btn-secondary btn-sm mbar-btn" onClick={() => setDraft(startDraft(m, ratings))} title="Modifica partita" aria-label="Modifica partita"
