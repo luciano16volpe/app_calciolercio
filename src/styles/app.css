@@ -741,3 +741,13 @@ input[type=file]{display:none}
 .mini-bar-fill.stat-anim{transform-origin:left center;animation:barGrow .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 45ms)}
 @media(prefers-reduced-motion:reduce){.mini-bar-fill.stat-anim{animation:none}}
 
+/* 📷 Leggi il foglio: tabella dei numeri letti, da controllare */
+.ss-team{margin:8px 0}
+.ss-th{font-size:12px;font-weight:800;color:var(--text2);margin-bottom:4px}
+.ss-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--gray3)}
+.ss-name{flex:1;min-width:0;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ss-cnt{display:inline-flex;align-items:center;gap:2px;border-radius:8px;padding:1px 2px}
+.ss-cnt.doubt{background:rgba(242,201,76,.35);outline:1.5px solid #e0b93c}
+.ss-cnt button{border:none;background:var(--gray2);color:var(--text);width:22px;height:26px;border-radius:6px;font-size:15px;font-weight:800;cursor:pointer;padding:0}
+.ss-cnt b{min-width:16px;text-align:center;font-size:14px}
+@media(max-width:380px){.ss-name{font-size:12px}.ss-cnt button{width:20px}}

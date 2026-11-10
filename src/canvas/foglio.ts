@@ -6,6 +6,7 @@ import type { Dataset, Match } from '../domain/types';
 /** Quello che serve del foglio di una partita (anche non ancora salvata). */
 export type SheetMatch = Pick<Match, 'date' | 'teamA' | 'teamB'> & { notes?: unknown };
 import { fitText, newCanvas, SHARE_FONT, type Ctx } from './share';
+import { SHEET_H, SHEET_W, SHEET_KINDS, sheetLayout, type SheetTable } from '../domain/sheetLayout';
 
 export interface SheetInput {
   date: unknown;
@@ -23,20 +24,14 @@ export const sheetInput = (data: Dataset, m: SheetMatch): SheetInput => ({
   teamB: normalizeTeam(m.teamB).map((pl) => playerKey(data.players, pl.id, pl.name).name),
 });
 
-interface Col {
-  label: string;
-  w: number;
-  fill?: boolean;
-  n?: number;
-}
-
 export function drawSheet(m: SheetInput): HTMLCanvasElement {
-  const W = 1240, H = 1754; // A4 verticale a 150 dpi (×2 → 300 dpi)
+  const W = SHEET_W, H = SHEET_H; // A4 verticale a 150 dpi (×2 → 300 dpi)
   const { canvas, ctx } = newCanvas(W, H);
   const INK = '#000', MID = '#555', BOX = '#777', F = SHARE_FONT;
   ctx.fillStyle = '#fff';
   ctx.fillRect(0, 0, W, H);
-  const M = 70, CW = W - 2 * M, EXTRA = 2; // margini, larghezza utile, righe vuote per squadra
+  const L = sheetLayout(m.teamA.length, m.teamB.length, !!m.notes);
+  const M = L.M, CW = L.CW, BAR = L.BAR, COLH = L.COLH, rowH = L.rowH, cols = L.cols;
   const line = (x1: number, y1: number, x2: number, y2: number) => {
     ctx.beginPath();
     ctx.moveTo(x1, y1);
@@ -44,6 +39,9 @@ export function drawSheet(m: SheetInput): HTMLCanvasElement {
     ctx.stroke();
   };
   const teamA = m.teamA, teamB = m.teamB;
+  // quadrati neri agli angoli: servono a ritrovare il foglio nella foto (quello in alto a sinistra è più grande)
+  ctx.fillStyle = INK;
+  for (const r of Object.values(L.markers)) ctx.fillRect(r.x, r.y, r.w, r.h);
 
   // ── intestazione ──
   let y = M + 40;
@@ -83,47 +81,9 @@ export function drawSheet(m: SheetInput): HTMLCanvasElement {
   ctx.font = F('600 20px');
   ctx.fillText('Segna una X in una casella per ogni gol, assist o autogol', W / 2, y);
   ctx.fillStyle = INK;
-  y += 26;
 
-  // ── altezza delle righe adattata, perché le due squadre stiano sempre in una pagina ──
-  const BAR = 54, COLH = 38, GAP = 34, FOOT = 110;
-  const totalRows = teamA.length + teamB.length + 2 * EXTRA;
-  const avail = H - M - FOOT - y - (2 * (BAR + COLH) + GAP);
-  const rowH = Math.max(44, Math.min(86, Math.floor(avail / totalRows)));
-  // GOL e ASSIST riempiono la cella con gruppi di 5 caselle (1 o 2 righe secondo l'altezza); AUTOGOL: 3
-  const cols: Col[] = [{ label: 'GIOCATORE', w: 240 }, { label: 'GOL', w: 375, fill: true }, { label: 'ASSIST', w: 375, fill: true }, { label: 'AUTOGOL', w: 110, n: 3 }];
-  const twoRows = Math.floor((rowH - 14) / 2) >= 22;
-  const bs = twoRows ? Math.min(30, Math.floor((rowH - 14) / 2)) : Math.min(26, Math.floor(rowH * 0.5));
-  const gap = 7, grp = 16, rowGap = 5, cellPad = 8;
-  // quante caselle stanno su una riga della cella, sempre in gruppi interi da 5
-  const perLine = (w: number) => {
-    const groupW = 5 * bs + 4 * gap;
-    const g = Math.max(1, Math.floor((w - 2 * cellPad + grp) / (groupW + grp)));
-    return g * 5;
-  };
-
-  // disegna le caselle da barrare di una cella: GOL/ASSIST usano tutte le righe disponibili, le altre un numero fisso
-  const drawBoxes = (x0: number, y0: number, w: number, c: Col) => {
-    const lines: number[] = c.fill ? Array<number>(twoRows ? 2 : 1).fill(perLine(w)) : [c.n as number];
-    const blockH = lines.length * bs + (lines.length - 1) * rowGap;
-    let by = y0 + (rowH - blockH) / 2;
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = BOX;
-    lines.forEach((cnt) => {
-      const xs: number[] = [];
-      let cx = 0;
-      for (let k = 0; k < cnt; k++) {
-        xs.push(cx);
-        cx += bs + gap;
-        if ((k + 1) % 5 === 0) cx += grp - gap;
-      }
-      const off = x0 + (w - ((xs[xs.length - 1] as number) + bs)) / 2;
-      xs.forEach((bx) => ctx.strokeRect(off + bx, by, bs, bs));
-      by += bs + rowGap;
-    });
-  };
-
-  const drawTable = (ctx2: Ctx, label: string, names: string[], isBlue: boolean, y0: number) => {
+  const drawTable = (ctx2: Ctx, label: string, names: string[], isBlue: boolean, t: SheetTable) => {
+    const y0 = t.y0;
     // barra della squadra: Blu = nero pieno, Bianchi = solo contorno (si legge anche in bianco e nero)
     if (isBlue) {
       ctx2.fillStyle = INK;
@@ -152,23 +112,20 @@ export function drawSheet(m: SheetInput): HTMLCanvasElement {
       x += c.w;
     });
     // righe (giocatori + righe vuote per chi arriva dopo)
-    const rows = [...names, ...Array<string>(EXTRA).fill('')];
-    let ry = top + COLH;
-    rows.forEach((nm) => {
+    const rows = [...names, ...Array<string>(t.rows.length - names.length).fill('')];
+    ctx2.lineWidth = 2;
+    ctx2.strokeStyle = BOX;
+    rows.forEach((nm, k) => {
+      const ry = (t.rows[k] as SheetTable['rows'][number]).y;
       if (nm) {
         ctx2.fillStyle = INK;
         ctx2.textAlign = 'left';
         ctx2.font = F('700 ' + Math.min(26, Math.round(rowH * 0.42)) + 'px');
-        ctx2.fillText(fitText(ctx2, nm, (cols[0] as Col).w - 28), M + 16, ry + rowH / 2 + 9);
+        ctx2.fillText(fitText(ctx2, nm, (cols[0] as { w: number }).w - 28), M + 16, ry + rowH / 2 + 9);
       }
-      let cx = M + (cols[0] as Col).w;
-      cols.slice(1).forEach((c) => {
-        drawBoxes(cx, ry, c.w, c);
-        cx += c.w;
-      });
-      ry += rowH;
+      for (const kind of SHEET_KINDS) for (const r of (t.rows[k] as SheetTable['rows'][number]).boxes[kind]) ctx2.strokeRect(r.x, r.y, r.w, r.h);
     });
-    const bottom = ry;
+    const bottom = t.bottom;
     // griglia
     ctx2.strokeStyle = INK;
     ctx2.lineWidth = 1.5;
@@ -184,11 +141,11 @@ export function drawSheet(m: SheetInput): HTMLCanvasElement {
     return bottom;
   };
 
-  const endA = drawTable(ctx, 'BLU', teamA, true, y);
-  const endB = drawTable(ctx, 'BIANCHI', teamB, false, endA + GAP);
+  drawTable(ctx, 'BLU', teamA, true, L.tables[0]);
+  drawTable(ctx, 'BIANCHI', teamB, false, L.tables[1]);
 
   // ── righe per le note e crediti ──
-  const ny = endB + 46;
+  const ny = L.notesY;
   ctx.fillStyle = INK;
   ctx.textAlign = 'left';
   ctx.font = F('800 20px');
@@ -200,6 +157,6 @@ export function drawSheet(m: SheetInput): HTMLCanvasElement {
   ctx.fillStyle = MID;
   ctx.textAlign = 'center';
   ctx.font = F('italic 500 15px');
-  ctx.fillText("CalcioLercio — da riportare nell'app con il tasto Edita", W / 2, H - M + 30);
+  ctx.fillText('CalcioLercio — fotografa il foglio intero (con i 4 quadrati neri) e usa «Leggi il foglio» nella modifica partita', W / 2, H - M + 30);
   return canvas;
 }
