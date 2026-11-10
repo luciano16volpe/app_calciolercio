@@ -6,7 +6,7 @@ export const SHEET_W = 1240;
 export const SHEET_H = 1754;
 const M = 70; // margini
 const CW = SHEET_W - 2 * M; // larghezza utile
-export const SHEET_EXTRA_ROWS = 2; // righe vuote per squadra, per chi arriva dopo
+export const SHEET_EXTRA_ROWS = 0; // niente righe vuote: più spazio, caselle più grandi (chi arriva dopo si aggiunge alla partita prima di stampare)
 const BAR = 54, COLH = 38, GAP = 34, FOOT = 110;
 
 export interface Rect { x: number; y: number; w: number; h: number }
@@ -63,9 +63,9 @@ export function sheetLayout(nA: number, nB: number, hasNotes: boolean): SheetLay
   const startY = M + 40 + 40 + (hasNotes ? 32 : 0) + 34 + bh + 38 + 26;
   const totalRows = nA + nB + 2 * SHEET_EXTRA_ROWS;
   const avail = SHEET_H - M - FOOT - startY - (2 * (BAR + COLH) + GAP);
-  const rowH = Math.max(44, Math.min(86, Math.floor(avail / totalRows)));
+  const rowH = Math.max(44, Math.min(100, Math.floor(avail / totalRows)));
 
-  const widths = [240, 375, 375, 110];
+  const widths = [230, 350, 350, 170];
   const labels = ['GIOCATORE', 'GOL', 'ASSIST', 'AUTOGOL'];
   let cx = M;
   const cols: SheetColumn[] = widths.map((w, i) => {
@@ -76,7 +76,7 @@ export function sheetLayout(nA: number, nB: number, hasNotes: boolean): SheetLay
 
   // GOL e ASSIST riempiono la cella con gruppi di 5 caselle (1 o 2 righe secondo l'altezza); AUTOGOL: 3
   const twoRows = Math.floor((rowH - 14) / 2) >= 22;
-  const bs = twoRows ? Math.min(30, Math.floor((rowH - 14) / 2)) : Math.min(26, Math.floor(rowH * 0.5));
+  const bs = twoRows ? Math.min(44, Math.floor((rowH - 14) / 2)) : Math.min(30, Math.floor(rowH * 0.5));
   const gap = 7, grp = 16, rowGap = 5, cellPad = 8;
   const perLine = (w: number) => {
     const groupW = 5 * bs + 4 * gap;
@@ -85,7 +85,8 @@ export function sheetLayout(nA: number, nB: number, hasNotes: boolean): SheetLay
   };
   const cellBoxes = (c: SheetColumn, y0: number): Rect[] => {
     const lines: number[] = c.fill ? Array<number>(twoRows ? 2 : 1).fill(perLine(c.w)) : [c.n as number];
-    const blockH = lines.length * bs + (lines.length - 1) * rowGap;
+    const size = c.fill ? bs : Math.min(bs, 40); // le 3 caselle dell'autogol devono stare nella loro colonna
+    const blockH = lines.length * size + (lines.length - 1) * rowGap;
     let by = y0 + (rowH - blockH) / 2;
     const out: Rect[] = [];
     for (const cnt of lines) {
@@ -93,12 +94,12 @@ export function sheetLayout(nA: number, nB: number, hasNotes: boolean): SheetLay
       let x = 0;
       for (let k = 0; k < cnt; k++) {
         xs.push(x);
-        x += bs + gap;
+        x += size + gap;
         if ((k + 1) % 5 === 0) x += grp - gap;
       }
-      const off = c.x + (c.w - ((xs[xs.length - 1] as number) + bs)) / 2;
-      for (const bx of xs) out.push({ x: off + bx, y: by, w: bs, h: bs });
-      by += bs + rowGap;
+      const off = c.x + (c.w - ((xs[xs.length - 1] as number) + size)) / 2;
+      for (const bx of xs) out.push({ x: off + bx, y: by, w: size, h: size });
+      by += size + rowGap;
     }
     return out;
   };
