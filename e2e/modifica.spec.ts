@@ -163,7 +163,13 @@ test('Gioca: l’amministratore la vede, anche aprendo il suo indirizzo', async 
 test('WhatsApp: si incolla il messaggio, si controllano gli abbinamenti e si assegnano titolo e descrizione', async ({ page }) => {
   const writes = await login(page);
   const modal = await openLastMatch(page);
+  // fuori dalla modifica non c'è; in modifica c'è ma chiuso: si apre toccando il titolo
+  await expect(modal.locator('#wa-import')).toHaveCount(0);
   await modal.locator('#edit-toggle-btn').click();
+  await expect(modal.locator('#wa-toggle')).toHaveAttribute('aria-expanded', 'false');
+  await expect(modal.locator('#wa-text')).toBeHidden();
+  await modal.locator('#wa-toggle').click();
+  await expect(modal.locator('#wa-text')).toBeVisible();
   const name = await modal.locator('.rate-stepper').first().evaluate((el) => (el.parentElement?.parentElement?.firstElementChild?.textContent ?? '').trim());
   // senza testo: avviso
   await modal.locator('button', { hasText: 'Analizza il messaggio' }).click();
@@ -192,6 +198,7 @@ test('WhatsApp: messaggio senza pagelle', async ({ page }) => {
   await login(page);
   const modal = await openLastMatch(page);
   await modal.locator('#edit-toggle-btn').click();
+  await modal.locator('#wa-toggle').click();
   await modal.locator('#wa-text').fill('Ciao a tutti, stasera si gioca?');
   await modal.locator('button', { hasText: 'Analizza il messaggio' }).click();
   await expect(modal.locator('#wa-preview')).toContainText("non c'è nessun voto");

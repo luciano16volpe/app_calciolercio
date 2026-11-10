@@ -181,6 +181,7 @@ test('Scenario completo: lega, invito, collegamento, codice, ruoli, pagelle, reg
   const modal = rita.locator('#match-modal');
   await expect(modal.locator('button', { hasText: 'Salva pagelle' })).toBeVisible({ timeout: 15_000 });
   await expect(modal.locator('.rate-btn-plus')).toHaveCount(0);
+  await expect(modal.locator('#wa-toggle')).toHaveAttribute('aria-expanded', 'true'); // dal menu «Importa da WhatsApp» parte già aperto
   await modal.locator('#wa-text').fill(WHATSAPP);
   await modal.getByRole('button', { name: /Analizza il messaggio/ }).click();
   await modal.getByRole('button', { name: /Assegna titoli e descrizioni/ }).click();
