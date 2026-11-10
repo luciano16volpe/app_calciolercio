@@ -11,7 +11,6 @@ import { photoUrl, type LeagueData } from '../../data/queries';
 import { useMyPlayer, usePendingClaims } from '../../data/claims';
 import { useAdminRequests, useMyLeagues, useIsSuperAdmin } from '../../data/leagues';
 import { pendingRatings } from '../../domain/matches';
-import { formatDate } from '../../domain/format';
 import { premiumDate, useMyPremium } from '../../data/premium';
 
 export type Panel =
@@ -33,14 +32,13 @@ function Item({ icon, title, sub, badge, hot, onClick, id }: { icon: ReactNode; 
   );
 }
 
-export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSettings, onOpenMatch }: {
+export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSettings }: {
   data: LeagueData | undefined;
   onClose: () => void;
   /** Un pannello è aperto sopra il menu: il menu resta visibile sotto ma non reagisce. */
   covered?: boolean;
   onOpenPanel: (p: Panel) => void;
   onGoSettings: () => void;
-  onOpenMatch: (id: string, text?: boolean) => void;
 }) {
   const { user, signOut } = useAuth();
   const toast = useToast();
@@ -76,7 +74,6 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
   // la foto del mio giocatore (se ne ho una), per il cerchio in alto nel menu
   const mine = useMyPlayer(user?.id ?? null);
   const myPhoto = data && mine.data?.linked ? photoUrl(data.photos[mine.data.linked.id]) : null;
-  const last = data ? [...data.dataset.matches].sort((a, b) => ((a.date ?? '') < (b.date ?? '') ? 1 : -1))[0] : undefined;
   // il menu resta sotto il pannello: allo swipe indietro si vede subito il menu, non la pagina
   const open = (p: Panel) => onOpenPanel(p);
   const copy = async (code: string) => {
@@ -170,10 +167,7 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
           {canEditText && !isAdmin && data ? (
             <>
               <div className="menu-sec">Redazione · {data.league.name}</div>
-              <Item icon="📝" title="Pagelle da scrivere" sub={pending.length ? `${pending.length} partite con meno della metà delle descrizioni` : 'tutto scritto'} badge={pending.length} hot onClick={() => { const m = pending[0] ?? last; onClose(); if (m) onOpenMatch(m.id, true); }} id="menu-red-pending" />
-              <Item icon="🗂️" title="Partite senza pagelle" sub="scrivi o salta le vecchie" onClick={() => open('pending')} id="menu-red-list" />
-              <Item icon="📥" title="Importa da WhatsApp" sub="incolla il messaggio delle pagelle" onClick={() => { const m = pending[0] ?? last; onClose(); if (m) onOpenMatch(m.id, true); }} id="menu-red-import" />
-              <Item icon="📰" title="Carica la Gazzetta" sub={last ? `ultima partita: ${formatDate(last.date)}` : undefined} onClick={() => { onClose(); if (last) onOpenMatch(last.id, true); }} id="menu-red-gazzetta" />
+              <Item icon="📝" title="Da completare" sub={pending.length ? `${pending.length} partite con pagelle da completare` : 'pagelle, importazione e Gazzetta nella scheda partita'} badge={pending.length} hot onClick={() => open('pending')} id="menu-red-pending" />
             </>
           ) : null}
 

@@ -194,7 +194,7 @@ function Shell() {
       ) : null}
       {data && ptDialog ? <PagelleTextDialog data={data} matchId={ptDialog} onClose={() => setPtDialog(null)} /> : null}
 
-      {menuOpen ? <MenuDrawer data={data} onClose={closeMenu} covered={!!panel} onOpenPanel={setPanel} onGoSettings={() => go('settings')} onOpenMatch={openMatch} /> : null}
+      {menuOpen ? <MenuDrawer data={data} onClose={closeMenu} covered={!!panel} onOpenPanel={setPanel} onGoSettings={() => go('settings')} /> : null}
       {panel ? (
         <ShellPanels
           panel={panel} data={data} closePanel={closePanel} setPanel={setPanel}
