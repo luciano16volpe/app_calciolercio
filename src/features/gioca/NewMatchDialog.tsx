@@ -42,7 +42,7 @@ export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData
     try {
       toast('⏳ Salvataggio...');
       await createMatch({
-        leagueId: data.league.id, date, time, place: place.name.trim(), placeLat: place.lat, placeLng: place.lng, notes: notes.trim(),
+        leagueId: data.league.id, date, time, place: place.name.trim(), placeLat: place.lat, placeLng: place.lng, placeUrl: place.url, notes: notes.trim(),
         teamA: combo.tA.map((i) => (players[i] as { id: string }).id),
         teamB: combo.tB.map((i) => (players[i] as { id: string }).id),
         scoreA: sa !== '' ? clampInt(sa, 0, 99, 0) : '', scoreB: sb !== '' ? clampInt(sb, 0, 99, 0) : '',

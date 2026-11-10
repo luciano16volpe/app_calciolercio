@@ -81,3 +81,9 @@ test('il luogo trovato su mappa salva anche le coordinate; scritto a mano le tog
 test('le coordinate vanno insieme e dentro i limiti', async () => {
   await expect(db.query('update matches set place_lat=41.4 where id=$1',[match])).rejects.toThrow();
 });
+
+test('il link di Google Maps incollato si salva; deve essere https', async () => {
+  await db.query('select update_planned_match($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',[match,targetDate,'20:00','Campo Rossi','',[a],[b],original,null,null,'https://maps.app.goo.gl/abc123']);
+  expect((await db.query('select place,place_url,place_lat from matches where id=$1',[match])).rows[0]).toEqual({place:'Campo Rossi',place_url:'https://maps.app.goo.gl/abc123',place_lat:null});
+  await expect(db.query("update matches set place_url='http://example.com' where id=$1",[match])).rejects.toThrow();
+});

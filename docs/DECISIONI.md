@@ -204,3 +204,4 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Un luogo scritto a mano resta valido, senza coordinate e senza pulsante di condivisione. Cambiando il testo le coordinate si tolgono.
 - «📍 Condividi posizione» manda nome + link `google.com/maps/search/?api=1&query=lat,lng` (nessuna chiave Google). Scartato: Google Places (richiede conto e carta).
 - La ricerca parte solo su comando (una richiesta alla volta), come chiede il servizio OpenStreetMap.
+- **Link di Google Maps incollato** (consigliato): la ricerca libera non conosce molti campetti né i numeri civici. Si cerca il campo su Google Maps, Condividi → Copia link, e si incolla nell'app (`place_url`, solo https e solo domini Google Maps). «Condividi posizione» manda quel link; se il link lo contiene, si leggono anche coordinate e nome.
