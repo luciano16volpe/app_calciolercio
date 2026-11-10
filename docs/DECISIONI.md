@@ -205,3 +205,9 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - «📍 Condividi posizione» manda nome + link `google.com/maps/search/?api=1&query=lat,lng` (nessuna chiave Google). Scartato: Google Places (richiede conto e carta).
 - La ricerca parte solo su comando (una richiesta alla volta), come chiede il servizio OpenStreetMap.
 - **Link di Google Maps incollato** (consigliato): la ricerca libera non conosce molti campetti né i numeri civici. Si cerca il campo su Google Maps, Condividi → Copia link, e si incolla nell'app (`place_url`, solo https e solo domini Google Maps). «Condividi posizione» manda quel link; se il link lo contiene, si leggono anche coordinate e nome.
+
+## Lettura del foglio partita con la fotocamera
+- In modifica partita (solo amministratore) c'è l'accordion «📷 Leggi il foglio con le X»: si fotografa il foglio compilato, l'app conta le X di gol, assist e autogol, mostra i numeri letti (caselle dubbie in giallo, correggibili) e solo su conferma compila la scheda. Non salva niente da sola; i voti restano manuali.
+- Il risultato si calcola dalle X (gol di una squadra + autogol dell'altra): non si legge la scrittura a mano.
+- Lettura **nell'app, senza intelligenza artificiale**: 4 quadrati neri agli angoli del foglio (quello in alto a sinistra più grande, per capire come è girata la foto), raddrizzamento e conteggio delle caselle barrate. Gratis, la foto non esce dal telefono. Scartato (per ora): Claude/AI, che costa, richiede una chiave sul server e invia la foto fuori.
+- I fogli stampati prima di questa modifica (senza quadrati) non si leggono. Serve il foglio stampato dopo l'ultima modifica alle squadre: l'impaginazione dipende dal numero di giocatori (`src/domain/sheetLayout.ts`, usata sia per disegnare sia per leggere).

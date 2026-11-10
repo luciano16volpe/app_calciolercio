@@ -21,6 +21,7 @@ import { waHTML } from '../../domain/whatsapp';
 import { GazThumb, MatchButtons, type MatchActions } from './parts';
 import { WhatsAppImport } from './WhatsAppImport';
 import { PlaceField } from './PlaceField';
+import { SheetScan } from './SheetScan';
 import { PlaceShare } from './PlaceShare';
 import { placeOf } from '../../domain/place';
 
@@ -571,6 +572,12 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               <TeamPanel title="🔵 Blu" team={teamA} ratings={ratings} blue side="A" ed={ed} />
               <TeamPanel title="⚪ Bianchi" team={teamB} ratings={ratings} blue={false} side="B" ed={ed} />
             </div>
+            {full && draft ? (
+              <SheetScan data={data} m={m} onApply={(r) => setDraft((d) => (d ? {
+                ...d, scA: r.scA, scB: r.scB,
+                fields: { ...d.fields, ...Object.fromEntries(Object.entries(r.fields).filter(([k]) => d.fields[k]).map(([k, v]) => [k, { ...(d.fields[k] as PlayerFields), goals: v.goals, assist: v.assist, autogol: v.autogol }])) },
+              } : d))} />
+            ) : null}
             {draft ? (
               <WhatsAppImport
                 data={data} m={m}
