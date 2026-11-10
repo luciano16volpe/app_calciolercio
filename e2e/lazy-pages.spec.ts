@@ -3,7 +3,11 @@ import { fixturePlayer, setup } from './helpers';
 
 const nav = (page: import('@playwright/test').Page, name: string) => page.locator('.bottom-nav').getByRole('button', { name, exact: true }).click();
 
+// Con il risparmio dati attivo l'app non scarica in anticipo le altre schermate: così si prova che si caricano solo quando servono.
+const saveData = (page: import('@playwright/test').Page) => page.addInitScript(() => Object.defineProperty(navigator, 'connection', { value: { saveData: true }, configurable: true }));
+
 test('unused pages and drawing code are not downloaded or mounted on the profile', async ({ page }) => {
+  await saveData(page);
   const scripts: string[] = [];
   page.on('request', (r) => { if (r.resourceType() === 'script') scripts.push(new URL(r.url()).pathname); });
   await setup(page, { publicRole: 'admin', mePlayer: fixturePlayer() });
@@ -30,6 +34,7 @@ test('unused pages and drawing code are not downloaded or mounted on the profile
 });
 
 test('drawing code is requested by an image action, and feature chunks are absent from PWA precache', async ({ page, request }) => {
+  await saveData(page);
   const scripts: string[] = [];
   page.on('request', (r) => { if (r.resourceType() === 'script') scripts.push(new URL(r.url()).pathname); });
   await setup(page, { publicRole: 'admin' });
@@ -45,4 +50,14 @@ test('drawing code is requested by an image action, and feature chunks are absen
   const worker = await (await request.get('/sw.js')).text();
   expect(worker).not.toMatch(/url:"assets\/(?:GiocaPage|ClassifichePage|SettingsPage|MatchCard|make)-/);
   expect(worker).toContain('calciolercio-feature-code');
+});
+
+test('a schermata ferma le altre schermate si scaricano in anticipo', async ({ page }) => {
+  const scripts: string[] = [];
+  page.on('request', (r) => { if (r.resourceType() === 'script') scripts.push(new URL(r.url()).pathname); });
+  await setup(page, { publicRole: 'admin', mePlayer: fixturePlayer() });
+  await page.goto('/l/san-marcello/profilo');
+  await expect(page.locator('#page-profilo #myplayer-card')).toBeVisible();
+  await expect.poll(() => scripts.some((url) => url.includes('/GiocaPage-')) && scripts.some((url) => url.includes('/ClassifichePage-')), { timeout: 20_000 }).toBe(true);
+  await expect(page.locator('#cl-content')).toHaveCount(0); // scaricate, ma non mostrate
 });
