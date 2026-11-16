@@ -2,7 +2,7 @@
 // le usa il servizio che invia e le provano i test.
 
 /** Tipi di notifica (uguali a push_prefs e push_sent nel database). */
-export type PushKind = 'reminder' | 'result' | 'ratings' | 'gazzetta' | `change:${string}`;
+export type PushKind = 'reminder' | 'invitation_created' | 'invitation_eve' | 'result' | 'ratings' | 'gazzetta' | `change:${string}`;
 
 export interface ReminderInput {
   league_name: string;
@@ -87,6 +87,14 @@ export function buildMessage(r: EventInput): PushMessage {
       url: `/l/${r.league_slug}/partite`, tag: `change-${r.match_id}` };
   }
   switch (r.kind) {
+    case 'invitation_created':
+    case 'invitation_eve': {
+      const detail = [ddmm(r.match_date), hhmm(r.play_time), r.place?.trim()].filter(Boolean).join(' · ');
+      const team = TEAM[r.team as 'A' | 'B'];
+      return { title: r.league_name,
+        body: `${r.kind === 'invitation_created' ? '📣 Sei convocato' : '📣 Domani si gioca'}: ${detail}${team ? `\nSei con i ${team}` : ''}`,
+        url: `/l/${r.league_slug}/partite`, tag: `${r.kind}-${r.match_id}` };
+    }
     case 'result':
       return buildResult(r);
     case 'ratings':

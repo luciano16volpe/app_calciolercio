@@ -46,6 +46,14 @@ describe('promemoria push', () => {
 const ev = (over: Partial<EventInput>): EventInput => ({ ...base, kind: 'result', match_date: '2026-10-28', score_a: 5, score_b: 3, ...over });
 
 describe('notifiche degli eventi', () => {
+  it('convocazione iniziale e vigilia hanno messaggi e tag separati', () => {
+    const created=buildMessage(ev({ kind:'invitation_created' }));
+    const eve=buildMessage(ev({ kind:'invitation_eve' }));
+    expect(created.body).toContain('Sei convocato');
+    expect(eve.body).toContain('Domani si gioca');
+    expect(created.tag).not.toBe(eve.tag);
+    expect(created.url).toBe('/l/san-marcello/partite');
+  });
   it('ddmm: aaaa-mm-gg → gg/mm', () => {
     expect(ddmm('2026-10-28')).toBe('28/10');
     expect(ddmm(null)).toBe('');

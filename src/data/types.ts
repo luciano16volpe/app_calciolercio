@@ -879,6 +879,7 @@ export type Database = {
           gazzetta: boolean
           ratings: boolean
           reminder: boolean
+          reminder_hour: number
           reminder_minutes: number | null
           result: boolean
           user_id: string
@@ -889,6 +890,7 @@ export type Database = {
           gazzetta?: boolean
           ratings?: boolean
           reminder?: boolean
+          reminder_hour?: number
           reminder_minutes?: number | null
           result?: boolean
           user_id: string
@@ -899,6 +901,7 @@ export type Database = {
           gazzetta?: boolean
           ratings?: boolean
           reminder?: boolean
+          reminder_hour?: number
           reminder_minutes?: number | null
           result?: boolean
           user_id?: string
@@ -1347,6 +1350,7 @@ export type Database = {
           gazzetta: boolean
           ratings: boolean
           reminder: boolean
+            reminder_hour: number
           reminder_minutes: number
           result: boolean
         }[]
@@ -1492,6 +1496,7 @@ export type Database = {
       }
       // NULL ripristina le 7; il generatore non descrive gli argomenti SQL nullable.
       set_push_reminder: { Args: { p_minutes: number | null }; Returns: undefined }
+        set_push_reminder_hour: { Args: { p_hour: number }; Returns: undefined }
       set_ratings_skipped: {
         Args: { p_match: string; p_skip: boolean }
         Returns: undefined

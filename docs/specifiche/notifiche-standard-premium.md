@@ -1,5 +1,11 @@
 # Notifiche Standard e personalizzazione Premium
 
+## Aggiornamento del 16 novembre 2026
+
+Il promemoria della partita arriva alle 8:00 italiane del giorno stesso, con orario modificabile da tutti nelle impostazioni. La stessa ora si usa per il promemoria della convocazione il giorno prima. Alla creazione di una nuova partita non importata, i convocati ricevono un avviso al successivo controllo del job (ogni minuto). Se la partita nasce dopo l'ora scelta nella vigilia, non si recupera il promemoria della vigilia; resta l'avviso iniziale. Non si mandano promemoria dopo l'inizio della partita. I vecchi anticipi Premium in minuti non sono più usati per pianificare gli invii; la scelta dei tipi resta Premium. Risultato, pagelle e Gazzetta seguono le finestre temporali già definite sotto.
+
+Per il rilascio di questo aggiornamento, distribuire prima la funzione Edge `push`, poi la migrazione `20261209000000_promemoria_convocazioni.sql`, quindi il frontend. Le partite future già esistenti ricevono il promemoria della vigilia, senza un nuovo avviso iniziale. La prova automatica verifica la pianificazione e i testi; la consegna sul dispositivo richiede una verifica reale con telefono iscritto.
+
 Decisione del 5 novembre 2026. Servizio push e migrazione applicati in produzione, con collaudo reale superato e dati temporanei annullati.
 
 ## Regole

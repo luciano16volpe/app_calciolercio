@@ -41,7 +41,7 @@ async function dropGone(endpoints: string[]) {
 async function runJob(job: 'reminders' | 'events', dryRun: boolean) {
   const { data, error } = await admin.rpc('push_due');
   if (error) return json({ error: error.message }, 500);
-  const rows = ((data ?? []) as DueRow[]).filter((r) => (job === 'reminders' ? r.kind === 'reminder' : r.kind !== 'reminder'));
+  const rows = ((data ?? []) as DueRow[]).filter((r) => (job === 'reminders' ? r.kind === 'reminder' || r.kind === 'invitation_eve' : r.kind !== 'reminder' && r.kind !== 'invitation_eve'));
   // una notifica per persona, partita e tipo, a tutti i suoi telefoni
   const key = (r: DueRow) => `${r.kind}|${r.user_id}|${r.match_id}`;
   const groups = new Map<string, DueRow[]>();
