@@ -43,10 +43,10 @@ begin
   perform public.set_push_enabled(true);
   assert (select ratings=false from public.my_push_prefs()),'Preferenza precedente riattivata';
   reset role;
-  assert exists(select 1 from public.push_due_at((day+'07:00'::time) at time zone 'Europe/Rome') d where d.match_id=m and d.user_id=u_standard),'Promemoria Standard mancante';
+  assert exists(select 1 from public.push_due_at((day+'08:00'::time) at time zone 'Europe/Rome') d where d.match_id=m and d.user_id=u_standard and d.kind='reminder'),'Promemoria Standard mancante';
 
   perform set_config('request.jwt.claim.sub',u_premium::text,true); set local role authenticated;
-  perform public.set_push_reminder(120);
+  perform public.set_push_reminder_hour(19);
   perform public.set_push_pref('ratings',false);
   reset role;
   assert not exists(select 1 from public.push_due_at((day+'08:00'::time) at time zone 'Europe/Rome') d where d.match_id=m and d.user_id=u_premium),'Anticipo Premium ignorato';
@@ -55,8 +55,8 @@ begin
   assert exists(select 1 from public.push_due_at(now()) d where d.match_id=m and d.user_id=u_premium and d.kind='gazzetta'),'Gazzetta Premium mancante';
   assert not exists(select 1 from public.push_due_at(now()) d where d.match_id=m and d.user_id=u_standard and d.kind='gazzetta'),'Gazzetta inviata a Standard';
   delete from public.account_premium where user_id=u_premium;
-  assert exists(select 1 from public.push_due_at((day+'08:00'::time) at time zone 'Europe/Rome') d where d.match_id=m and d.user_id=u_premium and d.kind='reminder'),'Scadenza: non torna alle 7';
-  assert (select not ratings and reminder_minutes=120 from public.push_prefs where user_id=u_premium),'Scadenza: preferenze perse';
+  assert exists(select 1 from public.push_due_at((day+'19:00'::time) at time zone 'Europe/Rome') d where d.match_id=m and d.user_id=u_premium and d.kind='reminder'),'Scadenza: orario perso';
+  assert (select not ratings and reminder_hour=19 from public.push_prefs where user_id=u_premium),'Scadenza: preferenze perse';
 
   update public.matches set place='Altro campo' where id=m;
   delete from public.match_players where match_id=m;

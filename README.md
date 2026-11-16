@@ -14,7 +14,7 @@ classifiche, albo d'oro, Gazzette. Nuova versione multi-lega su Supabase.
 - Amministratore supremo: una volta, nello SQL Editor: `insert into platform_admins select id from auth.users where email='luciano16volpe@gmail.com';`
 
 ## Notifiche push
-- Il promemoria Standard arriva alle 7 italiane del giorno della partita. Premium può scegliere invece 1, 2, 3 o 24 ore prima; `pg_cron` controlla ogni minuto e sveglia la funzione `push` (`supabase/functions/push`) solo quando ci sono invii pronti.
+- Il promemoria arriva alle 8 italiane del giorno della partita, oppure all’ora scelta nelle impostazioni. La stessa ora vale per il promemoria di convocazione del giorno prima. Alla creazione della partita parte un avviso di convocazione entro il successivo controllo di `pg_cron` (ogni minuto). Gli invii richiedono una partita futura, un account collegato e un telefono iscritto.
 - Gli eventi disponibili sono **risultato inserito** (1 min dopo), **pagelle pronte** (2 min dopo l'ultima modifica, solo se tutte le pagelle con voto hanno testo), **Gazzetta caricata** (30 s dopo). Solo ai giocatori ancora nella lega, per partite degli ultimi 3 giorni, mai per le importazioni, una volta sola per persona e partita. Le Gazzette notificano solo i Premium. Tutti possono sospendere gli invii; Premium personalizza i tipi (Impostazioni → Notifiche), conservando le disattivazioni alla scadenza.
 - Variazioni di giorno, ora, luogo e squadre: un solo avviso dopo un minuto dall'ultima modifica, anche a chi viene sostituito. Le modifiche annullate prima dell'invio non notificano nulla. Dettagli e ordine di rilascio: `docs/specifiche/notifiche-standard-premium.md`.
 - Dopo aver modificato la funzione: `npm run push:deploy` (da un terminale normale, chiede conferma).

@@ -42,20 +42,41 @@ test('Standard attiva e sospende tutte le notifiche, ma non modifica tipi o anti
   expect((await due('08:00')).some(r=>r.user_id===standard)).toBe(true);
 });
 
-test('nessun promemoria Standard prima delle 7 o dopo il calcio di inizio',async()=>{
-  expect((await due('06:59')).filter(r=>r.kind==='reminder')).toHaveLength(0);
-  expect((await due('07:00')).filter(r=>r.kind==='reminder')).toHaveLength(2);
+test('nessun promemoria prima delle 8 o dopo il calcio di inizio',async()=>{
+  expect((await due('07:59')).filter(r=>r.kind==='reminder')).toHaveLength(0);
+  expect((await due('08:00')).filter(r=>r.kind==='reminder')).toHaveLength(2);
   expect((await due('21:00')).filter(r=>r.kind==='reminder')).toHaveLength(0);
 });
 
-test('Premium sceglie anticipo; dopo la scadenza torna alle 7 preservando i tipi disattivati',async()=>{
-  await asUser(premium); await db.query('select set_push_reminder(120)'); await db.query("select set_push_pref('ratings',false)");
+test('anche Standard può scegliere l’ora, con controllo dei valori',async()=>{
+  await asUser(standard);
+  await db.query('select set_push_reminder_hour(10)');
+  expect((await db.query('select reminder_hour from my_push_prefs()')).rows[0]).toEqual({reminder_hour:10});
+  await db.exec('savepoint invalid_hour');
+  await expect(db.query('select set_push_reminder_hour(24)')).rejects.toThrow(/Orario non valido/);
+  await db.exec('rollback to savepoint invalid_hour');
+  expect((await due('09:59')).some(r=>r.kind==='reminder'&&r.user_id===standard)).toBe(false);
+  expect((await due('10:00')).some(r=>r.kind==='reminder'&&r.user_id===standard)).toBe(true);
+});
+
+test('convocazione nuova pronta al primo controllo, senza invii retroattivi alle partite esistenti',async()=>{
+  await db.query('update matches set date=current_date+2 where id=$1',[match]);
+  const now=(await db.query<{now:string}>('select now()::text as now')).rows[0]!.now;
+  const created=(await db.query<{kind:string}>('select kind from push_due_at($1) where user_id=$2',[new Date(Date.parse(now)+1_000).toISOString(),premium])).rows;
+  expect(created.map(r=>r.kind)).toContain('invitation_created');
+  expect((await db.query('select count(*)::int as n from push_invite_created')).rows[0]).toEqual({n:1});
+  await db.query("insert into push_sent(kind,match_id,user_id) values('invitation_created',$1,$2)",[match,premium]);
+  expect((await db.query<{kind:string}>('select kind from push_due_at($1) where user_id=$2',[new Date(Date.parse(now)+1_000).toISOString(),premium])).rows.some(r=>r.kind==='invitation_created')).toBe(false);
+});
+
+test('l’orario scelto resta anche dopo la scadenza Premium',async()=>{
+  await asUser(premium); await db.query('select set_push_reminder_hour(19)'); await db.query("select set_push_pref('ratings',false)");
   expect((await due('08:00')).some(r=>r.user_id===premium)).toBe(false);
   expect((await due('19:00')).some(r=>r.user_id===premium&&r.kind==='reminder')).toBe(true);
   await db.query('delete from account_premium where user_id=$1',[premium]);
-  expect((await due('08:00')).some(r=>r.user_id===premium&&r.kind==='reminder')).toBe(true);
+  expect((await due('19:00')).some(r=>r.user_id===premium&&r.kind==='reminder')).toBe(true);
   await asUser(premium);
-  expect((await db.query('select ratings,reminder_minutes,customizable from my_push_prefs()')).rows[0]).toEqual({ratings:false,reminder_minutes:120,customizable:false});
+  expect((await db.query('select ratings,reminder_hour,customizable from my_push_prefs()')).rows[0]).toEqual({ratings:false,reminder_hour:19,customizable:false});
 });
 
 test('le disattivazioni precedenti non vengono riattivate da Standard',async()=>{
@@ -65,26 +86,33 @@ test('le disattivazioni precedenti non vengono riattivate da Standard',async()=>
   expect((await db.query('select reminder,result from my_push_prefs()')).rows[0]).toEqual({reminder:false,result:false});
 });
 
-test('anticipo 24 ore: il promemoria può partire il giorno prima e una sola volta',async()=>{
-  await asUser(premium); await db.query('select set_push_reminder(1440)'); await db.exec('reset role');
-  const before=(await db.query('select * from push_due_at($1) where user_id=$2',['2026-11-04 20:59+01',premium])).rows;
+test('il promemoria del giorno prima parte alle 8 una sola volta',async()=>{
+  const before=(await db.query('select kind from push_due_at($1) where user_id=$2',['2026-11-04 07:59+01',premium])).rows;
   expect(before).toHaveLength(0);
-  expect((await db.query('select * from push_due_at($1) where user_id=$2',['2026-11-04 21:00+01',premium])).rows).toHaveLength(1);
-  await db.query("insert into push_sent(kind,match_id,user_id) values('reminder',$1,$2)",[match,premium]);
-  expect((await due('19:00')).some(r=>r.user_id===premium&&r.kind==='reminder')).toBe(false);
+  expect((await db.query('select kind from push_due_at($1) where user_id=$2',['2026-11-04 08:00+01',premium])).rows).toEqual([{kind:'invitation_eve'}]);
+  await db.query("insert into push_sent(kind,match_id,user_id) values('invitation_eve',$1,$2)",[match,premium]);
+  expect((await db.query('select kind from push_due_at($1) where user_id=$2',['2026-11-04 09:00+01',premium])).rows).toHaveLength(0);
 });
 
-test('anticipo attraversando il cambio di ora: due ore reali prima, con fuso italiano',async()=>{
-  await db.query("update matches set date='2026-10-25',play_time='03:30' where id=$1",[match]);
-  await asUser(premium); await db.query('select set_push_reminder(120)'); await db.exec('reset role');
-  expect((await db.query('select * from push_due_at($1) where user_id=$2',['2026-10-25 02:29+02',premium])).rows).toHaveLength(0);
-  expect((await db.query('select * from push_due_at($1) where user_id=$2',['2026-10-25 02:30+02',premium])).rows).toHaveLength(1);
+test('la vigilia usa la stessa ora personalizzata del giorno della partita',async()=>{
+  await asUser(premium); await db.query('select set_push_reminder_hour(10)'); await db.exec('reset role');
+  expect((await db.query("select kind from push_due_at($1) where user_id=$2 and kind='invitation_eve'",['2026-11-04 09:59+01',premium])).rows).toHaveLength(0);
+  expect((await db.query("select kind from push_due_at($1) where user_id=$2 and kind='invitation_eve'",['2026-11-04 10:00+01',premium])).rows).toEqual([{kind:'invitation_eve'}]);
+  expect((await due('09:59')).some(r=>r.user_id===premium&&r.kind==='reminder')).toBe(false);
+  expect((await due('10:00')).some(r=>r.user_id===premium&&r.kind==='reminder')).toBe(true);
 });
 
-test('senza ora di gioco un anticipo Premium usa il promemoria Standard',async()=>{
-  await asUser(premium); await db.query('select set_push_reminder(120)'); await db.exec('reset role');
+test('orario italiano anche nel cambio all’ora solare',async()=>{
+  await db.query("update matches set date='2026-10-25',play_time='21:00' where id=$1",[match]);
+  expect((await db.query("select * from push_due_at($1) where user_id=$2 and kind='reminder'",['2026-10-25 07:59+01',premium])).rows).toHaveLength(0);
+  expect((await db.query("select * from push_due_at($1) where user_id=$2 and kind='reminder'",['2026-10-25 08:00+01',premium])).rows).toHaveLength(1);
+});
+
+test('senza ora di gioco resta valido l’orario configurato',async()=>{
+  await asUser(premium); await db.query('select set_push_reminder_hour(9)'); await db.exec('reset role');
   await db.query('update matches set play_time=null where id=$1',[match]);
-  expect((await due('07:00')).some(r=>r.user_id===premium&&r.kind==='reminder')).toBe(true);
+  expect((await due('08:00')).some(r=>r.user_id===premium&&r.kind==='reminder')).toBe(false);
+  expect((await due('09:00')).some(r=>r.user_id===premium&&r.kind==='reminder')).toBe(true);
 });
 
 test('Gazzetta solo per Premium; nessun invio a chi ha lasciato la lega',async()=>{
