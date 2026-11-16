@@ -81,7 +81,7 @@ begin
 end $$;
 
 drop function if exists public.update_planned_match(uuid,date,time,text,text,uuid[],uuid[],jsonb,double precision,double precision);
-create function public.update_planned_match(p_match uuid, p_date date, p_time time, p_place text,
+create or replace function public.update_planned_match(p_match uuid, p_date date, p_time time, p_place text,
   p_notes text, p_team_a uuid[], p_team_b uuid[], p_original jsonb,
   p_lat double precision default null, p_lng double precision default null, p_url text default null)
 returns void language plpgsql security invoker set search_path = public as $$
