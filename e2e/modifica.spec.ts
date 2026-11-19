@@ -7,7 +7,7 @@ import { setup } from './helpers';
 interface Write { method: string; table: string; body: unknown }
 
 /** Accesso simulato con il ruolo dato in San Marcello (dati veri di prova); le scritture si intercettano e si registrano. */
-async function login(page: Page, role: 'admin' | 'member' = 'admin') {
+async function login(page: Page, role: 'admin' | 'redazione' | 'member' = 'admin') {
   return (await setup(page, { publicRole: role, rpc: { my_premium_status: [{ active: role === 'admin', expires_at: null, trial: false, trial_expires_at: null, lifetime: role === 'admin' }] } })) as Write[];
 }
 
@@ -34,9 +34,29 @@ async function generateTeams(page: Page) {
 
 test('Da membro la partita resta in sola lettura', async ({ page }) => {
   await login(page, 'member');
+  await page.goto('/l/san-marcello/partite');
+  await expect(page.locator('#last-match-edit')).toHaveCount(0);
   const modal = await openLastMatch(page);
   await expect(modal).toBeVisible();
   await expect(modal.locator('#edit-toggle-btn')).toHaveCount(0);
+});
+
+test('Edit apre direttamente la modifica completa per l’amministratore', async ({ page }) => {
+  await login(page);
+  await page.goto('/l/san-marcello/partite');
+  await page.locator('#last-match-edit').click();
+  const modal = page.locator('#match-modal');
+  await expect(modal.locator('#match-actions')).toBeVisible();
+  await expect(modal.locator('.rate-stepper input').first()).toBeEnabled();
+});
+
+test('Edit apre solo le pagelle per la redazione', async ({ page }) => {
+  await login(page, 'redazione');
+  await page.goto('/l/san-marcello/partite');
+  await page.locator('#last-match-edit').click();
+  const modal = page.locator('#match-modal');
+  await expect(modal.locator('#match-actions')).toContainText('Salva pagelle');
+  await expect(modal.locator('.rate-stepper input').first()).toBeDisabled();
 });
 
 test('Amministratore: modifica voto, gol e risultato e salva', async ({ page }) => {

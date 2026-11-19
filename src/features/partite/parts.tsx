@@ -14,6 +14,7 @@ import { gazzettaThumbPath, useGazzettaUrl, type LeagueData } from '../../data/q
 import { Confetti } from '../../app/Confetti';
 import { Rain } from '../../app/Rain';
 import { getPlayerMatchResult } from '../../domain/stats';
+import { useRole } from '../../app/auth';
 import { formatDate, whenWhere } from '../../domain/format';
 import {
   gazzetteBySeason, gazzetteByDate, hasScore, lastMatch, matchHasDesc, matchListGroups, pagelleText, type GazItem,
@@ -29,6 +30,7 @@ const num = (v: unknown): number | null => {
 
 export interface MatchActions {
   openMatch: (id: string) => void;
+  openMatchEdit: (id: string) => void;
   openGazzetta: (id: string, fromArchive?: boolean) => void;
   openPagelleText: (id: string) => void;
 }
@@ -73,9 +75,10 @@ export function MatchButtons({ data, m, act, withPlace = true }: { data: LeagueD
 
 // ── ultima partita ─────────────────────────────────────────────────────────
 export function LastMatch({ data, act, mine, active = true }: { data: LeagueData; act: MatchActions; mine?: { id: string; name: string } | null; active?: boolean }) {
+  const { isAdmin, canEditText } = useRole(data.league.id);
   const m = lastMatch(data.dataset);
   if (!m) return null;
-  return <LastMatchCard data={data} m={m} act={act} mine={mine} active={active} />;
+  return <LastMatchCard data={data} m={m} act={act} mine={mine} active={active} showEdit={isAdmin || canEditText} />;
 }
 
 /** Il mio giocatore (se gioca in questa lega): serve a sapere se ho vinto o perso la partita. */
@@ -86,8 +89,8 @@ export { useMyPlayerIn } from '../../app/useMyPlayerIn';
  * Se `mine` ha giocato quella partita: coriandoli sopra se ha vinto, pioggia sullo sfondo se ha perso. Gli effetti partono solo con `active`
  * (la pagina è quella che si sta guardando).
  */
-export function LastMatchCard({ data, m, act, title, id, mine, active = true }: {
-  data: LeagueData; m: Match; act: MatchActions; title?: string; id?: string; mine?: { id: string; name: string } | null; active?: boolean;
+export function LastMatchCard({ data, m, act, title, id, mine, active = true, showEdit = false }: {
+  data: LeagueData; m: Match; act: MatchActions; title?: string; id?: string; mine?: { id: string; name: string } | null; active?: boolean; showEdit?: boolean;
 }) {
   const has = hasScore(m);
   // senza risultato la partita è ancora da giocare
@@ -123,7 +126,10 @@ export function LastMatchCard({ data, m, act, title, id, mine, active = true }: 
           {res === 'W' ? 'Hai vinto 🎉' : res === 'L' ? 'Hai perso 🌧️' : 'Hai pareggiato'}
         </div>
       ) : null}
-      <div className="lm-actions" onClick={(e) => e.stopPropagation()}><MatchButtons data={data} m={m} act={act} /></div>
+      <div className="lm-actions" onClick={(e) => e.stopPropagation()}>
+        {showEdit ? <button type="button" className="btn btn-secondary btn-sm mbar-btn" id="last-match-edit" onClick={() => act.openMatchEdit(m.id)}>✏️ Edit</button> : null}
+        <MatchButtons data={data} m={m} act={act} />
+      </div>
       <div style={{ textAlign: 'center', fontSize: 10, color: 'var(--text3)', marginTop: 6 }}>Tocca la partita per i dettagli e le pagelle</div>
     </div>
   );

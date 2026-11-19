@@ -288,7 +288,7 @@ function startDraft(m: Match, ratings: Rating[]): Draft {
 export function MatchCard(props: Parameters<typeof LoadedMatchCard>[0]) {
   return <MatchTextBoundary data={props.data} matchId={props.matchId} onClose={props.onClose}>{(data) => <LoadedMatchCard {...props} data={data} />}</MatchTextBoundary>;
 }
-function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEditText = false, canGazzetta = true, startText = false }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions; canEdit?: boolean; canEditText?: boolean; /** pubblicare/sostituire la Gazzetta (admin: solo Premium) */ canGazzetta?: boolean; startText?: boolean }) {
+function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEditText = false, canGazzetta = true, startText = false, startEdit = false }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions; canEdit?: boolean; canEditText?: boolean; /** pubblicare/sostituire la Gazzetta (admin: solo Premium) */ canGazzetta?: boolean; startText?: boolean; startEdit?: boolean }) {
   const m = data.dataset.matches.find((x) => x.id === matchId);
   const toast = useToast();
   const confirm = useConfirm();
@@ -305,18 +305,18 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
     document.addEventListener('keydown', k);
     return () => document.removeEventListener('keydown', k);
   }, [onClose, pagella, planning]);
-  // dal menu della redazione la scheda si apre già pronta per scrivere le pagelle
+  // Dal menu o dal pulsante Edit la scheda si apre già in modifica, secondo il ruolo.
   const started = useRef(false);
   useEffect(() => {
-    if (!startText || !canEditText || started.current) return;
+    if (started.current || !(startEdit && (canEdit || canEditText) || startText && canEditText)) return;
     const mm = data.dataset.matches.find((x) => x.id === matchId);
     if (!mm) return;
     started.current = true;
     // La redazione puo aprire la scheda in modifica anche se i dati arrivano dopo.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTextOnly(true);
+    setTextOnly(!canEdit);
     setDraft(startDraft(mm, data.dataset.ratings.filter((r) => r.matchId === matchId)));
-  }, [startText, canEditText, data, matchId]);
+  }, [startEdit, startText, canEdit, canEditText, data, matchId]);
   const balance = useMemo(
     () => (balanceOpen && m ? matchBalance(data.dataset, data.weights, m, formOn(data)) : null),
     [balanceOpen, data, m],
