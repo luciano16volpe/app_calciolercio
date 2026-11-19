@@ -66,17 +66,19 @@ test('Amministratore: modifica voto, gol e risultato e salva', async ({ page }) 
   await noOverflow(page);
 });
 
-test('Chi ha gol ma niente voto: avviso e nessuna scrittura', async ({ page }) => {
+test('Gol e assist si salvano anche senza voto', async ({ page }) => {
   const writes = await login(page);
   const modal = await openLastMatch(page);
   await modal.locator('#edit-toggle-btn').click();
   await modal.locator('.rate-stepper input').first().fill('');
   const goal = modal.locator('.mcnt-row').first().locator('.goal-stepper').first();
   await goal.locator('.rate-btn-plus').click();
-  await expect(goal).toHaveClass(/goal-warn/);
+  const assist = modal.locator('.mcnt-row').first().locator('.goal-stepper').nth(1);
+  await assist.locator('.rate-btn-plus').click();
   await modal.locator('button', { hasText: 'Salva partita' }).click();
-  await expect(page.locator('#toast')).toContainText('Metti il voto a:');
-  expect(writes.length).toBe(0);
+  await expect(page.locator('#toast')).toContainText('Salvato:');
+  const saved = writes.find((w) => w.table === 'save_match_ratings')?.body as { p_rows: Array<{ rating: number | null; goals: number; assist: number }> };
+  expect(saved.p_rows.some((r) => r.rating === null && r.goals > 0 && r.assist > 0)).toBe(true);
 });
 
 test('Pagella: titolo e descrizione dalla finestra, poi salvati', async ({ page }) => {

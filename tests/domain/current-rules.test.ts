@@ -61,9 +61,9 @@ describe('bilanciamento senza un riferimento esterno', () => {
 
 describe('salvataggio delle pagelle', () => {
   const fields = (patch: Partial<PlayerFields> = {}): PlayerFields => ({ id: 'p', name: 'Test', rating: '', goals: '', assist: '', autogol: '', rigori: '', meta: '', tit: '', desc: '', ...patch });
-  it('blocca gol e testi senza voto e omette chi non ha pagella', () => {
-    expect(planSave([fields({ goals: '1' })], [], '', '').missingRating).toEqual(['Test']);
-    expect(planSave([fields({ tit: 'Titolo' })], [], '', '').missingRating).toEqual(['Test']);
+  it('salva gol, assist e testi senza voto e omette chi non ha dati', () => {
+    expect(planSave([fields({ goals: '1', assist: '1' })], [], '', '').rows[0]).toMatchObject({ rating: null, goals: 1, assist: 1 });
+    expect(planSave([fields({ tit: 'Titolo' })], [], '', '').rows[0]).toMatchObject({ rating: null, titolo: 'Titolo' });
     expect(planSave([fields()], [], '', '').rows).toEqual([]);
   });
   it('normalizza il voto e conserva i testi entro i limiti previsti', () => {

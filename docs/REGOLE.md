@@ -27,8 +27,7 @@ Le decisioni recenti dell'utente prevalgono sulle descrizioni delle fasi inizial
 
 ## 3. Voti (pagelle)
 - Voto valido: 1–10 a passi di 0,5 (`clampRating`, `validVote`).
-- Chi ha gol / assist / autogol / rigori sbagliati / titolo / descrizione **deve avere un voto**
-  (altrimenti il salvataggio si blocca con avviso).
+- Gol, assist, autogol, rigori sbagliati e testi si possono salvare senza voto. Il voto può essere aggiunto in seguito senza cancellare le statistiche già inserite.
 - Campi per giocatore e partita: voto, gol, assist, autogol, meta (tiri alle stelle), rigori
   sbagliati, **titolo** (max 60), **descrizione** (max 2000, con formattazione WhatsApp `*grassetto*`
   e `_corsivo_`, mostrata come grassetto/corsivo: `waHTML`).

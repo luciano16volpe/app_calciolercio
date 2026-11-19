@@ -26,7 +26,7 @@ export interface MatchHeader {
 }
 
 /**
- * Salva voti, gol, assist e pagelle di una partita. Chi non ha un voto torna senza pagella.
+ * Salva voti, gol, assist e testi. Le statistiche possono avere un voto nullo.
  * `untouchedTexts`: giocatori di cui titolo e descrizione non sono stati toccati: non si riscrivono
  * (se nel frattempo la redazione li ha scritti, restano).
  */

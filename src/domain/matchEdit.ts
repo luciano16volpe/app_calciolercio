@@ -26,7 +26,7 @@ export interface PlayerFields {
 export interface RatingRow {
   playerId: string;
   player: string;
-  rating: number;
+  rating: number | null;
   notes: string;
   titolo: string;
   goals: number;
@@ -37,10 +37,8 @@ export interface RatingRow {
 }
 
 export interface SavePlan {
-  /** pagelle da salvare (solo chi ha un voto valido) */
+  /** giocatori con un voto, statistiche o testo da salvare */
   rows: RatingRow[];
-  /** chi ha gol, assist, autogol, rigori o pagella ma non il voto: così non si salva */
-  missingRating: string[];
   scoreA: number | '';
   scoreB: number | '';
   /** squadre con più assist che gol (da confermare) */
@@ -50,7 +48,6 @@ export interface SavePlan {
 /** Prepara il salvataggio della scheda partita. */
 export function planSave(teamA: PlayerFields[], teamB: PlayerFields[], scA: string, scB: string): SavePlan {
   const rows: RatingRow[] = [];
-  const missingRating: string[] = [];
   const tot = { A: { goals: 0, assist: 0 }, B: { goals: 0, assist: 0 } };
   const all: Array<[PlayerFields, 'A' | 'B']> = [...teamA.map((p) => [p, 'A'] as [PlayerFields, 'A']), ...teamB.map((p) => [p, 'B'] as [PlayerFields, 'B'])];
   all.forEach(([p, side]) => {
@@ -62,15 +59,11 @@ export function planSave(teamA: PlayerFields[], teamB: PlayerFields[], scA: stri
     const rsv = clampInt(p.rigori, 0, 10, 0);
     const ag = clampInt(p.autogol, 0, 20, 0);
     const mt = clampInt(p.meta, 0, 50, 0);
-    const hasRating = v !== null;
-    // REGOLA: chi ha gol, assist, autogol, rigori sbagliati o pagella deve avere un voto (ha per forza giocato)
-    if ((g > 0 || asv > 0 || ag > 0 || rsv > 0 || tit || desc) && !hasRating) {
-      missingRating.push(p.name);
-      return;
-    }
     tot[side].goals += g;
     tot[side].assist += asv;
-    if (hasRating) rows.push({ playerId: p.id || '', player: p.name, rating: v, notes: desc, titolo: tit, goals: g, autogol: ag, meta: mt, assist: asv, rigoriSbagliati: rsv });
+    if (v !== null || g > 0 || asv > 0 || ag > 0 || rsv > 0 || mt > 0 || tit || desc) {
+      rows.push({ playerId: p.id || '', player: p.name, rating: v, notes: desc, titolo: tit, goals: g, autogol: ag, meta: mt, assist: asv, rigoriSbagliati: rsv });
+    }
   });
   const scoreA = scA !== '' ? clampInt(scA, 0, 99, 0) : '';
   const scoreB = scB !== '' ? clampInt(scB, 0, 99, 0) : '';
@@ -80,7 +73,7 @@ export function planSave(teamA: PlayerFields[], teamB: PlayerFields[], scA: stri
     const bound = sc !== '' ? sc : tot[k].goals;
     if (tot[k].assist > bound) overAssist.push(`${label}: ${tot[k].assist} assist ma ${bound} gol`);
   });
-  return { rows, missingRating, scoreA, scoreB, overAssist };
+  return { rows, scoreA, scoreB, overAssist };
 }
 
 /** Pulsanti − e + dei campi. */
