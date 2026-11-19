@@ -132,6 +132,17 @@ test('senza intestazione conserva risultato, note, ora e luogo', async () => {
   expect((await db.query('select score_a, score_b, notes, play_time, place from matches where id = $1', [match])).rows).toEqual(before);
 });
 
+test('gol e assist senza voto restano quando il voto viene aggiunto dopo', async () => {
+  await asUser(admin);
+  const stats = row(p1, { rating: null, goals: 2, assist: 1, titolo: null, descrizione: null });
+  await db.query(ratingsSql, [match, JSON.stringify([stats]), null, [p1, p2]]);
+  expect((await db.query('select rating, goals, assist from match_players where match_id=$1 and player_id=$2', [match, p1])).rows)
+    .toEqual([{ rating: null, goals: 2, assist: 1 }]);
+  await db.query(ratingsSql, [match, JSON.stringify([{ ...stats, rating: 7.5 }]), null, [p1, p2]]);
+  expect((await db.query('select rating::float, goals, assist from match_players where match_id=$1 and player_id=$2', [match, p1])).rows)
+    .toEqual([{ rating: 7.5, goals: 2, assist: 1 }]);
+});
+
 test('errore nell intestazione annulla voti, testi, firma, notifiche e audit', async () => {
   const before = await snapshot();
   await asUser(admin);

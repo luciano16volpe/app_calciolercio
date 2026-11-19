@@ -143,14 +143,14 @@ export interface FieldEditor {
 
 type CountKey = 'goals' | 'assist' | 'autogol' | 'rigori' | 'meta';
 
-/** Contatore: emoji sopra, valore sotto; in modifica con i pulsanti − e +. `warn` = ha un valore ma manca il voto. */
-function Counter({ emoji, title, val, max, edit, warn }: {
-  emoji: string; title: string; val: string | number; max: number; edit?: { onChange: (v: string) => void; onStep: (d: number) => void }; warn?: boolean;
+/** Contatore: emoji sopra, valore sotto; in modifica con i pulsanti − e +. */
+function Counter({ emoji, title, val, max, edit }: {
+  emoji: string; title: string; val: string | number; max: number; edit?: { onChange: (v: string) => void; onStep: (d: number) => void };
 }) {
   return (
     <div className="mcnt" title={title}>
       <span className="mcnt-lbl">{emoji}</span>
-      <div className={`goal-stepper${warn ? ' goal-warn' : ''}`}>
+      <div className="goal-stepper">
         {edit ? <button type="button" onClick={() => edit.onStep(-1)} className="rate-btn rate-btn-minus">−</button> : null}
         <input
           type="number" min={0} max={max} step={1} placeholder="0" value={val} inputMode="numeric"
@@ -179,11 +179,9 @@ function TeamPanel({ title, team, ratings, blue, side, ed }: {
         const tit = f ? f.tit : r && r.titolo ? String(r.titolo) : '';
         const desc = f ? f.desc : r && r.notes ? String(r.notes) : '';
         const full = !!ed && !ed.textOnly; // voti e numeri si cambiano solo in modifica completa
-        const noVote = !!f && clampRating(f.rating) === null;
-        const cnt = (k: CountKey, emoji: string, ttl: string, max: number, ro: unknown, warnable: boolean) => (
+        const cnt = (k: CountKey, emoji: string, ttl: string, max: number, ro: unknown) => (
           <Counter
             emoji={emoji} title={ttl} max={max} val={f ? f[k] : or(ro)}
-            warn={warnable && !!f && noVote && (parseInt(f[k]) || 0) > 0}
             edit={ed && f && full ? { onChange: (v) => ed.set(key, { [k]: v }), onStep: (d) => ed.set(key, { [k]: stepCount(f[k], d, 20) }) } : undefined}
           />
         );
@@ -202,11 +200,11 @@ function TeamPanel({ title, team, ratings, blue, side, ed }: {
               </div>
             </div>
             <div className="mcnt-row">
-              {cnt('goals', '⚽', 'Gol', 20, r?.goals, true)}
-              {cnt('assist', '🅰️', 'Assist', 20, r?.assist, true)}
-              {cnt('autogol', '🙃', 'Autogol', 20, r?.autogol, true)}
-              {cnt('rigori', '❌', 'Rigori sbagliati', 10, r?.rigoriSbagliati, true)}
-              {cnt('meta', '🚀', 'Meta — tiri alle stelle', 50, r?.meta, false)}
+              {cnt('goals', '⚽', 'Gol', 20, r?.goals)}
+              {cnt('assist', '🅰️', 'Assist', 20, r?.assist)}
+              {cnt('autogol', '🙃', 'Autogol', 20, r?.autogol)}
+              {cnt('rigori', '❌', 'Rigori sbagliati', 10, r?.rigoriSbagliati)}
+              {cnt('meta', '🚀', 'Meta — tiri alle stelle', 50, r?.meta)}
             </div>
             <PgtView tit={tit} desc={desc} />
             {ed ? (
@@ -375,10 +373,6 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
     if (textOnly) return saveTexts();
     const side = (s: 'A' | 'B', n: number) => Array.from({ length: n }, (_, i) => draft.fields[`${s}${i}`] as PlayerFields);
     const plan = planSave(side('A', teamA.length), side('B', teamB.length), draft.scA, draft.scB);
-    if (plan.missingRating.length) {
-      toast(`⚠️ Metti il voto a: ${plan.missingRating.join(', ')} (ha gol, assist, autogol, rigori o pagella)`);
-      return;
-    }
     if (plan.overAssist.length) {
       const go = await confirm({
         icon: '🅰️', title: 'Assist più dei gol?', lines: [...plan.overAssist, '', 'Controlla i dati inseriti. Vuoi salvare comunque?'], okLabel: 'Salva comunque', cancelLabel: 'Correggi',
@@ -399,7 +393,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
       } : undefined);
       releaseKeyboard();
       await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
-      toast(`Salvato: ${plan.rows.length} pagelle`);
+      toast('Salvato: partita');
       repairViewport();
       onClose();
     } catch (e) {
@@ -563,15 +557,16 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
                 </div>
               ) : null}
             </div>
-            <button type="button" className="btn btn-secondary btn-full eq-toggle" id="match-balance-btn" onClick={() => setBalanceOpen((o) => !o)}>
-              ⚖️ Equilibrio squadre {balanceOpen ? '▴' : '▾'}
-            </button>
-            <div id="match-balance" style={{ display: balanceOpen ? 'block' : 'none' }}>{balance ? <BalanceBody b={balance} /> : null}</div>
-            <div style={{ ...LABEL, margin: '14px 0 8px' }}>Pagelle (1–10)</div>
+            <div style={{ ...LABEL, margin: '14px 0 8px' }}>Gol, assist e voti (facoltativi)</div>
+            {full ? <div className="mb-note" style={{ marginBottom: 8 }}>Puoi salvare gol e assist ora e aggiungere i voti più tardi.</div> : null}
             <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
               <TeamPanel title="🔵 Blu" team={teamA} ratings={ratings} blue side="A" ed={ed} />
               <TeamPanel title="⚪ Bianchi" team={teamB} ratings={ratings} blue={false} side="B" ed={ed} />
             </div>
+            <button type="button" className="btn btn-secondary btn-full eq-toggle" id="match-balance-btn" onClick={() => setBalanceOpen((o) => !o)}>
+              ⚖️ Equilibrio squadre {balanceOpen ? '▴' : '▾'}
+            </button>
+            <div id="match-balance" style={{ display: balanceOpen ? 'block' : 'none' }}>{balance ? <BalanceBody b={balance} /> : null}</div>
             {full && draft ? (
               <SheetScan data={data} m={m} onApply={(r) => setDraft((d) => (d ? {
                 ...d, scA: r.scA, scB: r.scB,
