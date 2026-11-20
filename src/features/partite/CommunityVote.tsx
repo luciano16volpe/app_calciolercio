@@ -9,8 +9,6 @@ import { formatDate } from '../../domain/format';
 import { normalizeTeam } from '../../domain/stats';
 import type { Match } from '../../domain/types';
 
-const options = Array.from({ length: 19 }, (_, i) => 1 + i / 2);
-
 function AdminVoteDetails({ matchId }: { matchId: string }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -108,10 +106,18 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
   if (!match) return null;
 
   const state = vote.data;
-  const peers = state ? [...normalizeTeam(match.teamA), ...normalizeTeam(match.teamB)]
-    .filter((player) => player.id && player.id !== state.my_player_id) : [];
+  const teams = state ? [
+    { side: 'blue', label: 'Blu', players: normalizeTeam(match.teamA).filter((player) => player.id && player.id !== state.my_player_id) },
+    { side: 'white', label: 'Bianchi', players: normalizeTeam(match.teamB).filter((player) => player.id && player.id !== state.my_player_id) },
+  ] : [];
+  const totalPlayers = teams.reduce((count, team) => count + team.players.length, 0);
+  const savedCount = teams.reduce((count, team) => count + team.players.filter((player) => player.id && state?.my_votes[player.id] != null).length, 0);
+  const changedCount = Object.keys(draft).length;
   const until = state?.open_until ? new Date(state.open_until).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' }) : '';
   const close = () => { releaseKeyboard(); onClose(); repairViewport(); };
+  const setRating = (playerId: string, rating: number) => {
+    setDraft((previous) => ({ ...previous, [playerId]: Math.max(1, Math.min(10, rating)) }));
+  };
   const save = async () => {
     const votes = Object.entries(draft).filter(([, rating]) => Number.isFinite(rating))
       .map(([player_id, rating]) => ({ player_id, rating }));
@@ -130,33 +136,60 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
     } finally { setBusy(false); }
   };
 
-  return <div id="community-vote-modal" role="dialog" aria-modal="true" aria-labelledby="community-vote-title"
-    style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.6)', padding: 14, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
-    <div style={{ maxWidth: 480, margin: '0 auto', background: 'var(--gray)', borderRadius: 'var(--radius)', padding: 16, boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
-        <div id="community-vote-title" style={{ fontSize: 17, fontWeight: 800 }}>⭐ Vota · {formatDate(match.date)}</div>
-        <button type="button" aria-label="Chiudi votazione" autoFocus onClick={close} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text2)', fontSize: 22, padding: 4, lineHeight: 1 }}>✕</button>
-      </div>
-      {!state ? <p>Caricamento votazione…</p> : state.can_vote ? <>
-        <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.5 }}>Vota i giocatori che hanno partecipato. Puoi modificare i tuoi voti fino al {until}. Le medie saranno visibili alla chiusura.</p>
-        <div style={{ display: 'grid', gap: 8 }}>
-          {peers.map((player) => {
-            const id = player.id as string;
-            const value = draft[id] ?? state.my_votes[id];
-            return <label key={id} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', fontSize: 13 }}>
-              <span>{player.name}</span>
-              <select aria-label={`Voto per ${player.name}`} value={value ?? ''} onChange={(event) => {
-                const rating = Number(event.target.value);
-                setDraft((previous) => ({ ...previous, [id]: rating }));
-              }}>
-                {value == null ? <option value="">—</option> : null}
-                {options.map((rating) => <option value={rating} key={rating}>{rating.toFixed(1).replace('.', ',')}</option>)}
-              </select>
-            </label>;
-          })}
+  return <div id="community-vote-modal" className="vote-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="community-vote-title">
+    <div className="vote-modal-panel">
+      <div className="vote-modal-head">
+        <div className="vote-modal-title-row">
+          <span className="vote-modal-icon" aria-hidden="true">⭐</span>
+          <div>
+            <div id="community-vote-title" className="vote-modal-title">Dai i tuoi voti</div>
+            <div className="vote-modal-date">Partita del {formatDate(match.date)}</div>
+          </div>
         </div>
-        <button type="button" className="btn btn-primary btn-full" style={{ marginTop: 16 }} disabled={busy || !Object.keys(draft).length} onClick={() => void save()}>Salva i miei voti</button>
-      </> : <p style={{ fontSize: 13, color: 'var(--text2)' }}>La votazione non è disponibile per questa partita.</p>}
+        <button type="button" className="vote-modal-close" aria-label="Chiudi votazione" autoFocus onClick={close}>✕</button>
+      </div>
+      <div className="vote-modal-body">
+        {!state ? <p className="vote-modal-message">Caricamento votazione…</p> : state.can_vote ? <>
+          <div className="vote-modal-intro">
+            <strong>Come funziona</strong>
+            <p>Per ogni giocatore scegli un voto da 1 a 10. Usa il cursore o i pulsanti per cambiare di mezzo punto.</p>
+            <span>Puoi correggere i voti fino al {until}. Le medie saranno visibili alla chiusura.</span>
+          </div>
+          {teams.map((team) => team.players.length ? <section key={team.side} className={`vote-team vote-team-${team.side}`}>
+            <h3 className="vote-team-heading"><span className="vote-team-dot" /> Squadra {team.label}</h3>
+            <div className="vote-player-list">
+              {team.players.map((player) => {
+                const id = player.id as string;
+                const value = draft[id] ?? state.my_votes[id];
+                const changed = draft[id] != null;
+                return <div key={id} className={`vote-player-card${changed ? ' vote-player-changed' : ''}`} role="group" aria-labelledby={`vote-name-${id}`}>
+                  <div className="vote-player-top">
+                    <strong id={`vote-name-${id}`} className="vote-player-name">{player.name}</strong>
+                    <span className={`vote-player-status${changed ? ' vote-player-status-pending' : ''}`}>
+                      {changed ? 'Da salvare' : value != null ? 'Salvato' : 'Da votare'}
+                    </span>
+                  </div>
+                  <div className="vote-player-control">
+                    <button type="button" className="vote-adjust" aria-label={`Diminuisci il voto di ${player.name}`} disabled={value === 1} onClick={() => setRating(id, (value ?? 6) - 0.5)}>−</button>
+                    <div className="vote-player-value"><span>VOTO</span><b>{value == null ? '—' : value.toFixed(1).replace('.', ',')}</b></div>
+                    <button type="button" className="vote-adjust" aria-label={`Aumenta il voto di ${player.name}`} disabled={value === 10} onClick={() => setRating(id, (value ?? 6) + 0.5)}>+</button>
+                  </div>
+                  <input className="vote-player-slider" type="range" min="1" max="10" step="0.5" value={value ?? 6}
+                    aria-label={`Voto per ${player.name}`} aria-valuetext={value == null ? 'Nessun voto selezionato' : value.toFixed(1).replace('.', ',')}
+                    onChange={(event) => setRating(id, Number(event.target.value))} />
+                  <div className="vote-slider-scale" aria-hidden="true"><span>1</span><span>5,5</span><span>10</span></div>
+                </div>;
+              })}
+            </div>
+          </section> : null)}
+        </> : <p className="vote-modal-message">La votazione non è disponibile per questa partita.</p>}
+      </div>
+      {state?.can_vote ? <div className="vote-modal-footer">
+        <span>{savedCount} di {totalPlayers} voti salvati{changedCount ? ` · ${changedCount} da salvare` : ''}</span>
+        <button type="button" className="btn btn-primary btn-full" disabled={busy || !changedCount} onClick={() => void save()}>
+          {busy ? 'Salvataggio…' : changedCount ? `Salva ${changedCount} ${changedCount === 1 ? 'voto' : 'voti'}` : 'Scegli un voto per iniziare'}
+        </button>
+      </div> : null}
     </div>
   </div>;
 }
