@@ -2,7 +2,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useToast } from '../../app/Toast';
-import { createInvite, createResetLink, inviteUrl, PLAYERS_STATUS_KEY, usePlayersStatus } from '../../data/invites';
+import { createInvite, inviteUrl, PLAYERS_STATUS_KEY, usePlayersStatus } from '../../data/invites';
 import { formatDate } from '../../domain/format';
 import type { Player } from '../../domain/types';
 import { shareText } from '../menu/LeagueSheets';
@@ -27,17 +27,6 @@ export function PlayerLinkRow({ leagueId, player }: { leagueId: string; player: 
       setBusy(false);
     }
   };
-  const resetPassword = async () => {
-    setBusy(true);
-    try {
-      const link = await createResetLink(player.id, leagueId);
-      await shareText(`Ciao ${player.name}! Ecco il link per scegliere una nuova password di CalcioLercio (vale una volta sola e per poco tempo): ${link}`, toast, 'Nuova password CalcioLercio');
-    } catch (e) {
-      toast('Errore: ' + (e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
   return (
     <div id="player-link-row" className="row-line" style={{ margin: '8px 0', padding: '8px 10px', background: 'var(--gray)', borderRadius: 'var(--radius-sm)', gap: 8, flexWrap: 'wrap' }}>
       <div style={{ flex: 1, minWidth: 140, fontSize: 12, lineHeight: 1.4 }}>
@@ -49,11 +38,7 @@ export function PlayerLinkRow({ leagueId, player }: { leagueId: string; player: 
           <>Non ha ancora un account collegato</>
         )}
       </div>
-      {s.linked ? (
-        <button type="button" className="mini-btn" id="player-reset-btn" disabled={busy} onClick={() => void resetPassword()} aria-label={`Link nuova password per ${player.name}`}>
-          🔑 Nuova password
-        </button>
-      ) : (
+      {s.linked ? null : (
         <button type="button" className="mini-btn" id="player-invite-btn" disabled={busy} onClick={() => void invite()} aria-label={s.inviteToken ? `Rigenera il link di ${player.name}` : `Invita ${player.name}`}>
           {s.inviteToken ? 'Rigenera link' : `🔗 Invita ${player.name}`}
         </button>

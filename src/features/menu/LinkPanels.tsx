@@ -5,7 +5,7 @@ import { useConfirm } from '../../app/Dialogs';
 import { Sheet } from '../../app/Sheet';
 import { useToast } from '../../app/Toast';
 import { CLAIMS_KEY, reviewClaim, usePendingClaims } from '../../data/claims';
-import { createInvite, inviteUrl, mergePlayers, PLAYERS_STATUS_KEY, unlinkPlayer, usePlayersStatus, type PlayerStatus } from '../../data/invites';
+import { createInvite, createResetLink, inviteUrl, mergePlayers, PLAYERS_STATUS_KEY, unlinkPlayer, usePlayersStatus, type PlayerStatus } from '../../data/invites';
 import { LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';
 import { LeagueInviteBox } from './LeagueInviteBox';
@@ -37,6 +37,14 @@ export function InvitesPanel({ data, onClose }: { data: LeagueData; onClose: () 
       toast(inviteUrl(p.inviteToken));
     }
   };
+  const resetPassword = async (p: PlayerStatus) => {
+    try {
+      const link = await createResetLink(p.playerId, lid);
+      await shareText(`Ciao ${p.name}! Ecco il link per scegliere una nuova password di CalcioLercio (vale una volta sola e per poco tempo): ${link}`, toast, 'Nuova password CalcioLercio');
+    } catch (e) {
+      toast('Errore: ' + (e as Error).message);
+    }
+  };
   const unlink = async (p: PlayerStatus) => {
     const ok = await confirm({ icon: '🔗', title: 'Scollegare?', lines: [`${p.name} non sarà più collegato a ${p.linkedName}. Il giocatore e il suo storico restano intatti.`], okLabel: 'Scollega', danger: true });
     if (!ok) return;
@@ -65,7 +73,10 @@ export function InvitesPanel({ data, onClose }: { data: LeagueData; onClose: () 
               </div>
             </div>
             {p.linked ? (
-              <button type="button" className="mini-btn danger" onClick={() => void unlink(p)} aria-label={`Scollega ${p.name}`}>Scollega</button>
+              <>
+                <button type="button" className="mini-btn" onClick={() => void resetPassword(p)} aria-label={`Link nuova password per ${p.name}`}>🔑 Nuova password</button>
+                <button type="button" className="mini-btn danger" onClick={() => void unlink(p)} aria-label={`Scollega ${p.name}`}>Scollega</button>
+              </>
             ) : (
               <>
                 {p.inviteToken ? <button type="button" className="mini-btn" onClick={() => void copyLink(p)}>📋 Copia link</button> : null}
