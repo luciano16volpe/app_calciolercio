@@ -110,7 +110,6 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
     { side: 'blue', label: 'Blu', players: normalizeTeam(match.teamA).filter((player) => player.id && player.id !== state.my_player_id) },
     { side: 'white', label: 'Bianchi', players: normalizeTeam(match.teamB).filter((player) => player.id && player.id !== state.my_player_id) },
   ] : [];
-  const totalPlayers = teams.reduce((count, team) => count + team.players.length, 0);
   const savedCount = teams.reduce((count, team) => count + team.players.filter((player) => player.id && state?.my_votes[player.id] != null).length, 0);
   const changedCount = Object.keys(draft).length;
   const until = state?.open_until ? new Date(state.open_until).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' }) : '';
@@ -125,15 +124,14 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
     setBusy(true);
     try {
       await submitCommunityVotes(match.id, votes);
-      await Promise.all([
-        qc.invalidateQueries({ queryKey: communityVoteKey(match.id, user?.id) }),
-        qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY }),
-      ]);
-      setDraft({});
+      void qc.invalidateQueries({ queryKey: communityVoteKey(match.id, user?.id) });
+      void qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
       toast('Voti salvati');
+      close();
     } catch (error) {
       toast('Errore: ' + (error as Error).message);
-    } finally { setBusy(false); }
+      setBusy(false);
+    }
   };
 
   return <div id="community-vote-modal" className="vote-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="community-vote-title">
@@ -152,7 +150,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
         {!state ? <p className="vote-modal-message">Caricamento votazione…</p> : state.can_vote ? <>
           <div className="vote-modal-intro">
             <strong>Come funziona</strong>
-            <p>Per ogni giocatore scegli un voto da 1 a 10. Usa il cursore o i pulsanti per cambiare di mezzo punto.</p>
+            <p>Vota solo i giocatori che vuoi valutare: puoi lasciare gli altri senza voto. Scegli da 1 a 10 con il cursore o i pulsanti da mezzo punto.</p>
             <span>Puoi correggere i voti fino al {until}. Le medie saranno visibili alla chiusura.</span>
           </div>
           {teams.map((team) => team.players.length ? <section key={team.side} className={`vote-team vote-team-${team.side}`}>
@@ -166,7 +164,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
                   <div className="vote-player-top">
                     <strong id={`vote-name-${id}`} className="vote-player-name">{player.name}</strong>
                     <span className={`vote-player-status${changed ? ' vote-player-status-pending' : ''}`}>
-                      {changed ? 'Da salvare' : value != null ? 'Salvato' : 'Da votare'}
+                      {changed ? 'Da salvare' : value != null ? 'Salvato' : 'Facoltativo'}
                     </span>
                   </div>
                   <div className="vote-player-control">
@@ -185,7 +183,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
         </> : <p className="vote-modal-message">La votazione non è disponibile per questa partita.</p>}
       </div>
       {state?.can_vote ? <div className="vote-modal-footer">
-        <span>{savedCount} di {totalPlayers} voti salvati{changedCount ? ` · ${changedCount} da salvare` : ''}</span>
+        <span>{savedCount ? `${savedCount} ${savedCount === 1 ? 'voto già salvato' : 'voti già salvati'}` : 'Nessun voto salvato'}{changedCount ? ` · ${changedCount} da salvare` : ''}</span>
         <button type="button" className="btn btn-primary btn-full" disabled={busy || !changedCount} onClick={() => void save()}>
           {busy ? 'Salvataggio…' : changedCount ? `Salva ${changedCount} ${changedCount === 1 ? 'voto' : 'voti'}` : 'Scegli un voto per iniziare'}
         </button>
