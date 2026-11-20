@@ -4,6 +4,7 @@ import { LoadingIndicator } from '../../app/LoadingIndicator';
 import { useElementVisibility } from '../../app/visibility';
 import { MatchTextBoundary } from './MatchTextBoundary';
 import { useMatchTexts, withMatchTexts } from '../../data/matchTexts';
+import { useCommunityVoteState } from '../../data/communityVotes';
 // Pezzi delle Partite: pulsanti della partita, ultima partita, elenco, Gazzette (striscia, archivio, visualizzatore),
 // testo delle pagelle.
 import { Fragment, useState, type ReactNode } from 'react';
@@ -30,6 +31,7 @@ const num = (v: unknown): number | null => {
 
 export interface MatchActions {
   openMatch: (id: string) => void;
+  openMatchVote: (id: string) => void;
   openMatchEdit: (id: string) => void;
   openGazzetta: (id: string, fromArchive?: boolean) => void;
   openPagelleText: (id: string) => void;
@@ -37,9 +39,10 @@ export interface MatchActions {
 
 // ── pulsanti sotto la partita ──────────────────────────────────────────────
 /** Non giocata → Formazioni · Foglio · 📍 Condividi posizione (se il luogo ha la posizione). Giocata → Riepilogo + 📰 Gazzetta (se c'è) + 📜 Pagelle (se ce ne sono). */
-export function MatchButtons({ data, m, act, withPlace = true }: { data: LeagueData; m: Match; act: MatchActions; /** il pulsante della posizione (se la scheda lo mostra già altrove: false) */ withPlace?: boolean }) {
+export function MatchButtons({ data, m, act, withPlace = true, onVote }: { data: LeagueData; m: Match; act: MatchActions; /** il pulsante della posizione (se la scheda lo mostra già altrove: false) */ withPlace?: boolean; onVote?: () => void }) {
   const { showImage, shareCanvas } = useImageTools();
   const toast = useToast();
+  const communityVote = useCommunityVoteState(m.id);
   const played = num(m.scoreA) != null && num(m.scoreB) != null;
   const fd = formatDate(m.date);
   const day = m.date || 'partita';
@@ -65,6 +68,7 @@ export function MatchButtons({ data, m, act, withPlace = true }: { data: LeagueD
   return (
     <>
       {sum}
+      {communityVote.data?.can_vote ? <button type="button" className="btn btn-secondary btn-sm mbar-btn" onClick={onVote ?? (() => act.openMatchVote(m.id))}>VOTA</button> : null}
       {data.gazzette[m.id] ? <button className="btn btn-secondary btn-sm mbar-btn" onClick={() => act.openGazzetta(m.id)} title="Apri la Gazzetta">📰 Gazzetta</button> : null}
       {matchHasDesc(data.dataset, m.id) ? (
         <button className="btn btn-primary btn-sm mbar-btn" onClick={() => act.openPagelleText(m.id)} style={{ background: '#25D366', borderColor: '#25D366' }} title="Tutte le pagelle in un testo">📜 Pagelle</button>

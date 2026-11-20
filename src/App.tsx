@@ -187,7 +187,7 @@ function Shell() {
           onToggleBacheca={() => setBachecaOpen((o) => !o)}
         />
       ) : null}
-      {data && view?.kind === 'match' ? <MatchCardGate key={view.id} data={data} matchId={view.id} startText={view.text} startEdit={view.edit} onClose={close} act={act} /> : null}
+      {data && view?.kind === 'match' ? <MatchCardGate key={view.id} data={data} matchId={view.id} startText={view.text} startEdit={view.edit} startVote={view.vote} onClose={close} act={act} /> : null}
       {data && view?.kind === 'gazArchive' ? <GazArchive data={data} act={act} onClose={close} /> : null}
       {data && gazViewer ? (
         <GazViewer data={data} matchId={gazViewer.id} fromArchive={gazViewer.fromArchive} onClose={() => setGazViewer(null)} onGoToMatch={openMatch} />

@@ -3,7 +3,7 @@ import type { MatchActions } from '../features/partite/parts';
 import type { Panel } from '../features/menu/MenuDrawer';
 import { parsePath } from './league';
 
-type View = { kind: 'player'; id: string; fromRosa?: boolean } | { kind: 'match'; id: string; text?: boolean; edit?: boolean } | { kind: 'gazArchive' } | null;
+type View = { kind: 'player'; id: string; fromRosa?: boolean } | { kind: 'match'; id: string; text?: boolean; edit?: boolean; vote?: boolean } | { kind: 'gazArchive' } | null;
 
 /** Stato delle finestre e azioni condivise fra schermate. */
 export function useShellWindows() {
@@ -24,6 +24,7 @@ export function useShellWindows() {
   }, []);
   const act: MatchActions = useMemo(() => ({
     openMatch,
+    openMatchVote: (id) => { setGazViewer(null); setView({ kind: 'match', id, vote: true }); },
     openMatchEdit: (id) => { setGazViewer(null); setView({ kind: 'match', id, edit: true }); },
     openGazzetta: (id, fromArchive) => setGazViewer({ id, fromArchive: !!fromArchive }),
     openPagelleText: setPtDialog,

@@ -89,7 +89,7 @@ export function CommunityVote({ match, state, canEdit, userId }: {
   };
 
   return (
-    <section style={{ border: '1px solid var(--gray3)', borderRadius: 'var(--radius-sm)', padding: 12, margin: '12px 0' }}>
+    <section id="community-vote-section" tabIndex={-1} style={{ border: '1px solid var(--gray3)', borderRadius: 'var(--radius-sm)', padding: 12, margin: '12px 0' }}>
       <strong>⭐ Voto dei partecipanti</strong>
       {!state.enabled && canEdit && state.can_activate && hasScore ? (
         <>
