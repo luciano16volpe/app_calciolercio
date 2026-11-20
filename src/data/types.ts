@@ -1034,6 +1034,22 @@ export type Database = {
 
     }
     Functions: {
+      community_vote_state: {
+        Args: { p_match: string }
+        Returns: Json
+      }
+      community_vote_details: {
+        Args: { p_match: string }
+        Returns: Json
+      }
+      enable_community_voting: {
+        Args: { p_match: string }
+        Returns: undefined
+      }
+      submit_community_votes: {
+        Args: { p_match: string; p_votes: Json }
+        Returns: undefined
+      }
       accept_league_invite: {
         Args: {
           p_name?: string
