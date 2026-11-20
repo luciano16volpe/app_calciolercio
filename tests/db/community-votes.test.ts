@@ -78,6 +78,50 @@ test('solo admin attiva; media, autovoto e modifiche dei voti', async () => {
   expect((await db.query('select finalize_community_votes() as completed')).rows).toEqual([{ completed: 0 }]);
 });
 
+test('alla chiusura scarta un minimo e un massimo solo con almeno cinque voti', async () => {
+  const extraUsers = ['10000000-0000-4000-8000-000000000041', '10000000-0000-4000-8000-000000000042'];
+  const extraPlayers = ['10000000-0000-4000-8000-000000000051', '10000000-0000-4000-8000-000000000052'];
+  await db.exec(`
+    insert into auth.users(id,email) values
+      ('${extraUsers[0]}','extra1@test.invalid'), ('${extraUsers[1]}','extra2@test.invalid');
+    insert into league_members(league_id,user_id,role) values
+      ('${league}','${extraUsers[0]}','member'), ('${league}','${extraUsers[1]}','member');
+    insert into players(id,name,created_by,user_id) values
+      ('${extraPlayers[0]}','Extra uno','${admin}','${extraUsers[0]}'),
+      ('${extraPlayers[1]}','Extra due','${admin}','${extraUsers[1]}');
+    insert into league_players(league_id,player_id) values
+      ('${league}','${extraPlayers[0]}'), ('${league}','${extraPlayers[1]}');
+    insert into match_players(match_id,player_id,team,position) values
+      ('${match}','${extraPlayers[0]}','A',2), ('${match}','${extraPlayers[1]}','B',2);
+  `);
+  await asUser(admin);
+  await db.query(activate, [match]);
+
+  for (const [voter, rating] of [
+    [users[0], 1], [users[1], 7], [admin, 7.5], [extraUsers[0], 8], [extraUsers[1], 10],
+  ] as const) {
+    await asUser(voter!);
+    await db.query(vote, [match, ballot(players[2]!, rating)]);
+  }
+  for (const [voter, rating] of [
+    [users[0], 1], [users[2], 7], [admin, 8], [extraUsers[0], 10],
+  ] as const) {
+    await asUser(voter!);
+    await db.query(vote, [match, ballot(players[1]!, rating)]);
+  }
+
+  await db.exec('reset role');
+  await db.query("update community_vote_settings set started_at=now()-interval '25 hours' where match_id=$1", [match]);
+  await db.query('select finalize_community_votes()');
+  const { rows } = await db.query<{ player_id: string; rating: string }>(
+    'select player_id,rating from match_players where match_id=$1 and player_id in ($2,$3) order by player_id',
+    [match, players[1], players[2]]);
+  expect(rows).toEqual([
+    { player_id: players[1], rating: '6.5' },
+    { player_id: players[2], rating: '7.5' },
+  ]);
+});
+
 test('solo partecipanti della lega; scadenza dall’apertura; pagelle admin non cancellano la media', async () => {
   await asUser(admin);
   await db.query(activate, [match]);
