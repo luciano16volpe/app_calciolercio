@@ -93,7 +93,7 @@ export function CommunityVote({ match, state, canEdit, userId }: {
       <strong>⭐ Voto dei partecipanti</strong>
       {!state.enabled && canEdit && state.can_activate && hasScore ? (
         <>
-          <p style={{ fontSize: 12, color: 'var(--text2)' }}>Manca il pagellista? Attiva il voto per questa partita. Chi ha giocato potrà votare gli altri fino a 24 ore dal salvataggio del risultato.</p>
+          <p style={{ fontSize: 12, color: 'var(--text2)' }}>Manca il pagellista? Apri il voto per questa partita. Chi ha giocato, incluso l'admin se ha partecipato, potrà votare gli altri per 24 ore da quando lo attivi.</p>
           <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => void activate()}>Attiva il voto</button>
         </>
       ) : null}

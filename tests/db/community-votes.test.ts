@@ -4,7 +4,7 @@ import { createTestDatabase } from './database';
 
 const admin = '10000000-0000-4000-8000-000000000001';
 const users = [1, 2, 3, 4].map((n) => `10000000-0000-4000-8000-00000000000${n + 1}`);
-const players = [1, 2, 3].map((n) => `10000000-0000-4000-8000-00000000001${n}`);
+const players = [1, 2, 3, 4].map((n) => `10000000-0000-4000-8000-00000000001${n}`);
 const league = '10000000-0000-4000-8000-000000000020';
 const match = '10000000-0000-4000-8000-000000000030';
 let db: PGlite;
@@ -25,15 +25,16 @@ beforeEach(async () => {
     insert into players(id,name,created_by,user_id) values
       ('${players[0]}','Uno','${admin}','${users[0]}'),
       ('${players[1]}','Due','${admin}','${users[1]}'),
-      ('${players[2]}','Tre','${admin}','${users[2]}');
+      ('${players[2]}','Tre','${admin}','${users[2]}'),
+      ('${players[3]}','Admin giocatore','${admin}','${admin}');
     insert into league_players(league_id,player_id) values
-      ('${league}','${players[0]}'), ('${league}','${players[1]}'), ('${league}','${players[2]}');
+      ('${league}','${players[0]}'), ('${league}','${players[1]}'),
+      ('${league}','${players[2]}'), ('${league}','${players[3]}');
     insert into matches(id,league_id,date) values
       ('${match}','${league}',current_date);
     insert into match_players(match_id,player_id,team,position) values
       ('${match}','${players[0]}','A',0), ('${match}','${players[1]}','A',1),
-      ('${match}','${players[2]}','B',0);
-    insert into match_stamps(match_id,result_at) values ('${match}',now()-interval '1 hour');
+      ('${match}','${players[2]}','B',0), ('${match}','${players[3]}','B',1);
     update matches set score_a=2,score_b=1 where id='${match}';
   `);
 });
@@ -73,7 +74,7 @@ test('solo admin attiva; media, autovoto e modifiche dei voti', async () => {
     .toEqual([{ rating: '7.8' }]);
 });
 
-test('solo partecipanti della lega; scadenza dal risultato; pagelle admin non cancellano la media', async () => {
+test('solo partecipanti della lega; scadenza dall’apertura; pagelle admin non cancellano la media', async () => {
   await asUser(admin);
   await db.query(activate, [match]);
   await asUser(users[3]!);
@@ -92,33 +93,50 @@ test('solo partecipanti della lega; scadenza dal risultato; pagelle admin non ca
   await fails(vote, [match, ballot(players[0]!, 7)], /chiusa/);
 });
 
-test('non attivabile dopo 24 ore o se esiste già un voto editoriale', async () => {
-  await db.exec('alter table match_stamps disable trigger preserve_first_result_at');
-  await db.query("update match_stamps set first_result_at=now()-interval '25 hours' where match_id=$1", [match]);
-  await db.exec('alter table match_stamps enable trigger preserve_first_result_at');
+test('l’admin può aprire il voto anche oltre 24 ore dal risultato', async () => {
+  await db.query("update match_stamps set result_at=now()-interval '25 hours' where match_id=$1", [match]);
   await asUser(admin);
-  await fails(activate, [match], /24 ore/);
+  const before = await db.query<{ state: { can_activate: boolean } }>(
+    'select community_vote_state($1::uuid) as state', [match]);
+  expect(before.rows[0]!.state.can_activate).toBe(true);
+  await db.query(activate, [match]);
   await db.exec('reset role');
-  await db.exec('alter table match_stamps disable trigger preserve_first_result_at');
-  await db.query("update match_stamps set first_result_at=now()-interval '1 hour' where match_id=$1", [match]);
-  await db.exec('alter table match_stamps enable trigger preserve_first_result_at');
+  const { rows } = await db.query<{ started_at: Date; result_at: Date; hours: number }>(`
+    select c.started_at,s.result_at,extract(epoch from (c.started_at + interval '24 hours' - c.started_at))/3600 as hours
+      from community_vote_settings c join match_stamps s on s.match_id=c.match_id where c.match_id=$1`, [match]);
+  expect(rows[0]!.started_at.getTime()).toBeGreaterThan(rows[0]!.result_at.getTime());
+  expect(Number(rows[0]!.hours)).toBe(24);
+});
+
+test('non attivabile se esiste già un voto editoriale', async () => {
   await db.query('update match_players set rating=7 where match_id=$1 and player_id=$2', [match, players[0]]);
   await asUser(admin);
   await fails(activate, [match], /redazione/);
 });
 
 test('una correzione del risultato non sposta la scadenza', async () => {
-  const before = (await db.query<{ first_result_at: string }>('select first_result_at from match_stamps where match_id=$1', [match])).rows[0]!.first_result_at;
   await asUser(admin);
-  await db.query('update matches set score_a=3 where id=$1', [match]);
   await db.query(activate, [match]);
   await db.exec('reset role');
-  const { rows } = await db.query<{ first_result_at: string; result_at: string; started_at: string }>(`
-    select s.first_result_at,s.result_at,c.started_at from match_stamps s
-      join community_vote_settings c on c.match_id=s.match_id where s.match_id=$1`, [match]);
-  expect(rows[0]!.first_result_at).toEqual(before);
-  expect(rows[0]!.started_at).toEqual(before);
-  expect(rows[0]!.result_at).not.toEqual(before);
+  const before = (await db.query<{ started_at: Date }>('select started_at from community_vote_settings where match_id=$1', [match])).rows[0]!.started_at;
+  await asUser(admin);
+  await db.query('update matches set score_a=3 where id=$1', [match]);
+  await db.exec('reset role');
+  const after = (await db.query<{ started_at: Date }>('select started_at from community_vote_settings where match_id=$1', [match])).rows[0]!.started_at;
+  expect(after).toEqual(before);
+});
+
+test('l’admin che ha giocato vota gli altri ma non se stesso', async () => {
+  await asUser(admin);
+  await db.query(activate, [match]);
+  const { rows } = await db.query<{ state: { can_vote: boolean; my_player_id: string } }>(
+    'select community_vote_state($1::uuid) as state', [match]);
+  expect(rows[0]!.state.can_vote).toBe(true);
+  expect(rows[0]!.state.my_player_id).toBe(players[3]);
+  await fails(vote, [match, ballot(players[3]!, 9)], /solo gli altri partecipanti/);
+  await db.query(vote, [match, ballot(players[0]!, 8)]);
+  expect((await db.query('select rating from match_players where match_id=$1 and player_id=$2', [match, players[0]])).rows)
+    .toEqual([{ rating: '8.0' }]);
 });
 
 test('il partecipante cambia solo il voto, anche se invia campi statistici extra', async () => {
