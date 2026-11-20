@@ -33,7 +33,7 @@ export const GROUP_LABEL: Record<AuditGroup, string> = {
 /** Azioni da guardare con più attenzione (⚠️). */
 export const DELICATE_ACTIONS = [
   'league_members.role', 'league_admin_requests.approved', 'leagues.owner', 'matches.delete', 'leagues.delete',
-  'players.merge', 'players.unlink', 'account.delete',
+  'players.merge', 'players.unlink', 'account.delete', 'auth.reset_link',
 ] as const;
 export const isDelicate = (action: string): boolean => (DELICATE_ACTIONS as readonly string[]).includes(action);
 
@@ -108,6 +108,7 @@ export function describeRow(row: AuditRow): string[] {
     case 'auth.signup': return ['si è registrato'];
     case 'auth.password_changed': return ['ha cambiato la password'];
     case 'auth.password_reset': return ['ha chiesto una nuova password'];
+    case 'auth.reset_link': return [`ha creato il link per la nuova password di ${label}`];
     case 'account.delete': return ['ha cancellato il suo account'];
     case 'app_settings.update': return [`ha cambiato le regole di gioco: ${({ ovr_weights: 'pesi delle statistiche', use_form: 'forma recente', game_modules: 'formazioni' } as Record<string, string>)[label] ?? label}`];
     case 'platform_admins.insert': return [`${label} è stato nominato amministratore supremo`];

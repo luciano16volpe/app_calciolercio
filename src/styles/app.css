@@ -761,7 +761,7 @@ input[type=file]{display:none}
 .cv-progress-note{font-size:12px;color:var(--text2)}
 
 /* Votazione dei partecipanti: finestra centrata con controlli leggibili anche sul telefono. */
-.vote-modal-overlay{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(10,20,36,.7);overscroll-behavior:contain}
+.vote-modal-overlay{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(10,20,36,.7);overscroll-behavior:contain;touch-action:none}
 .vote-modal-panel{display:flex;flex-direction:column;width:min(100%,520px);max-height:min(720px,84vh);max-height:min(720px,84dvh);min-height:220px;overflow:hidden;background:var(--gray);border:1px solid var(--gray3);border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.38)}
 .vote-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;padding:18px 18px 15px;background:linear-gradient(135deg,var(--green-light),var(--gray));border-bottom:1px solid var(--gray3)}
 .vote-modal-title-row{display:flex;align-items:center;gap:11px;min-width:0}

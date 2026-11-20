@@ -65,7 +65,7 @@ describe('frasi leggibili', () => {
 
 describe('azioni delicate', () => {
   it('sono quelle della specifica', () => {
-    expect([...DELICATE_ACTIONS].sort()).toEqual(['account.delete', 'league_admin_requests.approved', 'league_members.role', 'leagues.delete', 'leagues.owner', 'matches.delete', 'players.merge', 'players.unlink']);
+    expect([...DELICATE_ACTIONS].sort()).toEqual(['account.delete', 'auth.reset_link', 'league_admin_requests.approved', 'league_members.role', 'leagues.delete', 'leagues.owner', 'matches.delete', 'players.merge', 'players.unlink']);
     expect(isDelicate('league_members.role')).toBe(true);
     expect(isDelicate('match_players.update')).toBe(false);
   });

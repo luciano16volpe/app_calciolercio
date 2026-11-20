@@ -36,6 +36,22 @@ export async function createInvite(playerId: string, leagueId: string): Promise<
   return data as string;
 }
 
+/** Link «scegli la nuova password» per un giocatore che l'ha dimenticata (solo amministratore). Il link vale una volta sola e per poco tempo. */
+export async function createResetLink(playerId: string, leagueId: string): Promise<string> {
+  const { data: s } = await supabase.auth.getSession();
+  const token = s.session?.access_token;
+  if (!token) throw new Error('Devi prima accedere');
+  const base = import.meta.env.VITE_SUPABASE_URL as string;
+  const res = await fetch(`${base}/functions/v1/reset-link`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, apikey: import.meta.env.VITE_SUPABASE_ANON_KEY as string },
+    body: JSON.stringify({ playerId, leagueId }),
+  });
+  const body = (await res.json().catch(() => ({}))) as { link?: string; error?: string };
+  if (!res.ok || !body.link) throw new Error(body.error ?? 'Non riesco a creare il link');
+  return body.link;
+}
+
 /** Indirizzo da mandare all'amico. */
 export const inviteUrl = (token: string): string => `${window.location.origin}/invito/${token}`;
 
