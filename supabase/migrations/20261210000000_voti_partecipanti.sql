@@ -1,20 +1,5 @@
--- Voto collettivo facoltativo: 24 ore dal primo risultato, attivato dall'admin per partita.
+-- Voto collettivo facoltativo: 24 ore dall'apertura decisa dall'admin per partita.
 -- Le medie finiscono nella colonna rating esistente, così statistiche e classifiche restano coerenti.
-alter table public.match_stamps add column first_result_at timestamptz;
-update public.match_stamps set first_result_at=result_at where result_at is not null;
-create function public.preserve_first_result_at()
-returns trigger language plpgsql security definer set search_path=public as $$
-begin
-  if tg_op='INSERT' then
-    new.first_result_at := coalesce(new.first_result_at,new.result_at);
-  else
-    new.first_result_at := coalesce(old.first_result_at,new.first_result_at,new.result_at);
-  end if;
-  return new;
-end $$;
-create trigger preserve_first_result_at before insert or update on public.match_stamps
-  for each row execute function public.preserve_first_result_at();
-
 create table public.community_vote_settings (
   match_id uuid primary key references public.matches(id) on delete cascade,
   started_at timestamptz not null,
@@ -35,11 +20,10 @@ revoke all on public.community_vote_settings,public.community_votes from anon,au
 
 create function public.community_vote_state(p_match uuid)
 returns jsonb language plpgsql stable security definer set search_path=public as $$
-declare lid uuid; result_at timestamptz; started timestamptz; my_player uuid; my_votes jsonb;
+declare lid uuid; score_a smallint; score_b smallint; started timestamptz; my_player uuid; my_votes jsonb;
 begin
-  select m.league_id,s.first_result_at,c.started_at into lid,result_at,started
-    from matches m left join match_stamps s on s.match_id=m.id
-      left join community_vote_settings c on c.match_id=m.id where m.id=p_match;
+  select m.league_id,m.score_a,m.score_b,c.started_at into lid,score_a,score_b,started
+    from matches m left join community_vote_settings c on c.match_id=m.id where m.id=p_match;
   if lid is null or auth.uid() is null or not exists (
     select 1 from league_members where league_id=lid and user_id=auth.uid()) then return null; end if;
   select p.id into my_player from match_players mp join players p on p.id=mp.player_id
@@ -50,8 +34,8 @@ begin
     'enabled',started is not null,
     'is_open',started is not null and now()>=started and now()<started+interval '24 hours',
     'open_until',started+interval '24 hours',
-    'can_activate', public.is_league_admin(lid) and started is null and result_at is not null
-      and now()>=result_at and now()<result_at+interval '24 hours'
+    'can_activate', public.is_league_admin(lid) and started is null
+      and score_a is not null and score_b is not null
       and not exists(select 1 from match_players where match_id=p_match and rating is not null),
     'can_vote',started is not null and my_player is not null and now()>=started
       and now()<started+interval '24 hours',
@@ -87,17 +71,14 @@ grant execute on function public.community_vote_details(uuid) to authenticated;
 
 create function public.enable_community_voting(p_match uuid)
 returns void language plpgsql security definer set search_path=public as $$
-declare m matches%rowtype; started timestamptz;
+declare m matches%rowtype;
 begin
   select * into m from matches where id=p_match for update;
   if not found or auth.uid() is null or not public.is_league_admin(m.league_id) then raise exception 'Permesso negato'; end if;
   if m.score_a is null or m.score_b is null then raise exception 'Inserisci prima il risultato'; end if;
-  select first_result_at into started from match_stamps where match_id=p_match;
-  if started is null or now()<started or now()>=started+interval '24 hours' then
-    raise exception 'Le 24 ore dal risultato sono terminate'; end if;
   if exists(select 1 from match_players where match_id=p_match and rating is not null) then
     raise exception 'Sono già presenti voti della redazione'; end if;
-  insert into community_vote_settings(match_id,started_at,enabled_by) values(p_match,started,auth.uid());
+  insert into community_vote_settings(match_id,started_at,enabled_by) values(p_match,now(),auth.uid());
 end $$;
 revoke all on function public.enable_community_voting(uuid) from public,anon;
 grant execute on function public.enable_community_voting(uuid) to authenticated;
