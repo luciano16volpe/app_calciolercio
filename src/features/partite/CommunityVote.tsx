@@ -100,7 +100,8 @@ export function CommunityVote({ match, state, canEdit, userId }: {
       {state.enabled ? <p style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 8 }}>
         {state.is_open ? `Votazione aperta fino al ${until}.` : `Votazione chiusa il ${until}.`}
         {state.can_vote ? ' Puoi modificare i tuoi voti fino alla scadenza.' : ''}
-        {' '}Nella scheda compare la media dei voti ricevuti.
+        {state.is_open ? ' Le medie saranno visibili solo alla chiusura.'
+          : state.finalized ? ' Le medie sono ora visibili nella scheda.' : ' Le medie saranno disponibili tra poco.'}
       </p> : null}
       {state.can_vote && peers.length ? (
         <>

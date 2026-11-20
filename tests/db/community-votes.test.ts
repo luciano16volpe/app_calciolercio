@@ -1,4 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach, expect, test } from 'vitest';
+import { readFileSync } from 'node:fs';
 import type { PGlite } from '@electric-sql/pglite';
 import { createTestDatabase } from './database';
 
@@ -66,12 +67,15 @@ test('solo admin attiva; media, autovoto e modifiche dei voti', async () => {
   await db.query(vote, [match, ballot(players[2]!, 7.5)]);
   await asUser(admin);
   expect((await db.query('select rating from match_players where match_id=$1 and player_id=$2', [match, players[2]])).rows)
-    .toEqual([{ rating: '7.3' }]);
+    .toEqual([{ rating: null }]);
   await asUser(users[0]!);
   await db.query(vote, [match, ballot(players[2]!, 8)]);
-  await asUser(admin);
+  await db.exec('reset role');
+  await db.query("update community_vote_settings set started_at=now()-interval '25 hours' where match_id=$1", [match]);
+  expect((await db.query('select finalize_community_votes() as completed')).rows).toEqual([{ completed: 1 }]);
   expect((await db.query('select rating from match_players where match_id=$1 and player_id=$2', [match, players[2]])).rows)
     .toEqual([{ rating: '7.8' }]);
+  expect((await db.query('select finalize_community_votes() as completed')).rows).toEqual([{ completed: 0 }]);
 });
 
 test('solo partecipanti della lega; scadenza dall’apertura; pagelle admin non cancellano la media', async () => {
@@ -86,11 +90,15 @@ test('solo partecipanti della lega; scadenza dall’apertura; pagelle admin non 
     { player_id: players[1], rating: 5, goals: 2, assist: 0, autogol: 0, meta: 0, rigori_sbagliati: 0, titolo: '', descrizione: '', write_text: false },
   ])]);
   expect((await db.query('select rating,goals from match_players where match_id=$1 and player_id=$2', [match, players[1]])).rows)
-    .toEqual([{ rating: '8.0', goals: 2 }]);
+    .toEqual([{ rating: null, goals: 2 }]);
   await db.exec('reset role');
   await db.query("update community_vote_settings set started_at=now()-interval '25 hours' where match_id=$1", [match]);
   await asUser(users[1]!);
   await fails(vote, [match, ballot(players[0]!, 7)], /chiusa/);
+  await db.exec('reset role');
+  await db.query('select finalize_community_votes()');
+  expect((await db.query('select rating,goals from match_players where match_id=$1 and player_id=$2', [match, players[1]])).rows)
+    .toEqual([{ rating: '8.0', goals: 2 }]);
 });
 
 test('l’admin può aprire il voto anche oltre 24 ore dal risultato', async () => {
@@ -136,7 +144,7 @@ test('l’admin che ha giocato vota gli altri ma non se stesso', async () => {
   await fails(vote, [match, ballot(players[3]!, 9)], /solo gli altri partecipanti/);
   await db.query(vote, [match, ballot(players[0]!, 8)]);
   expect((await db.query('select rating from match_players where match_id=$1 and player_id=$2', [match, players[0]])).rows)
-    .toEqual([{ rating: '8.0' }]);
+    .toEqual([{ rating: null }]);
 });
 
 test('il partecipante cambia solo il voto, anche se invia campi statistici extra', async () => {
@@ -153,6 +161,11 @@ test('il partecipante cambia solo il voto, anche se invia campi statistici extra
     meta: 20, rigori_sbagliati: 20, titolo: 'Alterato', descrizione: 'Alterata',
   }])]);
   await db.exec('reset role');
+  expect((await db.query(sql, [match, players[1]])).rows).toEqual(before);
+  expect((await db.query('select rating from match_players where match_id=$1 and player_id=$2', [match, players[1]])).rows)
+    .toEqual([{ rating: null }]);
+  await db.query("update community_vote_settings set started_at=now()-interval '25 hours' where match_id=$1", [match]);
+  await db.query('select finalize_community_votes()');
   expect((await db.query(sql, [match, players[1]])).rows).toEqual(before);
   expect((await db.query('select rating from match_players where match_id=$1 and player_id=$2', [match, players[1]])).rows)
     .toEqual([{ rating: '8.0' }]);
@@ -202,3 +215,35 @@ test('apertura del voto: push ai partecipanti attivi, una volta sola e non dopo 
     .toEqual([{ user_id: users[0] }]);
   expect((await db.query(due, [new Date(openedAt.getTime() + 25 * 3600_000), match])).rows).toEqual([]);
 });
+
+test('migrazione: ritira le medie anticipate senza perdere i voti e le pubblica alla chiusura', async () => {
+  const oldDb = await createTestDatabase('20261211000000_notifica_apertura_voti.sql');
+  try {
+    await oldDb.exec(`
+      insert into auth.users(id,email) values ('${admin}','admin@test.invalid'),('${users[0]}','uno@test.invalid');
+      insert into leagues(id,name,owner_id,created_by) values ('${league}','Voti','${admin}','${admin}');
+      insert into league_members(league_id,user_id,role) values
+        ('${league}','${admin}','admin'),('${league}','${users[0]}','member');
+      insert into players(id,name,user_id) values
+        ('${players[0]}','Uno','${users[0]}'),('${players[3]}','Admin','${admin}');
+      insert into league_players(league_id,player_id) values
+        ('${league}','${players[0]}'),('${league}','${players[3]}');
+      insert into matches(id,league_id,date,score_a,score_b) values ('${match}','${league}',current_date,1,0);
+      insert into match_players(match_id,player_id,team,position,rating) values
+        ('${match}','${players[0]}','A',0,null),('${match}','${players[3]}','B',0,7);
+      insert into community_vote_settings(match_id,started_at,enabled_by) values
+        ('${match}',now()-interval '1 hour','${admin}');
+      insert into community_votes(match_id,voter_user_id,target_player_id,rating) values
+        ('${match}','${users[0]}','${players[3]}',7);
+    `);
+    await oldDb.exec(readFileSync('supabase/migrations/20261212000000_pubblica_voti_alla_chiusura.sql', 'utf8'));
+    expect((await oldDb.query('select rating from match_players where match_id=$1 and player_id=$2', [match, players[3]])).rows)
+      .toEqual([{ rating: null }]);
+    expect((await oldDb.query('select rating from community_votes where match_id=$1', [match])).rows)
+      .toEqual([{ rating: '7.0' }]);
+    await oldDb.query("update community_vote_settings set started_at=now()-interval '25 hours' where match_id=$1", [match]);
+    expect((await oldDb.query('select finalize_community_votes() as completed')).rows).toEqual([{ completed: 1 }]);
+    expect((await oldDb.query('select rating from match_players where match_id=$1 and player_id=$2', [match, players[3]])).rows)
+      .toEqual([{ rating: '7.0' }]);
+  } finally { await oldDb.close(); }
+}, 60_000);

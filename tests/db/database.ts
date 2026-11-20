@@ -3,7 +3,7 @@
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync, readdirSync } from 'node:fs';
 
-export async function createTestDatabase() {
+export async function createTestDatabase(lastMigration?: string) {
   const db = new PGlite();
   try {
     await db.exec(`
@@ -27,7 +27,7 @@ export async function createTestDatabase() {
       alter default privileges in schema public grant all on tables to authenticated;
       alter default privileges in schema public grant all on sequences to authenticated;
     `);
-    for (const file of readdirSync('supabase/migrations').filter((f) => f.endsWith('.sql')).sort()) {
+    for (const file of readdirSync('supabase/migrations').filter((f) => f.endsWith('.sql') && (!lastMigration || f <= lastMigration)).sort()) {
       // pg_net esegue richieste HTTP e non e' disponibile nel PostgreSQL WASM.
       // Le sue funzioni non vengono chiamate nei test; pg_cron e' gia' opzionale nelle migrazioni.
       const sql = readFileSync(`supabase/migrations/${file}`, 'utf8')

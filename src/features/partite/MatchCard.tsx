@@ -31,8 +31,12 @@ import { placeOf } from '../../domain/place';
 const LABEL = { fontSize: 12, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase' as const, letterSpacing: '.5px' };
 
 // ── highlights ─────────────────────────────────────────────────────────────
-function Highlights({ data, m }: { data: LeagueData; m: Match }) {
-  const h = matchHighlights(data.dataset, m);
+function Highlights({ data, m, hideRatings = false }: { data: LeagueData; m: Match; hideRatings?: boolean }) {
+  const dataset = hideRatings ? {
+    ...data.dataset,
+    ratings: data.dataset.ratings.map((rating) => rating.matchId === m.id ? { ...rating, rating: null } : rating),
+  } : data.dataset;
+  const h = matchHighlights(dataset, m);
   if (!h.mvp && !h.topScorer && h.avgA == null) return null; // ancora nessuna pagella
   const short = (n: string) => (n && n.length > 12 ? n.slice(0, 11) + '…' : n);
   const cell = (icon: string, label: string, content: ReactNode, col?: string) => (
@@ -165,8 +169,8 @@ function Counter({ emoji, title, val, max, edit }: {
   );
 }
 
-function TeamPanel({ title, team, ratings, blue, side, ed, lockRating = false }: {
-  title: string; team: Array<{ id: string | null; name: string }>; ratings: Rating[]; blue: boolean; side: 'A' | 'B'; ed?: FieldEditor; lockRating?: boolean;
+function TeamPanel({ title, team, ratings, blue, side, ed, lockRating = false, hideRating = false }: {
+  title: string; team: Array<{ id: string | null; name: string }>; ratings: Rating[]; blue: boolean; side: 'A' | 'B'; ed?: FieldEditor; lockRating?: boolean; hideRating?: boolean;
 }) {
   const getRating = (pl: { id: string | null; name: string }) =>
     ratings.find((r) => (r.playerId && pl.id && r.playerId === pl.id) || r.player === pl.name);
@@ -178,7 +182,7 @@ function TeamPanel({ title, team, ratings, blue, side, ed, lockRating = false }:
         const f = ed ? ed.get(key) : null;
         const r = getRating(pl);
         const or = (v: unknown): string | number => (v ? (v as number | string) : '');
-        const val = f ? f.rating : r && r.rating != null ? String(r.rating) : '';
+        const val = hideRating ? '' : f ? f.rating : r && r.rating != null ? String(r.rating) : '';
         const tit = f ? f.tit : r && r.titolo ? String(r.titolo) : '';
         const desc = f ? f.desc : r && r.notes ? String(r.notes) : '';
         const full = !!ed && !ed.textOnly; // voti e numeri si cambiano solo in modifica completa
@@ -327,7 +331,9 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
     [balanceOpen, data, m],
   );
   if (!m) return null;
-  const ratings = data.dataset.ratings.filter((r) => r.matchId === matchId);
+  const hideCommunityRatings = !!communityVote.data?.enabled && !communityVote.data.finalized;
+  const ratings = data.dataset.ratings.filter((r) => r.matchId === matchId)
+    .map((rating) => hideCommunityRatings ? { ...rating, rating: null } : rating);
   const g = data.gazzette[m.id];
   const scoreA = m.scoreA !== '' && m.scoreA != null ? String(m.scoreA) : '';
   const scoreB = m.scoreB !== '' && m.scoreB != null ? String(m.scoreB) : '';
@@ -544,7 +550,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               {stepper('sc-b', draft ? draft.scB : scoreB, 'scB')}
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--teamb)' }}>⚪ Bianchi</span>
             </div>
-            <Highlights data={data} m={m} />
+            <Highlights data={data} m={m} hideRatings={hideCommunityRatings} />
             <CommunityVote match={m} state={communityVote.data} canEdit={canEdit} userId={user?.id} />
             <div className="gaz-sec" id="gaz-sec">
               {g ? (
@@ -566,8 +572,8 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
             <div style={{ ...LABEL, margin: '14px 0 8px' }}>Gol, assist e voti (facoltativi)</div>
             {full ? <div className="mb-note" style={{ marginBottom: 8 }}>Puoi salvare gol e assist ora e aggiungere i voti più tardi.</div> : null}
             <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-              <TeamPanel title="🔵 Blu" team={teamA} ratings={ratings} blue side="A" ed={ed} lockRating={communityVote.data?.enabled} />
-              <TeamPanel title="⚪ Bianchi" team={teamB} ratings={ratings} blue={false} side="B" ed={ed} lockRating={communityVote.data?.enabled} />
+              <TeamPanel title="🔵 Blu" team={teamA} ratings={ratings} blue side="A" ed={ed} lockRating={communityVote.data?.enabled} hideRating={hideCommunityRatings} />
+              <TeamPanel title="⚪ Bianchi" team={teamB} ratings={ratings} blue={false} side="B" ed={ed} lockRating={communityVote.data?.enabled} hideRating={hideCommunityRatings} />
             </div>
             <button type="button" className="btn btn-secondary btn-full eq-toggle" id="match-balance-btn" onClick={() => setBalanceOpen((o) => !o)}>
               ⚖️ Equilibrio squadre {balanceOpen ? '▴' : '▾'}

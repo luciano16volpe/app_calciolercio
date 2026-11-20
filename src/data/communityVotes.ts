@@ -6,6 +6,7 @@ import type { Json } from './types';
 export interface CommunityVoteState {
   enabled: boolean;
   is_open: boolean;
+  finalized: boolean;
   open_until: string | null;
   can_activate: boolean;
   can_vote: boolean;
