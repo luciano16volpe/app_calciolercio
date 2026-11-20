@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../app/auth';
 import { releaseKeyboard, repairViewport } from '../../app/Dialogs';
 import { useToast } from '../../app/Toast';
-import { communityVoteKey, enableCommunityVoting, fetchCommunityVoteDetails, submitCommunityVotes, useCommunityVoteState, type CommunityVoteDetail, type CommunityVoteState } from '../../data/communityVotes';
+import { communityVoteKey, communityVoteProgressKey, enableCommunityVoting, fetchCommunityVoteDetails, submitCommunityVotes, useCommunityVoteProgress, useCommunityVoteState, type CommunityVoteDetail, type CommunityVoteState } from '../../data/communityVotes';
 import { LEAGUE_HISTORY_QUERY_KEY } from '../../data/queries';
 import { formatDate } from '../../domain/format';
 import { normalizeTeam } from '../../domain/stats';
@@ -43,6 +43,20 @@ function AdminVoteDetails({ matchId }: { matchId: string }) {
   </div>;
 }
 
+function AdminVoteProgress({ matchId, isOpen }: { matchId: string; isOpen: boolean }) {
+  const progress = useCommunityVoteProgress(matchId, isOpen);
+  if (progress.isError) return <p className="cv-progress-note">Impossibile caricare il riepilogo dei votanti.</p>;
+  if (!progress.data) return <p className="cv-progress-note">Caricamento votanti…</p>;
+  const { eligible, voted, remaining } = progress.data;
+  return <div className="cv-progress">
+    <div className="cv-progress-counts">
+      <div><strong>{voted}</strong><span>Hanno votato</span></div>
+      <div><strong>{remaining}</strong><span>{isOpen ? 'Ancora da votare' : 'Non hanno votato'}</span></div>
+    </div>
+    <p>{eligible ? `Su ${eligible} ${eligible === 1 ? 'partecipante abilitato' : 'partecipanti abilitati'} · conta chi ha inserito almeno un voto.` : 'Nessun partecipante collegato può votare.'}</p>
+  </div>;
+}
+
 /** Nella scheda partita restano solo l'attivazione e la consultazione riservate all'admin. */
 export function CommunityVoteControls({ match, state, canEdit, userId }: {
   match: Match;
@@ -79,6 +93,7 @@ export function CommunityVoteControls({ match, state, canEdit, userId }: {
       {state.is_open ? ' Le medie saranno visibili solo alla chiusura.'
         : state.finalized ? ' Le medie sono ora visibili nella scheda.' : ' Le medie saranno disponibili tra poco.'}
     </p> : null}
+    {state.enabled ? <AdminVoteProgress matchId={match.id} isOpen={state.is_open} /> : null}
     {state.enabled ? <AdminVoteDetails matchId={match.id} /> : null}
   </section>;
 }
@@ -125,6 +140,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
     try {
       await submitCommunityVotes(match.id, votes);
       void qc.invalidateQueries({ queryKey: communityVoteKey(match.id, user?.id) });
+      void qc.invalidateQueries({ queryKey: communityVoteProgressKey(match.id, user?.id) });
       void qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
       toast('Voti salvati');
       close();

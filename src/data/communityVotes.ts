@@ -20,7 +20,14 @@ export interface CommunityVoteDetail {
   rating: number;
 }
 
+export interface CommunityVoteProgress {
+  eligible: number;
+  voted: number;
+  remaining: number;
+}
+
 export const communityVoteKey = (matchId: string, userId?: string) => ['community-vote', matchId, userId] as const;
+export const communityVoteProgressKey = (matchId: string, userId?: string) => ['community-vote-progress', matchId, userId] as const;
 
 export function useCommunityVoteState(matchId: string) {
   const { user } = useAuth();
@@ -34,6 +41,21 @@ export function useCommunityVoteState(matchId: string) {
     },
     staleTime: 0,
     refetchInterval: 60_000,
+  });
+}
+
+export function useCommunityVoteProgress(matchId: string, isOpen: boolean) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: communityVoteProgressKey(matchId, user?.id),
+    enabled: !!user && !!matchId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('community_vote_progress', { p_match: matchId });
+      if (error) throw error;
+      return data as unknown as CommunityVoteProgress;
+    },
+    staleTime: 0,
+    refetchInterval: isOpen ? 15_000 : false,
   });
 }
 

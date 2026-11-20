@@ -230,6 +230,28 @@ test('solo admin legge i voti individuali tramite il tasto della partita', async
   expect(rows[0]!.details).toEqual([{ voter_name: 'Uno', target_name: 'Due', rating: 7.5 }]);
 });
 
+test('solo admin vede quanti partecipanti abilitati hanno votato almeno una volta', async () => {
+  const unlinked = '10000000-0000-4000-8000-000000000061';
+  await db.query("insert into players(id,name,created_by) values($1,'Senza account',$2)", [unlinked, admin]);
+  await db.query('insert into league_players(league_id,player_id) values($1,$2)', [league, unlinked]);
+  await db.query("insert into match_players(match_id,player_id,team,position) values($1,$2,'A',2)", [match, unlinked]);
+  await asUser(admin);
+  await db.query(activate, [match]);
+  const progress = 'select community_vote_progress($1::uuid) as progress';
+  expect((await db.query(progress, [match])).rows[0]).toEqual({ progress: { eligible: 4, voted: 0, remaining: 4 } });
+
+  await asUser(users[0]!);
+  await db.query(vote, [match, JSON.stringify([
+    { player_id: players[1], rating: 7 }, { player_id: players[2], rating: 8 },
+  ])]);
+  await fails(progress, [match], /Permesso negato/);
+  await asUser(users[1]!);
+  await db.query(vote, [match, ballot(players[0]!, 7.5)]);
+  await fails(progress, [match], /Permesso negato/);
+  await asUser(admin);
+  expect((await db.query(progress, [match])).rows[0]).toEqual({ progress: { eligible: 4, voted: 2, remaining: 2 } });
+});
+
 test('apertura del voto: push ai partecipanti attivi, una volta sola e non dopo la scadenza', async () => {
   await db.query(`insert into push_subscriptions(user_id,endpoint,p256dh,auth) values
     ($1,'https://example.invalid/admin','p','a'),

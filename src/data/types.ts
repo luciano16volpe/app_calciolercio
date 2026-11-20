@@ -1042,6 +1042,10 @@ export type Database = {
         Args: { p_match: string }
         Returns: Json
       }
+      community_vote_progress: {
+        Args: { p_match: string }
+        Returns: Json
+      }
       enable_community_voting: {
         Args: { p_match: string }
         Returns: undefined
