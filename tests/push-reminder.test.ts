@@ -78,6 +78,14 @@ describe('notifiche degli eventi', () => {
     expect(buildMessage(ev({ kind: 'gazzetta' })).tag).toBe('gazzetta-m1');
   });
 
+  it('apertura voto: invita i partecipanti e apre le Partite', () => {
+    const message = buildMessage(ev({ kind: 'community_vote_open' }));
+    expect(message.body).toContain('Votazioni aperte per la partita del 28/10');
+    expect(message.body).toContain('24 ore');
+    expect(message.url).toBe('/l/san-marcello/partite');
+    expect(message.tag).toBe('community-vote-m1');
+  });
+
   it('il promemoria passa dallo stesso punto', () => {
     expect(buildMessage(ev({ kind: 'reminder' })).body).toContain('Il 28/10 si gioca');
   });

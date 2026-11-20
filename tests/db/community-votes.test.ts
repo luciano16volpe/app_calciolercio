@@ -172,3 +172,33 @@ test('solo admin legge i voti individuali tramite il tasto della partita', async
     'select community_vote_details($1::uuid) as details', [match]);
   expect(rows[0]!.details).toEqual([{ voter_name: 'Uno', target_name: 'Due', rating: 7.5 }]);
 });
+
+test('apertura del voto: push ai partecipanti attivi, una volta sola e non dopo la scadenza', async () => {
+  await db.query(`insert into push_subscriptions(user_id,endpoint,p256dh,auth) values
+    ($1,'https://example.invalid/admin','p','a'),
+    ($2,'https://example.invalid/uno','p','a'),
+    ($3,'https://example.invalid/due','p','a'),
+    ($4,'https://example.invalid/tre','p','a'),
+    ($5,'https://example.invalid/estraneo','p','a')`, [admin, ...users]);
+  await db.query('insert into push_prefs(user_id,ratings) values($1,false)', [users[1]]);
+  await db.query('insert into push_prefs(user_id,enabled) values($1,false)', [users[2]]);
+  const due = `select user_id from push_community_vote_due_at($1::timestamptz) where match_id=$2 order by user_id`;
+  const openedAt = (await db.query<{ now: Date }>('select now() as now')).rows[0]!.now;
+  expect((await db.query(due, [new Date(openedAt.getTime() + 1000), match])).rows).toEqual([]);
+  await asUser(admin);
+  await db.query(activate, [match]);
+  await fails(due, [new Date(openedAt.getTime() + 1000), match], /permission denied/);
+  await db.exec('reset role');
+  expect((await db.query(due, [new Date(openedAt.getTime() + 1000), match])).rows)
+    .toEqual([{ user_id: admin }, { user_id: users[0] }]);
+  expect((await db.query("select user_id from push_due() where kind='community_vote_open' and match_id=$1 order by user_id", [match])).rows)
+    .toEqual([{ user_id: admin }, { user_id: users[0] }]);
+  await db.exec('set local role service_role');
+  expect((await db.query("select user_id from push_due() where kind='community_vote_open' and match_id=$1 order by user_id", [match])).rows)
+    .toEqual([{ user_id: admin }, { user_id: users[0] }]);
+  await db.exec('reset role');
+  await db.query("insert into push_sent(kind,match_id,user_id) values('community_vote_open',$1,$2)", [match, admin]);
+  expect((await db.query(due, [new Date(openedAt.getTime() + 1000), match])).rows)
+    .toEqual([{ user_id: users[0] }]);
+  expect((await db.query(due, [new Date(openedAt.getTime() + 25 * 3600_000), match])).rows).toEqual([]);
+});

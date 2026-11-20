@@ -185,6 +185,7 @@ Le decisioni recenti dell'utente prevalgono sulle descrizioni delle fasi inizial
 - Anche l'admin può votare, con le stesse regole, se ha partecipato alla partita ed è collegato al proprio giocatore.
 - I partecipanti possono inserire soltanto il voto numerico; gol, assist e tutte le altre statistiche restano modificabili solo dall'admin.
 - L'admin decide quando aprire il voto dopo il risultato. Le 24 ore partono dall'attivazione e le correzioni del risultato non spostano la scadenza.
+- All'apertura del voto, i partecipanti con account collegato e notifiche attive ricevono una push entro il successivo controllo del job eventi. Si rispettano la sospensione generale e la preferenza per le notifiche delle pagelle; ogni utente riceve un solo avviso per partita.
 - Il voto visibile nella partita e nelle statistiche è la media dei voti ricevuti, arrotondata a un decimale. Il partecipante può correggere i propri voti fino alla scadenza; i singoli voti altrui restano riservati.
 - Solo l'admin della lega vede il pulsante "Vedi voti espressi" nella partita e può consultare chi ha votato chi e quale voto ha dato. Il controllo è applicato anche dal database.
 - Dopo l'attivazione, l'admin può ancora correggere risultato, gol, assist e testi, ma non sovrascrivere le medie dei partecipanti.
