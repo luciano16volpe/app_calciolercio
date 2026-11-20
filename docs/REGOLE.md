@@ -172,7 +172,18 @@ Le decisioni recenti dell'utente prevalgono sulle descrizioni delle fasi inizial
   (serve nella Fase 1 perché gli amici vedano tutto come oggi).
 
 ## Profilo: periodo e lega
+
 - Il profilo mostra i dati della lega selezionata. Le 11 statistiche, i ruoli e l'OVR del giocatore restano comuni alle leghe; il peso dei voti e calcolato sulla lega selezionata.
 - Nella scheda del profilo pagelle, media, forma e vittorie considerano la stagione in corso quando il giocatore ha almeno 5 partite con risultato; altrimenti le sue ultime 5 partite con risultato della lega, anche di una stagione precedente. Il periodo e indicato nella scheda e nella finestra delle pagelle.
 - Nel profilo le ultime partite sono al massimo 10 della lega selezionata, ordinate dalla piu recente. Il riepilogo complessivo per tutte le leghe e stato rimosso.
 - La bacheca e i calcoli delle altre schermate mantengono le regole precedenti.
+
+## Voti dei partecipanti senza pagellista
+
+- Quando manca il pagellista, l'admin può attivare il voto dei partecipanti per la singola partita, dopo aver salvato il risultato e solo se non sono già presenti voti editoriali.
+- Possono votare solo i giocatori presenti nella partita e collegati a un account della lega. Ciascuno vota gli altri, mai se stesso, da 1 a 10 a passi di mezzo punto.
+- I partecipanti possono inserire soltanto il voto numerico; gol, assist e tutte le altre statistiche restano modificabili solo dall'admin.
+- La votazione si chiude 24 ore dopo il primo salvataggio del risultato; l'attivazione tardiva e le correzioni del risultato non spostano la scadenza.
+- Il voto visibile nella partita e nelle statistiche è la media dei voti ricevuti, arrotondata a un decimale. Il partecipante può correggere i propri voti fino alla scadenza; i singoli voti altrui restano riservati.
+- Solo l'admin della lega vede il pulsante "Vedi voti espressi" nella partita e può consultare chi ha votato chi e quale voto ha dato. Il controllo è applicato anche dal database.
+- Dopo l'attivazione, l'admin può ancora correggere risultato, gol, assist e testi, ma non sovrascrivere le medie dei partecipanti.

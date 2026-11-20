@@ -6,6 +6,9 @@ import { HourSelect } from '../../app/HourSelect';
 import { canPlanMatch } from '../../domain/plannedMatch';
 import { PlannedMatchEditor } from './PlannedMatchEditor';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../../app/auth';
+import { useCommunityVoteState } from '../../data/communityVotes';
+import { CommunityVote } from './CommunityVote';
 import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { formOn } from '../../data/gameSettings';
 import { useToast } from '../../app/Toast';
@@ -162,8 +165,8 @@ function Counter({ emoji, title, val, max, edit }: {
   );
 }
 
-function TeamPanel({ title, team, ratings, blue, side, ed }: {
-  title: string; team: Array<{ id: string | null; name: string }>; ratings: Rating[]; blue: boolean; side: 'A' | 'B'; ed?: FieldEditor;
+function TeamPanel({ title, team, ratings, blue, side, ed, lockRating = false }: {
+  title: string; team: Array<{ id: string | null; name: string }>; ratings: Rating[]; blue: boolean; side: 'A' | 'B'; ed?: FieldEditor; lockRating?: boolean;
 }) {
   const getRating = (pl: { id: string | null; name: string }) =>
     ratings.find((r) => (r.playerId && pl.id && r.playerId === pl.id) || r.player === pl.name);
@@ -191,12 +194,12 @@ function TeamPanel({ title, team, ratings, blue, side, ed }: {
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
               <span style={{ fontSize: 10, color: 'var(--text2)', fontWeight: 700 }}>VOTO</span>
               <div className="rate-stepper">
-                {ed && f && full ? <button type="button" onClick={() => ed.set(key, { rating: stepRating(f.rating, -1) })} className="rate-btn rate-btn-minus">−</button> : null}
+                {ed && f && full && !lockRating ? <button type="button" onClick={() => ed.set(key, { rating: stepRating(f.rating, -1) })} className="rate-btn rate-btn-minus">−</button> : null}
                 <input
                   type="number" min={1} max={10} step={0.5} placeholder="—" value={val} inputMode="decimal"
-                  disabled={!full} readOnly={!full} style={rateColors(val)} onChange={full ? (e) => ed.set(key, { rating: e.target.value }) : undefined}
+                  disabled={!full || lockRating} readOnly={!full || lockRating} style={rateColors(val)} onChange={full && !lockRating ? (e) => ed.set(key, { rating: e.target.value }) : undefined}
                 />
-                {ed && f && full ? <button type="button" onClick={() => ed.set(key, { rating: stepRating(f.rating, 1) })} className="rate-btn rate-btn-plus">+</button> : null}
+                {ed && f && full && !lockRating ? <button type="button" onClick={() => ed.set(key, { rating: stepRating(f.rating, 1) })} className="rate-btn rate-btn-plus">+</button> : null}
               </div>
             </div>
             <div className="mcnt-row">
@@ -290,6 +293,8 @@ export function MatchCard(props: Parameters<typeof LoadedMatchCard>[0]) {
 }
 function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEditText = false, canGazzetta = true, startText = false, startEdit = false }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions; canEdit?: boolean; canEditText?: boolean; /** pubblicare/sostituire la Gazzetta (admin: solo Premium) */ canGazzetta?: boolean; startText?: boolean; startEdit?: boolean }) {
   const m = data.dataset.matches.find((x) => x.id === matchId);
+  const { user } = useAuth();
+  const communityVote = useCommunityVoteState(matchId);
   const toast = useToast();
   const confirm = useConfirm();
   const qc = useQueryClient();
@@ -540,6 +545,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--teamb)' }}>⚪ Bianchi</span>
             </div>
             <Highlights data={data} m={m} />
+            <CommunityVote match={m} state={communityVote.data} canEdit={canEdit} userId={user?.id} />
             <div className="gaz-sec" id="gaz-sec">
               {g ? (
                 <>
@@ -560,8 +566,8 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
             <div style={{ ...LABEL, margin: '14px 0 8px' }}>Gol, assist e voti (facoltativi)</div>
             {full ? <div className="mb-note" style={{ marginBottom: 8 }}>Puoi salvare gol e assist ora e aggiungere i voti più tardi.</div> : null}
             <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-              <TeamPanel title="🔵 Blu" team={teamA} ratings={ratings} blue side="A" ed={ed} />
-              <TeamPanel title="⚪ Bianchi" team={teamB} ratings={ratings} blue={false} side="B" ed={ed} />
+              <TeamPanel title="🔵 Blu" team={teamA} ratings={ratings} blue side="A" ed={ed} lockRating={communityVote.data?.enabled} />
+              <TeamPanel title="⚪ Bianchi" team={teamB} ratings={ratings} blue={false} side="B" ed={ed} lockRating={communityVote.data?.enabled} />
             </div>
             <button type="button" className="btn btn-secondary btn-full eq-toggle" id="match-balance-btn" onClick={() => setBalanceOpen((o) => !o)}>
               ⚖️ Equilibrio squadre {balanceOpen ? '▴' : '▾'}
