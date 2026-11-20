@@ -8,7 +8,7 @@ import { PlannedMatchEditor } from './PlannedMatchEditor';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../app/auth';
 import { useCommunityVoteState } from '../../data/communityVotes';
-import { CommunityVote } from './CommunityVote';
+import { CommunityVoteControls } from './CommunityVote';
 import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { formOn } from '../../data/gameSettings';
 import { useToast } from '../../app/Toast';
@@ -295,18 +295,10 @@ function startDraft(m: Match, ratings: Rating[]): Draft {
 export function MatchCard(props: Parameters<typeof LoadedMatchCard>[0]) {
   return <MatchTextBoundary data={props.data} matchId={props.matchId} onClose={props.onClose}>{(data) => <LoadedMatchCard {...props} data={data} />}</MatchTextBoundary>;
 }
-function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEditText = false, canGazzetta = true, startText = false, startEdit = false, startVote = false }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions; canEdit?: boolean; canEditText?: boolean; /** pubblicare/sostituire la Gazzetta (admin: solo Premium) */ canGazzetta?: boolean; startText?: boolean; startEdit?: boolean; startVote?: boolean }) {
+function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEditText = false, canGazzetta = true, startText = false, startEdit = false }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions; canEdit?: boolean; canEditText?: boolean; /** pubblicare/sostituire la Gazzetta (admin: solo Premium) */ canGazzetta?: boolean; startText?: boolean; startEdit?: boolean }) {
   const m = data.dataset.matches.find((x) => x.id === matchId);
   const { user } = useAuth();
   const communityVote = useCommunityVoteState(matchId);
-  const focusVote = () => {
-    const section = document.getElementById('community-vote-section');
-    section?.focus({ preventScroll: true });
-    section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-  useEffect(() => {
-    if (startVote && communityVote.data?.can_vote) focusVote();
-  }, [startVote, communityVote.data?.can_vote]);
   const toast = useToast();
   const confirm = useConfirm();
   const qc = useQueryClient();
@@ -494,7 +486,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
         </div>
         <div id="match-modal-body">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 10 }}>
-            <div id="mbar-share" style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}><MatchButtons data={data} m={m} act={act} withPlace={false} onVote={focusVote} /></div>
+            <div id="mbar-share" style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}><MatchButtons data={data} m={m} act={act} withPlace={false} /></div>
             {canEdit && !editing ? (
               <button
                 id="edit-toggle-btn" className="btn btn-secondary btn-sm mbar-btn" onClick={() => setDraft(startDraft(m, ratings))} title="Modifica partita" aria-label="Modifica partita"
@@ -559,7 +551,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--teamb)' }}>⚪ Bianchi</span>
             </div>
             <Highlights data={data} m={m} hideRatings={hideCommunityRatings} />
-            <CommunityVote match={m} state={communityVote.data} canEdit={canEdit} userId={user?.id} />
+            <CommunityVoteControls match={m} state={communityVote.data} canEdit={canEdit} userId={user?.id} />
             <div className="gaz-sec" id="gaz-sec">
               {g ? (
                 <>

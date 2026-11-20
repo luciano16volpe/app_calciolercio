@@ -39,7 +39,7 @@ export interface MatchActions {
 
 // ── pulsanti sotto la partita ──────────────────────────────────────────────
 /** Non giocata → Formazioni · Foglio · 📍 Condividi posizione (se il luogo ha la posizione). Giocata → Riepilogo + 📰 Gazzetta (se c'è) + 📜 Pagelle (se ce ne sono). */
-export function MatchButtons({ data, m, act, withPlace = true, onVote }: { data: LeagueData; m: Match; act: MatchActions; /** il pulsante della posizione (se la scheda lo mostra già altrove: false) */ withPlace?: boolean; onVote?: () => void }) {
+export function MatchButtons({ data, m, act, withPlace = true }: { data: LeagueData; m: Match; act: MatchActions; /** il pulsante della posizione (se la scheda lo mostra già altrove: false) */ withPlace?: boolean }) {
   const { showImage, shareCanvas } = useImageTools();
   const toast = useToast();
   const communityVote = useCommunityVoteState(m.id);
@@ -68,7 +68,7 @@ export function MatchButtons({ data, m, act, withPlace = true, onVote }: { data:
   return (
     <>
       {sum}
-      {communityVote.data?.can_vote ? <button type="button" className="btn btn-secondary btn-sm mbar-btn" onClick={onVote ?? (() => act.openMatchVote(m.id))}>VOTA</button> : null}
+      {communityVote.data?.can_vote ? <button type="button" className="btn btn-secondary btn-sm mbar-btn" onClick={() => act.openMatchVote(m.id)}>VOTA</button> : null}
       {data.gazzette[m.id] ? <button className="btn btn-secondary btn-sm mbar-btn" onClick={() => act.openGazzetta(m.id)} title="Apri la Gazzetta">📰 Gazzetta</button> : null}
       {matchHasDesc(data.dataset, m.id) ? (
         <button className="btn btn-primary btn-sm mbar-btn" onClick={() => act.openPagelleText(m.id)} style={{ background: '#25D366', borderColor: '#25D366' }} title="Tutte le pagelle in un testo">📜 Pagelle</button>
