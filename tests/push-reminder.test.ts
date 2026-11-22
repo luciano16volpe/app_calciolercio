@@ -86,6 +86,13 @@ describe('notifiche degli eventi', () => {
     expect(message.tag).toBe('community-vote-m1');
   });
 
+  it('pubblicazione voti: distingue il nuovo avviso e apre la partita corretta', () => {
+    const message = buildMessage(ev({ kind: 'community_vote_published' }));
+    expect(message.body).toContain('voti della partita del 28/10 sono stati pubblicati');
+    expect(message.url).toBe('/l/san-marcello/partite?match=m1');
+    expect(message.tag).toBe('community-vote-published-m1');
+  });
+
   it('il promemoria passa dallo stesso punto', () => {
     expect(buildMessage(ev({ kind: 'reminder' })).body).toContain('Il 28/10 si gioca');
   });

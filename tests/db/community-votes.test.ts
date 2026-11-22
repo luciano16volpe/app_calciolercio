@@ -282,6 +282,43 @@ test('apertura del voto: push ai partecipanti attivi, una volta sola e non dopo 
   expect((await db.query(due, [new Date(openedAt.getTime() + 25 * 3600_000), match])).rows).toEqual([]);
 });
 
+test('voti pubblicati: push solo dopo la finalizzazione, secondo preferenze e una volta sola', async () => {
+  await db.query(`insert into push_subscriptions(user_id,endpoint,p256dh,auth) values
+    ($1,'https://example.invalid/admin','p','a'),
+    ($2,'https://example.invalid/uno','p','a'),
+    ($3,'https://example.invalid/due','p','a')`, [admin, users[0], users[1]]);
+  await db.query('insert into push_prefs(user_id,ratings) values($1,false)', [users[0]]);
+  await db.query('insert into push_prefs(user_id,enabled) values($1,false)', [users[1]]);
+  await asUser(admin);
+  await db.query(activate, [match]);
+  await asUser(users[0]!);
+  await db.query(vote, [match, ballot(players[1]!, 7.5)]);
+  await db.exec('reset role');
+  await db.query("select set_config('request.jwt.claim.sub','',true)");
+  await db.query("update match_players set titolo='Titolo',descrizione='Testo' where match_id=$1", [match]);
+  await db.query("update match_stamps set ratings_text_at=now()-interval '3 minutes' where match_id=$1", [match]);
+  await db.query("update community_vote_settings set started_at=now()-interval '25 hours' where match_id=$1", [match]);
+  const published = `select user_id from push_community_vote_published_due_at(now()) where match_id=$1`;
+  expect((await db.query(published, [match])).rows).toEqual([]);
+  expect((await db.query('select finalize_community_votes() as completed')).rows).toEqual([{ completed: 1 }]);
+  expect((await db.query(published, [match])).rows).toEqual([{ user_id: admin }]);
+  expect((await db.query("select kind,user_id from push_due() where match_id=$1 and kind in ('ratings','community_vote_published')", [match])).rows)
+    .toEqual([{ kind: 'community_vote_published', user_id: admin }]);
+  await db.query("insert into push_sent(kind,match_id,user_id) values('community_vote_published',$1,$2)", [match, admin]);
+  expect((await db.query('select finalize_community_votes() as completed')).rows).toEqual([{ completed: 0 }]);
+  expect((await db.query(published, [match])).rows).toEqual([]);
+});
+
+test('senza voti pubblicati non parte la push alla chiusura', async () => {
+  await db.query("insert into push_subscriptions(user_id,endpoint,p256dh,auth) values($1,'https://example.invalid/admin','p','a')", [admin]);
+  await asUser(admin);
+  await db.query(activate, [match]);
+  await db.exec('reset role');
+  await db.query("update community_vote_settings set started_at=now()-interval '25 hours' where match_id=$1", [match]);
+  await db.query('select finalize_community_votes()');
+  expect((await db.query("select * from push_community_vote_published_due_at(now()) where match_id=$1", [match])).rows).toEqual([]);
+});
+
 test('migrazione: ritira le medie anticipate senza perdere i voti e le pubblica alla chiusura', async () => {
   const oldDb = await createTestDatabase('20261211000000_notifica_apertura_voti.sql');
   try {

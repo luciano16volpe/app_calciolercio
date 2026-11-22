@@ -2,7 +2,7 @@
 // le usa il servizio che invia e le provano i test.
 
 /** Tipi di notifica (uguali a push_prefs e push_sent nel database). */
-export type PushKind = 'reminder' | 'invitation_created' | 'invitation_eve' | 'result' | 'ratings' | 'gazzetta' | 'community_vote_open' | `change:${string}`;
+export type PushKind = 'reminder' | 'invitation_created' | 'invitation_eve' | 'result' | 'ratings' | 'gazzetta' | 'community_vote_open' | 'community_vote_published' | `change:${string}`;
 
 export interface ReminderInput {
   league_name: string;
@@ -101,6 +101,8 @@ export function buildMessage(r: EventInput): PushMessage {
       return { title: r.league_name, body: `📝 Le pagelle della partita del ${ddmm(r.match_date)} sono pronte`, url: `/l/${r.league_slug}/partite`, tag: `ratings-${r.match_id}` };
     case 'community_vote_open':
       return { title: r.league_name, body: `🗳️ Votazioni aperte per la partita del ${ddmm(r.match_date)}. Dai un voto agli altri giocatori entro 24 ore dall'apertura.`, url: `/l/${r.league_slug}/partite`, tag: `community-vote-${r.match_id}` };
+    case 'community_vote_published':
+      return { title: r.league_name, body: `⭐ I voti della partita del ${ddmm(r.match_date)} sono stati pubblicati. Tocca per vederli.`, url: `/l/${r.league_slug}/partite?match=${r.match_id}`, tag: `community-vote-published-${r.match_id}` };
     case 'gazzetta':
       return { title: r.league_name, body: `📰 La Gazzetta della partita del ${ddmm(r.match_date)} è online`, url: `/l/${r.league_slug}/partite`, tag: `gazzetta-${r.match_id}` };
     default:

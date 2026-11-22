@@ -1,13 +1,26 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { MatchActions } from '../features/partite/parts';
 import type { Panel } from '../features/menu/MenuDrawer';
 import { parsePath } from './league';
 
 type View = { kind: 'player'; id: string; fromRosa?: boolean } | { kind: 'match'; id: string; text?: boolean; edit?: boolean } | { kind: 'vote'; id: string } | { kind: 'gazArchive' } | null;
 
+export function notificationMatch(path: string, search: string): View {
+  if (parsePath(path).page !== 'partite') return null;
+  const id = new URLSearchParams(search).get('match');
+  return id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+    ? { kind: 'match', id } : null;
+}
+
 /** Stato delle finestre e azioni condivise fra schermate. */
 export function useShellWindows() {
-  const [view, setView] = useState<View>(null);
+  const [view, setView] = useState<View>(() => notificationMatch(window.location.pathname, window.location.search));
+  useEffect(() => {
+    if (!notificationMatch(window.location.pathname, window.location.search)) return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete('match');
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+  }, []);
   const [menuOpen, setMenuOpen] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
   const [inviteToken, setInviteToken] = useState<string | null>(() => parsePath(window.location.pathname).invite);
