@@ -19,6 +19,17 @@ document.addEventListener('focusout', (e) => {
   if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target as HTMLElement | null)?.tagName ?? '')) window.setTimeout(repairViewport, 150);
 });
 
+// iOS può completare il ritorno del viewport dopo focusout: riallinea il footer quando la tastiera sparisce.
+if (window.visualViewport) {
+  const viewport = window.visualViewport;
+  let previousHeight = viewport.height;
+  viewport.addEventListener('resize', () => {
+    const keyboardClosed = viewport.height - previousHeight > 100;
+    previousHeight = viewport.height;
+    if (keyboardClosed) window.setTimeout(repairViewport, 150);
+  });
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LoadingProvider><AuthProvider><ToastProvider><SessionCache><App /></SessionCache><UpdateNotice /></ToastProvider></AuthProvider></LoadingProvider>

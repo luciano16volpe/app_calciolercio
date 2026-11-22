@@ -1,5 +1,6 @@
 // Pannello a tutto schermo con intestazione "‹ titolo" (si chiude con ‹ o Esc). Lo usano le voci del menu laterale.
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
+import { repairViewport } from './Dialogs';
 
 export function Sheet({ title, onClose, children, id, swipeBack = true }: { title: string; onClose: () => void; children: ReactNode; id?: string; swipeBack?: boolean }) {
   const start = useRef<{ x: number; y: number; time: number } | null>(null);
@@ -11,7 +12,7 @@ export function Sheet({ title, onClose, children, id, swipeBack = true }: { titl
   useEffect(() => {
     const k = (e: KeyboardEvent) => e.key === 'Escape' && close.current();
     document.addEventListener('keydown', k);
-    return () => { document.removeEventListener('keydown', k); window.clearTimeout(timer.current); };
+    return () => { document.removeEventListener('keydown', k); window.clearTimeout(timer.current); repairViewport(); };
   }, []);
   useLayoutEffect(() => {
     start.current = null;

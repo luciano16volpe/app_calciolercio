@@ -8,8 +8,27 @@ export function releaseKeyboard(): void {
 }
 /** Dopo la chiusura della tastiera rimette la pagina a posto. */
 export function repairViewport(): void {
-  requestAnimationFrame(() => window.scrollTo(window.scrollX, window.scrollY));
-  window.setTimeout(() => window.scrollTo(window.scrollX, window.scrollY), 300);
+  if (!/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    requestAnimationFrame(() => window.scrollTo(window.scrollX, window.scrollY));
+    return;
+  }
+  const refresh = () => {
+    const active = document.activeElement as HTMLElement | null;
+    if (active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)) return;
+    const x = window.scrollX;
+    const y = window.scrollY;
+    const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const step = y < maxY ? 1 : y > 0 ? -1 : 0;
+    if (step) window.scrollTo(x, y + step);
+    const nav = document.querySelector<HTMLElement>('.bottom-nav');
+    if (nav) nav.style.transform = 'translateY(0.01px)';
+    requestAnimationFrame(() => {
+      window.scrollTo(x, y);
+      if (nav?.isConnected) nav.style.removeProperty('transform');
+    });
+  };
+  requestAnimationFrame(refresh);
+  window.setTimeout(refresh, 350);
 }
 
 export interface ConfirmOptions {
