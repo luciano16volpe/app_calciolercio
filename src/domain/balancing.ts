@@ -263,84 +263,179 @@ export interface GenerateInput extends BalanceContext {
   blocked?: Array<[number, number]>;
 }
 
+/** Al massimo 96 divisioni valutate con tutti i moduli, invece di tutte le combinazioni. */
+const MAX_CANDIDATE_SPLITS = 96;
+const MAX_PROPOSALS = 10;
+
+type PartialSplit = { a: number[]; b: number[]; sumA: number; violations: number; order: number };
+
 /**
- * Genera le proposte: tutte le divisioni, ciascuna col suo miglior modulo; prima quelle la cui differenza
- * di media è vicina alla migliore (margine 0,20 fino a 10 convocati, 0,15 oltre), poi le altre, ognuna
- * ordinata per punteggio; si tengono le prime 50. `genBest` = Blu − Bianchi della prima proposta.
- * Se i convocati non sono esattamente sizeA + sizeB restituisce null. Con `blocked`, le divisioni che mettono
- * insieme una coppia vietata sono escluse; se è impossibile evitarle tutte, restano solo le divisioni che ne
- * uniscono il minor numero (`violations` = quante coppie vietate restano insieme, 0 se la turnazione è rispettata).
+ * Cerca divisioni promettenti senza materializzare tutti i sottoinsiemi. A ogni giocatore
+ * conserva solo le migliori assegnazioni parziali: prima meno coppie bloccate unite,
+ * poi una media finale che può ancora avvicinarsi alla parità.
+ */
+function candidateSplits(input: GenerateInput): PartialSplit[] {
+  const { selected, sizeA, sizeB, scores } = input;
+  const selectedSet = new Set(selected);
+  const blocked = new Map<number, number[]>();
+  for (const [x, y] of input.blocked ?? []) {
+    if (!selectedSet.has(x) || !selectedSet.has(y)) continue;
+    blocked.set(x, [...(blocked.get(x) ?? []), y]);
+    blocked.set(y, [...(blocked.get(y) ?? []), x]);
+  }
+  const byStrength = (a: number, b: number) => (scores[b] as number) - (scores[a] as number) || a - b;
+  // Con squadre uguali A/B e B/A sono la stessa divisione; il primo convocato resta in A.
+  const ordered = sizeA === sizeB
+    ? [selected[0] as number, ...selected.slice(1).sort(byStrength)]
+    : [...selected].sort(byStrength);
+  const total = selected.reduce((sum, i) => sum + (scores[i] as number), 0);
+  const targetA = total * sizeA / selected.length;
+  const choose = (n: number, k: number) => {
+    let result = 1;
+    for (let i = 1; i <= k; i++) result = result * (n - k + i) / i;
+    return Math.round(result);
+  };
+  const possible = choose(selected.length, sizeA) / (sizeA === sizeB ? 2 : 1);
+  const width = Math.min(MAX_CANDIDATE_SPLITS, Math.max(MAX_PROPOSALS, Math.floor(possible / 2)));
+  let beam: PartialSplit[] = [{ a: [], b: [], sumA: 0, violations: 0, order: 0 }];
+  for (let depth = 0; depth < ordered.length; depth++) {
+    const player = ordered[depth] as number;
+    const next: PartialSplit[] = [];
+    for (const split of beam) {
+      if (split.a.length < sizeA) next.push({
+        a: [...split.a, player], b: split.b, sumA: split.sumA + (scores[player] as number),
+        violations: split.violations + (blocked.get(player) ?? []).filter((other) => split.a.includes(other)).length,
+        order: split.order * 2,
+      });
+      if (split.b.length < sizeB && !(sizeA === sizeB && depth === 0)) next.push({
+        a: split.a, b: [...split.b, player], sumA: split.sumA,
+        violations: split.violations + (blocked.get(player) ?? []).filter((other) => split.b.includes(other)).length,
+        order: split.order * 2 + 1,
+      });
+    }
+    const remaining = ordered.slice(depth + 1).map((i) => scores[i] as number).sort((a, b) => a - b);
+    const restSum = remaining.reduce((sum, value) => sum + value, 0);
+    const rank = (split: PartialSplit) => {
+      const slots = sizeA - split.a.length;
+      const low = split.sumA + remaining.slice(0, slots).reduce((sum, value) => sum + value, 0);
+      const high = split.sumA + remaining.slice(remaining.length - slots).reduce((sum, value) => sum + value, 0);
+      const lowerBound = Math.max(low - targetA, targetA - high, 0);
+      const estimate = split.sumA + (remaining.length ? restSum * slots / remaining.length : 0);
+      return { lowerBound, estimate: Math.abs(estimate - targetA) };
+    };
+    next.sort((x, y) => {
+      if (x.violations !== y.violations) return x.violations - y.violations;
+      const a = rank(x), b = rank(y);
+      return a.lowerBound - b.lowerBound || a.estimate - b.estimate || x.order - y.order;
+    });
+    beam = next.slice(0, width);
+  }
+  return beam;
+}
+
+/**
+ * Se la ricerca limitata non trova una divisione senza violazioni, verifica il minimo
+ * con potatura: un ramo che ha già troppe coppie unite non potrà migliorarle dopo.
+ * Qui si contano solo i vincoli, senza calcolare moduli o punteggi delle formazioni.
+ */
+function enforceMinimumViolations(input: GenerateInput, candidates: PartialSplit[]): { splits: PartialSplit[]; violations: number } {
+  let minimum = Math.min(...candidates.map((c) => c.violations));
+  if (minimum === 0 || !input.blocked?.length) return { splits: candidates, violations: minimum };
+  const adjacency = new Map<number, number[]>();
+  const selectedSet = new Set(input.selected);
+  for (const [x, y] of input.blocked) {
+    if (!selectedSet.has(x) || !selectedSet.has(y)) continue;
+    adjacency.set(x, [...(adjacency.get(x) ?? []), y]);
+    adjacency.set(y, [...(adjacency.get(y) ?? []), x]);
+  }
+  let improved = false;
+  let optimal: PartialSplit[] = [];
+  const total = input.selected.reduce((sum, i) => sum + (input.scores[i] as number), 0);
+  const meanGap = (split: PartialSplit) => Math.abs(split.sumA / input.sizeA - (total - split.sumA) / input.sizeB);
+  let visitOrder = 0;
+  const visit = (depth: number, a: number[], b: number[], sumA: number, violations: number) => {
+    if (violations > minimum || (!improved && violations === minimum)) return;
+    if (depth === input.selected.length) {
+      if (violations < minimum) { minimum = violations; optimal = []; improved = true; }
+      if (improved && violations === minimum) {
+        const split = { a, b, sumA, violations, order: visitOrder++ };
+        if (optimal.length < MAX_CANDIDATE_SPLITS) optimal.push(split);
+        else {
+          let worst = 0;
+          for (let i = 1; i < optimal.length; i++) {
+            if (meanGap(optimal[i] as PartialSplit) > meanGap(optimal[worst] as PartialSplit)) worst = i;
+          }
+          if (meanGap(split) < meanGap(optimal[worst] as PartialSplit)) optimal[worst] = split;
+        }
+      }
+      return;
+    }
+    const player = input.selected[depth] as number;
+    if (a.length < input.sizeA) {
+      const added = (adjacency.get(player) ?? []).filter((other) => a.includes(other)).length;
+      visit(depth + 1, [...a, player], b, sumA + (input.scores[player] as number), violations + added);
+    }
+    if (b.length < input.sizeB && !(input.sizeA === input.sizeB && depth === 0)) {
+      const added = (adjacency.get(player) ?? []).filter((other) => b.includes(other)).length;
+      visit(depth + 1, a, [...b, player], sumA, violations + added);
+    }
+  };
+  visit(0, [], [], 0, 0);
+  return improved ? { splits: optimal, violations: minimum } : { splits: candidates, violations: minimum };
+}
+
+/**
+ * Genera fino a 10 divisioni distinte; ciascuna usa il migliore dei moduli disponibili.
+ * La priorità di equilibrio resta: differenza di media vicina alla migliore (margine 0,20
+ * fino a 10 convocati, 0,15 oltre), poi punteggio complessivo. `genBest` è Blu − Bianchi
+ * della prima proposta. Se i convocati non sono esattamente sizeA + sizeB restituisce null.
  */
 export function generateTeams(input: GenerateInput): { combos: Combo[]; genBest: number | null; violations: number } | null {
   const { selected, sizeA, sizeB } = input;
   if (selected.length !== sizeA + sizeB) return null;
-  const idx = [...selected];
+  const { splits: candidates, violations } = enforceMinimumViolations(input, candidateSplits(input));
+  const scored: Combo[] = [];
+  const modulesA = getModulesForSize(sizeA, input.modules);
+  const modulesB = getModulesForSize(sizeB, input.modules);
+  for (const candidate of candidates) {
+    if (candidate.violations !== violations) continue;
+    const aSet = new Set(candidate.a);
+    const tA = selected.filter((i) => aSet.has(i));
+    const tB = selected.filter((i) => !aSet.has(i));
+    let best: Combo | null = null;
+    for (const modA of modulesA) {
+      for (const modB of modulesB) {
+        const combo = { tA, tB, modA, modB, ...comboMetrics(input, tA, tB, modA, modB) };
+        if (!best || combo.score < best.score) best = combo;
+      }
+    }
+    if (best) scored.push(best);
+  }
 
-  const subsetsA = combos(idx, sizeA);
-  const allScored: Combo[] = [];
+  const bestDiff = Math.min(...scored.map((c) => c.diff));
+  const margin = selected.length <= 10 ? 0.2 : 0.15;
+  const compare = (a: Combo, b: Combo) => {
+    const nearA = a.diff <= bestDiff + margin ? 0 : 1;
+    const nearB = b.diff <= bestDiff + margin ? 0 : 1;
+    const keyA = a.tA.join(','), keyB = b.tA.join(',');
+    return nearA - nearB || a.score - b.score || (keyA < keyB ? -1 : keyA > keyB ? 1 : 0);
+  };
+  const ranked = scored.sort(compare);
+  const result: Combo[] = [];
   const seen = new Set<string>();
-
-  const blocked = input.blocked ?? [];
-  const together = (tA: number[], tB: number[]) => blocked.filter(([x, y]) => (tA.includes(x) && tA.includes(y)) || (tB.includes(x) && tB.includes(y))).length;
-  // regola intera se possibile; altrimenti si accettano le divisioni con meno coppie vietate possibile
-  const violations = blocked.length
-    ? Math.min(...subsetsA.map((tA) => together(tA, idx.filter((i) => !tA.includes(i)))))
-    : 0;
-  subsetsA.forEach((tA) => {
-    const tB = idx.filter((i) => !tA.includes(i));
-    if (blocked.length && together(tA, tB) > violations) return;
-    const modsA = getModulesForSize(tA.length, input.modules);
-    const modsB = getModulesForSize(tB.length, input.modules);
-    modsA.forEach((modA) => {
-      modsB.forEach((modB) => {
-        // chiave canonica: con squadre uguali "A contro B" e "B contro A" sono la stessa partita
-        const kA = [...tA].sort((a, b) => a - b).join(',');
-        const kB = [...tB].sort((a, b) => a - b).join(',');
-        let splitKey: string;
-        let notKey: string;
-        if (sizeA === sizeB) {
-          if (kA <= kB) {
-            splitKey = kA + '/' + kB;
-            notKey = modA.notation + '|' + modB.notation;
-          } else {
-            splitKey = kB + '/' + kA;
-            notKey = modB.notation + '|' + modA.notation;
-          }
-        } else {
-          splitKey = kA + '/' + kB;
-          notKey = modA.notation + '|' + modB.notation;
-        }
-        const key = splitKey + '::' + notKey;
-        if (seen.has(key)) return;
-        seen.add(key);
-        allScored.push({ tA, tB, modA, modB, ...comboMetrics(input, tA, tB, modA, modB) });
-      });
-    });
-  });
-
-  allScored.sort((a, b) => a.score - b.score);
-
-  // solo divisioni DIVERSE di giocatori: la prima volta che si vede una divisione è già il suo miglior modulo
-  const seenSplit = new Set<string>();
-  const distinct: Combo[] = [];
-  for (const c of allScored) {
-    const kA = [...c.tA].sort((a, b) => a - b).join(',');
-    const kB = [...c.tB].sort((a, b) => a - b).join(',');
-    const splitId = sizeA === sizeB && kB < kA ? kB + '/' + kA : kA + '/' + kB;
-    if (seenSplit.has(splitId)) continue;
-    seenSplit.add(splitId);
-    distinct.push(c);
+  for (const minSwaps of [2, 1]) {
+    for (const combo of ranked) {
+      const key = combo.tA.join(',');
+      if (seen.has(key)) continue;
+      const otherA = new Set(combo.tA);
+      if (result.some((previous) => previous.tA.filter((i) => !otherA.has(i)).length < minSwaps)) continue;
+      result.push(combo);
+      seen.add(key);
+      if (result.length === MAX_PROPOSALS) break;
+    }
+    if (result.length === MAX_PROPOSALS) break;
   }
-
-  // priorità alla media: prima le divisioni con differenza vicina alla migliore, poi le altre
-  let result: Combo[] = [];
-  if (distinct.length) {
-    const bestDiff = Math.min(...distinct.map((c) => c.diff));
-    const MARGIN = idx.length <= 10 ? 0.2 : 0.15;
-    const near = distinct.filter((c) => c.diff <= bestDiff + MARGIN).sort((a, b) => a.score - b.score);
-    const rest = distinct.filter((c) => c.diff > bestDiff + MARGIN).sort((a, b) => a.score - b.score);
-    result = [...near, ...rest].slice(0, 50);
-  }
+  result.sort(compare);
   const first = result[0];
   return { combos: result, genBest: first ? first.sA - first.sB : null, violations };
 }
