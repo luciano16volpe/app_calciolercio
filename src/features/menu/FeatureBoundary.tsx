@@ -1,6 +1,7 @@
 import { LoadingIndicator } from '../../app/LoadingIndicator';
 import type { ReactNode } from 'react';
 import { useAuth } from '../../app/auth';
+import { PREMIUM_HOW, PremiumNote } from '../../app/premium';
 import { Sheet } from '../../app/Sheet';
 import { useFeatures, type Feature } from '../../data/features';
 
@@ -10,6 +11,6 @@ export function FeatureBoundary({ feature, onClose, children }: { feature: Featu
   const entry = features.data?.find((f) => f.feature === feature);
   if (entry?.allowed) return children;
   return <Sheet title="Funzionalità" onClose={onClose} swipeBack>
-    <div className="card">{features.isPending ? <LoadingIndicator /> : features.isError ? 'Impossibile verificare l’accesso. Riprova.' : entry?.mode === 'premium' ? 'Questa funzione è riservata agli utenti Premium.' : 'Funzionalità non disponibile.'}</div>
+    <div className="card">{features.isPending ? <LoadingIndicator /> : features.isError ? 'Impossibile verificare l’accesso. Riprova.' : entry?.mode === 'premium' ? <PremiumNote>Questa funzione è riservata agli utenti Premium. {PREMIUM_HOW}</PremiumNote> : 'Funzionalità non disponibile.'}</div>
   </Sheet>;
 }

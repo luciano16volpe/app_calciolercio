@@ -1,3 +1,4 @@
+import { PremiumBadge, usePremiumExplain } from '../../app/premium';
 import type { ReactNode } from 'react';
 import { AdminIcon } from './AdminIcon';
 // Menu laterale (☰): intestazione con ruolo, Le mie leghe, Redazione, Gestione, Piattaforma, App.
@@ -21,12 +22,13 @@ const ROLE_LABEL = { admin: 'Admin', redazione: 'Redazione', member: 'Membro' } 
 
 const initials = (s: string) => s.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((w) => (w[0] ?? '').toUpperCase()).join('') || '?';
 
-function Item({ icon, title, sub, badge, hot, onClick, id }: { icon: ReactNode; title: string; sub?: string; badge?: number | string; hot?: boolean; onClick: () => void; id?: string }) {
+function Item({ icon, title, sub, badge, hot, premium, onClick, id }: { icon: ReactNode; title: string; sub?: string; badge?: number | string; hot?: boolean; /** funzione Premium non attiva: mostra l'etichetta dorata */ premium?: boolean; onClick: () => void; id?: string }) {
   return (
     <button type="button" className="menu-it" onClick={onClick} id={id}>
       <span className="i">{icon}</span>
       <span className="t">{title}{sub ? <div className="s">{sub}</div> : null}</span>
       {badge !== undefined && badge !== 0 ? <span className={`menu-bd${hot ? '' : ' n'}`}>{badge}</span> : null}
+      {premium ? <PremiumBadge /> : null}
       <span style={{ color: 'var(--text3)' }}>›</span>
     </button>
   );
@@ -43,7 +45,8 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
   const { user, signOut } = useAuth();
   const toast = useToast();
   const lid = data?.league.id;
-  const { role, isAdmin, isPremiumAdmin, canEditText } = useRole(lid);
+  const { role, isAdmin, isPremiumAdmin, canEditText, ready } = useRole(lid);
+  const explainPremium = usePremiumExplain();
   const isOwner = !!user && !!data && data.league.owner_id === user.id;
   const leagues = useMyLeagues(user?.id ?? null);
   const superQ = useIsSuperAdmin(user?.id ?? null);
@@ -152,6 +155,7 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
             {user ? (
               <>
                 {!isSuper && premium.data?.active ? <button type="button" className="menu-lgrow add" id="menu-create" onClick={() => open('create-league')}><span className="menu-lgic">＋</span><span className="menu-lgn">{isSuper ? 'Crea nuova lega' : 'Richiedi nuova lega'}</span></button> : null}
+                {!isSuper && premium.data && !premium.data.active ? <button type="button" className="menu-lgrow add" id="menu-create-locked" onClick={() => explainPremium('Richiedere una nuova lega')}><span className="menu-lgic">＋</span><span className="menu-lgn">Richiedi nuova lega</span><PremiumBadge /></button> : null}
                 <button type="button" className="menu-lgrow add" id="menu-join" onClick={() => open('join-league')}><span className="menu-lgic">🔑</span><span className="menu-lgn">Entra con un codice</span></button>
               </>
             ) : null}
@@ -178,6 +182,7 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
               <Item icon="🗂️" title="Partite senza pagelle" sub={pending.length ? `${pending.length} da scrivere o saltare` : 'tutto scritto'} onClick={() => open('pending')} id="menu-pending" />
               {!isSuper ? <Item icon="🎮" title="Regole di gioco" sub="formazioni, forma, pesi (sola lettura)" onClick={() => open('game-settings')} id="menu-game-settings" /> : null}
               {isPremiumAdmin || isSuper ? <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" onClick={() => open('league-settings')} id="menu-league-settings" /> : null}
+              {ready && !isPremiumAdmin && !isSuper ? <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" premium onClick={() => explainPremium('Le impostazioni della lega')} id="menu-league-settings-locked" /> : null}
               {cur ? (
                 <div className="menu-code">Codice d'invito <b id="menu-code">{cur.inviteCode}</b><button type="button" onClick={() => void copy(cur.inviteCode)}>Copia</button></div>
               ) : null}

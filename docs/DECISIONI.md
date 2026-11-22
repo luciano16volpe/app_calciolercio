@@ -212,3 +212,22 @@ Registro delle scelte fatte con l'utente durante lo sviluppo dell'app attuale. L
 - Lettura **nell'app, senza intelligenza artificiale**: 4 quadrati neri agli angoli del foglio (quello in alto a sinistra più grande, per capire come è girata la foto), raddrizzamento e conteggio delle caselle barrate. Gratis, la foto non esce dal telefono. Scartato (per ora): Claude/AI, che costa, richiede una chiave sul server e invia la foto fuori.
 - I fogli stampati prima di questa modifica (senza quadrati) non si leggono. Serve il foglio stampato dopo l'ultima modifica alle squadre: l'impaginazione dipende dal numero di giocatori (`src/domain/sheetLayout.ts`, usata sia per disegnare sia per leggere).
 - Il foglio **non ha più righe vuote** per chi arriva dopo: più spazio e caselle più grandi (5 contro 5: circa 43 unità invece di 30; 7 contro 7: circa 28). Chi non è in lista si aggiunge alla partita prima di stampare. Resta sempre posto per almeno 10 X in gol e in assist e 3 per l'autogol. Anche questo cambia l'impaginazione: i fogli stampati prima non si leggono.
+
+## Oro Premium (22 novembre 2026)
+- Scelto l'**oro classico** (proposta A) tra tre dorati mostrati in anteprima nei due temi. Scartati: oro ambra (più arancione) e oro satinato (più spento).
+- Un solo dorato, definito dalle variabili `--gold1/--gold2/--gold-text/--gold-edge/--gold-label/--gold-tint/--gold-tint-edge` in `src/styles/app.css` (tema chiaro, scuro di sistema, scuro scelto). Niente dorati scritti a mano nei componenti Premium: lo controlla `tests/premium-gold.test.ts`.
+- Sull'oro il testo è sempre **scuro** (contrasto almeno 7:1) e il pulsante ha un **bordo più scuro** del fondo (almeno 3:1 sullo sfondo): sul tema chiaro l'oro da solo si distingue poco.
+- Pezzi comuni in `src/app/premium.tsx`: etichetta `Premium`, avviso del requisito, finestra «come si attiva» al tocco. Come si attiva: lo concede l'amministratore dell'app («chiedi all'amministratore di attivarlo»).
+- Le funzioni restano **visibili a tutti**; chi non ha Premium le vede con l'etichetta dorata e al tocco riceve la spiegazione, senza eseguire l'azione.
+
+Funzioni Premium e dove si applicano i permessi (sempre nel database, il colore da solo non basta):
+| Funzione | Aspetto per chi non ha Premium | Permesso nel database (test) |
+|---|---|---|
+| ⭐ VOTA (voto ai giocatori) | pulsante oro + avviso | `submit_community_votes` (`community-vote-premium`) |
+| Scelta delle formazioni | avviso oro, formazioni visibili | `submit_formation_vote` (`formation-polls`) |
+| Confronto, Coppie, Record, Albo d'oro, Statistiche dettagliate, Stagioni precedenti (quando la modalità è Premium) | etichetta sulla casella + avviso | `my_feature_modes` (`feature-modes`, `history-access`) |
+| Scelta dei tipi di avviso (notifiche) e avviso Gazzette | avviso oro | `my_push_prefs` (`push-premium`) |
+| Gazzetta (admin) | pulsante oro «Carica la Gazzetta» | `gazzette-premium` |
+| Impostazioni della lega (admin) | riga con etichetta oro | `account-premium`, collaudo SQL Premium |
+| Richiedere una nuova lega | riga con etichetta oro | `league-requests` |
+

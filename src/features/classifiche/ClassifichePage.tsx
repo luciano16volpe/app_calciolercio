@@ -1,3 +1,4 @@
+import { PREMIUM_HOW, PremiumNote } from '../../app/premium';
 import { scrollPageToTop } from '../../app/scroll';
 // Pagina Classifiche: scelta della stagione, i quattro numeri, schede scorrevoli.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -119,7 +120,7 @@ export function ClassifichePage({ data, onOpenPlayer, active = true }: { data: L
             {statistics?.allowed ? <StatsTable
               data={data} scope={scope} filter={statsFilter} sort={statsSort} onOpenPlayer={onOpenPlayer}
               onFilter={setStatsFilter} onSort={(c: StatsCol) => setStatsSort((s) => nextStatsSort(s, c))}
-            /> : <div>Questa funzione è riservata agli utenti Premium.</div>}
+            /> : <PremiumNote title="Statistiche dettagliate · Premium">Questa funzione è riservata agli utenti Premium. {PREMIUM_HOW}</PremiumNote>}
           </div>
         </div>
       ) : null}

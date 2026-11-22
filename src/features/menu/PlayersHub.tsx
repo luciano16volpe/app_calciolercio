@@ -1,3 +1,4 @@
+import { PremiumBadge } from '../../app/premium';
 import { Sheet } from '../../app/Sheet';
 import type { Panel } from './MenuDrawer';
 import { useAuth } from '../../app/auth';
@@ -15,7 +16,7 @@ export function PlayersHub({ onClose, onOpen }: { onClose: () => void; onOpen: (
   return <Sheet title="Giocatori" onClose={onClose} id="sheet-players-hub">
     {features.isError ? <p role="alert">Impossibile caricare le funzionalità.</p> : null}
     <div className="premium-tiles">{items.filter((item) => features.data?.some((f) => f.feature === item.panel)).map((item) => <button type="button" id={`menu-${item.panel}`} key={item.panel} className={`premium-tile ${item.color}`} onClick={() => onOpen(item.panel)}>
-      <span>{item.icon}</span><b>{item.title}</b><small>{item.description}{features.data?.find((f) => f.feature === item.panel)?.mode === 'premium' ? ' · Premium' : ''}{features.data?.find((f) => f.feature === item.panel)?.mode === 'beta' ? ' · Beta' : ''}</small>
+      {features.data?.find((f) => f.feature === item.panel)?.mode === 'premium' ? <PremiumBadge /> : null}<span>{item.icon}</span><b>{item.title}</b><small>{item.description}{features.data?.find((f) => f.feature === item.panel)?.mode === 'beta' ? ' · Beta' : ''}</small>
     </button>)}</div>
   </Sheet>;
 }

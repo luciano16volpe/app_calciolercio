@@ -1,3 +1,4 @@
+import { PremiumBadge, usePremiumExplain } from '../../app/premium';
 import { MatchTextBoundary } from './MatchTextBoundary';
 // Scheda partita (in lettura; con il ✏️ per chi ha il permesso diventa modificabile): pulsanti, risultato, highlights, Gazzetta, equilibrio squadre, pagelle di ogni giocatore.
 // Modifica di voti, gol, risultato e pagelle: passo 3.7b. Importazione WhatsApp e Gazzetta: 3.7c e 3.7e.
@@ -301,6 +302,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
   const communityVote = useCommunityVoteState(matchId);
   const toast = useToast();
   const confirm = useConfirm();
+  const explainPremium = usePremiumExplain();
   const qc = useQueryClient();
   const [balanceOpen, setBalanceOpen] = useState(false);
   const [planning, setPlanning] = useState(false);
@@ -566,6 +568,11 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
                   </button>
                   {g ? <button type="button" className="btn btn-secondary btn-sm" style={{ color: 'var(--red)' }} disabled={busy} onClick={() => void dropGazzetta()}>🗑 Rimuovi</button> : null}
                   <input ref={gazInput} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void uploadGazzetta(f); }} />
+                </div>
+              ) : null}
+              {editing && !canGazzetta ? (
+                <div className="gaz-edit" style={{ display: 'flex' }}>
+                  <button type="button" className="btn btn-sm premium-locked" id="gazzetta-locked" onClick={() => explainPremium('La Gazzetta')}>📰 Carica la Gazzetta <PremiumBadge /></button>
                 </div>
               ) : null}
             </div>

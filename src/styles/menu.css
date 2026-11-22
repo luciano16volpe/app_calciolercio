@@ -16,7 +16,7 @@ html[data-theme="dark"] .menu-drawer{background:#141920}
 .menu-em{font-size:11px;opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .menu-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
 .menu-chip{font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(255,255,255,.18)}
-.menu-chip.gold{background:#f2c94c;color:#3a2a00}
+.menu-chip.gold{background:linear-gradient(135deg,var(--gold1),var(--gold2));color:var(--gold-text);border:1px solid var(--gold-edge)}
 .menu-chip.green{background:#0d2a1a;color:#2ecc70}
 .menu-prof{margin-top:10px;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.12);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;width:100%;border:none;color:#fff;cursor:pointer}
 .menu-body{flex:1;overflow-y:auto;padding:10px 10px 0;-webkit-overflow-scrolling:touch}

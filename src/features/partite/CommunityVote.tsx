@@ -185,7 +185,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
         <button type="button" className="vote-modal-close" aria-label="Chiudi votazione" autoFocus onClick={close}>✕</button>
       </div>
       <div className="vote-modal-body">
-        {!state ? <p className="vote-modal-message">Caricamento votazione…</p> : state.is_open && !state.has_premium ? <div className="vote-premium-message"><strong>⭐ Votazione Premium</strong><p>Il pulsante è visibile a tutti, ma per dare i voti serve Premium attivo. I voti che hai già inviato restano salvati.</p></div> : state.can_vote ? <>
+        {!state ? <p className="vote-modal-message">Caricamento votazione…</p> : state.is_open && !state.has_premium ? <div className="vote-premium-message"><strong>⭐ Votazione Premium</strong><p>Il pulsante è visibile a tutti, ma per dare i voti serve Premium attivo: chiedi all’amministratore di attivarlo. I voti che hai già inviato restano salvati.</p></div> : state.can_vote ? <>
           <div className="vote-modal-intro">
             <strong>Come funziona</strong>
             <p>Vota solo i giocatori che vuoi valutare: puoi lasciare gli altri senza voto. Scegli da 1 a 10 con il cursore o i pulsanti da mezzo punto.</p>

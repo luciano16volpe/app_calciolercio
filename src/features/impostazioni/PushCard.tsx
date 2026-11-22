@@ -1,4 +1,5 @@
 // Impostazioni → «Notifiche»: attivare / togliere il promemoria della mattina della partita su questo telefono.
+import { PREMIUM_HOW, PremiumBadge } from '../../app/premium';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../app/auth';
 import { useToast } from '../../app/Toast';
@@ -86,7 +87,7 @@ export function PushCard() {
             <span>Ricevi notifiche su tutti i tuoi telefoni</span>
           </label>
           {!prefs.enabled ? <p style={{ fontSize: 12 }}>Notifiche sospese per il tuo account. Puoi riattivarle qui gratuitamente.</p> : null}
-          {!customizable ? <p id="push-standard" style={{ fontSize: 12 }}>Promemoria il giorno prima e il giorno della partita, all’ora scelta. Le disattivazioni già scelte restano valide. Con Premium scegli i tipi di avviso.</p> : null}
+          {!customizable ? <div id="push-standard" className="premium-note" style={{ fontSize: 12, marginTop: 8 }}><b>Scegli i tipi di avviso <PremiumBadge /></b><p>Promemoria il giorno prima e il giorno della partita, all’ora scelta. Le disattivazioni già scelte restano valide. Con Premium scegli i tipi di avviso. {PREMIUM_HOW}</p></div> : null}
           <label style={{ display: 'block', fontSize: 13, marginTop: 10 }}>Ora dei promemoria (Italia)
             <select id="push-reminder-time" value={prefs.reminder_hour} disabled={saving || !prefs.enabled} onChange={(e) => {
               const hour=Number(e.target.value);

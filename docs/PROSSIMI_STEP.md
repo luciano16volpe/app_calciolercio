@@ -71,10 +71,10 @@ Questo documento è la checklist dei prossimi rilasci. Si affronta **un passo al
 
 ### 7. Aspetto dorato e accesso coerente per tutte le funzioni Premium
 
-- [ ] Definire un colore dorato accessibile per pulsanti, etichette e richiami Premium, coerente nei temi chiaro e scuro.
-- [ ] Fare l'elenco delle funzionalità Premium già presenti e di quelle introdotte nei passi 1–6; applicare lo stesso stile e la stessa spiegazione del requisito in tutte le schermate.
-- [ ] Lasciare le funzioni visibili a tutti. Per i non Premium, il tocco deve spiegare come attivarle senza eseguire l'azione riservata.
-- [ ] Verificare i permessi sul server o nel database per ogni funzione: il solo colore o blocco del pulsante non basta.
+- [x] Definire un colore dorato accessibile per pulsanti, etichette e richiami Premium, coerente nei temi chiaro e scuro.
+- [x] Fare l'elenco delle funzionalità Premium già presenti e di quelle introdotte nei passi 1–6; applicare lo stesso stile e la stessa spiegazione del requisito in tutte le schermate.
+- [x] Lasciare le funzioni visibili a tutti. Per i non Premium, il tocco deve spiegare come attivarle senza eseguire l'azione riservata.
+- [x] Verificare i permessi sul server o nel database per ogni funzione: il solo colore o blocco del pulsante non basta.
 - [ ] Controllare leggibilità, contrasto, navigazione da tastiera e aspetto su iPhone.
 
 **Concluso quando:** ogni funzione Premium è riconoscibile in dorato, è scopribile da tutti e può essere usata soltanto con Premium attivo.
