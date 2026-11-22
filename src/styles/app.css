@@ -809,6 +809,9 @@ input[type=file]{display:none}
 .vote-modal-footer{flex:none;padding:13px 18px 16px;border-top:1px solid var(--gray3);background:var(--gray);box-shadow:0 -8px 20px rgba(0,0,0,.06)}
 .vote-modal-footer span{display:block;margin-bottom:8px;text-align:center;font-size:12px;font-weight:800;color:var(--text2)}
 .vote-modal-footer .btn{min-height:46px;font-size:15px}
+.vote-modal-admin,.formation-poll-admin{flex:none;padding:10px 18px 14px;border-top:1px solid var(--gray3);background:var(--gray)}
+.vote-modal-admin .btn,.formation-poll-admin .btn{min-height:46px;font-size:15px}
+.vote-modal-admin small,.formation-poll-admin small{display:block;margin-top:6px;text-align:center;font-size:11px;color:var(--text2)}
 @media(max-width:420px){.vote-modal-overlay{padding:12px}.vote-modal-panel{max-height:86vh;max-height:86dvh}.vote-modal-head{padding:15px}.vote-modal-body{padding:14px}.vote-modal-footer{padding:12px 14px 15px}.vote-player-card{padding:12px}.vote-player-name{font-size:16px}}
 
 /* Scelta Premium delle formazioni: accessibile anche ai membri che non giocano. */

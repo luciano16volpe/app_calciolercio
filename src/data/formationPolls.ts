@@ -20,6 +20,10 @@ export interface FormationPollState {
   opened_at: string;
   closes_at: string;
   is_open: boolean;
+  /** solo l'admin della lega, finché il sondaggio è aperto */
+  can_close: boolean;
+  closed_early_at: string | null;
+  closed_early_by_name: string | null;
   finalized_at: string | null;
   winning_option: number | null;
   has_premium: boolean;
@@ -58,6 +62,12 @@ export function useFormationPollState(matchId: string) {
       if (error) throw error;
       return data as FormationPollState | null;
     }, staleTime: 0, refetchInterval: 30_000 });
+}
+
+/** Chiude subito il sondaggio e salva la formazione definitiva (solo admin). Un secondo tocco non fa nulla. */
+export async function closeFormationPoll(matchId: string): Promise<void> {
+  const { error } = await supabase.rpc('close_formation_poll', { p_match: matchId });
+  if (error) throw error;
 }
 
 export async function submitFormationVote(matchId: string, option: number): Promise<void> {

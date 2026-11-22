@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { releaseKeyboard, repairViewport } from '../../app/Dialogs';
+import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { useAuth } from '../../app/auth';
 import { useToast } from '../../app/Toast';
-import { formationPollListKey, formationPollStateKey, submitFormationVote, useFormationPolls, useFormationPollState, type FormationOption } from '../../data/formationPolls';
-import type { LeagueData } from '../../data/queries';
+import { closeFormationPoll, formationPollListKey, formationPollStateKey, submitFormationVote, useFormationPolls, useFormationPollState, type FormationOption } from '../../data/formationPolls';
+import { LEAGUE_HISTORY_QUERY_KEY, LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { distribLabel, goalsLabel } from '../../domain/balancing';
 import { formatDate } from '../../domain/format';
 
@@ -64,6 +64,8 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
   const toast = useToast();
   const [selection, setSelection] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const confirm = useConfirm();
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') { releaseKeyboard(); onClose(); repairViewport(); } };
     document.addEventListener('keydown', onKey);
@@ -74,6 +76,21 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
   const chosen = selection ?? state?.my_vote ?? null;
   const canVote = !!state?.is_open && !!state.has_premium;
   const close = () => { releaseKeyboard(); onClose(); repairViewport(); };
+  // chiusura anticipata (solo admin, anche se non è Premium): sceglie subito la formazione definitiva
+  const closePoll = async () => {
+    if (closing) return;
+    const ok = await confirm({ icon: '🔒', title: 'Chiudere il sondaggio?', lines: ['Si sceglie subito la formazione più votata. Con un pareggio o senza voti resta quella che hai pubblicato.', 'Non si può annullare.'], okLabel: 'Chiudi sondaggio', danger: true });
+    if (!ok) return;
+    setClosing(true);
+    try {
+      await closeFormationPoll(matchId);
+      await Promise.all([qc.invalidateQueries({ queryKey: formationPollStateKey(matchId, user?.id) }),
+        qc.invalidateQueries({ queryKey: formationPollListKey(data.league.id, user?.id) }),
+        qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY }), qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY })]);
+      toast('Sondaggio chiuso: squadre definitive salvate');
+      close();
+    } catch (error) { toast('Errore: ' + (error as Error).message); setClosing(false); }
+  };
   const save = async () => {
     if (!canVote || chosen === null) return;
     setBusy(true);
@@ -94,11 +111,16 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
         {poll.isError ? <p role="alert">Impossibile caricare le formazioni. Riprova.</p> : poll.isSuccess && !state ? <p>Sondaggio non disponibile.</p> : !state ? <p>Caricamento formazioni…</p> : <>
           {!state.has_premium ? <div className="formation-premium-note"><b>Funzione Premium</b><p>Puoi vedere tutte le formazioni. Per scegliere serve Premium attivo.</p></div> : null}
           {state.is_open && state.my_vote ? <p className="formation-my-vote">Hai scelto la formazione {state.my_vote}. Puoi cambiare idea prima della chiusura.</p> : null}
-          {!state.is_open ? <p className="formation-my-vote">{state.winning_option ? `Formazione definitiva: ${state.winning_option}.` : 'La scelta finale sarà pubblicata a breve.'}</p> : null}
+          {!state.is_open ? <p className="formation-my-vote">{state.winning_option ? `Formazione definitiva: ${state.winning_option}.` : 'La scelta finale sarà pubblicata a breve.'}{state.closed_early_at ? ` Chiuso in anticipo${state.closed_early_by_name ? ` da ${state.closed_early_by_name}` : ''}.` : ''}</p> : null}
           {state.options.map((option) => <OptionCard key={option.option_no} option={option} names={names}
             chosen={chosen === option.option_no} onChoose={() => setSelection(option.option_no)} canVote={canVote} />)}
         </>}
       </div>
+      {state?.can_close ? <footer className="formation-poll-footer formation-poll-admin">
+        <button type="button" id="formation-poll-close" className="btn btn-danger btn-full" disabled={closing || busy} onClick={() => void closePoll()}>
+          {closing ? 'Chiusura…' : '🔒 Chiudi votazione'}</button>
+        <small>Solo per l’admin. Altrimenti si chiude da sola il {deadline(state.closes_at)}.</small>
+      </footer> : null}
       {canVote ? <footer className="formation-poll-footer"><button type="button" className="btn btn-primary btn-full" disabled={busy || chosen === null} onClick={() => void save()}>
         {busy ? 'Salvataggio…' : chosen === null ? 'Scegli una formazione' : `Conferma la formazione ${chosen}`}</button></footer> : null}
     </div>

@@ -61,10 +61,10 @@ Questo documento è la checklist dei prossimi rilasci. Si affronta **un passo al
 
 ### 6. Chiusura anticipata dei due sondaggi da parte dell'admin
 
-- [ ] Aggiungere **Chiudi votazione** nella modale dei voti ai giocatori e nella modale delle formazioni. L'admin deve poter raggiungere il comando anche se non può votare personalmente.
-- [ ] Permettere la chiusura automatica dopo 24 ore oppure quella anticipata da parte dell'admin, registrando chi e quando ha chiuso.
-- [ ] Eseguire la finalizzazione in modo atomico: dopo la chiusura nessuno può più cambiare voto e il risultato viene pubblicato una sola volta.
-- [ ] Attivare le notifiche dei passi 2 e 5 anche in caso di chiusura anticipata, senza duplicati.
+- [x] Aggiungere **Chiudi votazione** nella modale dei voti ai giocatori e nella modale delle formazioni. L'admin deve poter raggiungere il comando anche se non può votare personalmente.
+- [x] Permettere la chiusura automatica dopo 24 ore oppure quella anticipata da parte dell'admin, registrando chi e quando ha chiuso.
+- [x] Eseguire la finalizzazione in modo atomico: dopo la chiusura nessuno può più cambiare voto e il risultato viene pubblicato una sola volta.
+- [x] Attivare le notifiche dei passi 2 e 5 anche in caso di chiusura anticipata, senza duplicati.
 - [ ] Verificare chiusure simultanee, doppio tocco, voti inviati mentre si chiude e assenza di voti.
 
 **Concluso quando:** entrambi i sondaggi danno lo stesso risultato sia alla scadenza sia con la chiusura anticipata, e solo l'admin può chiuderli prima.

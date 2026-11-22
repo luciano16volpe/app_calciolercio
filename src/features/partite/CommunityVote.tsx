@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../app/auth';
-import { releaseKeyboard, repairViewport } from '../../app/Dialogs';
+import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { useToast } from '../../app/Toast';
-import { communityVoteKey, communityVoteProgressKey, enableCommunityVoting, fetchCommunityVoteDetails, submitCommunityVotes, useCommunityVoteProgress, useCommunityVoteState, type CommunityVoteDetail, type CommunityVoteState } from '../../data/communityVotes';
-import { LEAGUE_HISTORY_QUERY_KEY } from '../../data/queries';
+import { closeCommunityVoting, communityVoteKey, communityVoteProgressKey, enableCommunityVoting, fetchCommunityVoteDetails, submitCommunityVotes, useCommunityVoteProgress, useCommunityVoteState, type CommunityVoteDetail, type CommunityVoteState } from '../../data/communityVotes';
+import { LEAGUE_HISTORY_QUERY_KEY, LEAGUE_QUERY_KEY } from '../../data/queries';
 import { formatDate } from '../../domain/format';
 import { normalizeTeam } from '../../domain/stats';
 import type { Match } from '../../domain/types';
@@ -107,6 +107,8 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState<Record<string, number>>({});
+  const [closing, setClosing] = useState(false);
+  const confirm = useConfirm();
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -131,6 +133,25 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
   const close = () => { releaseKeyboard(); onClose(); repairViewport(); };
   const setRating = (playerId: string, rating: number) => {
     setDraft((previous) => ({ ...previous, [playerId]: Math.max(1, Math.min(10, rating)) }));
+  };
+  // chiusura anticipata (solo admin, anche se non ha giocato o non è Premium): pubblica subito le medie
+  const closeVoting = async () => {
+    if (closing) return;
+    const ok = await confirm({ icon: '🔒', title: 'Chiudere la votazione?', lines: ['Nessuno potrà più cambiare i voti e le medie saranno pubblicate subito.', 'Non si può annullare.'], okLabel: 'Chiudi votazione', danger: true });
+    if (!ok) return;
+    setClosing(true);
+    try {
+      await closeCommunityVoting(match.id);
+      void qc.invalidateQueries({ queryKey: communityVoteKey(match.id, user?.id) });
+      void qc.invalidateQueries({ queryKey: communityVoteProgressKey(match.id, user?.id) });
+      void qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
+      void qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      toast('Votazione chiusa: medie pubblicate');
+      close();
+    } catch (error) {
+      toast('Errore: ' + (error as Error).message);
+      setClosing(false);
+    }
   };
   const save = async () => {
     if (!state?.can_vote) return;
@@ -197,13 +218,19 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
               })}
             </div>
           </section> : null)}
-        </> : <p className="vote-modal-message">{state.is_open ? 'Può votare solo chi ha partecipato alla partita.' : 'La votazione non è disponibile per questa partita.'}</p>}
+        </> : <p className="vote-modal-message">{state.is_open ? 'Può votare solo chi ha partecipato alla partita.' : state.closed_early_at ? `La votazione è stata chiusa in anticipo${state.closed_early_by_name ? ` da ${state.closed_early_by_name}` : ''}.` : state.finalized ? 'La votazione è chiusa: le medie sono pubblicate.' : 'La votazione non è disponibile per questa partita.'}</p>}
       </div>
       {state?.can_vote && state.has_premium ? <div className="vote-modal-footer">
         <span>{savedCount ? `${savedCount} ${savedCount === 1 ? 'voto già salvato' : 'voti già salvati'}` : 'Nessun voto salvato'}{changedCount ? ` · ${changedCount} da salvare` : ''}</span>
         <button type="button" className="btn btn-primary btn-full" disabled={busy || !changedCount} onClick={() => void save()}>
           {busy ? 'Salvataggio…' : changedCount ? `Salva ${changedCount} ${changedCount === 1 ? 'voto' : 'voti'}` : 'Scegli un voto per iniziare'}
         </button>
+      </div> : null}
+      {state?.can_close ? <div className="vote-modal-admin">
+        <button type="button" id="community-vote-close" className="btn btn-danger btn-full" disabled={closing || busy} onClick={() => void closeVoting()}>
+          {closing ? 'Chiusura…' : '🔒 Chiudi votazione'}
+        </button>
+        <small>Solo per l’admin. Altrimenti si chiude da sola il {until}.</small>
       </div> : null}
     </div>
   </div>;

@@ -153,6 +153,8 @@ export function describeRow(row: AuditRow): string[] {
     case 'players.unlink': return [`${label} è stato scollegato dal suo account`];
     case 'players.merge': return [`ha unito i giocatori ${label}`];
 
+    case 'community_votes.close_early': return [`ha chiuso in anticipo la votazione dei giocatori della ${label}`];
+    case 'formation_polls.close_early': return [`ha chiuso in anticipo la scelta delle formazioni della ${label}`];
     case 'matches.insert': return [`ha creato la ${label}`];
     case 'matches.delete': return [`ha eliminato la ${label}`];
     case 'matches.update': {

@@ -10,6 +10,10 @@ export interface CommunityVoteState {
   open_until: string | null;
   can_activate: boolean;
   can_vote: boolean;
+  /** solo l'admin della lega, finché la votazione è aperta */
+  can_close: boolean;
+  closed_early_at: string | null;
+  closed_early_by_name: string | null;
   has_premium: boolean;
   my_player_id: string | null;
   my_votes: Record<string, number>;
@@ -62,6 +66,12 @@ export function useCommunityVoteProgress(matchId: string, isOpen: boolean) {
 
 export async function enableCommunityVoting(matchId: string) {
   const { error } = await supabase.rpc('enable_community_voting', { p_match: matchId });
+  if (error) throw error;
+}
+
+/** Chiude subito la votazione e pubblica le medie (solo admin). Un secondo tocco non fa nulla. */
+export async function closeCommunityVoting(matchId: string) {
+  const { error } = await supabase.rpc('close_community_voting', { p_match: matchId });
   if (error) throw error;
 }
 
