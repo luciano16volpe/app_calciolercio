@@ -85,7 +85,7 @@ export function CommunityVoteControls({ match, state, canEdit, userId }: {
   return <section style={{ border: '1px solid var(--gray3)', borderRadius: 'var(--radius-sm)', padding: 12, margin: '12px 0' }}>
     <strong>⭐ Voto dei partecipanti</strong>
     {!state.enabled && state.can_activate && hasScore ? <>
-      <p style={{ fontSize: 12, color: 'var(--text2)' }}>Manca il pagellista? Apri il voto per questa partita. Chi ha giocato, incluso l'admin se ha partecipato, potrà votare gli altri per 24 ore da quando lo attivi.</p>
+      <p style={{ fontSize: 12, color: 'var(--text2)' }}>Manca il pagellista? Apri il voto per questa partita. Chi ha giocato e ha Premium attivo, incluso l'admin se ha partecipato, potrà votare gli altri per 24 ore da quando lo attivi.</p>
       <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => void activate()}>Attiva il voto</button>
     </> : null}
     {state.enabled ? <p style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 8 }}>
@@ -133,6 +133,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
     setDraft((previous) => ({ ...previous, [playerId]: Math.max(1, Math.min(10, rating)) }));
   };
   const save = async () => {
+    if (!state?.can_vote) return;
     const votes = Object.entries(draft).filter(([, rating]) => Number.isFinite(rating))
       .map(([player_id, rating]) => ({ player_id, rating }));
     if (!votes.length) return;
@@ -163,7 +164,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
         <button type="button" className="vote-modal-close" aria-label="Chiudi votazione" autoFocus onClick={close}>✕</button>
       </div>
       <div className="vote-modal-body">
-        {!state ? <p className="vote-modal-message">Caricamento votazione…</p> : state.can_vote ? <>
+        {!state ? <p className="vote-modal-message">Caricamento votazione…</p> : state.is_open && !state.has_premium ? <div className="vote-premium-message"><strong>⭐ Votazione Premium</strong><p>Il pulsante è visibile a tutti, ma per dare i voti serve Premium attivo. I voti che hai già inviato restano salvati.</p></div> : state.can_vote ? <>
           <div className="vote-modal-intro">
             <strong>Come funziona</strong>
             <p>Vota solo i giocatori che vuoi valutare: puoi lasciare gli altri senza voto. Scegli da 1 a 10 con il cursore o i pulsanti da mezzo punto.</p>
@@ -196,9 +197,9 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
               })}
             </div>
           </section> : null)}
-        </> : <p className="vote-modal-message">La votazione non è disponibile per questa partita.</p>}
+        </> : <p className="vote-modal-message">{state.is_open ? 'Può votare solo chi ha partecipato alla partita.' : 'La votazione non è disponibile per questa partita.'}</p>}
       </div>
-      {state?.can_vote ? <div className="vote-modal-footer">
+      {state?.can_vote && state.has_premium ? <div className="vote-modal-footer">
         <span>{savedCount ? `${savedCount} ${savedCount === 1 ? 'voto già salvato' : 'voti già salvati'}` : 'Nessun voto salvato'}{changedCount ? ` · ${changedCount} da salvare` : ''}</span>
         <button type="button" className="btn btn-primary btn-full" disabled={busy || !changedCount} onClick={() => void save()}>
           {busy ? 'Salvataggio…' : changedCount ? `Salva ${changedCount} ${changedCount === 1 ? 'voto' : 'voti'}` : 'Scegli un voto per iniziare'}

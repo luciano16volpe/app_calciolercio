@@ -540,6 +540,9 @@ html[data-theme="dark"] .conv-item{background:#1e232e}
 .btn-full{width:100%}
 .btn-sm{padding:8px 14px;font-size:12px;min-height:38px}
 .mbar-btn{padding:8px 6px;gap:3px}
+.premium-vote-btn{background:linear-gradient(135deg,#f8db80,#c99422);border:1px solid #ab7714;color:#392706;font-weight:900;box-shadow:0 2px 8px rgba(143,99,12,.22)}
+.premium-vote-btn:hover{background:linear-gradient(135deg,#ffe9a3,#dba52c);color:#392706}
+.premium-vote-btn span{font-size:10px;font-weight:800;letter-spacing:.02em}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap}
 
 /* ─── pitch ─── */
@@ -772,6 +775,8 @@ input[type=file]{display:none}
 .vote-modal-close:focus-visible,.vote-adjust:focus-visible,.vote-player-slider:focus-visible{outline:3px solid var(--green);outline-offset:2px}
 .vote-modal-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px 18px 18px}
 .vote-modal-message{padding:22px 4px;text-align:center;font-size:14px;color:var(--text2)}
+.vote-premium-message{margin:8px 0;padding:22px 18px;border:1px solid #c99422;border-radius:15px;background:linear-gradient(135deg,#fff5d4,#f5df9a);color:#392706;text-align:center}
+.vote-premium-message strong{font-size:18px}.vote-premium-message p{margin:8px 0 0;font-size:13px;line-height:1.5;color:#513b11}
 .vote-modal-intro{padding:12px 14px;margin-bottom:18px;border:1px solid var(--gray3);border-radius:13px;background:var(--green-light);color:var(--text2);font-size:12px;line-height:1.45}
 .vote-modal-intro strong{display:block;margin-bottom:3px;color:var(--green);font-size:13px}
 .vote-modal-intro p{font-size:13px;color:var(--text)}

@@ -10,6 +10,7 @@ export interface CommunityVoteState {
   open_until: string | null;
   can_activate: boolean;
   can_vote: boolean;
+  has_premium: boolean;
   my_player_id: string | null;
   my_votes: Record<string, number>;
 }
