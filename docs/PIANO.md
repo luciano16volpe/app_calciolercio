@@ -51,7 +51,7 @@ Tutte le modifiche al database sono **nuove migrazioni** applicate sempre allo s
 `npx supabase migration list --linked` → `npx supabase db push --linked` (il progetto vero è l'unico ambiente: nessun progetto di prova).
 - [x] 4.0 Verifica del database: `membri.sql` mancava ed è stata applicata; storico delle migrazioni allineato (`migration repair`)
 > **Stato al 1/11 notte**: Fase 4 completata e collaudata (`docs/COLLAUDO.md`). Migrazioni applicate fino a `20261108000100`. Restano le decisioni segnalate nel collaudo,
-> la riga SQL dell'amministratore supremo e la prova su telefono vero; poi Fase 5 (`docs/passaggio/PIANO_PASSAGGIO.md`).
+> la riga SQL dell'amministratore supremo e la prova su telefono vero; poi Fase 5 (conclusa: vedi sotto).
 - [x] 4.5 Menu laterale e leghe — `docs/specifiche/menu-e-leghe.md`
   - [x] ☰ in alto a sinistra, pillola con la lega attiva, menu a sezioni per ruolo (Le mie leghe · Redazione · Gestione · Piattaforma · App)
   - [x] "Le mie leghe" spostata da Impostazioni al menu; crea lega (nome, visibilità, formato, giorno), codice d'invito condivisibile, entra con codice
@@ -71,8 +71,10 @@ Tutte le modifiche al database sono **nuove migrazioni** applicate sempre allo s
   - [x] Informativa privacy (comprese le righe sul registro attività) in menu → Privacy e all'avviso di registrazione
   - [x] Cancellazione dell'account: il giocatore e il suo storico restano senza account collegato; nel registro compare "utente cancellato"
 - [x] 4.9 Collaudo finale — `.claude/commands/collaudo-finale.md`: matrice dei permessi per ruolo, scenario completo, test esistenti verdi,
-      `docs/COLLAUDO.md`, piano del passaggio in `docs/passaggio/PIANO_PASSAGGIO.md`
+      `docs/COLLAUDO.md`, piano del passaggio in `docs/passaggio/PIANO_PASSAGGIO.md` (obsoleto: passaggio concluso)
 
 ## Fase 5 — Passaggio
-- [ ] Ultima importazione, prova con gli amici sull'indirizzo nuovo, pagina di trasferimento sul
-      vecchio repository (già pronta: vedi chat), spegnimento dello script Google
+- [x] **Concluso** (22 novembre 2026): la vecchia app è stata cancellata e spenta su GitHub Pages; questa app è in uso online da qualche settimana.
+      Ultima importazione, prova con gli amici, pagina di trasferimento e spegnimento dello script Google non servono più.
+      Il piano `docs/passaggio/PIANO_PASSAGGIO.md` è obsoleto e resta solo come storico.
+- I nuovi sviluppi si seguono da `docs/PROSSIMI_STEP.md`.
