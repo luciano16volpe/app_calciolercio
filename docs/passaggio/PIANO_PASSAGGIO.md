@@ -1,3 +1,5 @@
+> **OBSOLETO (22 novembre 2026).** Il passaggio è concluso: la vecchia app è stata cancellata e spenta su GitHub Pages, e questa app è in uso online da qualche settimana. Non eseguire nessun passo di questo piano; resta solo come storico.
+
 # Piano del passaggio (Fase 5) — solo preparazione, da non eseguire senza il tuo via
 
 Indirizzo definitivo dell'app: https://calciolercio.vercel.app

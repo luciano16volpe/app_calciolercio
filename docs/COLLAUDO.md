@@ -99,4 +99,5 @@ Sviluppo successivo al rilascio `145dd2a`. Notifiche Standard per tutti; Premium
 3. Richiesta di lega: approvazione/rifiuto e scadenza del richiedente prima della decisione.
 4. Cambio modalità su una sessione aperta: lo storico non deve restare accessibile tramite cache dopo una revoca.
 5. Telefoni fisici: installazione e aggiornamento PWA, push, foto/miniature, tema scuro, swipe e larghezza 412 px.
-6. Seguire `docs/passaggio/PIANO_PASSAGGIO.md` solo con il via al passaggio. Backup, inviti e modifica del vecchio sito restano azioni distinte.
+6. ~~Seguire `docs/passaggio/PIANO_PASSAGGIO.md`~~ **Obsoleto**: il passaggio è concluso (vecchia app spenta, app nuova in uso).  
+   _Testo originale:_ solo con il via al passaggio. Backup, inviti e modifica del vecchio sito restano azioni distinte.
