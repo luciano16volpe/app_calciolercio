@@ -93,6 +93,14 @@ describe('notifiche degli eventi', () => {
     expect(message.tag).toBe('community-vote-published-m1');
   });
 
+  it('squadre definitive: mostra data, ora, squadra e apre la partita', () => {
+    const message = buildMessage(ev({ kind: 'formation_published' }));
+    expect(message.body).toContain('Squadre definitive pubblicate: 28/10 · 21:00 · Campo Sole');
+    expect(message.body).toContain('Giochi con i Blu');
+    expect(message.url).toBe('/l/san-marcello/partite?match=m1');
+    expect(message.tag).toBe('formation-published-m1');
+  });
+
   it('il promemoria passa dallo stesso punto', () => {
     expect(buildMessage(ev({ kind: 'reminder' })).body).toContain('Il 28/10 si gioca');
   });

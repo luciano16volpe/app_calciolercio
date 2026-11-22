@@ -52,10 +52,10 @@ Questo documento è la checklist dei prossimi rilasci. Si affronta **un passo al
 
 ### 5. Notifica ai convocati dopo la scelta delle squadre
 
-- [ ] Inviare ai soli giocatori convocati una push quando il sondaggio delle formazioni termina e la scelta finale è salvata.
-- [ ] Inserire nel messaggio partita, orario e invito ad aprire le squadre definitive.
-- [ ] Evitare duplicati e coordinare l'avviso con le notifiche di convocazione e di modifica della partita già esistenti.
-- [ ] Verificare destinatari convocati e non convocati, preferenze push e chiusura senza voti.
+- [x] Inviare ai soli giocatori convocati una push quando il sondaggio delle formazioni termina e la scelta finale è salvata.
+- [x] Inserire nel messaggio partita, orario e invito ad aprire le squadre definitive.
+- [x] Evitare duplicati e coordinare l'avviso con le notifiche di convocazione e di modifica della partita già esistenti.
+- [x] Verificare destinatari convocati e non convocati, preferenze push e chiusura senza voti.
 
 **Concluso quando:** ciascun convocato abilitato riceve un solo avviso relativo alle squadre definitive e gli altri membri non lo ricevono.
 
