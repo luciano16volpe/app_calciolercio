@@ -3,12 +3,14 @@ import type { LeagueData } from '../../data/queries';
 import { useState } from 'react';
 import { AdBanner } from '../../app/AdBanner';
 import { GazStrip, LastMatch, MatchesList, useMyPlayerIn, type MatchActions } from './parts';
+import { FormationPollBanner } from './FormationPoll';
 
 export function PartitePage({ data, act, onArchive, active = true }: { data: LeagueData; act: MatchActions; onArchive: () => void; active?: boolean }) {
   const [showAll, setShowAll] = useState(false);
   const mine = useMyPlayerIn(data); // per i coriandoli / la pioggia sull'ultima partita, se ci ho giocato
   return (
     <div id="partite-content">
+      <FormationPollBanner data={data} onOpen={act.openFormationPoll} />
       <div id="last-match"><LastMatch data={data} act={act} mine={mine} active={active} /></div>
       <div id="gaz-strip"><GazStrip data={data} act={act} onArchive={onArchive} /></div>
       <AdBanner placement="partite-feed" />

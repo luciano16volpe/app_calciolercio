@@ -3,6 +3,8 @@ import type { RatingRow } from '../domain/matchEdit';
 import { plannedSnapshot } from '../domain/plannedMatch';
 import type { Match } from '../domain/types';
 import { supabase } from './supabase';
+import type { FormationOption } from './formationPolls';
+import type { Json } from './types';
 
 const fail = (what: string, e: { message: string }) => new Error(`${what}: ${e.message}`);
 
@@ -74,17 +76,18 @@ export interface NewMatch {
   /** squilibrio previsto alla creazione (Blu − Bianchi) e quale proposta si gioca (0 = squadre cambiate a mano) */
   pred: number;
   predRank: number;
+  formationOptions?: Array<Omit<FormationOption, 'option_no'>>;
 }
 
 /** Crea partita e squadre in una sola transazione. */
 export async function createMatch(m: NewMatch): Promise<string> {
-  const { data, error } = await supabase.rpc('create_match_with_teams', {
-    p_match: { league_id: m.leagueId, date: m.date, play_time: m.time || null,
+  const header = { league_id: m.leagueId, date: m.date, play_time: m.time || null,
       place: m.place.trim() || null, place_lat: m.placeLat ?? null, place_lng: m.placeLng ?? null, place_url: m.placeUrl ?? null, notes: m.notes || null,
       score_a: m.scoreA === '' ? null : m.scoreA, score_b: m.scoreB === '' ? null : m.scoreB,
-      pred: m.pred, pred_rank: m.predRank },
-    p_team_a: m.teamA, p_team_b: m.teamB,
-  });
+      pred: m.pred, pred_rank: m.predRank };
+  const { data, error } = m.formationOptions?.length
+    ? await supabase.rpc('create_match_with_formation_poll', { p_match: header, p_options: m.formationOptions as unknown as Json })
+    : await supabase.rpc('create_match_with_teams', { p_match: header, p_team_a: m.teamA, p_team_b: m.teamB });
   if (error || !data) throw fail('partita', error ?? { message: 'nessuna risposta' });
   return data;
 }

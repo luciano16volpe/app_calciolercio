@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { releaseKeyboard, repairViewport } from '../../app/Dialogs';
 import { useToast } from '../../app/Toast';
 import { createMatch } from '../../data/mutations';
+import { snapshotFormation } from '../../data/formationPolls';
 import { LEAGUE_HISTORY_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { goalsLabel, type Combo } from '../../domain/balancing';
 import { clampInt } from '../../domain/matchEdit';
@@ -15,10 +16,11 @@ const input = { width: '100%', padding: '9px 11px', border: '1.5px solid var(--g
 const lbl = { fontSize: 12, color: 'var(--text2)', display: 'block', marginBottom: 5 } as const;
 const score = { width: 60, padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 7, background: 'var(--gray)', color: 'var(--text)', fontSize: 16, fontWeight: 800, textAlign: 'center' } as const;
 
-export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData; combo: Combo; idx: number; onClose: () => void }) {
+export function NewMatchDialog({ data, combos, idx, onClose }: { data: LeagueData; combos: Combo[]; idx: number; onClose: () => void }) {
   const toast = useToast();
   const qc = useQueryClient();
   const players = data.dataset.players;
+  const combo = combos[idx] as Combo;
   const [date, setDate] = useState(() => new Date().toISOString().substring(0, 10));
   // ora e luogo: si propongono quelli dell'ultima partita che li ha (di solito si gioca sempre allo stesso posto)
   const last = [...data.dataset.matches].reverse().find((x) => x.place || x.time);
@@ -41,6 +43,15 @@ export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData
     setBusy(true);
     try {
       toast('⏳ Salvataggio...');
+      const seen = new Set<string>();
+      const ordered = [combo, ...combos.filter((_, i) => i !== idx)].filter((candidate) => {
+        const a = candidate.tA.map((i) => players[i]!.id).sort().join(',');
+        const b = candidate.tB.map((i) => players[i]!.id).sort().join(',');
+        const key = candidate.tA.length === candidate.tB.length && b < a ? `${b}/${a}` : `${a}/${b}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).slice(0, 10);
       await createMatch({
         leagueId: data.league.id, date, time, place: place.name.trim(), placeLat: place.lat, placeLng: place.lng, placeUrl: place.url, notes: notes.trim(),
         teamA: combo.tA.map((i) => (players[i] as { id: string }).id),
@@ -48,8 +59,11 @@ export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData
         scoreA: sa !== '' ? clampInt(sa, 0, 99, 0) : '', scoreB: sb !== '' ? clampInt(sb, 0, 99, 0) : '',
         // previsione al momento della creazione → "Precisione bilanciamento" esatta in seguito
         pred: +(combo.sA - combo.sB).toFixed(4), predRank: combo.custom ? 0 : idx + 1,
+        formationOptions: sa === '' && sb === '' ? ordered.map((candidate) => snapshotFormation(candidate, players,
+          candidate.custom ? 0 : combos.indexOf(candidate) + 1)) : undefined,
       });
       await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
+      await qc.invalidateQueries({ queryKey: ['formation-polls', data.league.id] });
       toast('Partita creata!');
       close();
     } catch (e) {
@@ -92,6 +106,7 @@ export function NewMatchDialog({ data, combo, idx, onClose }: { data: LeagueData
               <span style={{ opacity: 0.7 }}>(viene salvata per misurare la precisione)</span>
             </div>
           </div>
+          <div className="formation-publish-note">⭐ Pubblicando una partita senza risultato apri per 24 ore la scelta delle squadre a tutti i membri Premium della lega. La formazione mostrata resta quella iniziale in caso di pareggio o zero voti.</div>
           <div>
             <label style={lbl} htmlFor="nm-scoreA">⚽ Risultato (opz.)</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

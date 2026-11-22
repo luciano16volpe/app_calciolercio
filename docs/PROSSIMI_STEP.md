@@ -40,13 +40,13 @@ Questo documento è la checklist dei prossimi rilasci. Si affronta **un passo al
 
 ### 4. Sondaggio Premium per scegliere le squadre
 
-- [ ] Quando l'admin pubblica le squadre, salvare la formazione iniziale e fino a 10 alternative con tutte le **numeriche di equilibrio già mostrate nella creazione della partita**. Le opzioni devono restare uguali per tutta la votazione.
-- [ ] Aprire una finestra di 24 ore dalla pubblicazione delle squadre.
-- [ ] Consentire a **tutti i membri Premium della lega**, anche a chi non gioca quella partita, di scegliere una formazione. Una scelta per account e partita, modificabile fino alla chiusura.
-- [ ] Creare una modale dedicata con formazioni, giocatori e numeriche leggibili, raggiungibile sia da **Partite** sia da **Mio profilo**.
-- [ ] Mostrare la funzione anche ai non Premium con l'indicazione del requisito; controllare nel database chi può votare.
-- [ ] Alla chiusura, salvare la formazione vincente e aggiornare la partita una sola volta.
-- [ ] Definire prima dell'implementazione come risolvere un pareggio e cosa fare se nessuno vota. Proposta iniziale: in entrambi i casi mantenere la formazione pubblicata dall'admin.
+- [x] Quando l'admin pubblica le squadre, salvare fino a 10 formazioni totali (inclusa quella iniziale) con tutte le **numeriche di equilibrio già mostrate nella creazione della partita**. Le opzioni restano uguali per tutta la votazione.
+- [x] Aprire una finestra di 24 ore dalla pubblicazione delle squadre.
+- [x] Consentire a **tutti i membri Premium della lega**, anche a chi non gioca quella partita, di scegliere una formazione. Una scelta per account e partita, modificabile fino alla chiusura.
+- [x] Creare una modale dedicata con formazioni, giocatori e numeriche leggibili, raggiungibile sia da **Partite** sia da **Mio profilo**.
+- [x] Mostrare la funzione anche ai non Premium con l'indicazione del requisito; controllare nel database chi può votare.
+- [x] Alla chiusura, salvare la formazione vincente e aggiornare la partita una sola volta.
+- [x] In caso di pareggio o zero voti mantenere la formazione pubblicata dall'admin.
 
 **Concluso quando:** un Premium può scegliere o cambiare proposta da entrambe le schermate, un non Premium non può votare, e la formazione finale è determinata in modo verificabile.
 

@@ -34,6 +34,7 @@ const EmptyLeagueGuide = lazy(() => import('./features/menu/OtherPanels').then((
 const ShellPanels = lazy(() => import('./app/ShellPanels').then((m) => ({ default: m.ShellPanels })));
 const MatchCard = lazy(() => import('./features/partite/MatchCard').then((m) => ({ default: m.MatchCard })));
 const CommunityVoteModal = lazy(() => import('./features/partite/CommunityVote').then((m) => ({ default: m.CommunityVoteModal })));
+const FormationPollModal = lazy(() => import('./features/partite/FormationPoll').then((m) => ({ default: m.FormationPollModal })));
 const PartitePage = lazy(() => import('./features/partite/PartitePage').then((m) => ({ default: m.PartitePage })));
 const ProfiloPage = lazy(() => import('./features/profilo/ProfiloPage').then((m) => ({ default: m.ProfiloPage })));
 const GazArchive = lazy(() => import('./features/partite/parts').then((m) => ({ default: m.GazArchive })));
@@ -190,6 +191,7 @@ function Shell() {
       ) : null}
       {data && view?.kind === 'match' ? <MatchCardGate key={view.id} data={data} matchId={view.id} startText={view.text} startEdit={view.edit} onClose={close} act={act} /> : null}
       {data && view?.kind === 'vote' ? <CommunityVoteModal key={view.id} match={data.dataset.matches.find((match) => match.id === view.id)} onClose={close} /> : null}
+      {data && view?.kind === 'formationPoll' ? <FormationPollModal key={view.id} data={data} matchId={view.id} onClose={close} /> : null}
       {data && view?.kind === 'gazArchive' ? <GazArchive data={data} act={act} onClose={close} /> : null}
       {data && gazViewer ? (
         <GazViewer data={data} matchId={gazViewer.id} fromArchive={gazViewer.fromArchive} onClose={() => setGazViewer(null)} onGoToMatch={openMatch} />

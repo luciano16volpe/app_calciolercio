@@ -350,7 +350,7 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
       <button className="btn btn-primary btn-full" style={{ marginBottom: 14 }} onClick={generate}>⚽ Genera squadre bilanciate</button></div>
 
       {res && res.combos.length ? <ResultView data={data} res={res} scores={scores} onChange={setRes} onCreate={canCreate ? () => setCreating(true) : undefined} /> : null}
-      {creating && res && res.combos.length ? <NewMatchDialog data={data} combo={res.combos[res.idx] as Combo} idx={res.idx} onClose={() => setCreating(false)} /> : null}
+      {creating && res && res.combos.length ? <NewMatchDialog data={data} combos={res.combos} idx={res.idx} onClose={() => setCreating(false)} /> : null}
     </>
   );
 }

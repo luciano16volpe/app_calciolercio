@@ -19,6 +19,7 @@ import type { Match } from '../../domain/types';
 import { MyPlayerCard } from '../impostazioni/MyPlayerCard';
 import { MyProfileTools } from '../impostazioni/MyProfileTools';
 import { LastMatchCard, type MatchActions } from '../partite/parts';
+import { FormationPollBanner } from '../partite/FormationPoll';
 import { PlayerCard } from '../player/PlayerCard';
 
 const TEAM_NAME = { A: '🔵 Blu', B: '⚪ Bianchi' } as const;
@@ -156,6 +157,7 @@ export function ProfiloPage({ data, active, act }: { data: LeagueData; active: b
 
   return (
     <>
+      <FormationPollBanner data={data} onOpen={act.openFormationPoll} />
       {next && me ? <NextMatch data={data} m={next.m} team={next.team} myId={me.id} /> : null}
 
       {last && me ? <LastMatchCard data={data} m={last.m} act={act} title="🏆 La mia ultima partita" id="my-last-match" mine={{ id: me.id, name: me.name }} active={active} /> : null}

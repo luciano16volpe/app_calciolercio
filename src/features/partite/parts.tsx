@@ -32,6 +32,7 @@ const num = (v: unknown): number | null => {
 export interface MatchActions {
   openMatch: (id: string) => void;
   openMatchVote: (id: string) => void;
+  openFormationPoll: (id: string) => void;
   openMatchEdit: (id: string) => void;
   openGazzetta: (id: string, fromArchive?: boolean) => void;
   openPagelleText: (id: string) => void;

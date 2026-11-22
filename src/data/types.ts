@@ -1252,6 +1252,13 @@ export type Database = {
         Args: { p_match: Json; p_team_a: string[]; p_team_b: string[] }
         Returns: string
       }
+      create_match_with_formation_poll: {
+        Args: { p_match: Json; p_options: Json }
+        Returns: string
+      }
+      formation_poll_list: { Args: { p_league: string }; Returns: Json }
+      formation_poll_state: { Args: { p_match: string }; Returns: Json }
+      submit_formation_vote: { Args: { p_match: string; p_option: number }; Returns: undefined }
       create_player_in_league: {
         Args: { p_league: string; p_name: string }
         Returns: string
