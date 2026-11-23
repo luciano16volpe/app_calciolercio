@@ -1,4 +1,4 @@
-// Le schede in basso, solo icone (il nome è per i lettori di schermo e per il tocco lungo): Il mio profilo (la mia faccia o foto) · Classifiche · Partite · Gioca (solo amministratori) · Rosa.
+// Le schede in basso, solo icone (il nome è per i lettori di schermo e per il tocco lungo): a sinistra Il mio profilo (la mia faccia o foto) · Classifiche · Partite · Rosa; a destra, separato, Gioca (solo amministratori).
 import type { ReactNode } from 'react';
 
 export type PageName = 'profilo' | 'rosa' | 'partita' | 'partite' | 'classifiche' | 'settings';
@@ -73,20 +73,24 @@ const ITEMS: Array<{ id: Exclude<PageName, 'settings'>; label: string; icon: Rea
 export function BottomNav({ page, onGo, canPlay, me }: { page: PageName; onGo: (p: PageName) => void; canPlay: boolean; me?: { photo: string | null; initial: string } | null }) {
   return (
     <nav className="bottom-nav" aria-label="Sezioni">
-      {ITEMS.filter((it) => it.id !== 'partita' || canPlay).map((it) => (
-        <button
-          key={it.id} type="button" className={`bnav-item${page === it.id ? ' active' : ''}${it.id === 'partita' ? ' admin-only' : ''}`} aria-label={it.label} aria-current={page === it.id ? 'page' : undefined}
-          title={it.label} onClick={() => onGo(it.id)}
-        >
-          <span className="bni">
-            {it.id === 'profilo' && me ? (
-              <span className="bn-face" style={me.photo ? { backgroundImage: `url('${me.photo}')` } : undefined}>{me.photo ? '' : me.initial}</span>
-            ) : (
-              it.icon
-            )}
-          </span>
-        </button>
-      ))}
+      {[ITEMS.filter((it) => it.id !== 'partita'), ITEMS.filter((it) => it.id === 'partita' && canPlay)].map((group, g) => group.length ? (
+        <div key={g} className={`bnav-group${g === 1 ? ' bnav-group-admin' : ''}`}>
+          {group.map((it) => (
+            <button
+              key={it.id} type="button" className={`bnav-item${page === it.id ? ' active' : ''}${it.id === 'partita' ? ' admin-only' : ''}`} aria-label={it.label} aria-current={page === it.id ? 'page' : undefined}
+              title={it.label} onClick={() => onGo(it.id)}
+            >
+              <span className="bni">
+                {it.id === 'profilo' && me ? (
+                  <span className="bn-face" style={me.photo ? { backgroundImage: `url('${me.photo}')` } : undefined}>{me.photo ? '' : me.initial}</span>
+                ) : (
+                  it.icon
+                )}
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : null)}
     </nav>
   );
 }
