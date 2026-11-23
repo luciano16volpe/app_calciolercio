@@ -1,3 +1,9 @@
 tests
 e2e
 docs
+.idea
+.claude
+test-results
+test-checkpoints
+*.log
+supabase/.temp

@@ -227,7 +227,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
         </button>
       </div> : null}
       {state?.can_close ? <div className="vote-modal-admin">
-        <button type="button" id="community-vote-close" className="btn btn-danger btn-full admin-only" disabled={closing || busy} onClick={() => void closeVoting()}>
+        <button type="button" id="community-vote-close" className="btn btn-secondary btn-sm admin-close-vote admin-only" disabled={closing || busy} onClick={() => void closeVoting()}>
           {closing ? 'Chiusura…' : '🔒 Chiudi votazione'}
         </button>
         <small>Solo per l’admin. Altrimenti si chiude da sola il {until}.</small>
