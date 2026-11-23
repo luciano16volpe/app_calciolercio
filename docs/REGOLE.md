@@ -42,7 +42,7 @@ Le decisioni recenti dell'utente prevalgono sulle descrizioni delle fasi inizial
 ## 5. Stato di forma (unico in tutta l'app)
 - Media delle **ultime 2 pagelle valide** confrontata con la **media di sempre nella lega selezionata**; contano soltanto partite con risultato non future:
   ≥ +0,2 → **↗ In forma**, ≤ −0,2 → **↘ In calo**, altrimenti **→ Costante** (`FORM_DELTA=0.2`).
-- Servono almeno **4 pagelle**, l'ultima deve essere tra le **5 partite giocate più recenti della lega** e **non più vecchia di un mese** da oggi
+- Servono almeno **4 pagelle**, le **ultime 2 pagelle** devono essere entrambe di una delle **4 partite giocate più recenti della lega** (chi gioca di rado, meno di 2 delle ultime 4, non ha stato: `FORM_RECENT_MATCHES`) e **non più vecchia di un mese** da oggi
   (aggiunto a novembre 2026: dopo una pausa lunga ON FIRE / IN CRISI non valgono); altrimenti nessuno stato (`formState`).
 - **🔥 ON FIRE** = In forma (`onFire`). **🌧️ IN CRISI** = In calo (`inCrisi`).
 - Il risultato usa sempre lo storico della lega, anche nel profilo dove le pagelle mostrate seguono la stagione o le ultime cinque partite.

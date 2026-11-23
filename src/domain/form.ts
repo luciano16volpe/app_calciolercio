@@ -8,6 +8,7 @@ export const FORM_MIN_RATINGS = 2;
 export const FORM_FULL_RATINGS = 18;
 export const FORM_DELTA = 0.2; // ± margine sulla media di sempre
 export const FORM_WINDOW = 2; // quante ultime pagelle (consecutive) si confrontano con la media di sempre
+export const FORM_RECENT_MATCHES = 4; // le pagelle confrontate devono essere tutte di una delle ultime 4 partite della lega
 
 /** Peso della media pagelle: 0 fino a 2 pagelle, poi cresce in linea retta fino al 25% con 18 o più. */
 export function formWeight(count: number): number {
@@ -65,10 +66,11 @@ export function formState(data: Dataset, p: Player, all = seasonStats(data), tod
   const eligible = validRatings.length === data.ratings.length ? all : seasonStats({ ...data, matches: played, ratings: validRatings });
   const a = playerSeason(data, p, eligible);
   if (!a || a.votes.length < 4) return null;
-  const recent = played.slice().sort((a, b) => (a.date ?? '').localeCompare(b.date ?? '') || a.id.localeCompare(b.id)).slice(-5);
+  const recent = played.slice().sort((a, b) => (a.date ?? '').localeCompare(b.date ?? '') || a.id.localeCompare(b.id)).slice(-FORM_RECENT_MATCHES);
   const votes = a.votes.slice().sort((a, b) => a.date.localeCompare(b.date) || a.matchId.localeCompare(b.matchId));
   const last = votes[votes.length - 1]!;
-  if (!recent.some((m) => m.id === last.matchId)) return null;
+  const recentIds = new Set(recent.map((m) => m.id));
+  if (!votes.slice(-FORM_WINDOW).every((v) => recentIds.has(v.matchId))) return null;
   if (last.date < oneMonthBefore(today)) return null;
   const d = votes.slice(-FORM_WINDOW).reduce((s, x) => s + x.v, 0) / FORM_WINDOW - (a.voteAvg as number);
   return d >= FORM_DELTA - 1e-9 ? 'up' : d <= -FORM_DELTA + 1e-9 ? 'down' : 'flat';

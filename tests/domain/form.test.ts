@@ -59,3 +59,22 @@ describe('stato di forma: dopo più di un mese dall\'ultima pagella non vale', (
     expect(formState(ds, player as never, all, '2026-11-06')).toBeNull(); // un giorno in più: non vale
   });
 });
+
+describe('stato di forma: chi gioca di rado non ha stato', () => {
+  const player = { id: 'p', name: 'P', roles: ['MED'], stats: Array(11).fill(6) };
+  /** 10 partite della lega; il giocatore ha pagella solo nelle partite indicate (1 = la più vecchia). */
+  const rated = (at: Array<[number, number]>) => {
+    const matches = Array.from({ length: 10 }, (_, i) => ({ id: `m${i + 1}`, date: `2026-11-${String(i + 1).padStart(2, '0')}`, teamA: [{ id: 'p', name: 'P' }], teamB: [], scoreA: 5, scoreB: 3 }));
+    const ratings = at.map(([m, v]) => ({ matchId: `m${m}`, player: 'P', playerId: 'p', rating: v }));
+    const ds = { players: [player], matches, ratings } as unknown as Dataset;
+    return formState(ds, player as never, seasonStats(ds), '2026-11-12');
+  };
+  it('una pagella ogni 4 partite → nessuno stato, anche con voti molto diversi dalla media', () => {
+    expect(rated([[2, 6], [4, 6], [6, 6], [10, 9]])).toBeNull(); // 1 sola pagella nelle ultime 4 partite
+    expect(rated([[2, 6], [3, 6], [6, 5], [10, 9]])).toBeNull();
+  });
+  it('2 pagelle nelle ultime 4 partite → lo stato c\'è', () => {
+    expect(rated([[1, 6], [2, 6], [3, 6], [9, 8], [10, 9]])).toBe('up');
+    expect(rated([[1, 7], [2, 7], [3, 7], [8, 4], [10, 5]])).toBe('down');
+  });
+});
