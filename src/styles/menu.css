@@ -37,9 +37,6 @@ html[data-theme="dark"] .menu-drawer{background:#141920}
 .menu-it .s{font-size:11px;color:var(--text3)}
 .menu-bd{min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--red);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
 .menu-bd.n{background:var(--gray3);color:var(--text)}
-.menu-code{display:flex;align-items:center;gap:8px;margin:2px 6px 4px 41px;font-size:12px;color:var(--text2)}
-.menu-code b{font-family:ui-monospace,Menlo,monospace;color:var(--text);letter-spacing:1px;background:var(--gray2);padding:3px 7px;border-radius:6px}
-.menu-code button{color:var(--green);font-weight:800;background:none;border:none;cursor:pointer;font-size:12px}
 .menu-foot{padding:10px 16px calc(14px + env(safe-area-inset-bottom,0px));font-size:10px;color:var(--text3);border-top:1px solid var(--gray2);flex-shrink:0}
 /* niente blocco dello scroll con overflow:hidden su html/body: su iPhone sposta il footer fisso a metà schermo. Lo scuro non fa scorrere la pagina (touch-action) e il menu non trasmette lo scroll (overscroll-behavior) */
 /* pannelli a tutto schermo e "Crea nuova lega" */

@@ -148,7 +148,7 @@ test('Menu: l\'amministratore Premium (non creatore) vede la Gestione ma non le 
   await openApp(page, '/l/lega-di-prova/rosa', 0);
   await openMenu(page);
   await expect(page.locator('#menu-league-settings')).toBeVisible();
-  await expect(page.locator('#menu-code')).toHaveText('abc12345');
+  await expect(page.locator('#menu-code')).toHaveCount(0);
   await page.locator('#menu-league-admin').click();
   for (const id of ['#menu-members', '#menu-invites', '#menu-claims', '#menu-merge']) await expect(page.locator(id)).toBeVisible();
   await expect(page.locator('#menu-proposals')).toHaveCount(0);

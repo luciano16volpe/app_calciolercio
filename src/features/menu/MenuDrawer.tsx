@@ -7,7 +7,6 @@ import { AdminIcon } from './AdminIcon';
 import { useEffect, useRef } from 'react';
 import { useAuth, useRole } from '../../app/auth';
 import { setSelectedLeague } from '../../app/league';
-import { useToast } from '../../app/Toast';
 import { photoUrl, type LeagueData } from '../../data/queries';
 import { useMyPlayer, usePendingClaims } from '../../data/claims';
 import { useAdminRequests, useMyLeagues, useIsSuperAdmin } from '../../data/leagues';
@@ -43,7 +42,6 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
   onGoSettings: () => void;
 }) {
   const { user, signOut } = useAuth();
-  const toast = useToast();
   const lid = data?.league.id;
   const { role, isAdmin, isPremiumAdmin, canEditText, ready } = useRole(lid);
   const explainPremium = usePremiumExplain();
@@ -71,7 +69,6 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
   }, [onClose]);
 
   const list = leagues.data ?? [];
-  const cur = list.find((l) => l.id === lid);
   const name = (user?.user_metadata?.display_name as string | undefined) || user?.email?.split('@')[0] || '';
   const pending = data ? pendingRatings(data.dataset) : []; // escluse le partite «saltate»
   // la foto del mio giocatore (se ne ho una), per il cerchio in alto nel menu
@@ -79,14 +76,6 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
   const myPhoto = data && mine.data?.linked ? photoUrl(data.photos[mine.data.linked.id]) : null;
   // il menu resta sotto il pannello: allo swipe indietro si vede subito il menu, non la pagina
   const open = (p: Panel) => onOpenPanel(p);
-  const copy = async (code: string) => {
-    try {
-      await navigator.clipboard.writeText(code);
-      toast('Codice copiato');
-    } catch {
-      toast(`Codice: ${code}`);
-    }
-  };
   const roleChips = (
     <>
       {isSuper ? <span className="menu-chip gold">👑 Amministratore supremo</span> : null}
@@ -183,9 +172,6 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
               {!isSuper ? <Item icon="🎮" title="Regole di gioco" sub="formazioni, forma, pesi (sola lettura)" onClick={() => open('game-settings')} id="menu-game-settings" admin /> : null}
               {isPremiumAdmin || isSuper ? <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" onClick={() => open('league-settings')} id="menu-league-settings" admin /> : null}
               {ready && !isPremiumAdmin && !isSuper ? <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" premium onClick={() => explainPremium('Le impostazioni della lega')} id="menu-league-settings-locked" admin /> : null}
-              {cur ? (
-                <div className="menu-code admin-only">Codice d'invito <b id="menu-code">{cur.inviteCode}</b><button type="button" onClick={() => void copy(cur.inviteCode)}>Copia</button></div>
-              ) : null}
             </>
           ) : null}
 

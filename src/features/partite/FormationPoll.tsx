@@ -128,10 +128,13 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
             <div className="formation-vote-summary-content">
               {votes.isError ? <p role="alert">Impossibile caricare i voti. Riprova.</p>
                 : !votes.data ? <p>Caricamento voti…</p>
-                  : votes.data.options.map((option) => <details key={option.option_no}>
-                    <summary>{option.option_no === 1 ? 'Formazione dell’admin' : `Alternativa ${option.option_no}`} · {option.voters.length} {option.voters.length === 1 ? 'voto' : 'voti'}</summary>
-                    {option.voters.length ? <ul>{option.voters.map((voter) => <li key={voter.user_id}>{voter.name}</li>)}</ul> : <p>Nessun voto.</p>}
-                  </details>)}
+                  : !votes.data.total ? <p>Ancora nessun voto.</p>
+                    : votes.data.options.filter((option) => option.voters.length).sort((a, b) => b.voters.length - a.voters.length).map((option) => <div className="formation-vote-row" key={option.option_no}>
+                      <div className="formation-vote-row-head"><b>{option.option_no === 1 ? 'Admin' : `Alt. ${option.option_no}`}</b>
+                        <span className="formation-vote-bar"><i style={{ width: `${Math.round(option.voters.length / votes.data!.total * 100)}%` }} /></span>
+                        <strong>{option.voters.length}</strong></div>
+                      <div className="formation-vote-names">{option.voters.map((voter) => <span key={voter.user_id}>{voter.name}</span>)}</div>
+                    </div>)}
             </div>
           </details> : null}
           {state.options.map((option) => <OptionCard key={option.option_no} option={option} names={names}

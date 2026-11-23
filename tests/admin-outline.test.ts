@@ -51,14 +51,13 @@ test('righe di menu, caselle e pulsanti riservati all’admin hanno il contorno'
   for (const id of ['menu-league-admin', 'menu-game-settings', 'menu-league-settings', 'menu-league-settings-locked', 'menu-superadmin']) {
     expect(drawer, id).toMatch(new RegExp(`<Item [^\\n]*id="${id}[^"]*" admin />`));
   }
-  expect(drawer).toContain('menu-code admin-only');
   expect(all.get('src/features/menu/LeagueAdminHub.tsx')).toContain('premium-tile admin-only');
   expect(all.get('src/features/menu/SuperAdminHub.tsx')).toContain('premium-tile admin-only');
   expect(all.get('src/app/BottomNav.tsx')).toContain("it.id === 'partita' ? ' admin-only'");
   for (const [file, marker] of [
     ['src/features/partite/MatchCard.tsx', 'edit-toggle-btn" className="btn btn-secondary btn-sm mbar-btn admin-only'],
-    ['src/features/partite/CommunityVote.tsx', 'id="community-vote-close" className="btn btn-danger btn-full admin-only"'],
-    ['src/features/partite/FormationPoll.tsx', 'id="formation-poll-close" className="btn btn-danger btn-full admin-only"'],
+    ['src/features/partite/CommunityVote.tsx', 'id="community-vote-close" className="btn btn-secondary btn-sm admin-close-vote admin-only"'],
+    ['src/features/partite/FormationPoll.tsx', 'id="formation-poll-close" className="btn btn-secondary btn-sm admin-close-vote admin-only"'],
     ['src/features/player/PlayerLinkRow.tsx', 'id="player-link-row" className="row-line admin-only"'],
     ['src/features/player/PlayerBenchRow.tsx', 'id="player-bench-row" className="admin-only"'],
     ['src/features/rosa/RosaList.tsx', 'btn btn-secondary admin-only'],
