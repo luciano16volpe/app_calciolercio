@@ -19,7 +19,7 @@ import type { Match } from '../../domain/types';
 import { MyPlayerCard } from '../impostazioni/MyPlayerCard';
 import { MyProfileTools } from '../impostazioni/MyProfileTools';
 import { LastMatchCard, type MatchActions } from '../partite/parts';
-import { FormationPollBanner } from '../partite/FormationPoll';
+import { FormationPollBanner, FormationPollInline } from '../partite/FormationPoll';
 import { PlayerCard } from '../player/PlayerCard';
 
 const TEAM_NAME = { A: '🔵 Blu', B: '⚪ Bianchi' } as const;
@@ -33,13 +33,12 @@ function dayName(date: unknown): string {
 }
 
 /** La prossima partita in cui gioco: giorno, ora, luogo, squadra, compagni e avversari. */
-function NextMatch({ data, m, team, myId }: { data: LeagueData; m: Match; team: 'A' | 'B'; myId: string }) {
+function NextMatch({ data, m, team, myId, onOpenPoll }: { data: LeagueData; m: Match; team: 'A' | 'B'; myId: string; onOpenPoll: (id: string) => void }) {
   const names = (side: Match['teamA']) => normalizeTeam(side).filter((p) => p.id !== myId).map((p) => p.name);
   const mates = names(team === 'A' ? m.teamA : m.teamB);
   const rivals = names(team === 'A' ? m.teamB : m.teamA);
   const time = formatTime(m.time);
   const place = String(m.place ?? '').trim();
-  void data;
   return (
     <div className="card" id="next-match" style={{ borderLeft: '4px solid var(--amber)' }}>
       <div className="section-header">📅 Prossima partita</div>
@@ -49,6 +48,7 @@ function NextMatch({ data, m, team, myId }: { data: LeagueData; m: Match; team: 
       <div style={{ fontSize: 13, fontWeight: 800, marginTop: 6, color: team === 'A' ? 'var(--blue)' : 'var(--teamb)' }}>Giochi con i {TEAM_NAME[team]}</div>
       {mates.length ? <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 3 }}><b>Con te:</b> {mates.join(', ')}</div> : null}
       {rivals.length ? <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}><b>Contro:</b> {rivals.join(', ')}</div> : null}
+      <FormationPollInline data={data} matchId={m.id} onOpen={onOpenPoll} />
     </div>
   );
 }
@@ -157,8 +157,8 @@ export function ProfiloPage({ data, active, act }: { data: LeagueData; active: b
 
   return (
     <>
-      <FormationPollBanner data={data} onOpen={act.openFormationPoll} />
-      {next && me ? <NextMatch data={data} m={next.m} team={next.team} myId={me.id} /> : null}
+      <FormationPollBanner data={data} onOpen={act.openFormationPoll} excludeId={next?.m.id} />
+      {next && me ? <NextMatch data={data} m={next.m} team={next.team} myId={me.id} onOpenPoll={act.openFormationPoll} /> : null}
 
       {last && me ? <LastMatchCard data={data} m={last.m} act={act} title="🏆 La mia ultima partita" id="my-last-match" mine={{ id: me.id, name: me.name }} active={active} /> : null}
 

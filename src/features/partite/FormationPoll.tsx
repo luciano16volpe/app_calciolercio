@@ -3,56 +3,64 @@ import { useQueryClient } from '@tanstack/react-query';
 import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { useAuth } from '../../app/auth';
 import { useToast } from '../../app/Toast';
-import { closeFormationPoll, formationPollListKey, formationPollStateKey, submitFormationVote, useFormationPolls, useFormationPollState, type FormationOption } from '../../data/formationPolls';
+import { closeFormationPoll, formationPollListKey, formationPollStateKey, formationPollVotesKey, submitFormationVote, useFormationPolls, useFormationPollState, useFormationPollVotes, type FormationOption } from '../../data/formationPolls';
 import { LEAGUE_HISTORY_QUERY_KEY, LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
-import { distribLabel, goalsLabel } from '../../domain/balancing';
 import { formatDate } from '../../domain/format';
 
 const number = (value: number, digits = 1) => Number(value).toFixed(digits).replace('.', ',');
 const deadline = (value: string) => new Date(value).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' });
 
-export function FormationPollBanner({ data, onOpen }: { data: LeagueData; onOpen: (id: string) => void }) {
+export function FormationPollBanner({ data, onOpen, excludeId }: { data: LeagueData; onOpen: (id: string) => void; excludeId?: string }) {
   const polls = useFormationPolls(data.league.id);
-  if (!polls.data?.length) return null;
+  const list = (polls.data ?? []).filter((poll) => poll.match_id !== excludeId);
+  if (!list.length) return null;
   return <section className="formation-poll-banner" aria-label="Sondaggi formazioni aperti">
     <strong>⭐ Scegli le squadre</strong>
-    <p>La lega può scegliere tra le formazioni pubblicate dall’admin. Votano tutti i membri Premium, anche chi non gioca.</p>
-    {polls.data.map((poll) => <button key={poll.match_id} type="button" className="formation-poll-entry" onClick={() => onOpen(poll.match_id)}>
+    {list.map((poll) => <button key={poll.match_id} type="button" className="formation-poll-entry" onClick={() => onOpen(poll.match_id)}>
       <span><b>Partita del {formatDate(poll.date)}</b><small>Fino al {deadline(poll.closes_at)}</small></span>
       <span aria-hidden="true">Vedi e vota ›</span>
     </button>)}
   </section>;
 }
 
-const numericLabels: Array<[keyof FormationOption['metrics'], string]> = [
-  ['diff', 'Differenza medie'], ['distrib', 'Distribuzione forti'], ['weakDistrib', 'Distribuzione deboli'],
-  ['top1Diff', 'Migliore'], ['top2Diff', 'Due migliori'], ['bottom1Diff', 'Peggiore'],
-  ['bottom2Diff', 'Due peggiori'], ['stdDiff', 'Dispersione'], ['roleFit', 'Copertura ruoli'],
-  ['rolePenalty', 'Penalità ruoli'], ['repartiPenalty', 'Penalità reparti'],
-  ['extremePenalty', 'Penalità estremi'], ['score', 'Punteggio equilibrio'],
-];
+/** Pulsante «Vedi e vota» dentro la card della prossima partita (solo se il sondaggio è aperto). */
+export function FormationPollInline({ data, matchId, onOpen }: { data: LeagueData; matchId: string; onOpen: (id: string) => void }) {
+  const polls = useFormationPolls(data.league.id);
+  const poll = polls.data?.find((p) => p.match_id === matchId);
+  if (!poll) return null;
+  return <button type="button" className="formation-poll-entry" style={{ marginTop: 10, width: '100%' }} onClick={() => onOpen(matchId)}>
+    <span><b>⭐ Scegli le squadre</b><small>Fino al {deadline(poll.closes_at)}</small></span>
+    <span aria-hidden="true">Vedi e vota ›</span>
+  </button>;
+}
 
 function OptionCard({ option, names, chosen, onChoose, canVote }: {
   option: FormationOption; names: Map<string, string>; chosen: boolean; onChoose: () => void; canVote: boolean;
 }) {
   const m = option.metrics;
+  const teams = [
+    { key: 'blue', label: 'Blu', players: option.team_a, average: m.sA, module: option.module_a },
+    { key: 'white', label: 'Bianchi', players: option.team_b, average: m.sB, module: option.module_b },
+  ];
   return <article className={`formation-option${chosen ? ' selected' : ''}`}>
     <div className="formation-option-head">
-      <div><b>{option.option_no === 1 ? 'Formazione dell’admin' : `Alternativa ${option.option_no}`}</b>
-        <span>{goalsLabel(m.sA - m.sB)} · {distribLabel(m.distrib)}</span></div>
+      <div><b>{option.option_no === 1 ? 'Formazione dell’admin' : `Alternativa ${option.option_no}`}</b></div>
       {canVote ? <button type="button" className="formation-select" aria-pressed={chosen} onClick={onChoose}>{chosen ? '✓ Scelta' : 'Scegli'}</button> : null}
     </div>
     <div className="formation-option-teams">
-      <div><strong>🔵 Blu · media {number(m.sA)}</strong><small>{option.module_a?.notation ?? 'Auto'}{option.module_a?.desc ? ` · ${option.module_a.desc}` : ''}</small>
-        <p>{option.team_a.map((id) => names.get(id) ?? 'Giocatore').join(', ')}</p></div>
-      <div><strong>⚪ Bianchi · media {number(m.sB)}</strong><small>{option.module_b?.notation ?? 'Auto'}{option.module_b?.desc ? ` · ${option.module_b.desc}` : ''}</small>
-        <p>{option.team_b.map((id) => names.get(id) ?? 'Giocatore').join(', ')}</p></div>
+      {teams.map((team) => <section className={`formation-team formation-team-${team.key}`} key={team.key} aria-label={`Squadra ${team.label}`}>
+        <div className="formation-team-head"><strong>{team.label}</strong><span>Media {number(team.average)}</span></div>
+        <small>Modulo: {team.module?.notation ?? 'automatico'}{team.module?.desc ? ` · ${team.module.desc}` : ''}</small>
+        <ol>{team.players.map((id) => <li key={id}>{names.get(id) ?? 'Giocatore'}</li>)}</ol>
+      </section>)}
     </div>
-    <div className="formation-key-metrics"><span>Diff <b>{number(m.diff, 2)}</b></span><span>Ruoli <b>{Math.round(m.roleFit * 100)}%</b></span><span>Equilibrio <b>{number(m.score, 2)}</b></span></div>
-    <details className="formation-numbers"><summary>Tutte le numeriche e le 11 statistiche</summary>
-      <div className="formation-number-grid">{numericLabels.map(([key, label]) => <div key={key}><span>{label}</span><b>{number(m[key], 2)}</b></div>)}</div>
-      <div className="formation-stat-title">Statistiche medie · Blu / Bianchi</div>
-      <div className="formation-number-grid">{option.stats.map((row, i) => <div key={i}><span>{row.label}</span><b>{number(row.a)} / {number(row.b)}</b></div>)}</div>
+    <details className="formation-numbers"><summary>Confronto statistiche</summary>
+      <div className="formation-stat-title">Blu / Bianchi</div>
+      <div className="formation-stat-compare">{option.stats.map((row, i) => <div className="cmp-row" key={i}>
+        <span className="cmp-v bl" style={{ fontWeight: row.a > row.b ? 800 : 500 }}>{number(row.a)}</span>
+        <div className="cmp-bar"><div className="cf-bl" style={{ flex: row.a }} /><span className="cmp-lbl">{row.label}</span><div className="cf-bi" style={{ flex: row.b }} /></div>
+        <span className="cmp-v bi" style={{ fontWeight: row.b > row.a ? 800 : 500 }}>{number(row.b)}</span>
+      </div>)}</div>
     </details>
   </article>;
 }
@@ -72,6 +80,7 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
   const state = poll.data;
+  const votes = useFormationPollVotes(matchId, !!state?.is_admin);
   const names = new Map(data.dataset.players.map((player) => [player.id, player.name]));
   const chosen = selection ?? state?.my_vote ?? null;
   const canVote = !!state?.is_open && !!state.has_premium;
@@ -85,6 +94,7 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
     try {
       await closeFormationPoll(matchId);
       await Promise.all([qc.invalidateQueries({ queryKey: formationPollStateKey(matchId, user?.id) }),
+        qc.invalidateQueries({ queryKey: formationPollVotesKey(matchId, user?.id) }),
         qc.invalidateQueries({ queryKey: formationPollListKey(data.league.id, user?.id) }),
         qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY }), qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY })]);
       toast('Sondaggio chiuso: squadre definitive salvate');
@@ -97,6 +107,7 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
     try {
       await submitFormationVote(matchId, chosen);
       await Promise.all([qc.invalidateQueries({ queryKey: formationPollStateKey(matchId, user?.id) }),
+        qc.invalidateQueries({ queryKey: formationPollVotesKey(matchId, user?.id) }),
         qc.invalidateQueries({ queryKey: formationPollListKey(data.league.id, user?.id) })]);
       toast('Scelta salvata. Puoi cambiarla fino alla chiusura.');
       close();
@@ -112,12 +123,23 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
           {!state.has_premium ? <div className="formation-premium-note"><b>Funzione Premium</b><p>Puoi vedere tutte le formazioni. Per scegliere serve Premium attivo: chiedi all’amministratore di attivarlo.</p></div> : null}
           {state.is_open && state.my_vote ? <p className="formation-my-vote">Hai scelto la formazione {state.my_vote}. Puoi cambiare idea prima della chiusura.</p> : null}
           {!state.is_open ? <p className="formation-my-vote">{state.winning_option ? `Formazione definitiva: ${state.winning_option}.` : 'La scelta finale sarà pubblicata a breve.'}{state.closed_early_at ? ` Chiuso in anticipo${state.closed_early_by_name ? ` da ${state.closed_early_by_name}` : ''}.` : ''}</p> : null}
+          {state.is_admin ? <details className="formation-vote-summary admin-only">
+            <summary>Partecipazione al voto <span>{votes.data ? `${votes.data.total} ${votes.data.total === 1 ? 'votante' : 'votanti'}` : '…'}</span></summary>
+            <div className="formation-vote-summary-content">
+              {votes.isError ? <p role="alert">Impossibile caricare i voti. Riprova.</p>
+                : !votes.data ? <p>Caricamento voti…</p>
+                  : votes.data.options.map((option) => <details key={option.option_no}>
+                    <summary>{option.option_no === 1 ? 'Formazione dell’admin' : `Alternativa ${option.option_no}`} · {option.voters.length} {option.voters.length === 1 ? 'voto' : 'voti'}</summary>
+                    {option.voters.length ? <ul>{option.voters.map((voter) => <li key={voter.user_id}>{voter.name}</li>)}</ul> : <p>Nessun voto.</p>}
+                  </details>)}
+            </div>
+          </details> : null}
           {state.options.map((option) => <OptionCard key={option.option_no} option={option} names={names}
             chosen={chosen === option.option_no} onChoose={() => setSelection(option.option_no)} canVote={canVote} />)}
         </>}
       </div>
       {state?.can_close ? <footer className="formation-poll-footer formation-poll-admin">
-        <button type="button" id="formation-poll-close" className="btn btn-danger btn-full admin-only" disabled={closing || busy} onClick={() => void closePoll()}>
+        <button type="button" id="formation-poll-close" className="btn btn-secondary btn-sm admin-close-vote admin-only" disabled={closing || busy} onClick={() => void closePoll()}>
           {closing ? 'Chiusura…' : '🔒 Chiudi votazione'}</button>
         <small>Solo per l’admin. Altrimenti si chiude da sola il {deadline(state.closes_at)}.</small>
       </footer> : null}
