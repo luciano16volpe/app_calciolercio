@@ -237,3 +237,9 @@ Funzioni Premium e dove si applicano i permessi (sempre nel database, il colore 
 - Le schermate intere che apre solo l'admin (`<Sheet admin …>`: ADMIN LEGA, Inviti, Richieste, Unisci, Membri, Panchina, Impostazioni e Regole di gioco della lega, Modifica partita in programma, SUPERADMIN, Registro attività, Tutte le leghe, Utenti, Premium, Funzionalità, Proposte di admin) hanno una **fascia viola** sotto l'intestazione blu.
 - Non marcato: ciò che apre anche la redazione (Partite senza pagelle nella sua sezione, Gazzetta, scrittura pagelle). Quando si aggiunge una funzione solo da admin va aggiunto `admin-only` o `admin` a `Sheet`: lo controlla `tests/admin-outline.test.ts`.
 
+## Contorno verde per ciò che vedono redazione e admin (23 novembre 2026)
+- Ciò che vedono **solo redazione e admin** (non i membri comuni) ha il contorno **verde dell'editore** (`--editor`: `#15803d` nel tema chiaro, `#2ecc70` nello scuro, il verde già usato per il ruolo Redazione). Vale anche per l'admin: se la funzione è condivisa con la redazione è verde, non viola.
+- Il **viola** resta solo per ciò che vede solo l'admin (vedi sopra). Classe `.staff-only`; schermate intere con `<Sheet staff …>` (fascia verde sotto l'intestazione).
+- Verde: «Da completare» (sezione Redazione) e «Partite senza pagelle» nel menu, la schermata Partite senza pagelle, «✏️ Edit» dell'ultima partita, «📝 Scrivi le pagelle», «Non scrivere le pagelle», Gazzetta (carica, sostituisci, versione bloccata per admin senza Premium) e «Importa da WhatsApp».
+- Resta viola il pulsante ✏️ che apre la modifica completa della partita (solo admin). Controllo in `tests/staff-outline.test.ts`.
+

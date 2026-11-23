@@ -72,7 +72,7 @@ export function PendingPanel({ data, onClose, onOpenMatch }: { data: LeagueData;
   );
 
   return (
-    <Sheet title="Partite senza pagelle" onClose={onClose} id="sheet-pending">
+    <Sheet staff title="Partite senza pagelle" onClose={onClose} id="sheet-pending">
       <div className="card">
         <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.4, marginBottom: 8 }}>
           Partite con il risultato in cui <b>meno della metà dei giocatori</b> ha titolo o descrizione (non basta che ne manchino un paio). Se per una partita <b>non vuoi scrivere le pagelle</b>, premi <b>Salta</b>: esce da «Pagelle da scrivere». Puoi rimetterla quando vuoi.

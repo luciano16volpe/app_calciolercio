@@ -498,7 +498,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               </button>
             ) : canEditText && !editing ? (
               <button
-                id="edit-text-btn" className="btn btn-secondary btn-sm mbar-btn" onClick={() => { setTextOnly(true); setDraft(startDraft(m, ratings)); }} title="Scrivi le pagelle" aria-label="Scrivi titoli e descrizioni"
+                id="edit-text-btn" className="btn btn-secondary btn-sm mbar-btn staff-only" onClick={() => { setTextOnly(true); setDraft(startDraft(m, ratings)); }} title="Scrivi le pagelle" aria-label="Scrivi titoli e descrizioni"
                 style={{ border: '2px solid var(--green)', color: 'var(--green)', marginLeft: 'auto', fontSize: 13, padding: '6px 9px' }}
               >
                 📝 Scrivi le pagelle
@@ -507,7 +507,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
           </div>
           {(canEdit || canEditText) && !editing && m && (m.ratingsSkipped || needsRatings(data.dataset, m)) ? (
             <div style={{ marginBottom: 10 }}>
-              <button type="button" id="skip-ratings" className={`btn btn-secondary btn-full btn-sm${canEdit ? ' admin-only' : ''}`} style={{ whiteSpace: 'normal' }} onClick={() => void toggleSkip()}>
+              <button type="button" id="skip-ratings" className="btn btn-secondary btn-full btn-sm staff-only" style={{ whiteSpace: 'normal' }} onClick={() => void toggleSkip()}>
                 {m.ratingsSkipped ? '↩ Rimetti tra le pagelle da scrivere' : '⏭️ Non scrivere le pagelle di questa partita'}
               </button>
             </div>
@@ -562,7 +562,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
                 </>
               ) : null}
               {editing && canGazzetta ? (
-                <div className="gaz-edit" style={{ display: 'flex' }}>
+                <div className="gaz-edit staff-only" style={{ display: 'flex' }}>
                   <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => gazInput.current?.click()}>
                     {g ? '🔄 Sostituisci la Gazzetta' : '📰 Carica la Gazzetta'}
                   </button>
@@ -571,7 +571,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
                 </div>
               ) : null}
               {editing && !canGazzetta ? (
-                <div className="gaz-edit" style={{ display: 'flex' }}>
+                <div className="gaz-edit staff-only" style={{ display: 'flex' }}>
                   <button type="button" className="btn btn-sm premium-locked" id="gazzetta-locked" onClick={() => explainPremium('La Gazzetta')}>📰 Carica la Gazzetta <PremiumBadge /></button>
                 </div>
               ) : null}
@@ -593,12 +593,14 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               } : d))} />
             ) : null}
             {draft ? (
-              <WhatsAppImport
-                data={data} m={m}
-                hasRating={(k) => clampRating((draft.fields[k] as PlayerFields | undefined)?.rating) !== null}
-                onAssign={(k, tit, desc) => ed?.set(k, { tit, desc })}
-                defaultOpen={startText}
-              />
+              <div className="staff-only staff-block" style={{ marginBottom: 8 }}>
+                <WhatsAppImport
+                  data={data} m={m}
+                  hasRating={(k) => clampRating((draft.fields[k] as PlayerFields | undefined)?.rating) !== null}
+                  onAssign={(k, tit, desc) => ed?.set(k, { tit, desc })}
+                  defaultOpen={startText}
+                />
+              </div>
             ) : null}
             {editing ? (
               <div id="match-actions" style={{ display: 'flex', gap: 8 }}>

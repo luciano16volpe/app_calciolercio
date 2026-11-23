@@ -48,7 +48,7 @@ test('ogni schermata che apre solo l’admin passa admin a Sheet', () => {
 
 test('righe di menu, caselle e pulsanti riservati all’admin hanno il contorno', () => {
   const drawer = all.get('src/features/menu/MenuDrawer.tsx')!;
-  for (const id of ['menu-league-admin', 'menu-pending', 'menu-game-settings', 'menu-league-settings', 'menu-league-settings-locked', 'menu-superadmin']) {
+  for (const id of ['menu-league-admin', 'menu-game-settings', 'menu-league-settings', 'menu-league-settings-locked', 'menu-superadmin']) {
     expect(drawer, id).toMatch(new RegExp(`<Item [^\\n]*id="${id}[^"]*" admin />`));
   }
   expect(drawer).toContain('menu-code admin-only');

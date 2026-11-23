@@ -22,9 +22,9 @@ const ROLE_LABEL = { admin: 'Admin', redazione: 'Redazione', member: 'Membro' } 
 
 const initials = (s: string) => s.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((w) => (w[0] ?? '').toUpperCase()).join('') || '?';
 
-function Item({ icon, title, sub, badge, hot, premium, admin, onClick, id }: { icon: ReactNode; title: string; sub?: string; badge?: number | string; hot?: boolean; /** funzione Premium non attiva: mostra l'etichetta dorata */ premium?: boolean; /** visibile solo all'admin: contorno viola */ admin?: boolean; onClick: () => void; id?: string }) {
+function Item({ icon, title, sub, badge, hot, premium, admin, staff, onClick, id }: { icon: ReactNode; title: string; sub?: string; badge?: number | string; hot?: boolean; /** funzione Premium non attiva: mostra l'etichetta dorata */ premium?: boolean; /** visibile solo all'admin: contorno viola */ admin?: boolean; /** visibile solo a redazione e admin: contorno verde */ staff?: boolean; onClick: () => void; id?: string }) {
   return (
-    <button type="button" className={`menu-it${admin ? ' admin-only' : ''}`} onClick={onClick} id={id}>
+    <button type="button" className={`menu-it${admin ? ' admin-only' : ''}${staff ? ' staff-only' : ''}`} onClick={onClick} id={id}>
       <span className="i">{icon}</span>
       <span className="t">{title}{sub ? <div className="s">{sub}</div> : null}</span>
       {badge !== undefined && badge !== 0 ? <span className={`menu-bd${hot ? '' : ' n'}`}>{badge}</span> : null}
@@ -171,7 +171,7 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
           {canEditText && !isAdmin && data ? (
             <>
               <div className="menu-sec">Redazione · {data.league.name}</div>
-              <Item icon="📝" title="Da completare" sub={pending.length ? `${pending.length} partite con pagelle da completare` : 'pagelle, importazione e Gazzetta nella scheda partita'} badge={pending.length} hot onClick={() => open('pending')} id="menu-red-pending" />
+              <Item icon="📝" title="Da completare" sub={pending.length ? `${pending.length} partite con pagelle da completare` : 'pagelle, importazione e Gazzetta nella scheda partita'} badge={pending.length} hot onClick={() => open('pending')} id="menu-red-pending" staff />
             </>
           ) : null}
 
@@ -179,7 +179,7 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
             <>
               <div className="menu-sec">Gestione · {data.league.name}</div>
               <Item icon={<AdminIcon name="shield" />} title="ADMIN LEGA" sub="inviti, richieste, panchina, membri e giocatori" badge={(claims.data?.length ?? 0) + (proposals.data?.length ?? 0)} hot onClick={() => open('league-admin-hub')} id="menu-league-admin" admin />
-              <Item icon="🗂️" title="Partite senza pagelle" sub={pending.length ? `${pending.length} da scrivere o saltare` : 'tutto scritto'} onClick={() => open('pending')} id="menu-pending" admin />
+              <Item icon="🗂️" title="Partite senza pagelle" sub={pending.length ? `${pending.length} da scrivere o saltare` : 'tutto scritto'} onClick={() => open('pending')} id="menu-pending" staff />
               {!isSuper ? <Item icon="🎮" title="Regole di gioco" sub="formazioni, forma, pesi (sola lettura)" onClick={() => open('game-settings')} id="menu-game-settings" admin /> : null}
               {isPremiumAdmin || isSuper ? <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" onClick={() => open('league-settings')} id="menu-league-settings" admin /> : null}
               {ready && !isPremiumAdmin && !isSuper ? <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" premium onClick={() => explainPremium('Le impostazioni della lega')} id="menu-league-settings-locked" admin /> : null}
