@@ -20,6 +20,7 @@ export interface FormationPollState {
   opened_at: string;
   closes_at: string;
   is_open: boolean;
+  is_admin: boolean;
   /** solo l'admin della lega, finché il sondaggio è aperto */
   can_close: boolean;
   closed_early_at: string | null;
@@ -31,6 +32,10 @@ export interface FormationPollState {
   options: FormationOption[];
 }
 export interface FormationPollListItem { match_id: string; date: string; closes_at: string }
+export interface FormationPollVotes {
+  total: number;
+  options: Array<{ option_no: number; voters: Array<{ user_id: string; name: string; updated_at: string }> }>;
+}
 
 export function snapshotFormation(c: Combo, players: Player[], rank: number): Omit<FormationOption, 'option_no'> {
   const { tA, tB, modA, modB, custom: _custom, ...metrics } = c;
@@ -43,6 +48,17 @@ export function snapshotFormation(c: Combo, players: Player[], rank: number): Om
 
 export const formationPollListKey = (leagueId: string, userId?: string) => ['formation-polls', leagueId, userId] as const;
 export const formationPollStateKey = (matchId: string, userId?: string) => ['formation-poll', matchId, userId] as const;
+export const formationPollVotesKey = (matchId: string, userId?: string) => ['formation-poll-votes', matchId, userId] as const;
+
+export function useFormationPollVotes(matchId: string, enabled: boolean) {
+  const { user } = useAuth();
+  return useQuery({ queryKey: formationPollVotesKey(matchId, user?.id), enabled: !!user && !!matchId && enabled,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('formation_poll_votes', { p_match: matchId });
+      if (error) throw error;
+      return data as unknown as FormationPollVotes;
+    }, staleTime: 0, refetchInterval: enabled ? 15_000 : false });
+}
 
 export function useFormationPolls(leagueId: string) {
   const { user } = useAuth();

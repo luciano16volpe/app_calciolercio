@@ -1258,6 +1258,7 @@ export type Database = {
       }
       formation_poll_list: { Args: { p_league: string }; Returns: Json }
       formation_poll_state: { Args: { p_match: string }; Returns: Json }
+      formation_poll_votes: { Args: { p_match: string }; Returns: Json }
       submit_formation_vote: { Args: { p_match: string; p_option: number }; Returns: undefined }
       close_formation_poll: { Args: { p_match: string }; Returns: undefined }
       close_community_voting: { Args: { p_match: string }; Returns: undefined }
