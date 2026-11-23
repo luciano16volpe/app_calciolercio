@@ -680,7 +680,8 @@ input[type=file]{display:none}
 .premium-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .premium-tile{min-height:150px;border:0;border-radius:16px;padding:16px;color:white;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;cursor:pointer;font:inherit}
 .premium-tile span{font-size:28px;margin-bottom:auto}.premium-tile b{font-size:16px}.premium-tile small{font-size:12px;line-height:1.35}.premium-tile-users{background:linear-gradient(135deg,#24599f,#347ac1)}.premium-tile-trial{background:linear-gradient(135deg,#68439c,#a85b96)}
-.premium-tile .player-premium-label{font-style:normal;font-size:11px;font-weight:700;color:#ffe9a6;white-space:nowrap}
+.premium-tile-gold{box-shadow:inset 0 0 0 2px var(--gold-edge)}
+.premium-tile .tile-premium-tag{position:absolute;top:0;right:14px;padding:2px 8px 3px;border-radius:0 0 8px 8px;background:linear-gradient(135deg,var(--gold1),var(--gold2));color:var(--gold-text);font-style:normal;font-size:10px;font-weight:900;letter-spacing:.03em;line-height:1.2;margin:0}
 .player-tile-awards{background:linear-gradient(135deg,#9b6719,#c58b27)}.player-tile-records{background:linear-gradient(135deg,#187667,#299e80)}
 
 /* Gerarchia visiva delle schermate principali. */
