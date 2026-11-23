@@ -102,7 +102,7 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
       close();
     } catch (error) { toast('Errore: ' + (error as Error).message); setBusy(false); }
   };
-  return <div className="formation-poll-overlay" role="dialog" aria-modal="true" aria-labelledby="formation-poll-title">
+  return <div className="formation-poll-overlay" role="dialog" aria-modal="true" aria-labelledby="formation-poll-title" onClick={(event) => { if (event.target === event.currentTarget) close(); }}>
     <div className="formation-poll-panel">
       <header className="formation-poll-head"><div><h2 id="formation-poll-title">⭐ Scegli le squadre</h2>
         <p>{state?.is_open ? `Puoi votare fino al ${deadline(state.closes_at)}` : 'Sondaggio chiuso'} · Partita del {formatDate(data.dataset.matches.find((m) => m.id === matchId)?.date)}</p></div>
