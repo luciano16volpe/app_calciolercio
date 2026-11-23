@@ -11,6 +11,8 @@ import { snapshotFormation } from '../../data/formationPolls';
 import { LEAGUE_HISTORY_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { goalsLabel, type Combo } from '../../domain/balancing';
 import { clampInt } from '../../domain/matchEdit';
+import { nextLeagueDay } from '../../domain/leagueDay';
+import { useLeagueSettings } from '../../data/leagues';
 
 const input = { width: '100%', padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 7, background: 'var(--gray)', color: 'var(--text)', boxSizing: 'border-box' } as const;
 const lbl = { fontSize: 12, color: 'var(--text2)', display: 'block', marginBottom: 5 } as const;
@@ -21,7 +23,9 @@ export function NewMatchDialog({ data, combos, idx, onClose }: { data: LeagueDat
   const qc = useQueryClient();
   const players = data.dataset.players;
   const combo = combos[idx] as Combo;
-  const [date, setDate] = useState(() => new Date().toISOString().substring(0, 10));
+  // la data proposta è il prossimo giorno di partita scelto nelle impostazioni della lega (altrimenti oggi)
+  const leagueSettings = useLeagueSettings(data.league.id);
+  const [date, setDate] = useState(() => nextLeagueDay(leagueSettings.data?.day));
   // ora e luogo: si propongono quelli dell'ultima partita che li ha (di solito si gioca sempre allo stesso posto)
   const last = [...data.dataset.matches].reverse().find((x) => x.place || x.time);
   const [time, setTime] = useState(() => String(last?.time ?? ''));

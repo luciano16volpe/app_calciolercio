@@ -12,6 +12,7 @@ import { balanceScores, generateTeams, type Combo } from '../../domain/balancing
 import { blockedPairs } from '../../domain/rotation';
 import { pagInfo, playerRatingAvg } from '../../domain/form';
 import { formatDate } from '../../domain/format';
+import { useLeagueSettings } from '../../data/leagues';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import { balancePrecision, comboSummary, swapPlayers, teamPlayers, type TeamPlayer } from '../../domain/gioca';
 import { calcOvr, rosaOrder } from '../../domain/ovr';
@@ -22,18 +23,20 @@ import { statAverages } from '../../domain/matches';
 // ── formato salvato sul telefono ───────────────────────────────────────────
 interface Format { sizeA: number; sizeB: number; asym: boolean }
 const FORMAT_KEY = 'calciolercio-format';
-function readFormat(): Format {
+const formatKey = (leagueId: string) => `${FORMAT_KEY}:${leagueId}`;
+/** La scelta fatta su questo telefono per questa lega (se c'è). */
+function readSavedFormat(leagueId: string): Format | null {
   try {
-    const f = JSON.parse(localStorage.getItem(FORMAT_KEY) || 'null') as Partial<Format> | null;
+    const f = JSON.parse(localStorage.getItem(formatKey(leagueId)) || 'null') as Partial<Format> | null;
     if (f && Number.isInteger(f.sizeA) && Number.isInteger(f.sizeB)) return { sizeA: f.sizeA as number, sizeB: f.sizeB as number, asym: !!f.asym };
   } catch {
-    /* memoria non leggibile: formato predefinito */
+    /* memoria non leggibile: si usa il formato della lega */
   }
-  return { sizeA: 5, sizeB: 5, asym: false };
+  return null;
 }
-function saveFormat(f: Format) {
+function saveFormat(leagueId: string, f: Format) {
   try {
-    localStorage.setItem(FORMAT_KEY, JSON.stringify(f));
+    localStorage.setItem(formatKey(leagueId), JSON.stringify(f));
   } catch {
     /* si perde solo il ricordo del formato */
   }
@@ -241,7 +244,11 @@ export function ResultView({ data, res, scores, onChange, onCreate }: { data: Le
 export function GiocaPage({ data, initialSelected = [], canCreate = false }: { data: LeagueData; initialSelected?: string[]; canCreate?: boolean }) {
   const toast = useToast();
   const { dataset, weights } = data;
-  const [fmt, setFmt] = useState<Format>(readFormat);
+  // formato: la scelta fatta su questo telefono per questa lega, altrimenti il formato abituale delle impostazioni della lega, altrimenti 5 vs 5
+  const leagueSettings = useLeagueSettings(data.league.id);
+  const leagueFormat = leagueSettings.data?.format;
+  const [chosen, setChosen] = useState<Format | null>(() => readSavedFormat(data.league.id));
+  const fmt: Format = chosen ?? (leagueFormat ? { sizeA: leagueFormat, sizeB: leagueFormat, asym: false } : { sizeA: 5, sizeB: 5, asym: false });
   const [selected, setSelected] = useState<string[]>(initialSelected); // id dei convocati, nell'ordine in cui sono scelti
   const [res, setRes] = useState<Result | null>(null);
   const [creating, setCreating] = useState(false);
@@ -250,8 +257,8 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
   const order = useMemo(() => rosaOrder(dataset.players, weights), [dataset, weights]);
   const all = useMemo(() => seasonStats(dataset), [dataset]);
   const update = (f: Format) => {
-    setFmt(f);
-    saveFormat(f);
+    setChosen(f);
+    saveFormat(data.league.id, f);
   };
   const live = selected.filter((id) => dataset.players.some((p) => p.id === id)); // un giocatore tolto dalla rosa non conta più
 

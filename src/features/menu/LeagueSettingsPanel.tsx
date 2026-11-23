@@ -8,7 +8,7 @@ import { setSelectedLeague } from '../../app/league';
 import { Sheet } from '../../app/Sheet';
 import { useToast } from '../../app/Toast';
 import {
-  deleteLeague, MEMBERS_KEY, MY_LEAGUES_KEY, readLeagueSettings, regenerateInviteCode, transferOwnership, updateLeague, useMembers, useMyLeagues, type LeagueSettings,
+  deleteLeague, LEAGUE_SETTINGS_KEY, MEMBERS_KEY, MY_LEAGUES_KEY, readLeagueSettings, regenerateInviteCode, transferOwnership, updateLeague, useMembers, useMyLeagues, type LeagueSettings,
 } from '../../data/leagues';
 import { LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 
@@ -32,7 +32,7 @@ export function LeagueSettingsPanel({ data, onClose }: { data: LeagueData; onClo
   useEffect(() => {
     void readLeagueSettings(lid).then(setS).catch(() => undefined);
   }, [lid]);
-  const refresh = () => Promise.all([qc.invalidateQueries({ queryKey: MY_LEAGUES_KEY }), qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY }), qc.invalidateQueries({ queryKey: MEMBERS_KEY })]);
+  const refresh = () => Promise.all([qc.invalidateQueries({ queryKey: MY_LEAGUES_KEY }), qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY }), qc.invalidateQueries({ queryKey: MEMBERS_KEY }), qc.invalidateQueries({ queryKey: LEAGUE_SETTINGS_KEY })]);
 
   const save = async () => {
     const n = name.trim();

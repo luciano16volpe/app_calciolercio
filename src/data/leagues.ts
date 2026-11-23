@@ -96,6 +96,13 @@ export async function updateLeague(leagueId: string, patch: { name?: string; set
   if (error) throw fail('lega', error);
 }
 
+export const LEAGUE_SETTINGS_KEY = ['league-settings'] as const;
+
+/** Impostazioni della lega (formato e giorno abituali), in cache; se non si leggono si usano i valori predefiniti. */
+export function useLeagueSettings(leagueId: string | undefined) {
+  return useQuery({ queryKey: [...LEAGUE_SETTINGS_KEY, leagueId], enabled: !!leagueId, queryFn: () => readLeagueSettings(leagueId as string), staleTime: 60_000, retry: false });
+}
+
 export async function readLeagueSettings(leagueId: string): Promise<LeagueSettings> {
   const { data, error } = await supabase.from('leagues').select('settings').eq('id', leagueId).maybeSingle();
   if (error) throw fail('lega', error);
