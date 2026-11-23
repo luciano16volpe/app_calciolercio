@@ -1,5 +1,5 @@
 -- Il riepilogo dei voti resta accessibile solo agli amministratori della lega.
-create function public.formation_poll_votes(p_match uuid)
+create or replace function public.formation_poll_votes(p_match uuid)
 returns jsonb language plpgsql stable security definer set search_path=public as $$
 declare lid uuid; result jsonb;
 begin
