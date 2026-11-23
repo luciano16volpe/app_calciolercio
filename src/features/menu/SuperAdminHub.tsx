@@ -16,8 +16,8 @@ export function SuperAdminHub({ onClose, onOpen, hasLeague }: { onClose: () => v
     { panel: 'platform-users', icon: 'users', title: 'Utenti', description: 'Gestisci gli account', color: 'premium-tile-users' },
     { panel: 'premium', icon: 'premium', title: 'Premium', description: 'Accessi e funzionalità Premium', color: 'player-tile-awards' },
   ];
-  return <Sheet title="SUPERADMIN" onClose={onClose} id="sheet-superadmin-hub">
-    <div className="premium-tiles">{items.map((item) => <button type="button" id={item.panel === 'create-league' ? 'menu-create' : 'menu-' + item.panel} key={item.panel} className={'premium-tile ' + item.color} disabled={item.panel === 'game-settings' && !hasLeague} onClick={() => onOpen(item.panel)}>
+  return <Sheet admin title="SUPERADMIN" onClose={onClose} id="sheet-superadmin-hub">
+    <div className="premium-tiles">{items.map((item) => <button type="button" id={item.panel === 'create-league' ? 'menu-create' : 'menu-' + item.panel} key={item.panel} className={'premium-tile admin-only ' + item.color} disabled={item.panel === 'game-settings' && !hasLeague} onClick={() => onOpen(item.panel)}>
       <span><AdminIcon name={item.icon} /></span><b>{item.title}</b><small>{item.panel === 'game-settings' && !hasLeague ? 'Seleziona prima una lega' : item.description}</small>
     </button>)}</div>
   </Sheet>;

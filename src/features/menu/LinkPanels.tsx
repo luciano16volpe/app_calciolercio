@@ -57,7 +57,7 @@ export function InvitesPanel({ data, onClose }: { data: LeagueData; onClose: () 
     }
   };
   return (
-    <Sheet title="Inviti giocatori" onClose={onClose} id="sheet-invites">
+    <Sheet admin title="Inviti giocatori" onClose={onClose} id="sheet-invites">
       <LeagueInviteBox data={data} />
       <div className="card">
         <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 8, lineHeight: 1.4 }}>
@@ -106,7 +106,7 @@ export function ClaimsPanel({ data, onClose }: { data: LeagueData; onClose: () =
     await Promise.all([qc.invalidateQueries({ queryKey: CLAIMS_KEY }), qc.invalidateQueries({ queryKey: PLAYERS_STATUS_KEY })]);
   };
   return (
-    <Sheet title="Richieste «sono io»" onClose={onClose} id="sheet-claims">
+    <Sheet admin title="Richieste «sono io»" onClose={onClose} id="sheet-claims">
       <div className="card" id="claims-box">
         {q.isError ? <div id="claims-error" style={{ color: 'var(--red)', fontSize: 12, fontWeight: 700 }}>{(q.error as Error).message}</div> : null}
         {q.data && !q.data.length ? <div id="claims-empty" style={{ fontSize: 13, color: 'var(--text3)' }}>Nessuna richiesta in attesa.</div> : null}
@@ -163,7 +163,7 @@ export function MergePanel({ data, onClose }: { data: LeagueData; onClose: () =>
     }
   };
   return (
-    <Sheet title="Unisci giocatori" onClose={onClose} id="sheet-merge">
+    <Sheet admin title="Unisci giocatori" onClose={onClose} id="sheet-merge">
       <div className="card">
         <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.4 }}>
           Per i doppioni (uno stesso amico inserito due volte). Scegli <b>chi tenere</b> e <b>chi assorbire</b>. Serve essere amministratore di tutte le leghe del doppione; se i due hanno giocato la stessa partita non si possono unire. Almeno uno dei due deve essere non assegnato a un account.

@@ -37,7 +37,7 @@ export function PlannedMatchEditor({ data, match, onClose, onSaved }: { data: Le
     } catch (e) { setError((e as Error).message); }
     finally { setBusy(false); }
   };
-  return <Sheet title="Modifica partita in programma" onClose={() => { if (!busy) onClose(); }} swipeBack={!busy} id="sheet-planned-match">
+  return <Sheet admin title="Modifica partita in programma" onClose={() => { if (!busy) onClose(); }} swipeBack={!busy} id="sheet-planned-match">
     <form onSubmit={(e) => { e.preventDefault(); void save(); }}>
       <fieldset disabled={busy} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
         <div className="card" style={{ display: 'grid', gap: 12 }}>

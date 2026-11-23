@@ -82,7 +82,7 @@ export function CommunityVoteControls({ match, state, canEdit, userId }: {
     } finally { setBusy(false); }
   };
 
-  return <section style={{ border: '1px solid var(--gray3)', borderRadius: 'var(--radius-sm)', padding: 12, margin: '12px 0' }}>
+  return <section className="admin-only" style={{ border: '1px solid var(--gray3)', borderRadius: 'var(--radius-sm)', padding: 12, margin: '12px 0' }}>
     <strong>⭐ Voto dei partecipanti</strong>
     {!state.enabled && state.can_activate && hasScore ? <>
       <p style={{ fontSize: 12, color: 'var(--text2)' }}>Manca il pagellista? Apri il voto per questa partita. Chi ha giocato e ha Premium attivo, incluso l'admin se ha partecipato, potrà votare gli altri per 24 ore da quando lo attivi.</p>
@@ -227,7 +227,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
         </button>
       </div> : null}
       {state?.can_close ? <div className="vote-modal-admin">
-        <button type="button" id="community-vote-close" className="btn btn-danger btn-full" disabled={closing || busy} onClick={() => void closeVoting()}>
+        <button type="button" id="community-vote-close" className="btn btn-danger btn-full admin-only" disabled={closing || busy} onClick={() => void closeVoting()}>
           {closing ? 'Chiusura…' : '🔒 Chiudi votazione'}
         </button>
         <small>Solo per l’admin. Altrimenti si chiude da sola il {until}.</small>

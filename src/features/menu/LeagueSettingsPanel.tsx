@@ -101,7 +101,7 @@ export function LeagueSettingsPanel({ data, onClose }: { data: LeagueData; onClo
   const admins = (members.data ?? []).filter((m) => m.role === 'admin' && m.userId !== user?.id);
 
   return (
-    <Sheet title="Impostazioni della lega" onClose={onClose} id="sheet-league-settings">
+    <Sheet admin title="Impostazioni della lega" onClose={onClose} id="sheet-league-settings">
       <div className="card">
         <div className="f-lab" style={{ marginTop: 0 }}>Nome</div>
         <input className="f-inp" id="ls-name" type="text" maxLength={40} value={name} onChange={(e) => setName(e.target.value)} />

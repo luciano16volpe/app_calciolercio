@@ -38,7 +38,7 @@ export function MembersPanel({ data, onClose }: { data: LeagueData; onClose: () 
   };
 
   return (
-    <Sheet title={`Membri di ${data.league.name}`} onClose={onClose} id="sheet-members">
+    <Sheet admin title={`Membri di ${data.league.name}`} onClose={onClose} id="sheet-members">
       <div className="card" id="members-card">
         <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 6, lineHeight: 1.4 }}>
           <b>Amministratore</b> gestisce tutto · <b>Redazione</b> scrive titoli e descrizioni delle pagelle · <b>Membro</b> guarda. Solo il <b>creatore</b> nomina e toglie gli amministratori.

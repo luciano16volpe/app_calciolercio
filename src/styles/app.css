@@ -14,6 +14,8 @@
   --def:#1278b8;   --def-light:#daeef9; --def-mid:#2a9dd4;
   /* Oro Premium (proposta A): sempre testo scuro sull'oro e bordo più scuro del fondo */
   --gold1:#f3cf5f;--gold2:#e0b02f;--gold-text:#2f2000;--gold-edge:#9a6f08;--gold-label:#7a5500;--gold-tint:#fff3cf;--gold-tint-edge:#d6a52a;
+  /* Contorno viola: tutto ciò che vede solo l'admin (di lega o supremo) */
+  --admin:#7c3aed;
 }
 @media(prefers-color-scheme:dark){html:not([data-theme="light"]){
   --green:#4a8ee0;--green-light:#0a1a30;--green-mid:#3a78c8;
@@ -28,6 +30,7 @@
   --mid:#2ecc70;   --mid-light:#082210; --mid-mid:#28b060;
   --def:#4ab8f0;   --def-light:#061828; --def-mid:#38a8e0;
   --gold1:#f6d466;--gold2:#e8b93a;--gold-text:#241a00;--gold-edge:#f0c64a;--gold-label:#f0c64a;--gold-tint:#2f2610;--gold-tint-edge:#8a6a1a;
+  --admin:#a78bfa;
 }}
 html[data-theme="dark"]{
   --green:#4a8ee0;--green-light:#0a1a30;--green-mid:#3a78c8;
@@ -42,6 +45,7 @@ html[data-theme="dark"]{
   --mid:#2ecc70;   --mid-light:#082210; --mid-mid:#28b060;
   --def:#4ab8f0;   --def-light:#061828; --def-mid:#38a8e0;
   --gold1:#f6d466;--gold2:#e8b93a;--gold-text:#241a00;--gold-edge:#f0c64a;--gold-label:#f0c64a;--gold-tint:#2f2610;--gold-tint-edge:#8a6a1a;
+  --admin:#a78bfa;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{font-size:16px;overflow-x:hidden;background:#eef1f6}
@@ -553,6 +557,11 @@ html[data-theme="dark"] .conv-item{background:#1e232e}
 .premium-note{padding:12px 13px;border:1px solid var(--gold-tint-edge);border-radius:12px;background:var(--gold-tint);color:var(--text);font-size:13px;line-height:1.45}
 .premium-note b{display:block;margin-bottom:3px;color:var(--gold-label);font-size:14px}
 .premium-note p{margin:0;color:var(--text)}
+/* Contorno viola per tutto ciò che vede solo l'admin; la variabile --admin cambia con il tema */
+.admin-only{outline:2px solid var(--admin);outline-offset:2px}
+.admin-only:focus-visible{outline-width:3px}
+.menu-it.admin-only,.bnav-item.admin-only,.menu-code.admin-only{outline-offset:-2px}
+.admin-block{padding:8px;border-radius:12px}
 .premium-tile{position:relative}.premium-tile .premium-badge{position:absolute;top:12px;right:12px}
 .menu-it .premium-badge,.menu-lgrow .premium-badge{margin-left:6px}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap}

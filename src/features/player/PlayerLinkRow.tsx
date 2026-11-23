@@ -28,7 +28,7 @@ export function PlayerLinkRow({ leagueId, player }: { leagueId: string; player: 
     }
   };
   return (
-    <div id="player-link-row" className="row-line" style={{ margin: '8px 0', padding: '8px 10px', background: 'var(--gray)', borderRadius: 'var(--radius-sm)', gap: 8, flexWrap: 'wrap' }}>
+    <div id="player-link-row" className="row-line admin-only" style={{ margin: '8px 0', padding: '8px 10px', background: 'var(--gray)', borderRadius: 'var(--radius-sm)', gap: 8, flexWrap: 'wrap' }}>
       <div style={{ flex: 1, minWidth: 140, fontSize: 12, lineHeight: 1.4 }}>
         {s.linked ? (
           <>✅ Collegato a <b>{s.linkedName}</b></>

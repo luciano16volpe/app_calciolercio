@@ -28,7 +28,7 @@ export function AdminProposalsPanel({ data, onClose }: { data: LeagueData; onClo
     await Promise.all([qc.invalidateQueries({ queryKey: ADMIN_REQUESTS_KEY }), qc.invalidateQueries({ queryKey: MEMBERS_KEY })]);
   };
   return (
-    <Sheet title="Proposte di amministratore" onClose={onClose} id="sheet-proposals">
+    <Sheet admin title="Proposte di amministratore" onClose={onClose} id="sheet-proposals">
       <div className="card">
         <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 8, lineHeight: 1.4 }}>Gli altri amministratori possono solo proporre: diventa amministratore chi approvi tu.</div>
         {q.isError ? <div style={{ color: 'var(--red)', fontSize: 12, fontWeight: 700 }}>{(q.error as Error).message}</div> : null}
@@ -80,7 +80,7 @@ export function PlatformLeaguesPanel({ onClose }: { onClose: () => void }) {
     } catch (e) { toast('Errore: ' + (e as Error).message); }
   };
   return (
-    <Sheet title="Tutte le leghe" onClose={onClose} id="sheet-platform-leagues">
+    <Sheet admin title="Tutte le leghe" onClose={onClose} id="sheet-platform-leagues">
       {requests.isError ? <div className="card" role="alert">Impossibile caricare le richieste: {(requests.error as Error).message}</div> : null}
       {(requests.data ?? []).map((r) => <div className="card" key={r.id} style={{ marginBottom: 10 }}>
         <b>Richiesta: {r.name}</b><div style={{ fontSize: 12 }}>Da {r.requester_name} · {r.email} · {formatDate(r.created_at.slice(0, 10))}</div>
@@ -130,7 +130,7 @@ export function PlatformUsersPanel({ onClose, premiumOnly = false }: { onClose: 
     finally { setBusy(null); }
   };
   return (
-    <Sheet title={premiumOnly ? 'Abbonamenti Premium' : 'Utenti'} onClose={onClose} id="sheet-platform-users">
+    <Sheet admin title={premiumOnly ? 'Abbonamenti Premium' : 'Utenti'} onClose={onClose} id="sheet-platform-users">
       {q.isError ? <div className="card" style={{ color: 'var(--red)', fontWeight: 700, fontSize: 13 }}>{(q.error as Error).message}</div> : null}
       {premium.isError ? <div className="card" role="alert">Impossibile caricare gli abbonamenti: {(premium.error as Error).message}</div> : null}
       {q.data ? <div style={{ fontSize: 12, color: 'var(--text3)', margin: '0 2px 8px' }}>{q.data.length} account</div> : null}
@@ -166,7 +166,7 @@ export function PremiumPanel({ onClose }: { onClose: () => void }) {
   const [section, setSection] = useState<'subscriptions' | 'trial' | 'features' | null>(null);
 
 
-  return <><PanelLayer active={section !== 'subscriptions' && section !== 'features'}><Sheet title="Premium" onClose={onClose} id="sheet-premium">
+  return <><PanelLayer active={section !== 'subscriptions' && section !== 'features'}><Sheet admin title="Premium" onClose={onClose} id="sheet-premium">
     {section === 'trial' ? <div className="card">
       <h3>Prova gratuita</h3>
       <p>Ogni nuovo account riceve un mese di Premium dalla registrazione. Nella gestione abbonamenti puoi vedere chi è in prova.</p>
@@ -197,7 +197,7 @@ function FeatureSettings({ onClose }: { onClose: () => void }) {
     } catch (e) { toast('Errore: ' + (e as Error).message); }
     finally { setSaving(false); }
   };
-  return <Sheet title="Funzionalità" onClose={onClose} id="sheet-feature-settings">
+  return <Sheet admin title="Funzionalità" onClose={onClose} id="sheet-feature-settings">
     <div className="card">
       <p>Standard è per tutti, Premium richiede l’abbonamento, Beta è visibile solo al super amministratore.</p>
       {features.isError ? <p role="alert">Impossibile caricare le impostazioni.</p> : null}

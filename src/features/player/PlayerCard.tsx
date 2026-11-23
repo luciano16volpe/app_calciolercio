@@ -186,7 +186,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
           </div>
           <div id="match-modal-body">
             {canEdit ? (
-              <PlayerEditTop data={data} player={player} weightRow={weightRow} />
+              <div className="admin-only admin-block"><PlayerEditTop data={data} player={player} weightRow={weightRow} /></div>
             ) : (
               <>
                 <div className="photo-row" style={{ margin: '2px 0 8px', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 16 }}>

@@ -42,7 +42,7 @@ export function PlayerBenchRow({ data, player, onRemoved }: { data: LeagueData; 
     }
   };
   return (
-    <div id="player-bench-row" style={{ margin: '8px 0' }}>
+    <div id="player-bench-row" className="admin-only" style={{ margin: '8px 0' }}>
       <button type="button" id="player-remove" className="btn btn-secondary btn-full btn-sm" disabled={busy} onClick={() => void go()}>🪑 Togli dalla lega</button>
     </div>
   );

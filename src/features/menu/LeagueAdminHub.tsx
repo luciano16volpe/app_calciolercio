@@ -21,9 +21,9 @@ export function LeagueAdminHub({ data, onClose, onOpen }: { data: LeagueData; on
     { panel: 'members', icon: 'users', title: 'Membri e ruoli', description: 'Gestisci gli accessi alla lega', color: 'premium-tile-users' },
     { panel: 'merge', icon: 'merge', title: 'Unisci giocatori', description: 'Riunisci le schede duplicate', color: 'player-tile-awards' },
   ];
-  return <Sheet title="ADMIN LEGA" onClose={onClose} id="sheet-league-admin-hub">
+  return <Sheet admin title="ADMIN LEGA" onClose={onClose} id="sheet-league-admin-hub">
     <p style={{ color: 'var(--text2)', marginBottom: 12 }}>{data.league.name}</p>
-    <div className="premium-tiles">{items.map((item) => <button type="button" id={'menu-' + (item.panel === 'admin-proposals' ? 'proposals' : item.panel)} key={item.panel} className={'premium-tile ' + item.color} onClick={() => onOpen(item.panel)}>
+    <div className="premium-tiles">{items.map((item) => <button type="button" id={'menu-' + (item.panel === 'admin-proposals' ? 'proposals' : item.panel)} key={item.panel} className={'premium-tile admin-only ' + item.color} onClick={() => onOpen(item.panel)}>
       <span><AdminIcon name={item.icon} /></span><b>{item.title}{item.badge ? ' (' + item.badge + ')' : ''}</b><small>{item.description}</small>
     </button>)}</div>
   </Sheet>;

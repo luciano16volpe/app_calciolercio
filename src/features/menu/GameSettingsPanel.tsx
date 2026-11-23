@@ -92,7 +92,7 @@ export function GameSettingsPanel({ data, editable, onClose }: { data: LeagueDat
   };
 
   return (
-    <Sheet title="🎮 Regole di gioco" onClose={onClose} id="sheet-game-settings">
+    <Sheet admin title="🎮 Regole di gioco" onClose={onClose} id="sheet-game-settings">
       <div className="card" id="game-settings">
         <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.45, marginBottom: 10 }}>
           Valgono per <b>tutte le leghe</b>. {editable ? 'Le cambi solo tu, come amministratore della piattaforma.' : 'Le vedi come amministratore di lega, ma le cambia solo l’amministratore della piattaforma.'}

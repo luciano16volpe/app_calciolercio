@@ -63,5 +63,6 @@ export default defineConfig({
     setupFiles: ['tests/setup.ts'],
     include: ['tests/**/*.test.{ts,tsx}', 'src/**/*.test.{ts,tsx}'],
     testTimeout: 60_000, // i test del sorteggio provano migliaia di combinazioni
+    hookTimeout: 60_000, // i database di prova in memoria partono lenti quando i file girano in parallelo
   },
 });

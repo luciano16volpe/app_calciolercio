@@ -147,7 +147,7 @@ export function AuditPanel({ onClose }: { onClose: () => void }) {
   const periods: Array<[Period, string]> = [['today', 'Oggi'], ['7', '7 giorni'], ['30', '30 giorni'], ['custom', 'Date']];
 
   return (
-    <Sheet title="🛡️ Registro attività" onClose={onClose} id="sheet-audit">
+    <Sheet admin title="🛡️ Registro attività" onClose={onClose} id="sheet-audit">
       <div className="card" id="audit-filters">
         <div className="f-lab" style={{ marginTop: 0 }}>Periodo</div>
         <div className="f-seg" id="audit-period">

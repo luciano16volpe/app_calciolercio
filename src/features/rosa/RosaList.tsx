@@ -67,7 +67,7 @@ export function RosaList({ data, onOpen, onAdd }: { data: LeagueData; onOpen: (p
     </div>
     {onAdd ? (
       <div className="btn-row" style={{ marginTop: 4 }}>
-        <button className="btn btn-secondary" style={{ flex: 1 }} onClick={onAdd}>+ Aggiungi giocatore</button>
+        <button className="btn btn-secondary admin-only" style={{ flex: 1 }} onClick={onAdd}>+ Aggiungi giocatore</button>
       </div>
     ) : null}
     </>

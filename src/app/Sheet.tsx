@@ -2,7 +2,7 @@
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { repairViewport } from './Dialogs';
 
-export function Sheet({ title, onClose, children, id, swipeBack = true }: { title: string; onClose: () => void; children: ReactNode; id?: string; swipeBack?: boolean }) {
+export function Sheet({ title, onClose, children, id, swipeBack = true, admin = false }: { title: string; onClose: () => void; children: ReactNode; id?: string; swipeBack?: boolean; /** schermata che apre solo l'admin: intestazione con fascia viola */ admin?: boolean }) {
   const start = useRef<{ x: number; y: number; time: number } | null>(null);
   const sheet = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
@@ -33,7 +33,7 @@ export function Sheet({ title, onClose, children, id, swipeBack = true }: { titl
     close.current();
   };
   return (
-    <div ref={sheet} className="sheet" role="dialog" aria-modal="true" aria-label={title} id={id}
+    <div ref={sheet} className={`sheet${admin ? ' sheet-admin' : ''}`} role="dialog" aria-modal="true" aria-label={title} id={id}
       onTouchStart={(e) => {
         if (closing.current) return;
         const t = e.touches[0];

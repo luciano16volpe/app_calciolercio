@@ -59,7 +59,7 @@ export function BenchPanel({ data, onClose }: { data: LeagueData; onClose: () =>
   };
 
   return (
-    <Sheet title="Panchina" onClose={onClose} id="sheet-bench">
+    <Sheet admin title="Panchina" onClose={onClose} id="sheet-bench">
       <div className="card">
         <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.4, marginBottom: 8 }}>
           I giocatori rimossi dalla Rosa di <b>{data.league.name}</b>. Puoi riportarli nella stessa lega; se hanno un account collegato rientrano anche come membri.

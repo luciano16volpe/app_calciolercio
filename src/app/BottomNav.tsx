@@ -75,7 +75,7 @@ export function BottomNav({ page, onGo, canPlay, me }: { page: PageName; onGo: (
     <nav className="bottom-nav" aria-label="Sezioni">
       {ITEMS.filter((it) => it.id !== 'partita' || canPlay).map((it) => (
         <button
-          key={it.id} type="button" className={`bnav-item${page === it.id ? ' active' : ''}`} aria-label={it.label} aria-current={page === it.id ? 'page' : undefined}
+          key={it.id} type="button" className={`bnav-item${page === it.id ? ' active' : ''}${it.id === 'partita' ? ' admin-only' : ''}`} aria-label={it.label} aria-current={page === it.id ? 'page' : undefined}
           title={it.label} onClick={() => onGo(it.id)}
         >
           <span className="bni">

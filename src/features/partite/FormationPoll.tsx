@@ -117,7 +117,7 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
         </>}
       </div>
       {state?.can_close ? <footer className="formation-poll-footer formation-poll-admin">
-        <button type="button" id="formation-poll-close" className="btn btn-danger btn-full" disabled={closing || busy} onClick={() => void closePoll()}>
+        <button type="button" id="formation-poll-close" className="btn btn-danger btn-full admin-only" disabled={closing || busy} onClick={() => void closePoll()}>
           {closing ? 'Chiusura…' : '🔒 Chiudi votazione'}</button>
         <small>Solo per l’admin. Altrimenti si chiude da sola il {deadline(state.closes_at)}.</small>
       </footer> : null}

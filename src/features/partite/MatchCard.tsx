@@ -491,7 +491,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
             <div id="mbar-share" style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}><MatchButtons data={data} m={m} act={act} withPlace={false} /></div>
             {canEdit && !editing ? (
               <button
-                id="edit-toggle-btn" className="btn btn-secondary btn-sm mbar-btn" onClick={() => setDraft(startDraft(m, ratings))} title="Modifica partita" aria-label="Modifica partita"
+                id="edit-toggle-btn" className="btn btn-secondary btn-sm mbar-btn admin-only" onClick={() => setDraft(startDraft(m, ratings))} title="Modifica partita" aria-label="Modifica partita"
                 style={{ border: '2px solid var(--green)', color: 'var(--green)', marginLeft: 'auto', fontSize: 15, padding: '6px 9px' }}
               >
                 ✏️
@@ -507,13 +507,13 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
           </div>
           {(canEdit || canEditText) && !editing && m && (m.ratingsSkipped || needsRatings(data.dataset, m)) ? (
             <div style={{ marginBottom: 10 }}>
-              <button type="button" id="skip-ratings" className="btn btn-secondary btn-full btn-sm" style={{ whiteSpace: 'normal' }} onClick={() => void toggleSkip()}>
+              <button type="button" id="skip-ratings" className={`btn btn-secondary btn-full btn-sm${canEdit ? ' admin-only' : ''}`} style={{ whiteSpace: 'normal' }} onClick={() => void toggleSkip()}>
                 {m.ratingsSkipped ? '↩ Rimetti tra le pagelle da scrivere' : '⏭️ Non scrivere le pagelle di questa partita'}
               </button>
             </div>
           ) : null}
           <div id="match-fields" style={{ opacity: editing ? 1 : 0.92 }}>
-            {canEdit && !editing && canPlanMatch(data.dataset, m) ? <button type="button" className="btn btn-secondary btn-full" style={{ marginBottom: 12 }} onClick={() => setPlanning(true)}>Modifica programma e squadre</button> : null}
+            {canEdit && !editing && canPlanMatch(data.dataset, m) ? <button type="button" className="btn btn-secondary btn-full admin-only" style={{ marginBottom: 12 }} onClick={() => setPlanning(true)}>Modifica programma e squadre</button> : null}
             {full ? (
               <div style={{ marginBottom: 8 }}>
                 <div style={{ ...LABEL, marginBottom: 6 }}>⏰ Ora</div>

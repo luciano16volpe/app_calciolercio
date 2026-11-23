@@ -22,9 +22,9 @@ const ROLE_LABEL = { admin: 'Admin', redazione: 'Redazione', member: 'Membro' } 
 
 const initials = (s: string) => s.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((w) => (w[0] ?? '').toUpperCase()).join('') || '?';
 
-function Item({ icon, title, sub, badge, hot, premium, onClick, id }: { icon: ReactNode; title: string; sub?: string; badge?: number | string; hot?: boolean; /** funzione Premium non attiva: mostra l'etichetta dorata */ premium?: boolean; onClick: () => void; id?: string }) {
+function Item({ icon, title, sub, badge, hot, premium, admin, onClick, id }: { icon: ReactNode; title: string; sub?: string; badge?: number | string; hot?: boolean; /** funzione Premium non attiva: mostra l'etichetta dorata */ premium?: boolean; /** visibile solo all'admin: contorno viola */ admin?: boolean; onClick: () => void; id?: string }) {
   return (
-    <button type="button" className="menu-it" onClick={onClick} id={id}>
+    <button type="button" className={`menu-it${admin ? ' admin-only' : ''}`} onClick={onClick} id={id}>
       <span className="i">{icon}</span>
       <span className="t">{title}{sub ? <div className="s">{sub}</div> : null}</span>
       {badge !== undefined && badge !== 0 ? <span className={`menu-bd${hot ? '' : ' n'}`}>{badge}</span> : null}
@@ -178,13 +178,13 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
           {isAdmin && data ? (
             <>
               <div className="menu-sec">Gestione · {data.league.name}</div>
-              <Item icon={<AdminIcon name="shield" />} title="ADMIN LEGA" sub="inviti, richieste, panchina, membri e giocatori" badge={(claims.data?.length ?? 0) + (proposals.data?.length ?? 0)} hot onClick={() => open('league-admin-hub')} id="menu-league-admin" />
-              <Item icon="🗂️" title="Partite senza pagelle" sub={pending.length ? `${pending.length} da scrivere o saltare` : 'tutto scritto'} onClick={() => open('pending')} id="menu-pending" />
-              {!isSuper ? <Item icon="🎮" title="Regole di gioco" sub="formazioni, forma, pesi (sola lettura)" onClick={() => open('game-settings')} id="menu-game-settings" /> : null}
-              {isPremiumAdmin || isSuper ? <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" onClick={() => open('league-settings')} id="menu-league-settings" /> : null}
-              {ready && !isPremiumAdmin && !isSuper ? <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" premium onClick={() => explainPremium('Le impostazioni della lega')} id="menu-league-settings-locked" /> : null}
+              <Item icon={<AdminIcon name="shield" />} title="ADMIN LEGA" sub="inviti, richieste, panchina, membri e giocatori" badge={(claims.data?.length ?? 0) + (proposals.data?.length ?? 0)} hot onClick={() => open('league-admin-hub')} id="menu-league-admin" admin />
+              <Item icon="🗂️" title="Partite senza pagelle" sub={pending.length ? `${pending.length} da scrivere o saltare` : 'tutto scritto'} onClick={() => open('pending')} id="menu-pending" admin />
+              {!isSuper ? <Item icon="🎮" title="Regole di gioco" sub="formazioni, forma, pesi (sola lettura)" onClick={() => open('game-settings')} id="menu-game-settings" admin /> : null}
+              {isPremiumAdmin || isSuper ? <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" onClick={() => open('league-settings')} id="menu-league-settings" admin /> : null}
+              {ready && !isPremiumAdmin && !isSuper ? <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" premium onClick={() => explainPremium('Le impostazioni della lega')} id="menu-league-settings-locked" admin /> : null}
               {cur ? (
-                <div className="menu-code">Codice d'invito <b id="menu-code">{cur.inviteCode}</b><button type="button" onClick={() => void copy(cur.inviteCode)}>Copia</button></div>
+                <div className="menu-code admin-only">Codice d'invito <b id="menu-code">{cur.inviteCode}</b><button type="button" onClick={() => void copy(cur.inviteCode)}>Copia</button></div>
               ) : null}
             </>
           ) : null}
@@ -192,7 +192,7 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
           {isSuper ? (
             <>
               <div className="menu-sec">Piattaforma</div>
-              <Item icon={<AdminIcon name="shield" />} title="SUPERADMIN" sub="regole, audit, leghe, utenti e Premium" onClick={() => open('superadmin-hub')} id="menu-superadmin" />
+              <Item icon={<AdminIcon name="shield" />} title="SUPERADMIN" sub="regole, audit, leghe, utenti e Premium" onClick={() => open('superadmin-hub')} id="menu-superadmin" admin />
             </>
           ) : null}
 

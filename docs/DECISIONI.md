@@ -231,3 +231,9 @@ Funzioni Premium e dove si applicano i permessi (sempre nel database, il colore 
 | Impostazioni della lega (admin) | riga con etichetta oro | `account-premium`, collaudo SQL Premium |
 | Richiedere una nuova lega | riga con etichetta oro | `league-requests` |
 
+## Contorno viola per le cose da admin (23 novembre 2026)
+- Tutto ciò che vede **solo l'admin** ha un contorno **viola vivo** (`--admin`: `#7c3aed` nel tema chiaro, `#a78bfa` nello scuro; leggibile su sfondo e carte, almeno 3:1). Vale per l'**admin di lega e per l'amministratore supremo**; la redazione non ha contorno.
+- Classe `.admin-only` per righe di menu, caselle dei pannelli, pulsanti e riquadri riservati dentro le schermate normali (Edit e «Modifica programma e squadre» della partita, «Non scrivere le pagelle», voto dei partecipanti, «Chiudi votazione», sezione di modifica del giocatore, invito/collegamento e «Togli dalla lega», «+ Aggiungi giocatore», tab Gioca, codice d'invito nel menu).
+- Le schermate intere che apre solo l'admin (`<Sheet admin …>`: ADMIN LEGA, Inviti, Richieste, Unisci, Membri, Panchina, Impostazioni e Regole di gioco della lega, Modifica partita in programma, SUPERADMIN, Registro attività, Tutte le leghe, Utenti, Premium, Funzionalità, Proposte di admin) hanno una **fascia viola** sotto l'intestazione blu.
+- Non marcato: ciò che apre anche la redazione (Partite senza pagelle nella sua sezione, Gazzetta, scrittura pagelle). Quando si aggiunge una funzione solo da admin va aggiunto `admin-only` o `admin` a `Sheet`: lo controlla `tests/admin-outline.test.ts`.
+
