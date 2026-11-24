@@ -34,6 +34,7 @@ export interface Rating {
   player?: string;
   playerId?: string | null;
   rating?: number | string | null;
+  editorRating?: number | string | null;
   goals?: number | string | null;
   assist?: number | string | null;
   autogol?: number | string | null;

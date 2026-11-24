@@ -21,6 +21,8 @@ import { MyProfileTools } from '../impostazioni/MyProfileTools';
 import { LastMatchCard, type MatchActions } from '../partite/parts';
 import { FormationPollBanner, FormationPollInline } from '../partite/FormationPoll';
 import { PlayerCard } from '../player/PlayerCard';
+import { useAdvancedEnabled, useAdvancedStats } from '../../data/advancedPredictions';
+import { seasonOf } from '../../domain/seasons';
 
 const TEAM_NAME = { A: '🔵 Blu', B: '⚪ Bianchi' } as const;
 
@@ -109,6 +111,20 @@ function RecentMatches({ data, player, onOpen, active }: { data: LeagueData; pla
   );
 }
 
+function MyPredictionProfile({data}:{data:LeagueData}){
+  const enabled=useAdvancedEnabled(data.league.id);
+  const dates=data.dataset.matches.map(x=>String(x.date??'')).sort();
+  const season=seasonOf(dates.at(-1)??new Date().toISOString())?.key??'';
+  const stats=useAdvancedStats(data.league.id,season,enabled.data===true);
+  if(!enabled.data||!stats.data)return null;
+  const settled=(stats.data.won??0)+(stats.data.lost??0);
+  return <div className="card"><div className="section-header">Il mio profilo da profeta</div>
+    <p>{settled} pronostici validati · {stats.data.won??0} indovinati · {settled?Math.round((stats.data.won??0)*100/settled):0}% precisione</p>
+    <p>{stats.data.selected??0} scelti su {stats.data.received??0} ricevuti · Difficoltà media {stats.data.average_difficulty??'—'}</p>
+    <p>Badge celebrativi e dettagli sono nella sezione Scommesse → Le mie statistiche.</p>
+  </div>;
+}
+
 /** Uscire da una lega (si chiede conferma). */
 function LeaveLeague({ currentSlug }: { currentSlug: string }) {
   const { user } = useAuth();
@@ -181,6 +197,7 @@ export function ProfiloPage({ data, active, act }: { data: LeagueData; active: b
       ) : null}
 
       {me ? <RecentMatches key={data.league.id + me.id} data={data} player={me} onOpen={act.openMatch} active={active} /> : null}
+      {me ? <MyPredictionProfile data={data} /> : null}
 
       <MyPlayerCard data={data} />
       {linked ? <MyProfileTools data={data} playerId={linked.id} name={linked.name} /> : null}

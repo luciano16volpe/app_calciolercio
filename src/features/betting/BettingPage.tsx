@@ -1,0 +1,90 @@
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../../app/auth';
+import { useToast } from '../../app/Toast';
+import { bettingKey, savePrediction, useBettingBoard, type BettingMatch, type Outcome } from '../../data/betting';
+import type { LeagueData } from '../../data/queries';
+import { formatDate } from '../../domain/format';
+import { AdvancedPredictionsSection } from './AdvancedPredictionsSection';
+import { useAdvancedEnabled } from '../../data/advancedPredictions';
+
+const outcomeLabel: Record<Outcome, string> = { '1': '1 · Blu', X: 'X · Pareggio', '2': '2 · Bianchi' };
+const predictionLabel = (outcome: Outcome, a: number | null, b: number | null) =>
+  `${outcomeLabel[outcome]}${a === null || b === null ? '' : ` · ${a}-${b}`}`;
+
+function BettingCard({ match, leagueId }: { match: BettingMatch; leagueId: string }) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [outcome, setOutcome] = useState<Outcome | null>(match.my_prediction?.outcome ?? null);
+  const [scoreA, setScoreA] = useState(match.my_prediction?.score_a?.toString() ?? '');
+  const [scoreB, setScoreB] = useState(match.my_prediction?.score_b?.toString() ?? '');
+  const [busy, setBusy] = useState(false);
+  const exact = scoreA !== '' && scoreB !== '';
+  const a = exact ? Number(scoreA) : null;
+  const b = exact ? Number(scoreB) : null;
+  const exactOutcome: Outcome | null = exact && a !== null && b !== null ? a > b ? '1' : a < b ? '2' : 'X' : null;
+  const valid = outcome !== null && ((scoreA === '' && scoreB === '') ||
+    (exact && Number.isInteger(a) && Number.isInteger(b) && a! >= 0 && b! >= 0 && a! <= 99 && b! <= 99 && exactOutcome === outcome));
+  const save = async () => {
+    if (!valid || !outcome || !match.is_open || busy) return;
+    setBusy(true);
+    try {
+      await savePrediction(match.match_id, outcome, a, b);
+      await qc.invalidateQueries({ queryKey: bettingKey(leagueId, user?.id) });
+      toast('Pronostico salvato');
+    } catch (error) { toast('Errore: ' + (error as Error).message); }
+    finally { setBusy(false); }
+  };
+  return <article className="betting-card">
+    <div className="betting-card-head"><strong>Partita del {formatDate(match.date)}</strong>
+      <span>{match.play_time ? `Ore ${match.play_time.slice(0, 5)}` : 'Orario da definire'}</span></div>
+    {match.score_a !== null && match.score_b !== null ? <p>Risultato: <b>Blu {match.score_a} – {match.score_b} Bianchi</b></p> : null}
+    {match.is_open ? <>
+      <p className="betting-hint">Scegli 1, X o 2. Il risultato esatto è facoltativo.</p>
+      <div className="betting-outcomes" role="group" aria-label="Pronostico 1 X 2">
+        {(['1', 'X', '2'] as const).map((pick) => <button type="button" key={pick} className={outcome === pick ? 'selected' : ''}
+          aria-pressed={outcome === pick} onClick={() => setOutcome(pick)}>{outcomeLabel[pick]}</button>)}
+      </div>
+      <div className="betting-score"><span>Risultato esatto</span>
+        <label>Blu <input type="number" min="0" max="99" inputMode="numeric" value={scoreA} onChange={(e) => setScoreA(e.target.value)} /></label>
+        <span>–</span><label>Bianchi <input type="number" min="0" max="99" inputMode="numeric" value={scoreB} onChange={(e) => setScoreB(e.target.value)} /></label>
+      </div>
+      {exact && outcome && exactOutcome !== outcome ? <p className="betting-error">Il risultato esatto deve corrispondere alla scelta {outcome}.</p> : null}
+      {(scoreA !== '') !== (scoreB !== '') ? <p className="betting-error">Inserisci entrambi i gol o lascia vuoti entrambi i campi.</p> : null}
+      <button type="button" className="btn btn-primary betting-save" disabled={!valid || busy} onClick={() => void save()}>{busy ? 'Salvataggio…' : 'Salva pronostico'}</button>
+    </> : <p className="betting-hint">Pronostici chiusi{!match.play_time && match.score_a === null ? ': manca l’orario della partita' : ''}.</p>}
+    {match.my_prediction ? <p className="betting-mine">La tua scelta: <b>{predictionLabel(match.my_prediction.outcome, match.my_prediction.score_a, match.my_prediction.score_b)}</b></p> : null}
+    <details className="betting-participation"><summary>{match.total} {match.total === 1 ? 'pronostico registrato' : 'pronostici registrati'}</summary>
+      {match.entries ? match.entries.length ? <ul>{match.entries.map((entry) => <li key={entry.user_id}><b>{entry.name}</b><span>{predictionLabel(entry.outcome, entry.score_a, entry.score_b)}</span></li>)}</ul>
+        : <p>Nessun pronostico.</p> : <p>Le scelte degli altri restano riservate fino alla conclusione della partita.</p>}
+    </details>
+  </article>;
+}
+
+export function BettingPage({ data }: { data: LeagueData }) {
+  const enabled = useAdvancedEnabled(data.league.id);
+  if (enabled.isSuccess && !enabled.data) return <div className="betting-page"><div className="card"><div className="section-header">🎯 Scommesse</div><p>La sezione Pronostici non è attiva per questa lega. Può attivarla l’admin dalle Impostazioni della lega.</p></div></div>;
+  return <BettingContent data={data} />;
+}
+
+function BettingContent({ data }: { data: LeagueData }) {
+  const board = useBettingBoard(data.league.id);
+  const matches = board.data ?? [];
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' });
+  const upcoming = matches.filter((m) => m.score_a === null && m.score_b === null && m.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const history = matches.filter((m) => !upcoming.includes(m) && (m.my_prediction || m.total > 0));
+  return <div className="betting-page">
+    <div className="card"><div className="section-header">🎯 Scommesse</div>
+      <p>Pronostica le partite della tua lega. Nessuna puntata in denaro: per ora registriamo soltanto le scelte.</p></div>
+    {board.isError ? <div className="card" role="alert">Impossibile caricare i pronostici. <button type="button" onClick={() => void board.refetch()}>Riprova</button></div> : null}
+    {!board.isError && board.isPending ? <div className="card">Caricamento partite…</div> : null}
+    {board.isSuccess ? <>
+      <h2>Prossime partite</h2>
+      {upcoming.length ? upcoming.map((match) => <BettingCard key={match.match_id} match={match} leagueId={data.league.id} />) : <div className="card">Nessuna prossima partita in programma.</div>}
+      {history.length ? <><h2>Storico pronostici</h2>{history.map((match) => <BettingCard key={match.match_id} match={match} leagueId={data.league.id} />)}</> : null}
+      <AdvancedPredictionsSection leagueId={data.league.id} matches={matches} players={data.dataset.players} />
+    </> : null}
+  </div>;
+}

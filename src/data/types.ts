@@ -505,6 +505,7 @@ export type Database = {
           assist: number
           autogol: number
           descrizione: string | null
+          editor_rating: number | null
           goals: number
           match_id: string
           meta: number
@@ -519,6 +520,7 @@ export type Database = {
           assist?: number
           autogol?: number
           descrizione?: string | null
+          editor_rating?: number | null
           goals?: number
           match_id: string
           meta?: number
@@ -533,6 +535,7 @@ export type Database = {
           assist?: number
           autogol?: number
           descrizione?: string | null
+          editor_rating?: number | null
           goals?: number
           match_id?: string
           meta?: number
@@ -1259,6 +1262,19 @@ export type Database = {
       formation_poll_list: { Args: { p_league: string }; Returns: Json }
       formation_poll_state: { Args: { p_match: string }; Returns: Json }
       formation_poll_votes: { Args: { p_match: string }; Returns: Json }
+      betting_board: { Args: { p_league: string }; Returns: Json }
+      advanced_prediction_enabled: { Args: { p_league: string }; Returns: boolean }
+      advanced_prediction_set_enabled: { Args: { p_league: string; p_enabled: boolean }; Returns: undefined }
+      advanced_prediction_select: { Args: { p_assignment: string; p_selected: boolean }; Returns: undefined }
+      advanced_prediction_confirm_stats: { Args: { p_match: string }; Returns: undefined }
+      advanced_prediction_leaderboard: { Args: { p_league: string; p_season: string; p_kind?: string; p_limit?: number; p_offset?: number }; Returns: Json }
+      advanced_prediction_my_stats: { Args: { p_league: string; p_season: string }; Returns: Json }
+      advanced_prediction_admin_results: { Args: { p_match: string }; Returns: Json }
+      advanced_prediction_admin_participation: { Args: { p_match: string }; Returns: Json }
+      advanced_prediction_balance: { Args: { p_league: string; p_season: string }; Returns: Json }
+      advanced_prediction_my_history: { Args: { p_league: string; p_season?: string | null; p_limit?: number; p_offset?: number;
+        p_match?: string | null; p_category?: string | null; p_target?: string | null; p_difficulty?: string | null; p_outcome?: string | null }; Returns: Json }
+      save_match_prediction: { Args: { p_match: string; p_outcome: string; p_score_a?: number | null; p_score_b?: number | null }; Returns: undefined }
       submit_formation_vote: { Args: { p_match: string; p_option: number }; Returns: undefined }
       close_formation_poll: { Args: { p_match: string }; Returns: undefined }
       close_community_voting: { Args: { p_match: string }; Returns: undefined }

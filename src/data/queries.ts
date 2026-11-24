@@ -137,7 +137,7 @@ async function fetchLeagueHistory(league: LeagueData['league']) {
     Promise.all(chunks.map((ids) => fetchAll((a, b) => supabase.from('gazzette').select('match_id, file_path').in('match_id', ids).order('match_id').range(a, b), 'Gazzette'))),
     Promise.all(chunks.map((part) => fetchAll(
       (a, b) => supabase.from('match_player_summaries')
-        .select('match_id, player_id, team, position, rating, goals, assist, autogol, meta, rigori_sbagliati, has_text')
+        .select('match_id, player_id, team, position, rating, goals, assist, autogol, meta, rigori_sbagliati, has_text, editor_rating')
         .in('match_id', part).order('match_id').order('player_id').range(a, b),
       'squadre e pagelle',
     ))),

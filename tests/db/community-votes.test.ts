@@ -37,6 +37,8 @@ beforeEach(async () => {
       ('${match}','${players[0]}','A',0), ('${match}','${players[1]}','A',1),
       ('${match}','${players[2]}','B',0), ('${match}','${players[3]}','B',1);
     update matches set score_a=2,score_b=1 where id='${match}';
+    -- Questi casi esercitano il vecchio percorso manuale per partite storiche.
+    delete from community_vote_settings where match_id='${match}';
   `);
 });
 afterEach(async () => { await db.exec('rollback; reset role;'); });

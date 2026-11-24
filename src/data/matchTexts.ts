@@ -16,7 +16,7 @@ export function useMatchTexts(data: LeagueData, matchId: string, playerId?: stri
     },
     enabled: !!user && !!data.textsDeferred && !!matchId,
     queryFn: async () => {
-      let request = supabase.from('match_players').select('match_id, player_id, titolo, descrizione').eq('match_id', matchId);
+      let request = supabase.from('match_players').select('match_id, player_id, titolo, descrizione, editor_rating').eq('match_id', matchId);
       if (playerId) request = request.eq('player_id', playerId);
       const { data: rows, error } = await request;
       if (error) throw new Error(error.message);

@@ -131,12 +131,13 @@ export function BalanceBody({ b }: { b: MatchBalance }) {
 }
 
 // ── pagelle di un giocatore ────────────────────────────────────────────────
-function PgtView({ tit, desc }: { tit: string; desc: string }) {
+function PgtView({ tit, desc, editorRating }: { tit: string; desc: string; editorRating: string }) {
   const [open, setOpen] = useState(false);
-  if (!tit && !desc) return null;
+  if (!tit && !desc && !editorRating) return null;
   return (
     <div className={`pgt-view${open ? ' open' : ''}`} onClick={() => setOpen((o) => !o)}>
       {tit ? <div className="pgt-title">«{tit}»</div> : null}
+      {editorRating ? <div className="pgt-editor-rating">Voto dell’editore: {editorRating} · goliardico</div> : null}
       {desc ? <div className="pgt-desc" dangerouslySetInnerHTML={{ __html: waHTML(desc) }} /> : null}
     </div>
   );
@@ -147,7 +148,7 @@ export interface FieldEditor {
   get: (key: string) => PlayerFields;
   set: (key: string, patch: Partial<PlayerFields>) => void;
   openPagella: (key: string, name: string) => void;
-  /** modalità «solo testo» (redazione): si cambiano solo titoli e descrizioni, voti e numeri restano in sola lettura */
+  /** Redazione: titolo, descrizione e voto editoriale; voto ufficiale e statistiche in sola lettura. */
   textOnly?: boolean;
 }
 
@@ -188,6 +189,7 @@ function TeamPanel({ title, team, ratings, blue, side, ed, lockRating = false, h
         const val = hideRating ? '' : f ? f.rating : r && r.rating != null ? String(r.rating) : '';
         const tit = f ? f.tit : r && r.titolo ? String(r.titolo) : '';
         const desc = f ? f.desc : r && r.notes ? String(r.notes) : '';
+        const editorRating = f ? f.editorRating ?? '' : r?.editorRating != null ? String(r.editorRating) : '';
         const full = !!ed && !ed.textOnly; // voti e numeri si cambiano solo in modifica completa
         const cnt = (k: CountKey, emoji: string, ttl: string, max: number, ro: unknown) => (
           <Counter
@@ -216,7 +218,7 @@ function TeamPanel({ title, team, ratings, blue, side, ed, lockRating = false, h
               {cnt('rigori', '❌', 'Rigori sbagliati', 10, r?.rigoriSbagliati)}
               {cnt('meta', '🚀', 'Meta — tiri alle stelle', 50, r?.meta)}
             </div>
-            <PgtView tit={tit} desc={desc} />
+            <PgtView tit={tit} desc={desc} editorRating={editorRating} />
             {ed ? (
               <button type="button" className="rate-btn pgt-add" onClick={() => ed.openPagella(key, pl.name)}>
                 {tit || desc ? '✏️ Modifica pagella' : '＋ Pagella'}
@@ -230,9 +232,10 @@ function TeamPanel({ title, team, ratings, blue, side, ed, lockRating = false, h
 }
 
 /** Finestra "📝 Pagella di …": titolo e descrizione della prestazione. */
-function PagellaDialog({ name, tit, desc, onCancel, onDone }: { name: string; tit: string; desc: string; onCancel: () => void; onDone: (tit: string, desc: string) => void }) {
+function PagellaDialog({ name, tit, desc, editorRating, editorial, onCancel, onDone }: { name: string; tit: string; desc: string; editorRating: string; editorial: boolean; onCancel: () => void; onDone: (tit: string, desc: string, editorRating: string) => void }) {
   const [t, setT] = useState(tit);
   const [d, setD] = useState(desc);
+  const [vote, setVote] = useState(editorRating);
   return (
     <div id="pgt-dialog" style={{ display: 'flex' }}>
       <div className="pgt-box">
@@ -241,10 +244,13 @@ function PagellaDialog({ name, tit, desc, onCancel, onDone }: { name: string; ti
         <input type="text" id="pgt-d-tit" maxLength={60} placeholder="es. Il Muro di Berlino" value={t} onChange={(e) => setT(e.target.value)} />
         <label htmlFor="pgt-d-desc">Descrizione della prestazione</label>
         <textarea id="pgt-d-desc" maxLength={2000} rows={6} placeholder="Scrivi qui la pagella…" value={d} onChange={(e) => setD(e.target.value)} />
+        {editorial ? <><label htmlFor="pgt-d-editor-rating">Voto dell’editore (goliardico)</label>
+          <input type="number" id="pgt-d-editor-rating" min={1} max={10} step={0.5} placeholder="Facoltativo" value={vote} onChange={(e) => setVote(e.target.value)} />
+          <small>Il voto ufficiale continua a essere calcolato dal sondaggio.</small></> : null}
         <div className="pgt-count"><span id="pgt-d-n">{d.length}</span>/2000</div>
         <div className="pgt-btns">
           <button type="button" className="btn btn-secondary" onClick={onCancel}>Annulla</button>
-          <button type="button" className="btn btn-primary" onClick={() => onDone(t.trim().slice(0, 60), d.trim().slice(0, 2000))}>Fatto</button>
+          <button type="button" className="btn btn-primary" onClick={() => onDone(t.trim().slice(0, 60), d.trim().slice(0, 2000), editorial ? vote : editorRating)}>Fatto</button>
         </div>
       </div>
     </div>
@@ -274,7 +280,7 @@ function startDraft(m: Match, ratings: Rating[]): Draft {
     normalizeTeam(side === 'A' ? m.teamA : m.teamB).forEach((pl, i) => {
       const r = ratings.find((x) => (x.playerId && pl.id && x.playerId === pl.id) || x.player === pl.name);
       fields[`${side}${i}`] = {
-        id: pl.id, name: pl.name, rating: r && r.rating != null ? String(r.rating) : '', goals: str(r?.goals), assist: str(r?.assist),
+        id: pl.id, name: pl.name, rating: r && r.rating != null ? String(r.rating) : '', editorRating: r?.editorRating != null ? String(r.editorRating) : '', goals: str(r?.goals), assist: str(r?.assist),
         autogol: str(r?.autogol), rigori: str(r?.rigoriSbagliati), meta: str(r?.meta), tit: r && r.titolo ? String(r.titolo) : '', desc: r && r.notes ? String(r.notes) : '',
       };
     }),
@@ -358,12 +364,18 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
 
   const saveTexts = async () => {
     if (!draft) return;
+    if (Object.values(draft.fields).some((f) => f.editorRating && clampRating(f.editorRating) === null)) {
+      toast('Il voto editoriale deve essere tra 1 e 10, a passi di mezzo punto');
+      return;
+    }
     const changed = Object.values(draft.fields).flatMap((f) => {
       if (!f.id) return [];
       const r = ratings.find((x) => x.playerId === f.id);
       const oldTit = r && r.titolo ? String(r.titolo) : '';
       const oldDesc = r && r.notes ? String(r.notes) : '';
-      return f.tit !== oldTit || f.desc !== oldDesc ? [{ playerId: f.id, titolo: f.tit, descrizione: f.desc }] : [];
+      const oldVote = r?.editorRating != null ? String(r.editorRating) : '';
+      return f.tit !== oldTit || f.desc !== oldDesc || f.editorRating !== oldVote ?
+        [{ playerId: f.id, titolo: f.tit, descrizione: f.desc, editorRating: clampRating(f.editorRating) }] : [];
     });
     if (!changed.length) {
       toast('Nessuna modifica da salvare');
@@ -375,7 +387,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
       await saveMatchTexts(matchId, changed);
       releaseKeyboard();
       await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
-      toast(`Salvati titoli e descrizioni: ${changed.length}`);
+      toast(`Salvate pagelle editoriali: ${changed.length}`);
       repairViewport();
       onClose();
     } catch (e) {
@@ -625,9 +637,11 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
           name={pagella.name}
           tit={(draft.fields[pagella.key] as PlayerFields).tit}
           desc={(draft.fields[pagella.key] as PlayerFields).desc}
+          editorRating={(draft.fields[pagella.key] as PlayerFields).editorRating ?? ''}
+          editorial={textOnly}
           onCancel={() => { releaseKeyboard(); setPagella(null); repairViewport(); }}
-          onDone={(t, d) => {
-            ed?.set(pagella.key, { tit: t, desc: d });
+          onDone={(t, d, editorRating) => {
+            ed?.set(pagella.key, { tit: t, desc: d, editorRating });
             releaseKeyboard();
             setPagella(null);
             repairViewport();

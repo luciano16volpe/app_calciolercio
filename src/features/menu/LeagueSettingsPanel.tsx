@@ -10,6 +10,7 @@ import { useToast } from '../../app/Toast';
 import {
   deleteLeague, LEAGUE_SETTINGS_KEY, MEMBERS_KEY, MY_LEAGUES_KEY, readLeagueSettings, regenerateInviteCode, transferOwnership, updateLeague, useMembers, useMyLeagues, type LeagueSettings,
 } from '../../data/leagues';
+import { setAdvancedEnabled, useAdvancedEnabled } from '../../data/advancedPredictions';
 import { LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven'];
@@ -42,6 +43,19 @@ export function LeagueSettingsPanel({ data, onClose }: { data: LeagueData; onClo
       await updateLeague(lid, { name: n, settings: s });
       await refresh();
       toast('Impostazioni salvate');
+    } catch (e) {
+      toast('Errore: ' + (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const predictions = useAdvancedEnabled(lid);
+  const togglePredictions = async (next: boolean) => {
+    setBusy(true);
+    try {
+      await setAdvancedEnabled(lid, next);
+      await qc.invalidateQueries({ queryKey: ['advanced-predictions-enabled'] });
+      toast(next ? 'Pronostici attivati' : 'Pronostici disattivati');
     } catch (e) {
       toast('Errore: ' + (e as Error).message);
     } finally {
@@ -115,6 +129,12 @@ export function LeagueSettingsPanel({ data, onClose }: { data: LeagueData; onClo
           {DAYS.map((d, i) => <button type="button" key={d} className={s.day === i + 1 ? 'on' : ''} onClick={() => setS({ ...s, day: s.day === i + 1 ? undefined : i + 1 })}>{d}</button>)}
         </div>
         <button type="button" className="f-btn" id="ls-save" disabled={busy} onClick={() => void save()}>Salva</button>
+      </div>
+
+      <div className="card" style={{ marginTop: 12 }} id="ls-predictions">
+        <div className="section-header">🎯 Pronostici e scommesse</div>
+        <div className="f-hint" style={{ marginTop: 0 }}>{predictions.data ? 'Attivi: la sezione Scommesse è visibile ai membri della lega.' : 'Non attivi: la sezione Scommesse non compare nella lega.'}</div>
+        <button type="button" className="f-btn" id="ls-predictions-toggle" disabled={busy || !predictions.isSuccess} onClick={() => void togglePredictions(!predictions.data)}>{predictions.data ? 'Disattiva i pronostici' : 'Attiva i pronostici'}</button>
       </div>
 
       <div className="card" style={{ marginTop: 12 }}>

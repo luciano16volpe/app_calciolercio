@@ -13,6 +13,7 @@ export interface PlayerFields {
   id: string | null;
   name: string;
   rating: string;
+  editorRating?: string;
   goals: string;
   assist: string;
   autogol: string;

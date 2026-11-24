@@ -4,6 +4,7 @@ import { BottomNav } from './app/BottomNav';
 import { useShellNavigation } from './app/useShellNavigation';
 import { useShellWindows } from './app/useShellWindows';
 import { useAuth, useRole } from './app/auth';
+import { useAdvancedEnabled } from './data/advancedPredictions';
 import { useIsSuperAdmin } from './data/leagues';
 import { useMyPremium } from './data/premium';
 import { DialogProvider, usePrompt } from './app/Dialogs';
@@ -36,6 +37,7 @@ const MatchCard = lazy(() => import('./features/partite/MatchCard').then((m) => 
 const CommunityVoteModal = lazy(() => import('./features/partite/CommunityVote').then((m) => ({ default: m.CommunityVoteModal })));
 const FormationPollModal = lazy(() => import('./features/partite/FormationPoll').then((m) => ({ default: m.FormationPollModal })));
 const PartitePage = lazy(() => import('./features/partite/PartitePage').then((m) => ({ default: m.PartitePage })));
+const BettingPage = lazy(() => import('./features/betting/BettingPage').then((m) => ({ default: m.BettingPage })));
 const ProfiloPage = lazy(() => import('./features/profilo/ProfiloPage').then((m) => ({ default: m.ProfiloPage })));
 const GazArchive = lazy(() => import('./features/partite/parts').then((m) => ({ default: m.GazArchive })));
 const GazViewer = lazy(() => import('./features/partite/parts').then((m) => ({ default: m.GazViewer })));
@@ -50,6 +52,7 @@ function prefetchScreens() {
   const loaders = [
     () => import('./features/partite/PartitePage'), () => import('./features/classifiche/ClassifichePage'), () => import('./features/rosa/RosaList'),
     () => import('./features/player/PlayerCard'), () => import('./features/partite/MatchCard'), () => import('./features/gioca/GiocaPage'),
+    () => import('./features/betting/BettingPage'),
     () => import('./features/menu/MenuDrawer'), () => import('./features/impostazioni/SettingsPage'),
   ];
   const idle = (fn: () => void) => (typeof window.requestIdleCallback === 'function' ? void window.requestIdleCallback(fn, { timeout: 4000 }) : void globalThis.setTimeout(fn, 1500));
@@ -139,6 +142,7 @@ function Shell() {
   const data = q.data;
   // «Gioca» (nuova partita) è solo per gli amministratori della lega: agli altri la scheda non c'è, e l'indirizzo /gioca li porta alla pagina iniziale
   const { isAdmin, ready } = useRole(data?.league.id);
+  const predictionsOn = useAdvancedEnabled(data?.league.id ?? '').data === true; // la sezione Pronostici esiste solo nelle leghe in cui l'admin l'ha attivata
   const me = useMyPlayerIn(data); // la mia faccia (o foto) nel footer
   const { page, go } = useShellNavigation(data, isAdmin, ready, inviteToken);
   const ready0 = !!data;
@@ -171,9 +175,12 @@ function Shell() {
       <div id="page-classifiche" data-visual-active={visualsActive} className={`page${page === 'classifiche' ? ' active' : ''}`}><DeferredPage active={page === 'classifiche'}>
         {data ? <ClassifichePage data={data} onOpenPlayer={openPlayer} active={page === 'classifiche'} /> : <Loading q={q} onPanel={setPanel} />}
       </DeferredPage></div>
+      <div id="page-betting" data-visual-active={visualsActive} className={`page${page === 'betting' ? ' active' : ''}`}><DeferredPage active={page === 'betting'}>
+        {data ? <BettingPage data={data} /> : <Loading q={q} onPanel={setPanel} />}
+      </DeferredPage></div>
       <div id="page-settings" data-visual-active={visualsActive} className={`page${page === 'settings' ? ' active' : ''}`}><DeferredPage active={page === 'settings'}><SettingsPage data={data} /></DeferredPage></div>
 
-      <BottomNav page={page} onGo={(p) => { setPanel(null); setMenuOpen(false); go(p); }} canPlay={isAdmin} me={me ? { photo: photoUrl(data?.photos[me.id]), initial: me.name.slice(0, 1).toUpperCase() } : null} />
+      <BottomNav page={page} onGo={(p) => { setPanel(null); setMenuOpen(false); go(p); }} canPlay={isAdmin} showBetting={predictionsOn} me={me ? { photo: photoUrl(data?.photos[me.id]), initial: me.name.slice(0, 1).toUpperCase() } : null} />
 
       <LazyContent>
       {data && view?.kind === 'player' ? (

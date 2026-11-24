@@ -37,6 +37,8 @@ beforeEach(async () => {
     insert into match_players(match_id, player_id, team, position, rating, goals, titolo, descrizione) values
       ('${match}', '${p1}', 'A', 0, 6, 1, 'Originale', 'Testo originale'),
       ('${match}', '${p2}', 'B', 0, 7, 0, 'Secondo', 'Altro testo');
+    -- Simula una partita storica precedente all'apertura automatica del sondaggio.
+    delete from community_vote_settings where match_id='${match}';
   `);
 });
 afterEach(async () => { await db.exec('rollback; reset role;'); });

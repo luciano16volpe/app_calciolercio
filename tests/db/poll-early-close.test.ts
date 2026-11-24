@@ -65,7 +65,7 @@ async function openVote() {
     insert into matches(id,league_id,date,score_a,score_b) values ('${game}','${league}','${matchDate}',3,2);
     insert into match_players(match_id,player_id,team,position) values
       ('${game}','${players[0]}','A',0),('${game}','${players[1]}','A',1),('${game}','${players[2]}','B',0),('${game}','${players[3]}','B',1);
-    insert into community_vote_settings(match_id,started_at,enabled_by) values ('${game}',now()-interval '1 hour','${admin}');`);
+    update community_vote_settings set started_at=now()-interval '1 hour',enabled_by='${admin}' where match_id='${game}';`);
 }
 const voteState = async () => (await db.query<{ s: Record<string, unknown> }>('select community_vote_state($1::uuid) as s', [game])).rows[0]!.s;
 const settings = () => asRoot(async () => (await db.query<{ finalized_at: string | null; closed_early_by: string | null }>(
@@ -124,6 +124,7 @@ test('voto: senza voti la chiusura anticipata lascia le pagelle vuote e segna co
 
 test('voto: una votazione mai attivata non si chiude e la scadenza naturale resta valida', async () => {
   await db.exec(`insert into matches(id,league_id,date,score_a,score_b) values ('${game}','${league}','${matchDate}',1,0);`);
+  await db.exec(`delete from community_vote_settings where match_id='${game}'`);
   await asUser(admin);
   await denied(() => db.query('select close_community_voting($1::uuid)', [game]), /non è attiva/);
   await asSystem();

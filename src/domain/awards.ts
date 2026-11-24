@@ -48,6 +48,61 @@ export const FEATS: Array<{ k: FeatKey; t: string; d: string }> = [
   { k: 'debutto', t: '🎟️ Il Debutto', d: 'la prima partita con CalcioLercio' },
 ];
 
+/** Pronostici: imprese celebrative calcolate dagli stessi risultati consolidati, senza punti extra. */
+export const PREDICTION_FEATS = [
+  { k:'apprendista',t:'Apprendista',d:'Primo pronostico indovinato' },
+  { k:'indovino',t:'Indovino',d:'10 pronostici indovinati' },
+  { k:'veggente',t:'Veggente',d:'25 pronostici indovinati' },
+  { k:'profeta',t:'Profeta',d:'50 pronostici indovinati' },
+  { k:'oracolo',t:'Oracolo',d:'100 pronostici indovinati' },
+  { k:'nostradamus',t:'Nostradamus',d:'Moltiplicatore ×2' },
+  { k:'enPlein',t:'En plein',d:'10 pronostici su 10 indovinati' },
+  { k:'triplettaProfeta',t:'Tripletta del profeta',d:'Primo moltiplicatore ×1,25' },
+  { k:'cinquinaProfeta',t:'Cinquina del profeta',d:'Primo moltiplicatore ×1,50' },
+  { k:'settimoSenso',t:'Settimo senso',d:'Primo moltiplicatore ×1,75' },
+  { k:'colpoLeggendario',t:'Colpo leggendario',d:'Primo leggendario indovinato' },
+  { k:'cacciatoreLeggende',t:'Cacciatore di leggende',d:'10 leggendari indovinati' },
+  { k:'chirurgo',t:'Il Chirurgo',d:'Almeno 80% su 20 pronostici validati' },
+  { k:'inarrestabile',t:'Inarrestabile',d:'5 partite consecutive con saldo positivo' },
+  { k:'specialistaMete',t:'Specialista delle mete',d:'20 pronostici sulle mete indovinati' },
+  { k:'specialistaAutogol',t:'Specialista degli autogol',d:'20 pronostici sugli autogol indovinati' },
+  { k:'specialistaGol',t:'Specialista dei bomber',d:'20 pronostici sui gol indovinati' },
+  { k:'specialistaAssist',t:'Specialista degli assist',d:'20 pronostici sugli assist indovinati' },
+  { k:'lettorePagelle',t:'Lettore di pagelle',d:'20 pronostici sulle pagelle indovinati' },
+  { k:'maiUnaGioia',t:'Mai una gioia',d:'Almeno 5 pronostici, tutti sbagliati' },
+  { k:'caporetto',t:'Caporetto',d:'Punteggio della partita pari o inferiore a −15' },
+] as const;
+export interface PredictionFeatData {
+  won:number;lost:number;
+  categories:Record<string,{won:number}>;
+  difficulties:Record<string,{won:number}>;
+  matches:readonly {selected:number;won:number;lost:number;final_units:number;multiplier_basis_points:number}[];
+}
+export function predictionFeats(data:PredictionFeatData):Set<(typeof PREDICTION_FEATS)[number]['k']> {
+  const unlocked=new Set<(typeof PREDICTION_FEATS)[number]['k']>();
+  const wins=data.won??0,losses=data.lost??0,matches=data.matches??[];
+  const threshold=(key:(typeof PREDICTION_FEATS)[number]['k'],count:number)=>{if(wins>=count)unlocked.add(key);};
+  threshold('apprendista',1);threshold('indovino',10);threshold('veggente',25);threshold('profeta',50);threshold('oracolo',100);
+  if(matches.some(m=>m.multiplier_basis_points>=20000))unlocked.add('nostradamus');
+  if(matches.some(m=>m.selected===10&&m.won===10))unlocked.add('enPlein');
+  if(matches.some(m=>m.multiplier_basis_points>=12500))unlocked.add('triplettaProfeta');
+  if(matches.some(m=>m.multiplier_basis_points>=15000))unlocked.add('cinquinaProfeta');
+  if(matches.some(m=>m.multiplier_basis_points>=17500))unlocked.add('settimoSenso');
+  const legendary=data.difficulties?.LEGENDARY?.won??0;
+  if(legendary>=1)unlocked.add('colpoLeggendario');
+  if(legendary>=10)unlocked.add('cacciatoreLeggende');
+  if(wins+losses>=20&&wins*5>=4*(wins+losses))unlocked.add('chirurgo');
+  let streak=0;
+  for(const match of matches){streak=match.final_units>0?streak+1:0;if(streak>=5)unlocked.add('inarrestabile');}
+  for(const [category,key] of [['METAS','specialistaMete'],['OWN_GOALS','specialistaAutogol'],
+    ['GOALS','specialistaGol'],['ASSISTS','specialistaAssist'],['RATINGS','lettorePagelle']] as const){
+    if((data.categories?.[category]?.won??0)>=20)unlocked.add(key);
+  }
+  if(matches.some(m=>m.selected>=5&&m.won===0&&m.lost===m.selected))unlocked.add('maiUnaGioia');
+  if(matches.some(m=>m.final_units<=-150000))unlocked.add('caporetto');
+  return unlocked;
+}
+
 const num = (v: unknown): number | null => {
   const n = parseInt(v as string);
   return isNaN(n) ? null : n;

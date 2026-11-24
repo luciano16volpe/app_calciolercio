@@ -1,7 +1,7 @@
 // Le schede in basso, solo icone (il nome è per i lettori di schermo e per il tocco lungo): a sinistra Il mio profilo (la mia faccia o foto) · Classifiche · Partite · Rosa; a destra, separato, Gioca (solo amministratori).
 import type { ReactNode } from 'react';
 
-export type PageName = 'profilo' | 'rosa' | 'partita' | 'partite' | 'classifiche' | 'settings';
+export type PageName = 'profilo' | 'rosa' | 'partita' | 'partite' | 'classifiche' | 'betting' | 'settings';
 
 const svg = (children: ReactNode) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -45,6 +45,11 @@ const ITEMS: Array<{ id: Exclude<PageName, 'settings'>; label: string; icon: Rea
     ),
   },
   {
+    id: 'betting',
+    label: 'Scommesse',
+    icon: svg(<><path d="M4 5h16v14H4z" /><path d="M8 9h8M8 13h5" /><circle cx="17" cy="15" r="1" /></>),
+  },
+  {
     id: 'partita',
     label: 'Gioca',
     icon: svg(
@@ -70,10 +75,10 @@ const ITEMS: Array<{ id: Exclude<PageName, 'settings'>; label: string; icon: Rea
 ];
 
 /** `me` = la mia faccia (foto o iniziale) al posto dell'icona del profilo; senza giocatore collegato resta la sagoma. */
-export function BottomNav({ page, onGo, canPlay, me }: { page: PageName; onGo: (p: PageName) => void; canPlay: boolean; me?: { photo: string | null; initial: string } | null }) {
+export function BottomNav({ page, onGo, canPlay, showBetting = false, me }: { page: PageName; onGo: (p: PageName) => void; canPlay: boolean; showBetting?: boolean; me?: { photo: string | null; initial: string } | null }) {
   return (
     <nav className="bottom-nav" aria-label="Sezioni">
-      {[ITEMS.filter((it) => it.id !== 'partita'), ITEMS.filter((it) => it.id === 'partita' && canPlay)].map((group, g) => group.length ? (
+      {[ITEMS.filter((it) => it.id !== 'partita' && (it.id !== 'betting' || showBetting)), ITEMS.filter((it) => it.id === 'partita' && canPlay)].map((group, g) => group.length ? (
         <div key={g} className={`bnav-group${g === 1 ? ' bnav-group-admin' : ''}`}>
           {group.map((it) => (
             <button

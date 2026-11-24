@@ -12,7 +12,7 @@ export interface DbRows {
   matchPlayers: (Pick<
     Tables['match_players']['Row'],
     'match_id' | 'player_id' | 'team' | 'position' | 'rating' | 'goals' | 'assist' | 'autogol' | 'meta' | 'rigori_sbagliati'
-  > & Partial<Pick<Tables['match_players']['Row'], 'titolo' | 'descrizione'>> & { has_text?: boolean }
+  > & Partial<Pick<Tables['match_players']['Row'], 'titolo' | 'descrizione' | 'editor_rating'>> & { has_text?: boolean }
   )[];
 }
 
@@ -58,13 +58,14 @@ export function dbToDataset(rows: DbRows): Dataset {
       predRank: m.pred_rank,
     });
     for (const x of list) {
-      const hasData = x.rating != null || x.goals || x.assist || x.autogol || x.meta || x.rigori_sbagliati || x.titolo || x.descrizione || x.has_text;
+      const hasData = x.rating != null || x.editor_rating != null || x.goals || x.assist || x.autogol || x.meta || x.rigori_sbagliati || x.titolo || x.descrizione || x.has_text;
       if (!hasData) continue;
       ratings.push({
         matchId: m.id,
         player: nameOf.get(x.player_id) ?? '',
         playerId: x.player_id,
         rating: x.rating,
+        editorRating: x.editor_rating ?? null,
         notes: x.descrizione ?? '',
         hasText: x.has_text ?? !!(String(x.titolo ?? '').trim() || String(x.descrizione ?? '').trim()),
         goals: x.goals,

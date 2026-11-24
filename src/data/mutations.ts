@@ -44,11 +44,11 @@ export async function saveMatchRatings(matchId: string, rows: RatingRow[], untou
   if (error) throw fail('pagelle', error);
 }
 
-/** Redazione: cambia solo titolo e descrizione di alcune pagelle ('' = nessun testo). Voti e numeri non si toccano (lo garantisce anche il database). */
-export async function saveMatchTexts(matchId: string, rows: Array<{ playerId: string; titolo: string; descrizione: string }>): Promise<void> {
+/** Redazione: titolo, descrizione e voto goliardico separato da quello ufficiale. */
+export async function saveMatchTexts(matchId: string, rows: Array<{ playerId: string; titolo: string; descrizione: string; editorRating: number | null }>): Promise<void> {
   const { error } = await supabase.rpc('save_match_texts', {
     p_match: matchId,
-    p_rows: rows.map((r) => ({ player_id: r.playerId, titolo: r.titolo || null, descrizione: r.descrizione || null })),
+    p_rows: rows.map((r) => ({ player_id: r.playerId, titolo: r.titolo || null, descrizione: r.descrizione || null, editor_rating: r.editorRating })),
   });
   if (error) throw fail('pagelle', error);
 }
