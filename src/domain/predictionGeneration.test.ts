@@ -9,9 +9,9 @@ const opponents=Array.from({length:5},(_,i)=>player(`opponent-${i}`,'B'));
 const players=[predictor,teammate,...opponents];
 const input={predictor,players,ownLeaguePlayerIds:new Set(players.map(x=>x.playerId)),historicalMatches:[],seed:'stable-seed'};
 describe('advanced prediction generation',()=>{
-  it('assigns ten independent, eligible, non-overlapping drafts',()=>{
+  it('assigns five independent, eligible, non-overlapping drafts',()=>{
     const draft=generateAssignmentDraft(input);
-    expect(draft).toHaveLength(10);
+    expect(draft).toHaveLength(5);
     expect(draft.every(x=>x.target.team==='B'&&!x.template.ratingDependent)).toBe(true);
     expect(new Set(draft.map(x=>x.canonicalGroup)).size).toBe(draft.length);
     expect(draft.filter(x=>x.target.playerId==='opponent-0').length).toBeLessThanOrEqual(3);

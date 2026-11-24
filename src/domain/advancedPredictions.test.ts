@@ -66,12 +66,12 @@ describe('advanced prediction catalogue',()=>{
   });
   it('scores negative balances and exact quarter multipliers',()=>{
     const good=[3,3,2,2].map(weight=>({result:'WON' as const,weight}));
-    expect(scorePredictions([...good,{result:'LOST',weight:2}]).finalUnits).toBe(100000);
+    expect(scorePredictions([...good,{result:'LOST',weight:2}]).finalUnits).toBe(120000);
     expect(scorePredictions([{result:'WON',weight:1},{result:'LOST',weight:5}]).finalUnits).toBe(-40000);
     expect(scorePredictions([...good,{result:'PENDING',weight:1}]).multiplierBasisPoints).toBe(10000);
-    expect(scorePredictions([...good,{result:'VOID',weight:5}]).multiplierBasisPoints).toBe(12500);
+    expect(scorePredictions([...good,{result:'VOID',weight:5}]).multiplierBasisPoints).toBe(15000);
     expect(scorePredictions([{result:'WON',weight:1},{result:'WON',weight:2},{result:'WON',weight:4}]).finalUnits).toBe(87500);
     expect(Object.values(DIFFICULTY_WEIGHT)).toEqual([1,2,3,4,5]);
-    expect(Object.values(PREDICTION_RULES.desiredDistribution).reduce((a,b)=>a+b,0)).toBe(10);
+    expect(Object.values(PREDICTION_RULES.desiredDistribution).reduce((a,b)=>a+b,0)).toBe(5);
   });
 });

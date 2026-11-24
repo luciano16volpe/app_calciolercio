@@ -67,7 +67,7 @@ function MatchPredictions({match}:{match:BettingMatch}){
           <span>Moltiplicatore ideale: <b>×{points(simulated.multiplierBasisPoints)}</b></span>
           <span>Massimo teorico: <b>+{points(simulated.finalUnits)}</b></span></div>
         <p className="betting-hint">Difficoltà scelte: {Object.entries(difficultyLabel).map(([code,label])=>`${label} ${selected.filter(x=>x.difficulty===code).length}`).join(' · ')}</p>
-        <details><summary>Come funzionano i moltiplicatori</summary><p>3–4 indovinati ×1,25 · 5–6 ×1,50 · 7–8 ×1,75 · 9–10 ×2.</p>
+        <details><summary>Come funzionano i moltiplicatori</summary><p>3 indovinati ×1,25 · 4 ×1,50 · 5 su 5 ×2.</p>
           <p>Servono almeno il 70% di precisione e un saldo base positivo. Il bonus si applica solo al saldo netto.</p></details>
         <small>Il massimo è teorico: condizioni correlate possono renderlo irraggiungibile.</small>
       </div>
@@ -183,7 +183,7 @@ export function AdvancedPredictionsSection({leagueId,matches,players}:{leagueId:
   const current=visible.find(x=>x.match_id===matchId)??visible[0];
   if(!enabled.data)return null;
   return <section className="advanced-predictions-section"><h2>Pronostici sui giocatori avversari</h2>
-    <p>Scegli liberamente fino a dieci condizioni. Nessuna puntata in denaro.</p>
+    <p>Scegli liberamente fino a cinque condizioni. Nessuna puntata in denaro.</p>
     <div className="advanced-view-tabs" role="tablist" aria-label="Viste pronostici">
       {([['upcoming','Prossima partita'],['results','Risultati'],['leaderboard','Classifiche'],['stats','Le mie statistiche']] as const)
         .map(([key,label])=><button type="button" key={key} role="tab" aria-selected={view===key} className={view===key?'selected':''}
