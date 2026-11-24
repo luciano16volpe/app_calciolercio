@@ -16,7 +16,7 @@ I punti sono conservati in interi scalati da 10.000. I pronostici selezionati vi
 
 Gli utenti vedono soltanto le proprie assegnazioni. Le selezioni si modificano fino all'ora ufficiale della partita, verificata dal database in Europe/Rome. Prima del consolidamento l'ADMIN vede soltanto nomi e numero dei giocatori che hanno selezionato almeno una condizione. Le singole scelte sono visibili all'ADMIN solo dopo la chiusura del sondaggio pagelle. Anche il riepilogo amministrativo del vecchio 1/X/2 nasconde le scelte fino al risultato.
 
-L'ADMIN partecipante non riceve pronostici avanzati: può modificare unilateralmente le statistiche ufficiali. Questa limitazione resta finché non è disponibile una conferma indipendente. Le tabelle dei pronostici hanno RLS chiusa; il browser non invia peso, difficoltà o esito. La redazione modifica soltanto titolo, testo e voto editoriale goliardico; il voto ufficiale resta nella colonna rating e arriva dal sondaggio.
+L'ADMIN partecipante riceve e seleziona pronostici come gli altri giocatori. Può modificare le statistiche ufficiali: i dati sono pubblici, le correzioni restano nell'audit e i pronostici vengono rivalutati dopo ogni modifica. Questa scelta accetta il rischio residuo di influenza dell'ADMIN sui propri risultati. Le tabelle dei pronostici hanno RLS chiusa; il browser non invia peso, difficoltà o esito. La redazione modifica soltanto titolo, testo e voto editoriale goliardico; il voto ufficiale resta nella colonna rating e arriva dal sondaggio.
 
 ## Attivazione e verifica
 

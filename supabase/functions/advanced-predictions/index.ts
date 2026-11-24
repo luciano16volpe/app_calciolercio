@@ -89,7 +89,6 @@ async function board(matchId:string,userId:string){
   const existing=await admin.from('advanced_prediction_generations').select('match_id').eq('match_id',matchId).eq('predictor_player_id',predictorRow.player_id).maybeSingle();
   if(existing.error)throw existing.error;
   if(!existing.data){
-    if(member.role==='admin')return reply({error:'Conflitto di interessi: ADMIN partecipante'},403);
     if(poll&&!poll.finalized_at)return reply({error:'Formazioni ancora in votazione'},409);
     if(!m.play_time||m.score_a!==null||m.score_b!==null)return reply({error:'Selezioni chiuse'},409);
     // The database performs the authoritative Europe/Rome kickoff check while holding the match row lock.
@@ -170,26 +169,12 @@ async function reconcileMatch(matchId:string){
   if(!match||match.score_a===null||match.score_b===null)return;
   const rows=(raw??[]) as RawPerformance[];
   const performances=rows.map(convert);
-  const ids=[...new Set((assignments??[]).map(x=>x.predictor_player_id))];
-  let conflicted=new Set<string>();
-  if(ids.length){
-    const people=await admin.from('players').select('id,user_id').in('id',ids);
-    if(people.error)throw people.error;
-    const users=(people.data??[]).map(x=>x.user_id).filter(Boolean) as string[];
-    if(users.length){
-      const members=await admin.from('league_members').select('user_id,role').eq('league_id',match.league_id).in('user_id',users);
-      if(members.error)throw members.error;
-      const admins=new Set((members.data??[]).filter(x=>x.role==='admin').map(x=>x.user_id));
-      conflicted=new Set((people.data??[]).filter(x=>x.user_id&&admins.has(x.user_id)).map(x=>x.id));
-    }
-  }
   const outcomes=(assignments??[]).map(a=>{
     const target=performances.find(x=>x.playerId===a.target_player_id);
     const predictor=performances.find(x=>x.playerId===a.predictor_player_id);
     let outcome:'WON'|'LOST'|'VOID'='VOID';
     let reason='Giocatore assente o squadra modificata';
-    if(conflicted.has(a.predictor_player_id))reason='Conflitto di interessi sopravvenuto';
-    else if(target&&predictor&&target.team!==predictor.team){
+    if(target&&predictor&&target.team!==predictor.team){
       const template={id:a.template_id,code:a.template_code,category:a.category,
         condition:a.condition_snapshot,defaultDifficulty:'COMMON',ratingDependent:false,historicalRequired:false} as Template;
       const snapshot=a.historical_snapshot as {recent?:Performance[];season?:Performance[]}|null;

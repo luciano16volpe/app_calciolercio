@@ -24,6 +24,7 @@ try{
   await db.exec(bootstrap);
   await db.exec(readFileSync(new URL('../supabase/migrations/20261222000000_pronostici_avanzati_fondazioni.sql',import.meta.url),'utf8'));
   await db.exec(readFileSync(new URL('../supabase/migrations/20261225000000_cron_pronostici_con_jwt.sql',import.meta.url),'utf8'));
+  await db.exec(readFileSync(new URL('../supabase/migrations/20261226000000_admin_partecipa_pronostici.sql',import.meta.url),'utf8'));
   const {rows}=await db.query('select version,rules->>\'maxAssignments\' as maximum from public.advanced_prediction_configurations');
   if(rows.length!==1||rows[0].maximum!=='10')throw new Error('Configuration not seeded');
   const league='11111111-1111-4111-8111-111111111111';
@@ -64,6 +65,7 @@ try{
   await db.query('insert into auth.users(id) values($1)',[user]);
   await db.query('update players set user_id=$1 where id=$2',[user,predictor]);
   await db.query(`insert into league_members(league_id,user_id,role) values($1,$2,'member')`,[league,user]);
+  await db.query(`update league_members set role='admin' where league_id=$1 and user_id=$2`,[league,user]);
   await db.exec(`create or replace function auth.uid() returns uuid language sql stable as $$select '${user}'::uuid$$`);
   const standing=await db.query(`select advanced_prediction_leaderboard($1,'2099-EST') as board`,[league]);
   if(standing.rows[0]?.board?.[0]?.final_units!==-10000)throw new Error('Leaderboard did not reflect correction');
