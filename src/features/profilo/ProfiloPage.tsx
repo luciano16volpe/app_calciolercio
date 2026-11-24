@@ -33,15 +33,18 @@ function dayName(date: unknown): string {
 }
 
 /** La prossima partita in cui gioco: giorno, ora, luogo, squadra, compagni e avversari. */
-function NextMatch({ data, m, team, myId, onOpenPoll }: { data: LeagueData; m: Match; team: 'A' | 'B'; myId: string; onOpenPoll: (id: string) => void }) {
+function NextMatch({ data, m, team, myId, onOpenPoll, onOpen }: { data: LeagueData; m: Match; team: 'A' | 'B'; myId: string; onOpenPoll: (id: string) => void; onOpen: (id: string) => void }) {
   const names = (side: Match['teamA']) => normalizeTeam(side).filter((p) => p.id !== myId).map((p) => p.name);
   const mates = names(team === 'A' ? m.teamA : m.teamB);
   const rivals = names(team === 'A' ? m.teamB : m.teamA);
   const time = formatTime(m.time);
   const place = String(m.place ?? '').trim();
   return (
-    <div className="card" id="next-match" style={{ borderLeft: '4px solid var(--amber)' }}>
-      <div className="section-header">📅 Prossima partita</div>
+    <div className="card" id="next-match" style={{ borderLeft: '4px solid var(--amber)', cursor: 'pointer' }} role="button" tabIndex={0}
+      aria-label={`Apri la partita di ${dayName(m.date)}`}
+      onClick={(e) => { if (!(e.target as HTMLElement).closest('button, a')) onOpen(m.id); }}
+      onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onOpen(m.id); } }}>
+      <div className="section-header">📅 Prossima partita <span aria-hidden="true" style={{ float: 'right', color: 'var(--text3)' }}>›</span></div>
       <div style={{ fontSize: 16, fontWeight: 800 }}>{dayName(m.date)}</div>
       {time || place ? <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text2)', marginTop: 2 }}>{time ? `⏰ ${time}` : ''}{time && place ? ' · ' : ''}{place ? `📍 ${place}` : ''}</div> : null}
       <div style={{ marginTop: 4 }}><PlaceOpen place={placeOf(m)} /></div>
@@ -158,7 +161,7 @@ export function ProfiloPage({ data, active, act }: { data: LeagueData; active: b
   return (
     <>
       <FormationPollBanner data={data} onOpen={act.openFormationPoll} excludeId={next?.m.id} />
-      {next && me ? <NextMatch data={data} m={next.m} team={next.team} myId={me.id} onOpenPoll={act.openFormationPoll} /> : null}
+      {next && me ? <NextMatch data={data} m={next.m} team={next.team} myId={me.id} onOpenPoll={act.openFormationPoll} onOpen={act.openMatch} /> : null}
 
       {last && me ? <LastMatchCard data={data} m={last.m} act={act} title="🏆 La mia ultima partita" id="my-last-match" mine={{ id: me.id, name: me.name }} active={active} /> : null}
 
