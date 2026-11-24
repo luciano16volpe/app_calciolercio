@@ -6,7 +6,7 @@ import { GazStrip, LastMatch, MatchesList, useMyPlayerIn, type MatchActions } fr
 import { FormationPollBanner } from './FormationPoll';
 
 export function PartitePage({ data, act, onArchive, active = true }: { data: LeagueData; act: MatchActions; onArchive: () => void; active?: boolean }) {
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useState(true);
   const mine = useMyPlayerIn(data); // per i coriandoli / la pioggia sull'ultima partita, se ci ho giocato
   return (
     <div id="partite-content">

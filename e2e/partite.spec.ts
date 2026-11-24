@@ -27,7 +27,7 @@ test('Partite: ultima partita, striscia delle Gazzette ed elenco per stagione', 
   // elenco: partite divise per stagione
   await expect(pt.locator('#matches-list .section-header')).toContainText('Tutte le partite');
   expect(await pt.locator('#matches-list .season-head').count()).toBeGreaterThanOrEqual(3);
-  expect(await pt.locator('#matches-list > div[style*="cursor"]').count()).toBeGreaterThanOrEqual(10);
+  expect(await pt.locator('#matches-list > div[style*="cursor"]').count()).toBeGreaterThanOrEqual(1); // solo la stagione in corso è aperta
   await noOverflow(page);
 });
 

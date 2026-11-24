@@ -284,6 +284,8 @@ html[data-theme="dark"] .card{background:rgba(32,38,50,0.62);border-color:rgba(2
 .season-head{font-size:12px;font-weight:800;color:var(--text);margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--gray2)}
 .season-head:first-of-type{margin-top:2px}
 .season-head span{color:var(--text3);font-weight:600}
+.season-toggle{display:flex;align-items:center;gap:4px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.season-toggle i{margin-left:auto;font-style:normal;font-size:16px;line-height:1;color:var(--text2)}
 .lm-actions{display:flex;justify-content:center;gap:5px;flex-wrap:wrap;margin-top:10px}
 #gioca-precision .prec-card{margin-top:2px}
 /* 🏆 albo d'oro */
@@ -879,6 +881,9 @@ input[type=file]{display:none}
 .formation-vote-bar i { display: block; height: 100%; border-radius: 99px; background: var(--green); }
 .formation-vote-names { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
 .formation-vote-names span { padding: 2px 8px; border-radius: 99px; background: var(--gray); font-size: 11px; color: var(--text2); }
+.formation-vote-teams { display: grid; gap: 3px; margin-top: 7px; color: var(--text2); font-size: 11px; line-height: 1.4; }
+.formation-vote-teams b { color: var(--text); }
+#match-balance .formation-vote-summary { margin: 10px 0; }
 .formation-option { padding: 16px; }
 .formation-option-head b { font-size: 18px; }
 .formation-option-head span { font-size: 13px; line-height: 1.4; }

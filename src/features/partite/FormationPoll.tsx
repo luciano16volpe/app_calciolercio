@@ -3,7 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { useAuth } from '../../app/auth';
 import { useToast } from '../../app/Toast';
-import { closeFormationPoll, formationPollListKey, formationPollStateKey, formationPollVotesKey, submitFormationVote, useFormationPolls, useFormationPollState, useFormationPollVotes, type FormationOption } from '../../data/formationPolls';
+import { closeFormationPoll, formationPollListKey, formationPollStateKey, formationPollVotesKey, submitFormationVote, useFormationPolls, useFormationPollState, type FormationOption } from '../../data/formationPolls';
+import { FormationVoteSummary } from './FormationVoteSummary';
 import { LEAGUE_HISTORY_QUERY_KEY, LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';
 
@@ -80,7 +81,6 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
   const state = poll.data;
-  const votes = useFormationPollVotes(matchId, !!state?.is_admin);
   const names = new Map(data.dataset.players.map((player) => [player.id, player.name]));
   const chosen = selection ?? state?.my_vote ?? null;
   const canVote = !!state?.is_open && !!state.has_premium;
@@ -123,20 +123,7 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
           {!state.has_premium ? <div className="formation-premium-note"><b>Funzione Premium</b><p>Puoi vedere tutte le formazioni. Per scegliere serve Premium attivo: chiedi all’amministratore di attivarlo.</p></div> : null}
           {state.is_open && state.my_vote ? <p className="formation-my-vote">Hai scelto la formazione {state.my_vote}. Puoi cambiare idea prima della chiusura.</p> : null}
           {!state.is_open ? <p className="formation-my-vote">{state.winning_option ? `Formazione definitiva: ${state.winning_option}.` : 'La scelta finale sarà pubblicata a breve.'}{state.closed_early_at ? ` Chiuso in anticipo${state.closed_early_by_name ? ` da ${state.closed_early_by_name}` : ''}.` : ''}</p> : null}
-          {state.is_admin ? <details className="formation-vote-summary admin-only">
-            <summary>Partecipazione al voto <span>{votes.data ? `${votes.data.total} ${votes.data.total === 1 ? 'votante' : 'votanti'}` : '…'}</span></summary>
-            <div className="formation-vote-summary-content">
-              {votes.isError ? <p role="alert">Impossibile caricare i voti. Riprova.</p>
-                : !votes.data ? <p>Caricamento voti…</p>
-                  : !votes.data.total ? <p>Ancora nessun voto.</p>
-                    : votes.data.options.filter((option) => option.voters.length).sort((a, b) => b.voters.length - a.voters.length).map((option) => <div className="formation-vote-row" key={option.option_no}>
-                      <div className="formation-vote-row-head"><b>{option.option_no === 1 ? 'Admin' : `Alt. ${option.option_no}`}</b>
-                        <span className="formation-vote-bar"><i style={{ width: `${Math.round(option.voters.length / votes.data!.total * 100)}%` }} /></span>
-                        <strong>{option.voters.length}</strong></div>
-                      <div className="formation-vote-names">{option.voters.map((voter) => <span key={voter.user_id}>{voter.name}</span>)}</div>
-                    </div>)}
-            </div>
-          </details> : null}
+          {state.is_admin ? <FormationVoteSummary matchId={matchId} options={state.options} names={names} /> : null}
           {state.options.map((option) => <OptionCard key={option.option_no} option={option} names={names}
             chosen={chosen === option.option_no} onChoose={() => setSelection(option.option_no)} canVote={canVote} />)}
         </>}

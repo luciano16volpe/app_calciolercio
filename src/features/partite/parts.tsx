@@ -7,7 +7,7 @@ import { useMatchTexts, withMatchTexts } from '../../data/matchTexts';
 import { useCommunityVoteState } from '../../data/communityVotes';
 // Pezzi delle Partite: pulsanti della partita, ultima partita, elenco, Gazzette (striscia, archivio, visualizzatore),
 // testo delle pagelle.
-import { Fragment, useState, type ReactNode } from 'react';
+import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import { useImageTools } from '../../app/ImageViewer';
 import { useToast } from '../../app/Toast';
 import { matchFormations, matchSheet, matchSummary } from '../../canvas/lazy';
@@ -142,18 +142,23 @@ export function LastMatchCard({ data, m, act, title, id, mine, active = true, sh
 
 // ── elenco di tutte le partite ─────────────────────────────────────────────
 export function MatchesList({ data, act }: { data: LeagueData; act: MatchActions }) {
+  const groups = useMemo(() => matchListGroups(data.dataset), [data.dataset]);
+  // la stagione in corso (la più recente) parte aperta; le altre si aprono toccando il titolo
+  const [open, setOpen] = useState<Set<string>>(() => new Set(groups[0] ? [groups[0].key] : []));
   const title = <div className="section-header" style={{ margin: '0 0 10px' }}>📋 Tutte le partite</div>;
   if (!data.dataset.matches.length) {
     return <>{title}<div style={{ textAlign: 'center', padding: 20, color: 'var(--text3)', fontSize: 13 }}>Nessuna partita ancora.</div></>;
   }
-  const groups = matchListGroups(data.dataset);
+  const toggle = (key: string) => setOpen((prev) => { const next = new Set(prev); if (!next.delete(key)) next.add(key); return next; });
   return (
     <>
       {title}
       {groups.map((g) => (
         <Fragment key={g.key}>
-          <div className="season-head">{seasonIcon(g.key, '📅')} {g.label} <span>· {g.items.length} {g.items.length === 1 ? 'partita' : 'partite'}</span></div>
-          {g.items.map(({ m, ratedCount, descCount, totalPlayers }) => {
+          <div className="season-head season-toggle" role="button" tabIndex={0} aria-expanded={open.has(g.key)}
+            onClick={() => toggle(g.key)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(g.key); } }}>
+            {seasonIcon(g.key, '📅')} {g.label} <span>· {g.items.length} {g.items.length === 1 ? 'partita' : 'partite'}</span><i aria-hidden="true">{open.has(g.key) ? '⌃' : '⌄'}</i></div>
+          {open.has(g.key) ? g.items.map(({ m, ratedCount, descCount, totalPlayers }) => {
             const score = hasScore(m) ? `${m.scoreA} - ${m.scoreB}` : '';
             return (
               <div
@@ -179,7 +184,7 @@ export function MatchesList({ data, act }: { data: LeagueData; act: MatchActions
                 <span style={{ color: 'var(--text3)', fontSize: 16 }}>›</span>
               </div>
             );
-          })}
+          }) : null}
         </Fragment>
       ))}
     </>

@@ -9,7 +9,9 @@ import { PlannedMatchEditor } from './PlannedMatchEditor';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../app/auth';
 import { useCommunityVoteState } from '../../data/communityVotes';
+import { useFormationPollState } from '../../data/formationPolls';
 import { CommunityVoteControls } from './CommunityVote';
+import { FormationVoteSummary } from './FormationVoteSummary';
 import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { formOn } from '../../data/gameSettings';
 import { useToast } from '../../app/Toast';
@@ -305,6 +307,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
   const explainPremium = usePremiumExplain();
   const qc = useQueryClient();
   const [balanceOpen, setBalanceOpen] = useState(false);
+  const formationPoll = useFormationPollState(matchId, canEdit && balanceOpen);
   const [planning, setPlanning] = useState(false);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [textOnly, setTextOnly] = useState(false);
@@ -585,7 +588,11 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
             <button type="button" className="btn btn-secondary btn-full eq-toggle" id="match-balance-btn" onClick={() => setBalanceOpen((o) => !o)}>
               ⚖️ Equilibrio squadre {balanceOpen ? '▴' : '▾'}
             </button>
-            <div id="match-balance" style={{ display: balanceOpen ? 'block' : 'none' }}>{balance ? <BalanceBody b={balance} /> : null}</div>
+            <div id="match-balance" style={{ display: balanceOpen ? 'block' : 'none' }}>
+              {balance ? <BalanceBody b={balance} /> : null}
+              {canEdit && formationPoll.data?.is_admin ? <FormationVoteSummary matchId={matchId} options={formationPoll.data.options}
+                names={new Map(data.dataset.players.map((player) => [player.id, player.name]))} /> : null}
+            </div>
             {full && draft ? (
               <SheetScan data={data} m={m} onApply={(r) => setDraft((d) => (d ? {
                 ...d, scA: r.scA, scB: r.scB,

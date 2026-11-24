@@ -70,9 +70,9 @@ export function useFormationPolls(leagueId: string) {
     }, staleTime: 0, refetchInterval: 30_000 });
 }
 
-export function useFormationPollState(matchId: string) {
+export function useFormationPollState(matchId: string, enabled = true) {
   const { user } = useAuth();
-  return useQuery({ queryKey: formationPollStateKey(matchId, user?.id), enabled: !!user && !!matchId,
+  return useQuery({ queryKey: formationPollStateKey(matchId, user?.id), enabled: !!user && !!matchId && enabled,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('formation_poll_state', { p_match: matchId });
       if (error) throw error;
