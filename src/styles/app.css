@@ -1005,3 +1005,6 @@ input[type=file]{display:none}
 @keyframes advanced-multiplier-glow { from { text-shadow: 0 0 0 transparent; } 50% { text-shadow: 0 0 12px #dba930; } to { text-shadow: 0 0 0 transparent; } }
 .advanced-multiplier-activated { display: inline-block; animation: advanced-multiplier-glow 1.2s ease-out 1; }
 @media (prefers-reduced-motion: reduce) { .advanced-multiplier-activated { animation: none; } }
+
+/* giocata unica: 1-X-2, risultato esatto e pronostici sui giocatori nella stessa partita */
+.giocata-unica{margin:0 0 18px;padding-left:8px;border-left:3px solid var(--green)}

@@ -43,7 +43,7 @@ function PredictionCard({assignment,matchId,canSelect}:{assignment:AdvancedAssig
   </article>;
 }
 
-function MatchPredictions({match}:{match:BettingMatch}){
+export function MatchPredictions({match,embedded=false}:{match:BettingMatch;embedded?:boolean}){
   const board=useAdvancedBoard(match.match_id);
   const [now,setNow]=useState(()=>new Date());
   useEffect(()=>{const timer=window.setInterval(()=>setNow(new Date()),60_000);return()=>window.clearInterval(timer);},[]);
@@ -52,13 +52,16 @@ function MatchPredictions({match}:{match:BettingMatch}){
   const minutesLeft=kickoff?Math.max(0,Math.ceil((new Date(kickoff).getTime()-new Date(romeNow).getTime())/60000)):null;
   const assignments=board.data?.assignments??[];
   const selected=assignments.filter(x=>x.selected_at!==null);
-  const simulated=scorePredictions(selected.map(x=>({result:'WON' as const,weight:x.weight})));
+  // la giocata unica: 1-X-2 (3 pt) e risultato esatto (5 pt) contano insieme ai pronostici sui giocatori
+  const mine=match.my_prediction;
+  const matchItems=[...(mine?[{result:'WON' as const,weight:3}]:[]),...(mine&&mine.score_a!==null?[{result:'WON' as const,weight:5}]:[])];
+  const simulated=scorePredictions([...matchItems,...selected.map(x=>({result:'WON' as const,weight:x.weight}))]);
   const weight=selected.reduce((s,x)=>s+x.weight,0);
   return <div className="advanced-prediction-match">
     {board.isPending?<div className="card">Caricamento Bet personalizzate…</div>:null}
-    {board.isError?<div className="card" role="alert">Bet non disponibili per questa partita. <button type="button" onClick={()=>void board.refetch()}>Riprova</button></div>:null}
+    {board.isError?<div className="card" role="alert">{embedded?'I pronostici sui giocatori sono per chi gioca la partita, a formazioni definitive. ':'Bet non disponibili per questa partita. '}<button type="button" onClick={()=>void board.refetch()}>Riprova</button></div>:null}
     {board.isSuccess?<>
-      <div className="card"><h3>Partita del {formatDate(match.date)}</h3><p>{match.play_time?`Ore ${match.play_time.slice(0,5)}`:'Orario da definire'} · Blu contro Bianchi</p>
+      <div className="card">{embedded?<h3>Pronostici sui giocatori</h3>:<><h3>Partita del {formatDate(match.date)}</h3><p>{match.play_time?`Ore ${match.play_time.slice(0,5)}`:'Orario da definire'} · Blu contro Bianchi</p></>}
         <p><b>{selected.length}/{assignments.length}</b> Bet giocate</p>
         {board.data.replacedCount?<p role="status">{board.data.replacedCount} Bet sostituite dopo la modifica delle squadre. Le nuove scelte non sono selezionate automaticamente.</p>:null}
         {board.data.isOpen?<p>Chiusura tra {minutesLeft===null?'—':minutesLeft>=1440?`${Math.floor(minutesLeft/1440)} giorni e ${Math.floor(minutesLeft%1440/60)} ore`:
@@ -67,7 +70,7 @@ function MatchPredictions({match}:{match:BettingMatch}){
           <span>Moltiplicatore ideale: <b>×{points(simulated.multiplierBasisPoints)}</b></span>
           <span>Massimo teorico: <b>+{points(simulated.finalUnits)}</b></span></div>
         <p className="betting-hint">Difficoltà scelte: {Object.entries(difficultyLabel).map(([code,label])=>`${label} ${selected.filter(x=>x.difficulty===code).length}`).join(' · ')}</p>
-        <details><summary>Come funzionano i moltiplicatori</summary><p>3 indovinati ×1,25 · 4 ×1,50 · 5 su 5 ×2.</p>
+        <details><summary>Come funzionano i moltiplicatori</summary><p>Contano tutti i pronostici della giocata: 1-X-2, risultato esatto e fino a 5 sui giocatori (massimo 7). 3-4 indovinati ×1,25 · 5 ×1,50 · 6 ×1,75 · 7 su 7 ×2.</p>
           <p>Servono almeno il 70% di precisione e un saldo base positivo. Il bonus si applica solo al saldo netto.</p></details>
         <small>Il massimo è teorico: condizioni correlate possono renderlo irraggiungibile.</small>
       </div>
@@ -159,22 +162,21 @@ function HistoryView({leagueId,matches,players}:{leagueId:string;matches:Betting
 export function AdvancedPredictionsSection({leagueId,matches,players,photos}:{leagueId:string;matches:BettingMatch[];players:readonly {id:string;name:string}[];photos:Record<string,string|null>}){
   const enabled=useAdvancedEnabled(leagueId);
   const [matchId,setMatchId]=useState('');
-  const [view,setView]=useState<'upcoming'|'results'|'leaderboard'|'stats'>('upcoming');
+  const [view,setView]=useState<'results'|'leaderboard'|'stats'>('results');
   const seasons=[...new Map(matches.map(x=>seasonOf(x.date)).filter(x=>x!==null).map(x=>[x.key,x])).values()];
   const [chosenSeason,setChosenSeason]=useState('');
   const season=seasons.find(x=>x.key===chosenSeason)??seasons[0];
-  const upcoming=matches.filter(x=>x.score_a===null&&x.score_b===null);
   const finished=matches.filter(x=>x.score_a!==null&&x.score_b!==null);
-  const visible=view==='results'?finished:upcoming;
+  const visible=finished;
   const current=visible.find(x=>x.match_id===matchId)??visible[0];
   if(!enabled.data)return null;
   return <section className="advanced-predictions-section"><h2>Bet sugli avversari</h2>
-    <p>Scegli liberamente fino a cinque condizioni. Nessuna puntata in denaro.</p>
+    <p>Risultati, classifica e statistiche delle tue giocate. Le giocate della prossima partita sono in alto, insieme al 1-X-2.</p>
     <div className="advanced-view-tabs" role="tablist" aria-label="Viste Bet">
-      {([['upcoming','Prossima partita'],['results','Risultati'],['leaderboard','Classifica'],['stats','Il mio Bet']] as const)
+      {([['results','Risultati'],['leaderboard','Classifica'],['stats','Il mio Bet']] as const)
         .map(([key,label])=><button type="button" key={key} role="tab" aria-selected={view===key} className={view===key?'selected':''}
           onClick={()=>setView(key)}>{label}</button>)}</div>
-    {(view==='upcoming'||view==='results')?<>{visible.length?<><label className="advanced-prediction-picker">Partita <select value={current?.match_id??''} onChange={e=>setMatchId(e.target.value)}>
+    {view==='results'?<>{visible.length?<><label className="advanced-prediction-picker">Partita <select value={current?.match_id??''} onChange={e=>setMatchId(e.target.value)}>
       {visible.map(x=><option key={x.match_id} value={x.match_id}>{formatDate(x.date)}</option>)}</select></label>
       {current?<MatchPredictions key={current.match_id} match={current}/>:null}</>:<div className="card">Nessuna partita disponibile.</div>}</>:null}
     {view==='results'?<HistoryView leagueId={leagueId} matches={matches} players={players}/>:null}

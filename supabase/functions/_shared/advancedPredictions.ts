@@ -230,17 +230,17 @@ export function evaluatePrediction(template: Template, context: EvaluationContex
   return evaluateCondition(template.condition,context);
 }
 export interface PredictionRules {
-  version: number; maxAssignments: number; desiredDistribution: Record<Difficulty,number>;
+  version: number; maxAssignments: number; matchPoints: { outcome: number; exact: number }; desiredDistribution: Record<Difficulty,number>;
   weights: Record<Difficulty,number>; probabilityThresholds:{common:number;uncommon:number;rare:number;epic:number};
   minIndividualSample: number; historyWindow: number; rotationWindow: number; minAccuracyBasisPoints: number;
   multipliers: readonly { wins: number; basisPoints: number; name: string }[];
 }
 export const PREDICTION_RULES: Readonly<PredictionRules> = Object.freeze({
-  version:3,maxAssignments:5,desiredDistribution:{COMMON:2,UNCOMMON:1,RARE:1,EPIC:1,LEGENDARY:0},
+  version:4,maxAssignments:5,matchPoints:{outcome:3,exact:5},desiredDistribution:{COMMON:2,UNCOMMON:1,RARE:1,EPIC:1,LEGENDARY:0},
   weights:DIFFICULTY_WEIGHT,probabilityThresholds:{common:0.65,uncommon:0.45,rare:0.25,epic:0.10},
   minIndividualSample:5,historyWindow:20,rotationWindow:3,minAccuracyBasisPoints:7000,
-  multipliers:[{wins:5,basisPoints:20000,name:'Nostradamus'},{wins:4,basisPoints:15000,name:'Cinquina del profeta'},
-    {wins:3,basisPoints:12500,name:'Tripletta del profeta'}],
+  multipliers:[{wins:7,basisPoints:20000,name:'Nostradamus'},{wins:6,basisPoints:17500,name:'Oracolo'},
+    {wins:5,basisPoints:15000,name:'Cinquina del profeta'},{wins:3,basisPoints:12500,name:'Tripletta del profeta'}],
 });
 export function scorePredictions(results: readonly { result: Evaluation; weight: number }[], rules: PredictionRules = PREDICTION_RULES) {
   const won=results.filter(x=>x.result==='WON'),lost=results.filter(x=>x.result==='LOST');

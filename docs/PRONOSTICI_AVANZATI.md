@@ -30,3 +30,7 @@ L'ADMIN partecipante riceve e seleziona pronostici come gli altri giocatori. Pu�
 4. Verificare con `npm run build`, `npm run lint`, `npm test`, `node scripts/verifyAdvancedMigration.mjs` e `node scripts/verifyEditorialMigration.mjs`.
 
 Il sondaggio pagelle si apre automaticamente anche se il flag dei pronostici avanzati è disattivato. Il vecchio percorso di conferma delle statistiche rimane solo per partite storiche senza sondaggio.
+
+## Giocata unica (regole versione 4)
+
+Per ogni partita c'è una sola giocata: 1-X-2, risultato esatto (facoltativo) e fino a cinque pronostici sui giocatori avversari. 1-X-2 indovinato = 3 punti; risultato esatto indovinato = altri 5 punti (si sommano, 8 in tutto); sbagliare 1-X-2 o esatto non toglie punti. Tutti gli elementi contano come pronostici per il moltiplicatore e per la precisione del 70%: 3-4 indovinati ×1,25; 5 ×1,50; 6 ×1,75; 7 su 7 ×2. I pronostici sui giocatori li ricevono solo i convocati; 1-X-2 ed esatto possono farli tutti i membri, ma entrano in classifica solo se hanno un giocatore collegato alla lega. Le partite già giocate restano con le vecchie regole (migrazione `20261230000000_giocata_unica.sql`).
