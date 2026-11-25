@@ -95,7 +95,9 @@ function RosaGate({ data, onOpen }: { data: LeagueData; onOpen: (id: string) => 
 }
 function PlayerCardGate({ editable, ...props }: ComponentProps<typeof PlayerCard> & { editable: boolean }) {
   const { isAdmin } = useRole(props.data.league.id);
-  return <PlayerCard {...props} canEdit={isAdmin && editable} />;
+  const { user } = useAuth();
+  const isSuperAdmin = useIsSuperAdmin(user?.id ?? null).data === true;
+  return <PlayerCard {...props} canEdit={isAdmin && editable} canRename={isSuperAdmin && editable} />;
 }
 function MatchCardGate(props: ComponentProps<typeof MatchCard>) {
   const { isAdmin, isPremiumAdmin, canEditText } = useRole(props.data.league.id);

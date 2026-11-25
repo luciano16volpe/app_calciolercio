@@ -41,7 +41,7 @@ export interface ConfirmOptions {
   /** pulsante rosso (azioni che non si annullano) */
   danger?: boolean;
   /** campo di testo (finestra "scrivi un nome"): suggerimento nel campo */
-  input?: { placeholder?: string };
+  input?: { placeholder?: string; value?: string };
 }
 
 type Confirm = (o: ConfirmOptions) => Promise<boolean>;
@@ -61,8 +61,8 @@ export function DialogProvider({ children }: { children: ReactNode }) {
     (o) =>
       new Promise<boolean>((resolve) => {
         resolver.current = resolve;
-        setText('');
-        textRef.current = '';
+        setText(o.input?.value ?? '');
+        textRef.current = o.input?.value ?? '';
         setOpts(o);
       }),
     [],

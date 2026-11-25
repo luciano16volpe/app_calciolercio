@@ -115,6 +115,12 @@ export async function updatePlayer(id: string, patch: { stats?: number[]; roles?
   if (error) throw fail('giocatore', error);
 }
 
+export async function adminRenamePlayer(id: string, name: string): Promise<string> {
+  const { data, error } = await supabase.rpc('admin_rename_player', { p_player: id, p_name: name });
+  if (error) throw fail('nome giocatore', error);
+  return data;
+}
+
 /** Nuovo giocatore nella lega: centrocampista con tutte le statistiche a 5. */
 export async function createPlayer(leagueId: string, name: string): Promise<string> {
   const { data, error } = await supabase.rpc('create_player_in_league', { p_league: leagueId, p_name: name });

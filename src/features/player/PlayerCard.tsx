@@ -17,6 +17,11 @@ import { PlayerEditTop } from './PlayerEditTop';
 import { PlayerBenchRow } from './PlayerBenchRow';
 import { PlayerLinkRow } from './PlayerLinkRow';
 import { PlayerPagelleDialog } from './PlayerPagelleDialog';
+import { usePrompt } from '../../app/Dialogs';
+import { useToast } from '../../app/Toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { adminRenamePlayer } from '../../data/mutations';
+import { LEAGUE_QUERY_KEY } from '../../data/queries';
 
 function Avatar({ player, photo }: { player: Player; photo: string | null }) {
   return <PlayerAvatar key={`${player.id}:${photo}`} size="xl" name={player.name} roles={player.roles} photo={photo} />;
@@ -110,7 +115,7 @@ function Pairs({ data, player, onOpenPlayer }: { data: LeagueData; player: Playe
   );
 }
 
-export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch, bachecaOpen, onToggleBacheca, canEdit = false, inline = false }: {
+export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch, bachecaOpen, onToggleBacheca, canEdit = false, canRename = false, inline = false }: {
   data: LeagueData;
   playerId: string;
   onClose: () => void;
@@ -120,11 +125,26 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   onToggleBacheca: () => void;
   /** scheda modificabile (foto, ruoli, statistiche): dalla Rosa, per l'amministratore */
   canEdit?: boolean;
+  /** solo admin supremo, e solo aprendo la scheda dalla Rosa */
+  canRename?: boolean;
   /** dentro una pagina (Il mio profilo) invece che a tutto schermo: niente ✕ né Esc */
   inline?: boolean;
 }) {
   const { dataset } = data;
+  const prompt = usePrompt();
+  const toast = useToast();
+  const queryClient = useQueryClient();
   const player = dataset.players.find((p) => p.id === playerId);
+  const rename = async () => {
+    if (!player) return;
+    const name = await prompt({ icon: '✏️', title: 'Cambia nome giocatore', lines: [`Nome attuale: ${player.name}. Lo storico e le statistiche resteranno collegati.`], okLabel: 'Salva nome', input: { value: player.name } });
+    if (name === null || name.trim() === player.name) return;
+    try {
+      await adminRenamePlayer(player.id, name);
+      await queryClient.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      toast('Nome del giocatore aggiornato');
+    } catch (error) { toast('Errore: ' + (error as Error).message); }
+  };
   const [pagelleOpen, setPagelleOpen] = useState<{ focus?: string } | null>(null);
   const all = useMemo(() => seasonStats(dataset), [dataset]);
   const period = useMemo(() => player ? profileSeasonData(dataset, player.id, player.name) : null, [dataset, player]);
@@ -173,6 +193,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, minHeight: 24 }}>
             <div style={{ fontSize: 16, fontWeight: 800 }} id="match-modal-title">
               {player.name}
+              {canRename ? <button type="button" className="btn btn-secondary btn-sm" style={{ marginLeft: 8 }} onClick={() => void rename()}>Modifica nome</button> : null}
               <FireChip state={state} />
               {canEdit ? null : (
                 <span className="mt-roles">
