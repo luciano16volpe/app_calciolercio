@@ -55,10 +55,7 @@ function BettingCard({ match, leagueId }: { match: BettingMatch; leagueId: strin
       <button type="button" className="btn btn-primary betting-save" disabled={!valid || busy} onClick={() => void save()}>{busy ? 'Salvataggio…' : 'Salva pronostico'}</button>
     </> : <p className="betting-hint">Pronostici chiusi{!match.play_time && match.score_a === null ? ': manca l’orario della partita' : ''}.</p>}
     {match.my_prediction ? <p className="betting-mine">La tua scelta: <b>{predictionLabel(match.my_prediction.outcome, match.my_prediction.score_a, match.my_prediction.score_b)}</b></p> : null}
-    <details className="betting-participation"><summary>{match.total} {match.total === 1 ? 'pronostico registrato' : 'pronostici registrati'}</summary>
-      {match.entries ? match.entries.length ? <ul>{match.entries.map((entry) => <li key={entry.user_id}><b>{entry.name}</b><span>{predictionLabel(entry.outcome, entry.score_a, entry.score_b)}</span></li>)}</ul>
-        : <p>Nessun pronostico.</p> : <p>Le scelte degli altri restano riservate fino alla conclusione della partita.</p>}
-    </details>
+    <p className="betting-hint">{match.total} {match.total === 1 ? 'pronostico registrato' : 'pronostici registrati'}.</p>
   </article>;
 }
 
@@ -84,7 +81,7 @@ function BettingContent({ data }: { data: LeagueData }) {
       <h2>Prossime partite</h2>
       {upcoming.length ? upcoming.map((match) => <BettingCard key={match.match_id} match={match} leagueId={data.league.id} />) : <div className="card">Nessuna prossima partita in programma.</div>}
       {history.length ? <><h2>Storico pronostici</h2>{history.map((match) => <BettingCard key={match.match_id} match={match} leagueId={data.league.id} />)}</> : null}
-      <AdvancedPredictionsSection leagueId={data.league.id} matches={matches} players={data.dataset.players} />
+      <AdvancedPredictionsSection leagueId={data.league.id} matches={matches} players={data.dataset.players} photos={data.photos} />
     </> : null}
   </div>;
 }

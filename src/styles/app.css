@@ -969,11 +969,24 @@ input[type=file]{display:none}
 .advanced-view-tabs { display: flex; gap: .35rem; overflow-x: auto; margin: 1rem 0; padding-bottom: .25rem; }
 .advanced-view-tabs button { flex: 0 0 auto; padding: .55rem .8rem; border-radius: .5rem; border: 1px solid var(--gray3); background: var(--gray); color: var(--text); }
 .advanced-view-tabs button.selected { background: var(--green-light); color: var(--green); border-color: var(--green); font-weight: 800; }
-.advanced-leaderboard { list-style: none; padding: 0; }
-.advanced-leaderboard li { display: flex; align-items: center; gap: .6rem; padding: .55rem 0; border-bottom: 1px solid var(--gray3); }
+.advanced-standings-scroll { max-width: 100%; overflow-x: auto; border: 1px solid var(--gray3); border-radius: .7rem; }
+.advanced-standings-table { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size: .84rem; font-variant-numeric: tabular-nums; }
+.advanced-standings-table th,.advanced-standings-table td { padding: .7rem .6rem; border-bottom: 1px solid var(--gray3); text-align: center; white-space: nowrap; }
+.advanced-standings-table thead th { background: var(--gray2); color: var(--text2); font-size: .75rem; font-weight: 800; }
+.advanced-standings-table tbody tr { background: var(--gray); }
+.advanced-standings-table tbody tr:last-child th,.advanced-standings-table tbody tr:last-child td { border-bottom: 0; }
+.advanced-standings-table th:nth-child(1),.advanced-standings-table td:first-child { position: sticky; left: 0; min-width: 2.5rem; z-index: 1; background: var(--gray); }
+.advanced-standings-table th:nth-child(2) { position: sticky; left: 2.5rem; min-width: 9rem; max-width: 12rem; z-index: 1; background: var(--gray); text-align: left; }
+.advanced-standings-table thead th:nth-child(-n+2) { z-index: 2; background: var(--gray2); }
+.advanced-standings-player { display: flex; align-items: center; gap: .45rem; white-space: normal; line-height: 1.2; }
+.advanced-standings-player .avatar { flex: none; }
+.advanced-standings-points { color: var(--green); font-weight: 900; }
+.prediction-admin-list { list-style: none; margin: .6rem 0 0; padding: 0; }
+.prediction-admin-list li { display: flex; flex-wrap: wrap; gap: .3rem .7rem; justify-content: space-between; padding: .6rem 0; border-bottom: 1px solid var(--gray3); }
+.prediction-admin-list li:last-child { border-bottom: 0; }
+.prediction-admin-list span { color: var(--text2); }
 .advanced-predictions-section .card select { border: 1px solid var(--gray3); background: var(--gray2); color: var(--text); }
 .advanced-leaderboard li span:nth-of-type(2) { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.advanced-leaderboard small { display: block; opacity: .75; }
 .advanced-badges { display: flex; flex-wrap: wrap; gap: .45rem; }
 .advanced-badges span { border-radius: 999px; background: #f3e3aa; color: #503900; padding: .3rem .65rem; font-size: .82rem; font-weight: 700; }
 .advanced-history-filters { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,160px),1fr)); gap: .6rem; margin: 1rem 0; }

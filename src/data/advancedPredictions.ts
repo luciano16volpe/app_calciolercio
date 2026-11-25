@@ -57,9 +57,13 @@ export interface AdvancedStats {
 export function useAdvancedLeaderboard(leagueId:string,season:string,kind:string,enabled=true){
   const {user}=useAuth();
   return useQuery({queryKey:['advanced-leaderboard',user?.id,leagueId,season,kind],enabled:enabled&&!!user&&!!leagueId&&!!season,
-    queryFn:async()=>{const {data,error}=await supabase.rpc('advanced_prediction_leaderboard',
-      {p_league:leagueId,p_season:season,p_kind:kind,p_limit:50,p_offset:0});
-      if(error)throw error;return (data??[]) as unknown as AdvancedStanding[];},staleTime:30_000,retry:false});
+    queryFn:async()=>{const rows:AdvancedStanding[]=[];
+      for(let offset=0;;offset+=100){const {data,error}=await supabase.rpc('advanced_prediction_leaderboard',
+        {p_league:leagueId,p_season:season,p_kind:kind,p_limit:100,p_offset:offset});
+        if(error)throw error;const page=(data??[]) as unknown as AdvancedStanding[];rows.push(...page);
+        if(page.length<100)break;
+      }
+      return rows;},staleTime:30_000,retry:false});
 }
 export function useAdvancedStats(leagueId:string,season:string,enabled=true){
   const {user}=useAuth();

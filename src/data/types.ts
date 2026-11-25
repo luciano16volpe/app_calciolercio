@@ -1263,6 +1263,7 @@ export type Database = {
       formation_poll_state: { Args: { p_match: string }; Returns: Json }
       formation_poll_votes: { Args: { p_match: string }; Returns: Json }
       betting_board: { Args: { p_league: string }; Returns: Json }
+      betting_admin_participation: { Args: { p_match: string }; Returns: Json }
       advanced_prediction_enabled: { Args: { p_league: string }; Returns: boolean }
       advanced_prediction_set_enabled: { Args: { p_league: string; p_enabled: boolean }; Returns: undefined }
       advanced_prediction_select: { Args: { p_assignment: string; p_selected: boolean }; Returns: undefined }

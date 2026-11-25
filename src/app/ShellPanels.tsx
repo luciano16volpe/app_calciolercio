@@ -24,6 +24,7 @@ import { FeatureBoundary } from '../features/menu/FeatureBoundary';
 // I pannelli amministrativi si caricano quando vengono aperti.
 const AuditPanel = lazy(() => import('../features/menu/AuditPanel').then((m) => ({ default: m.AuditPanel })));
 const GameSettingsPanel = lazy(() => import('../features/menu/GameSettingsPanel').then((m) => ({ default: m.GameSettingsPanel })));
+const PredictionAdminStatsPanel = lazy(() => import('../features/menu/PredictionAdminStatsPanel').then((m) => ({ default: m.PredictionAdminStatsPanel })));
 const AdminProposalsPanel = lazy(() => import('../features/menu/AdminPanels').then((m) => ({ default: m.AdminProposalsPanel })));
 const PlatformLeaguesPanel = lazy(() => import('../features/menu/AdminPanels').then((m) => ({ default: m.PlatformLeaguesPanel })));
 const PlatformUsersPanel = lazy(() => import('../features/menu/AdminPanels').then((m) => ({ default: m.PlatformUsersPanel })));
@@ -54,7 +55,7 @@ export function ShellPanels({ panel, data, closePanel, leave, setPanel, go, open
   const closeLeagueAdmin = () => setPanel('league-admin-hub');
   const closeSuperPanel = () => setPanel('superadmin-hub');
   const playersLayer = !!panel && ['players-hub', 'compare', 'couples', 'albo', 'records'].includes(panel);
-  const leagueLayer = !!panel && ['league-admin-hub', 'members', 'invites', 'claims', 'merge', 'bench', 'admin-proposals'].includes(panel);
+  const leagueLayer = !!panel && ['league-admin-hub', 'prediction-admin-stats', 'members', 'invites', 'claims', 'merge', 'bench', 'admin-proposals'].includes(panel);
   const superLayer = !!panel && (['superadmin-hub', 'audit', 'platform-leagues', 'platform-users', 'premium'].includes(panel) || (superAdmin.data === true && ['game-settings', 'create-league'].includes(panel)));
   return (
     <>
@@ -86,6 +87,7 @@ export function ShellPanels({ panel, data, closePanel, leave, setPanel, go, open
       {data && panel === 'league-settings' ? <LeagueSettingsPanel data={data} onClose={closePanel} /> : null}
       <Suspense fallback={<LoadingIndicator />}>
         {data && panel === 'admin-proposals' ? <AdminProposalsPanel data={data} onClose={closeLeagueAdmin} /> : null}
+        {data && panel === 'prediction-admin-stats' ? <PredictionAdminStatsPanel data={data} onClose={closeLeagueAdmin} /> : null}
       </Suspense>
     </>
   );
