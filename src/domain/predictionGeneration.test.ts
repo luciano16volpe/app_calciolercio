@@ -44,6 +44,15 @@ describe('advanced prediction generation',()=>{
     expect(estimate.difficulty).toBe('UNCOMMON');
     expect(estimateDifficulty(template,{},history.slice(0,2)).method).toBe('DEFAULT');
   });
+  it('uses five evaluable player matches as the individual frequency threshold',()=>{
+    const template=PREDICTION_CATALOG[0]!;
+    const history=Array.from({length:5},(_,i)=>({target:player('opponent-0','B',i<3?1:0),players:[player('opponent-0','B',i<3?1:0)]}));
+    const five=estimateDifficulty(template,{},history);
+    expect(five.method).toBe('INDIVIDUAL');
+    expect(five.sampleSize).toBe(5);
+    expect(five.probability).not.toBeNull();
+    expect(estimateDifficulty(template,{},history.slice(0,4)).method).toBe('DEFAULT');
+  });
   it('offers historical rating comparisons only when the target has a prior official vote in that season',()=>{
     const target={...opponents[0]!,rating:7};
     const past={target,players:[target],date:'2026-10-10'};

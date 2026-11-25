@@ -32,9 +32,9 @@ function PredictionCard({assignment,matchId,canSelect}:{assignment:AdvancedAssig
     <h4>{assignment.description}</h4>
     <div className="advanced-prediction-meta"><span className="difficulty-tag">{difficultyLabel[assignment.difficulty]}</span>
       <span>Se indovini <b>+{assignment.weight}</b> pt</span><span>Se sbagli <b>−{assignment.weight}</b> pt</span></div>
-    {assignment.estimation_method==='INDIVIDUAL'&&assignment.historical_sample_size>=10&&assignment.estimated_probability!==null?
+    {assignment.estimation_method==='INDIVIDUAL'&&assignment.historical_sample_size>=5&&assignment.estimated_probability!==null?
       <p className="betting-hint">Frequenza storica stimata: {Math.round(assignment.estimated_probability*100)}% su {assignment.historical_sample_size} partite valutabili. Indicativa, non garantita.</p>:
-      <p className="betting-hint">Storico individuale insufficiente per una frequenza attendibile.</p>}
+      null}
     {assignment.result?<p className="advanced-prediction-result"><b>{status} · {points(assignment.result.points_units)} pt</b><br />{assignment.result.reason}<br />
       Risultato: {(['goals','assists','ownGoals','metas','rating'] as const).map(key=>`${{goals:'gol',assists:'assist',ownGoals:'autogol',metas:'mete',rating:'voto'}[key]} ${assignment.result?.observed_values?.[key]??'—'}`).join(' · ')}</p>:
       <p className="advanced-prediction-result">{status}</p>}
