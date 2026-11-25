@@ -8,7 +8,7 @@ type Tables = Database['public']['Tables'];
 
 export interface DbRows {
   players: Pick<Tables['players']['Row'], 'id' | 'name' | 'roles' | 'stats'>[];
-  matches: (Pick<Tables['matches']['Row'], 'id' | 'date' | 'notes' | 'score_a' | 'score_b' | 'pred' | 'pred_rank'> & Partial<Pick<Tables['matches']['Row'], 'play_time' | 'place' | 'place_lat' | 'place_lng' | 'place_url' | 'ratings_skipped'>>)[];
+  matches: (Pick<Tables['matches']['Row'], 'id' | 'date' | 'notes' | 'score_a' | 'score_b' | 'pred' | 'pred_rank'> & Partial<Pick<Tables['matches']['Row'], 'play_time' | 'place' | 'place_lat' | 'place_lng' | 'place_url' | 'ratings_skipped' | 'betting_enabled'>>)[];
   matchPlayers: (Pick<
     Tables['match_players']['Row'],
     'match_id' | 'player_id' | 'team' | 'position' | 'rating' | 'goals' | 'assist' | 'autogol' | 'meta' | 'rigori_sbagliati'
@@ -50,6 +50,7 @@ export function dbToDataset(rows: DbRows): Dataset {
       placeLng: m.place_lng ?? null,
       placeUrl: m.place_url ?? null,
       ratingsSkipped: m.ratings_skipped === true,
+      bettingEnabled: m.betting_enabled !== false,
       teamA: team('A'),
       teamB: team('B'),
       scoreA: m.score_a,

@@ -16,7 +16,8 @@ import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { formOn } from '../../data/gameSettings';
 import { useToast } from '../../app/Toast';
 import { compressGazzetta, makeGazzettaThumb } from '../../canvas/gazzetta';
-import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, setRatingsSkipped } from '../../data/mutations';
+import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, setMatchBetEnabled, setRatingsSkipped } from '../../data/mutations';
+import { useAdvancedEnabled } from '../../data/advancedPredictions';
 import { LEAGUE_HISTORY_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
 import { formatDate, whenWhere } from '../../domain/format';
@@ -308,6 +309,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
   const m = data.dataset.matches.find((x) => x.id === matchId);
   const { user } = useAuth();
   const communityVote = useCommunityVoteState(matchId);
+  const bettingEnabled = useAdvancedEnabled(data.league.id);
   const toast = useToast();
   const confirm = useConfirm();
   const explainPremium = usePremiumExplain();
@@ -319,6 +321,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
   const [textOnly, setTextOnly] = useState(false);
   const [pagella, setPagella] = useState<{ key: string; name: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [betBusy, setBetBusy] = useState(false);
   const gazInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const k = (e: KeyboardEvent) => e.key === 'Escape' && !pagella && !planning && onClose();
@@ -468,6 +471,25 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
       toast('Errore: ' + (e as Error).message);
     }
   };
+  const toggleBet = async () => {
+    if (!m || betBusy) return;
+    const enabled = m.bettingEnabled === false;
+    setBetBusy(true);
+    try {
+      await setMatchBetEnabled(matchId, enabled);
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY }),
+        qc.invalidateQueries({ queryKey: ['betting'] }),
+        qc.invalidateQueries({ queryKey: ['advanced-predictions-board'] }),
+        qc.invalidateQueries({ queryKey: ['advanced-leaderboard'] }),
+        qc.invalidateQueries({ queryKey: ['advanced-stats'] }),
+        qc.invalidateQueries({ queryKey: ['advanced-history'] }),
+        qc.invalidateQueries({ queryKey: ['advanced-balance'] }),
+      ]);
+      toast(enabled ? 'Bet attivo per questa partita' : 'Bet disattivato: giocate conservate, punti sospesi');
+    } catch (e) { toast('Errore: ' + (e as Error).message); }
+    finally { setBetBusy(false); }
+  };
   const remove = async () => {
     const ok = await confirm({
       icon: '🗑️', title: 'Eliminare la partita?', lines: ["Verranno eliminate anche tutte le pagelle e i gol di questa partita. L'operazione non è reversibile."], okLabel: 'Elimina', danger: true,
@@ -527,6 +549,13 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               </button>
             </div>
           ) : null}
+          {canEdit && bettingEnabled.data === true ? <div className="match-bet-setting admin-only">
+            <div><strong>Bet {m.bettingEnabled === false ? 'disattivato' : 'attivo'}</strong>
+              <small>Le giocate già registrate restano salvate. Quando Bet è disattivato non contano nelle classifiche; riattivandolo tornano valide.</small></div>
+            <button type="button" className="btn btn-secondary btn-sm" disabled={betBusy} onClick={() => void toggleBet()}>
+              {betBusy ? 'Salvataggio…' : m.bettingEnabled === false ? 'Attiva Bet' : 'Disattiva Bet'}
+            </button>
+          </div> : null}
           <div id="match-fields" style={{ opacity: editing ? 1 : 0.92 }}>
             {canEdit && !editing && canPlanMatch(data.dataset, m) ? <button type="button" className="btn btn-secondary btn-full admin-only" style={{ marginBottom: 12 }} onClick={() => setPlanning(true)}>Modifica programma e squadre</button> : null}
             {full ? (

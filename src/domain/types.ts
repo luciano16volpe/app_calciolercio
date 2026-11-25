@@ -18,6 +18,7 @@ export type TeamEntry = string | { id?: string | null; name?: string };
 
 export interface Match {
   id: string;
+  bettingEnabled?: boolean;
   date?: string;
   scoreA?: number | string | null;
   scoreB?: number | string | null;

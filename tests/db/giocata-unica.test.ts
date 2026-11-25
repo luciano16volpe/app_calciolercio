@@ -15,6 +15,8 @@ beforeEach(async () => {
   await db.exec(`begin;
     insert into auth.users(id,email) values ${Object.values(users).map((u, i) => `('${u}','u${i}@test.invalid')`).join(',')};
     insert into leagues(id,name,owner_id,created_by) values ('${league}','Giocata','${users.adm}','${users.adm}');
+    insert into league_members(league_id,user_id,role) values ('${league}','${users.adm}','admin')
+      on conflict (league_id,user_id) do update set role=excluded.role;
     insert into advanced_prediction_league_settings(league_id,enabled) values ('${league}',true);
     insert into players(id,name,user_id) values
       ('${pl.adm}','Admin','${users.adm}'),('${pl.c}','Ce','${users.c}'),('${pl.d}','De','${users.d}'),
@@ -76,4 +78,32 @@ test('le partite con le vecchie regole non contano 1-X-2 ed esatto', async () =>
     insert into match_predictions(match_id,user_id,outcome,score_a,score_b) values ('${game}','${users.c}','1',3,2);
     select advanced_prediction_reconcile('${game}','[]'::jsonb);`);
   expect(await summary(pl.c)).toBeUndefined();
+});
+
+test('l’ADMIN sospende e riattiva Bet senza perdere giocate e punti già calcolati', async () => {
+  const rules = (await db.query<{ r: unknown }>('select rules_snapshot as r from advanced_prediction_match_rules where match_id=$1', [game])).rows[0]!.r;
+  await db.exec(`insert into match_predictions(match_id,user_id,outcome,score_a,score_b) values ('${game}','${users.c}','1',3,2);`);
+  const assignment = (await db.query<{ id: string }>(`insert into advanced_prediction_assignments(
+    league_id,match_id,season_key,predictor_player_id,target_player_id,template_id,template_code,
+    template_version,category,description,condition_snapshot,parameters_snapshot,configuration_version,
+    rules_snapshot,difficulty,weight,estimation_method,selected_at,status)
+    values ($1,$2,'2026-AUT',$3,$4,1,'T1',1,'GOALS','prova','{}'::jsonb,'{}'::jsonb,4,$5::jsonb,
+      'COMMON',1,'DEFAULT',now(),'SELECTED') returning id`, [league, game, pl.c, pl.t, JSON.stringify(rules)])).rows[0]!.id;
+  await db.query('select advanced_prediction_reconcile($1::uuid,$2::jsonb)',
+    [game, JSON.stringify([{ assignment_id: assignment, outcome: 'WON', reason: 'prova' }])]);
+  await db.query("select set_config('request.jwt.claim.sub',$1,true)", [users.adm]);
+  await db.exec('set local role authenticated');
+  const board = async () => (await db.query<{ value: Array<{ match_id: string }> }>('select betting_board($1::uuid) as value', [league])).rows[0]!.value;
+  const standing = async () => (await db.query<{ value: Array<{ player_id: string }> }>(
+    "select advanced_prediction_leaderboard($1::uuid,'2026-AUT') as value", [league])).rows[0]!.value;
+  expect((await board()).some((row) => row.match_id === game)).toBe(true);
+  expect((await standing()).some((row) => row.player_id === pl.c)).toBe(true);
+  await db.query('select set_match_betting($1::uuid,false)', [game]);
+  expect((await board()).some((row) => row.match_id === game)).toBe(false);
+  expect((await standing()).some((row) => row.player_id === pl.c)).toBe(false);
+  await db.query('select set_match_betting($1::uuid,true)', [game]);
+  expect((await board()).some((row) => row.match_id === game)).toBe(true);
+  expect((await standing()).some((row) => row.player_id === pl.c)).toBe(true);
+  await db.exec('reset role');
+  expect((await db.query('select * from match_predictions where match_id=$1', [game])).rows).toHaveLength(1);
 });

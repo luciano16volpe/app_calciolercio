@@ -8,6 +8,11 @@ import type { Json } from './types';
 
 const fail = (what: string, e: { message: string }) => new Error(`${what}: ${e.message}`);
 
+export async function setMatchBetEnabled(matchId: string, enabled: boolean): Promise<void> {
+  const { error } = await supabase.rpc('set_match_betting', { p_match: matchId, p_enabled: enabled });
+  if (error) throw fail('Bet della partita', error);
+}
+
 export async function updatePlannedMatch(original: Match, plan: { date: string; time: string; place: string; lat?: number | null; lng?: number | null; url?: string | null; notes: string; teamA: string[]; teamB: string[] }): Promise<void> {
   const { error } = await supabase.rpc('update_planned_match', {
     p_match: original.id, p_date: plan.date, p_time: plan.time, p_place: plan.place.trim(), p_lat: plan.lat ?? undefined, p_lng: plan.lng ?? undefined, p_url: plan.url ?? undefined, p_notes: plan.notes.trim(),

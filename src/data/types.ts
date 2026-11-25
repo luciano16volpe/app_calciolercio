@@ -1556,6 +1556,7 @@ export type Database = {
         Returns: number
       }
       slugify: { Args: { t: string }; Returns: string }
+      set_match_betting: { Args: { p_match: string; p_enabled: boolean }; Returns: undefined }
       transfer_league_ownership: {
         Args: { l: string; new_owner: string }
         Returns: undefined
