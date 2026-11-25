@@ -61,6 +61,7 @@ export async function deleteMatch(matchId: string): Promise<void> {
 
 export interface NewMatch {
   leagueId: string;
+  bettingEnabled: boolean;
   date: string;
   /** ora (hh:mm) e luogo: obbligatori per una partita nuova */
   time: string;
@@ -82,6 +83,7 @@ export interface NewMatch {
 /** Crea partita e squadre in una sola transazione. */
 export async function createMatch(m: NewMatch): Promise<string> {
   const header = { league_id: m.leagueId, date: m.date, play_time: m.time || null,
+      betting_enabled: m.bettingEnabled,
       place: m.place.trim() || null, place_lat: m.placeLat ?? null, place_lng: m.placeLng ?? null, place_url: m.placeUrl ?? null, notes: m.notes || null,
       score_a: m.scoreA === '' ? null : m.scoreA, score_b: m.scoreB === '' ? null : m.scoreB,
       pred: m.pred, pred_rank: m.predRank };

@@ -591,6 +591,7 @@ export type Database = {
       }
       matches: {
         Row: {
+          betting_enabled: boolean
           created_at: string
           created_by: string | null
           date: string
@@ -609,6 +610,7 @@ export type Database = {
           score_b: number | null
         }
         Insert: {
+          betting_enabled?: boolean
           created_at?: string
           created_by?: string | null
           date: string
@@ -627,6 +629,7 @@ export type Database = {
           score_b?: number | null
         }
         Update: {
+          betting_enabled?: boolean
           created_at?: string
           created_by?: string | null
           date?: string

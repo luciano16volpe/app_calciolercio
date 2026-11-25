@@ -13,6 +13,7 @@ import { goalsLabel, type Combo } from '../../domain/balancing';
 import { clampInt } from '../../domain/matchEdit';
 import { nextLeagueDay } from '../../domain/leagueDay';
 import { useLeagueSettings } from '../../data/leagues';
+import { useAdvancedEnabled } from '../../data/advancedPredictions';
 
 const input = { width: '100%', padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 7, background: 'var(--gray)', color: 'var(--text)', boxSizing: 'border-box' } as const;
 const lbl = { fontSize: 12, color: 'var(--text2)', display: 'block', marginBottom: 5 } as const;
@@ -25,6 +26,8 @@ export function NewMatchDialog({ data, combos, idx, onClose }: { data: LeagueDat
   const combo = combos[idx] as Combo;
   // la data proposta è il prossimo giorno di partita scelto nelle impostazioni della lega (altrimenti oggi)
   const leagueSettings = useLeagueSettings(data.league.id);
+  const betting = useAdvancedEnabled(data.league.id);
+  const [bettingSelected, setBettingSelected] = useState(true);
   const [date, setDate] = useState(() => nextLeagueDay(leagueSettings.data?.day));
   // ora e luogo: si propongono quelli dell'ultima partita che li ha (di solito si gioca sempre allo stesso posto)
   const last = [...data.dataset.matches].reverse().find((x) => x.place || x.time);
@@ -58,6 +61,7 @@ export function NewMatchDialog({ data, combos, idx, onClose }: { data: LeagueDat
       }).slice(0, 10);
       await createMatch({
         leagueId: data.league.id, date, time, place: place.name.trim(), placeLat: place.lat, placeLng: place.lng, placeUrl: place.url, notes: notes.trim(),
+        bettingEnabled: betting.data === true && bettingSelected,
         teamA: combo.tA.map((i) => (players[i] as { id: string }).id),
         teamB: combo.tB.map((i) => (players[i] as { id: string }).id),
         scoreA: sa !== '' ? clampInt(sa, 0, 99, 0) : '', scoreB: sb !== '' ? clampInt(sb, 0, 99, 0) : '',
@@ -111,6 +115,10 @@ export function NewMatchDialog({ data, combos, idx, onClose }: { data: LeagueDat
             </div>
           </div>
           <div className="formation-publish-note">⭐ Pubblicando una partita senza risultato apri per 24 ore la scelta delle squadre a tutti i membri Premium della lega. La formazione mostrata resta quella iniziale in caso di pareggio o zero voti.</div>
+          {betting.data===true?<label className="new-match-betting-option" htmlFor="nm-betting">
+            <input id="nm-betting" type="checkbox" checked={bettingSelected} onChange={event=>setBettingSelected(event.target.checked)} />
+            <span><strong>Bet attivo per questa partita</strong><small>Se disattivato, questa partita non comparirà nella sezione Bet e non accetterà giocate.</small></span>
+          </label>:null}
           <div>
             <label style={lbl} htmlFor="nm-scoreA">⚽ Risultato (opz.)</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -119,7 +127,8 @@ export function NewMatchDialog({ data, combos, idx, onClose }: { data: LeagueDat
               <input type="number" id="nm-scoreB" placeholder="—" min={0} value={sb} onChange={(e) => setSb(e.target.value)} style={score} />
             </div>
           </div>
-          <button className="btn btn-primary btn-full" disabled={busy} onClick={() => void save()}>💾 Crea partita</button>
+          {betting.isError ? <div role="alert" className="formation-publish-note">Impossibile verificare le impostazioni Bet della lega. <button type="button" onClick={() => void betting.refetch()}>Riprova</button></div> : null}
+          <button className="btn btn-primary btn-full" disabled={busy||!betting.isSuccess} onClick={() => void save()}>💾 Crea partita</button>
         </div>
       </div>
     </div>

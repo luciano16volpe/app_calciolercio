@@ -83,6 +83,26 @@ test('crea partita e squadre con posizioni e previsioni', async () => {
   expect((await db.query('select place, pred_rank from matches where id = $1', [id])).rows).toEqual([{ place: 'Campo Sole', pred_rank: 1 }]);
 });
 
+test('la scelta Bet e il flag della lega determinano se la nuova partita è giocabile', async () => {
+  await db.exec(`insert into advanced_prediction_league_settings(league_id,enabled) values ('${league}',true)`);
+  await asUser(admin);
+  const create = async (betting_enabled: boolean) => (await db.query<{ id: string }>(createMatchSql,
+    [JSON.stringify({ ...matchData, betting_enabled }), [p1], [p2]])).rows[0]!.id;
+  const active = await create(true);
+  const inactive = await create(false);
+  expect((await db.query<{ betting_enabled: boolean }>('select betting_enabled from matches where id=$1', [active])).rows[0]?.betting_enabled).toBe(true);
+  expect((await db.query<{ betting_enabled: boolean }>('select betting_enabled from matches where id=$1', [inactive])).rows[0]?.betting_enabled).toBe(false);
+  const board = (await db.query<{ data: Array<{ match_id: string }> }>('select betting_board($1::uuid) as data', [league])).rows[0]!.data;
+  expect(board.some((row) => row.match_id === active)).toBe(true);
+  expect(board.some((row) => row.match_id === inactive)).toBe(false);
+  await db.exec('reset role');
+  await fails('insert into match_predictions(match_id,user_id,outcome) values ($1,$2,$3)', [inactive, admin, '1'], /Bet non attivo/);
+  await db.query('update advanced_prediction_league_settings set enabled=false where league_id=$1', [league]);
+  await asUser(admin);
+  const disabledByLeague = await create(true);
+  expect((await db.query<{ betting_enabled: boolean }>('select betting_enabled from matches where id=$1', [disabledByLeague])).rows[0]?.betting_enabled).toBe(false);
+});
+
 test('un duplicato nelle squadre annulla partita, convocazioni e audit', async () => {
   const before = await snapshot();
   await asUser(admin);

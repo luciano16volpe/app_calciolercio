@@ -7,7 +7,7 @@ const serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const admin=createClient(url,serviceKey,{auth:{persistSession:false}});
 const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, apikey, content-type, x-client-info, x-cron-secret','Access-Control-Allow-Methods':'POST, OPTIONS'};
 const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json'}});
-type MatchRow={id:string;league_id:string;date:string;play_time:string|null;score_a:number|null;score_b:number|null};
+type MatchRow={id:string;league_id:string;date:string;play_time:string|null;score_a:number|null;score_b:number|null;betting_enabled:boolean};
 type RawPerformance={match_id:string;player_id:string;team:'A'|'B';goals:number|null;assist:number|null;autogol:number|null;meta:number|null;rating:number|null};
 const convert=(row:RawPerformance):Performance=>({playerId:row.player_id,team:row.team,goals:row.goals,assists:row.assist,ownGoals:row.autogol,metas:row.meta,rating:row.rating});
 
@@ -59,10 +59,11 @@ async function loadRules(matchId:string):Promise<{version:number;rules:Predictio
 }
 
 async function board(matchId:string,userId:string){
-  const {data:match,error:matchError}=await admin.from('matches').select('id,league_id,date,play_time,score_a,score_b').eq('id',matchId).maybeSingle();
+  const {data:match,error:matchError}=await admin.from('matches').select('id,league_id,date,play_time,score_a,score_b,betting_enabled').eq('id',matchId).maybeSingle();
   if(matchError)throw matchError;
   if(!match)return reply({error:'Partita non trovata'},404);
   const m=match as MatchRow;
+  if(!m.betting_enabled)return reply({error:'Bet non attivo per questa partita'},404);
   const localNow=new Date().toLocaleString('sv-SE',{timeZone:'Europe/Rome',hour12:false});
   const kickoff=m.play_time?`${m.date} ${m.play_time.slice(0,8)}`:null;
   const isOpen=!!kickoff&&localNow<kickoff&&m.score_a===null&&m.score_b===null;

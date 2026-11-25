@@ -15,6 +15,7 @@ beforeEach(async () => {
   await db.exec(`begin;
     insert into auth.users(id,email) values ${Object.values(users).map((u, i) => `('${u}','u${i}@test.invalid')`).join(',')};
     insert into leagues(id,name,owner_id,created_by) values ('${league}','Giocata','${users.adm}','${users.adm}');
+    insert into advanced_prediction_league_settings(league_id,enabled) values ('${league}',true);
     insert into players(id,name,user_id) values
       ('${pl.adm}','Admin','${users.adm}'),('${pl.c}','Ce','${users.c}'),('${pl.d}','De','${users.d}'),
       ('${pl.e}','E','${users.e}'),('${pl.f}','Effe','${users.f}'),('${pl.g}','Gi','${users.g}'),('${pl.t}','Bersaglio',null);
