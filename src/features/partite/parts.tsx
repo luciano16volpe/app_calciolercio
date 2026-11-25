@@ -69,7 +69,7 @@ export function MatchButtons({ data, m, act, withPlace = true }: { data: LeagueD
   return (
     <>
       {sum}
-      {communityVote.data?.is_open ? <button type="button" className="btn btn-sm mbar-btn premium-vote-btn" onClick={() => act.openMatchVote(m.id)} title="Votazione Premium">⭐ VOTA <span>Premium</span></button> : null}
+      {communityVote.data && (communityVote.data.is_open || (communityVote.data.finalized && communityVote.data.has_premium)) ? <button type="button" className="btn btn-sm mbar-btn premium-vote-btn" onClick={() => act.openMatchVote(m.id)} title="Vota">Vota</button> : null}
       {data.gazzette[m.id] ? <button className="btn btn-secondary btn-sm mbar-btn" onClick={() => act.openGazzetta(m.id)} title="Apri la Gazzetta">📰 Gazzetta</button> : null}
       {matchHasDesc(data.dataset, m.id) ? (
         <button className="btn btn-primary btn-sm mbar-btn" onClick={() => act.openPagelleText(m.id)} style={{ background: '#25D366', borderColor: '#25D366' }} title="Tutte le pagelle in un testo">📜 Pagelle</button>

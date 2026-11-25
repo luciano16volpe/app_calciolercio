@@ -9,7 +9,7 @@ import { formatDate } from '../../domain/format';
 import { normalizeTeam } from '../../domain/stats';
 import type { Match } from '../../domain/types';
 
-function AdminVoteDetails({ matchId }: { matchId: string }) {
+function VoteDetails({ matchId }: { matchId: string }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<CommunityVoteDetail[] | null>(null);
@@ -57,7 +57,7 @@ function AdminVoteProgress({ matchId, isOpen }: { matchId: string; isOpen: boole
   </div>;
 }
 
-/** Nella scheda partita restano solo l'attivazione e la consultazione riservate all'admin. */
+/** Nella scheda partita l'admin vede i voti anche durante la votazione. */
 export function CommunityVoteControls({ match, state, canEdit, userId }: {
   match: Match;
   state: CommunityVoteState | null | undefined;
@@ -94,7 +94,7 @@ export function CommunityVoteControls({ match, state, canEdit, userId }: {
         : state.finalized ? ' Le medie sono ora visibili nella scheda.' : ' Le medie saranno disponibili tra poco.'}
     </p> : null}
     {state.enabled ? <AdminVoteProgress matchId={match.id} isOpen={state.is_open} /> : null}
-    {state.enabled ? <AdminVoteDetails matchId={match.id} /> : null}
+    {state.enabled ? <VoteDetails matchId={match.id} /> : null}
   </section>;
 }
 
@@ -188,8 +188,8 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
         {!state ? <p className="vote-modal-message">Caricamento votazione…</p> : state.is_open && !state.has_premium ? <div className="vote-premium-message"><strong>⭐ Votazione Premium</strong><p>Il pulsante è visibile a tutti, ma per dare i voti serve Premium attivo: chiedi all’amministratore di attivarlo. I voti che hai già inviato restano salvati.</p></div> : state.can_vote ? <>
           <div className="vote-modal-intro">
             <strong>Come funziona</strong>
-            <p>Vota solo i giocatori che vuoi valutare: puoi lasciare gli altri senza voto. Scegli da 1 a 10 con il cursore o i pulsanti da mezzo punto.</p>
-            <span>Puoi correggere i voti fino al {until}. Le medie saranno visibili alla chiusura.</span>
+            <p>Vota solo i giocatori che vuoi valutare: puoi lasciare gli altri senza voto. Scegli da 1 a 10 con i pulsanti + e −, a passi di mezzo punto.</p>
+            <span>Puoi correggere i voti fino al {until}, oppure finché tutti hanno votato. Le medie saranno visibili alla chiusura.</span>
           </div>
           {teams.map((team) => team.players.length ? <section key={team.side} className={`vote-team vote-team-${team.side}`}>
             <h3 className="vote-team-heading"><span className="vote-team-dot" /> Squadra {team.label}</h3>
@@ -210,15 +210,12 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
                     <div className="vote-player-value"><span>VOTO</span><b>{value == null ? '—' : value.toFixed(1).replace('.', ',')}</b></div>
                     <button type="button" className="vote-adjust" aria-label={`Aumenta il voto di ${player.name}`} disabled={value === 10} onClick={() => setRating(id, (value ?? 6) + 0.5)}>+</button>
                   </div>
-                  <input className="vote-player-slider" type="range" min="1" max="10" step="0.5" value={value ?? 6}
-                    aria-label={`Voto per ${player.name}`} aria-valuetext={value == null ? 'Nessun voto selezionato' : value.toFixed(1).replace('.', ',')}
-                    onChange={(event) => setRating(id, Number(event.target.value))} />
-                  <div className="vote-slider-scale" aria-hidden="true"><span>1</span><span>5,5</span><span>10</span></div>
                 </div>;
               })}
             </div>
           </section> : null)}
         </> : <p className="vote-modal-message">{state.is_open ? 'Può votare solo chi ha partecipato alla partita.' : state.closed_early_at ? `La votazione è stata chiusa in anticipo${state.closed_early_by_name ? ` da ${state.closed_early_by_name}` : ''}.` : state.finalized ? 'La votazione è chiusa: le medie sono pubblicate.' : 'La votazione non è disponibile per questa partita.'}</p>}
+        {state?.finalized && state.has_premium ? <VoteDetails matchId={match.id} /> : null}
       </div>
       {state?.can_vote && state.has_premium ? <div className="vote-modal-footer">
         <span>{savedCount ? `${savedCount} ${savedCount === 1 ? 'voto già salvato' : 'voti già salvati'}` : 'Nessun voto salvato'}{changedCount ? ` · ${changedCount} da salvare` : ''}</span>
@@ -230,7 +227,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
         <button type="button" id="community-vote-close" className="btn btn-secondary btn-sm admin-close-vote admin-only" disabled={closing || busy} onClick={() => void closeVoting()}>
           {closing ? 'Chiusura…' : '🔒 Chiudi votazione'}
         </button>
-        <small>Solo per l’admin. Altrimenti si chiude da sola il {until}.</small>
+        <small>Solo per l’admin. Si chiude anche quando tutti hanno votato, al più tardi il {until}.</small>
       </div> : null}
     </div>
   </div>;

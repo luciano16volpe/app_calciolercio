@@ -145,6 +145,26 @@ function Shell() {
   const predictionsOn = useAdvancedEnabled(data?.league.id ?? '').data === true; // la sezione Pronostici esiste solo nelle leghe in cui l'admin l'ha attivata
   const me = useMyPlayerIn(data); // la mia faccia (o foto) nel footer
   const { page, go } = useShellNavigation(data, isAdmin, ready, inviteToken);
+  useEffect(() => {
+    if (!window.matchMedia('(display-mode: standalone)').matches) return;
+    // Una voce di cronologia interna permette al tasto Indietro di restare nell'app.
+    if (!window.history.state?.calciolercioBackGuard) {
+      window.history.pushState({ calciolercioBackGuard: true }, '', window.location.href);
+    }
+    const currentUrl = window.location.pathname + window.location.search + window.location.hash;
+    const onBack = () => {
+      window.history.pushState({ calciolercioBackGuard: true }, '', currentUrl);
+      if (view) close();
+      else if (gazViewer) setGazViewer(null);
+      else if (ptDialog) setPtDialog(null);
+      else if (panel) closePanel();
+      else if (menuOpen) closeMenu();
+      else if (bachecaOpen) setBachecaOpen(false);
+      else if (page !== HOME_PAGE) go(HOME_PAGE);
+    };
+    window.addEventListener('popstate', onBack);
+    return () => window.removeEventListener('popstate', onBack);
+  }, [view, close, gazViewer, setGazViewer, ptDialog, setPtDialog, panel, closePanel, menuOpen, closeMenu, bachecaOpen, setBachecaOpen, page, go]);
   const ready0 = !!data;
   useEffect(() => { if (ready0) prefetchScreens(); }, [ready0]);
   const visualsActive = !view && !gazViewer && !ptDialog && !menuOpen && !panel && !inviteToken;
