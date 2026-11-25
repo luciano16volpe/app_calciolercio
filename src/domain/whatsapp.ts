@@ -251,6 +251,7 @@ export interface WaApplyItem {
   title: string;
   desc: string;
   written: string;
+  vote: number;
 }
 
 /**
@@ -267,7 +268,7 @@ export function waApply(
   a.res.blocks.forEach((b, k) => {
     if (!on(k) || !b.assign) return;
     const slot = a.slots.find((s) => s.pk === b.assign);
-    items.push({ pk: b.assign, slot, title: b.title, desc: b.desc, written: b.written });
+    items.push({ pk: b.assign, slot, title: b.title, desc: b.desc, written: b.written, vote: b.vote });
     if (slot && slot.player && waNameScore(b.written, slot.player, map) < 60) remember.push({ written: b.written, player: slot.player });
   });
   return { items, remember };

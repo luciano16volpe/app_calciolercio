@@ -40,7 +40,7 @@ export interface MatchHeader {
 export async function saveMatchRatings(matchId: string, rows: RatingRow[], untouchedTexts: Set<string> = new Set(), header?: MatchHeader): Promise<void> {
   const { error } = await supabase.rpc('save_match_ratings', {
     p_match: matchId,
-    p_rows: rows.map((r) => ({ player_id: r.playerId, rating: r.rating, goals: r.goals, assist: r.assist,
+    p_rows: rows.map((r) => ({ player_id: r.playerId, editor_rating: r.editorRating, goals: r.goals, assist: r.assist,
       autogol: r.autogol, meta: r.meta, rigori_sbagliati: r.rigoriSbagliati,
       titolo: r.titolo || null, descrizione: r.notes || null, write_text: !untouchedTexts.has(r.playerId) })),
     ...(header ? { p_header: { ...header } } : {}),

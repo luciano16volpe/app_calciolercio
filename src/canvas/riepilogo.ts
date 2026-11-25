@@ -9,6 +9,8 @@ export interface SummaryRow {
   name: string;
   /** voto (1–10) o niente se non votato */
   v: number | null;
+  /** giudizio dell'editore, separato dalla media dei votanti */
+  editorV?: number | null;
   g: number;
   a: number;
   ag: number;
@@ -38,9 +40,11 @@ export function summaryInput(data: Dataset, m: Match, editor?: string): SummaryI
         const k = playerKey(data.players, pl.id, pl.name).key;
         const r = ratings.find((x) => playerKey(data.players, x.playerId, x.player).key === k);
         const v = r ? parseFloat(r.rating as string) : NaN;
+        const editorV = r ? parseFloat(r.editorRating as string) : NaN;
         return {
           name: playerKey(data.players, pl.id, pl.name).name,
           v: !isNaN(v) && v >= 1 ? v : null,
+          editorV: !isNaN(editorV) && editorV >= 1 ? editorV : null,
           g: r ? parseInt(r.goals as string) || 0 : 0,
           a: r ? parseInt(r.assist as string) || 0 : 0,
           ag: r ? parseInt(r.autogol as string) || 0 : 0,
@@ -154,7 +158,7 @@ export function drawSummary(s: SummaryInput): HTMLCanvasElement {
   const cntPlayed = (t: SummaryRow[]) => t.filter((p) => p.v != null).length;
   drawTeamBlock(ctx, xA, tbY, colW, tbH, true, hasScore ? `${a} gol · ${cntPlayed(tA)} votati` : `${cntPlayed(tA)} votati`);
   drawTeamBlock(ctx, xB, tbY, colW, tbH, false, hasScore ? `${b} gol · ${cntPlayed(tB)} votati` : `${cntPlayed(tB)} votati`);
-  const voteCol = (v: number | null) => (v == null ? C.SUB : v >= 6.5 ? '#3aad5e' : v < 5.5 ? '#e05c5c' : '#e0a92e');
+  const voteLabel = (v: number) => Number.isInteger(v) ? String(v) : v.toFixed(1);
   const drawRows = (x: number, team: SummaryRow[]) => {
     let y = rowsY;
     team.forEach((p) => {
@@ -165,11 +169,11 @@ export function drawSummary(s: SummaryInput): HTMLCanvasElement {
       ctx.textAlign = 'left';
       ctx.fillStyle = C.TXT;
       ctx.font = SHARE_FONT('700 20px');
-      ctx.fillText(fitText(ctx, (isMvp ? '⭐ ' : '') + p.name, colW - 90), x + 16, y + 25);
+      ctx.fillText(fitText(ctx, (isMvp ? '⭐ ' : '') + p.name, colW - 150), x + 16, y + 25);
       if (p.tit) {
         ctx.fillStyle = '#f2c94c';
         ctx.font = SHARE_FONT('italic 700 16px');
-        ctx.fillText(fitText(ctx, '«' + p.tit + '»', colW - 90), x + 16, y + 48);
+        ctx.fillText(fitText(ctx, '«' + p.tit + '»', colW - 150), x + 16, y + 48);
       }
       const chips = [p.g ? `⚽ ${p.g}` : '', p.a ? `🅰️ ${p.a}` : '', p.ag ? `🙃 ${p.ag}` : '', p.rs ? `❌ ${p.rs}` : '', p.mt ? `🚀 ${p.mt}` : '']
         .filter(Boolean)
@@ -177,12 +181,22 @@ export function drawSummary(s: SummaryInput): HTMLCanvasElement {
       if (chips) {
         ctx.fillStyle = C.SUB;
         ctx.font = SHARE_FONT('600 15px');
-        ctx.fillText(fitText(ctx, chips, colW - 90), x + 16, y + (anyTit ? 70 : 46));
+        ctx.fillText(fitText(ctx, chips, colW - 150), x + 16, y + (anyTit ? 70 : 46));
       }
       ctx.textAlign = 'right';
-      ctx.fillStyle = voteCol(p.v);
-      ctx.font = SHARE_FONT('800 28px');
-      ctx.fillText(p.v != null ? (Number.isInteger(p.v) ? String(p.v) : p.v.toFixed(1)) : '—', x + colW - 16, y + (rowH - 8) / 2 + 10);
+      ctx.font = SHARE_FONT('800 15px');
+      if (p.v != null) {
+        ctx.fillStyle = '#2374c9';
+        ctx.fillText(`VOTANTI ${voteLabel(p.v)}`, x + colW - 12, y + 25);
+      }
+      if (p.editorV != null) {
+        ctx.fillStyle = '#a44db8';
+        ctx.fillText(`EDITORE ${voteLabel(p.editorV)}`, x + colW - 12, y + 47);
+      }
+      if (p.v == null && p.editorV == null) {
+        ctx.fillStyle = C.SUB;
+        ctx.fillText('—', x + colW - 16, y + 35);
+      }
       y += rowH;
     });
   };

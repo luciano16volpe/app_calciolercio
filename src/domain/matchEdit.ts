@@ -28,6 +28,7 @@ export interface RatingRow {
   playerId: string;
   player: string;
   rating: number | null;
+  editorRating: number | null;
   notes: string;
   titolo: string;
   goals: number;
@@ -47,14 +48,15 @@ export interface SavePlan {
 }
 
 /** Prepara il salvataggio della scheda partita. */
-export function planSave(teamA: PlayerFields[], teamB: PlayerFields[], scA: string, scB: string): SavePlan {
+export function planSave(teamA: PlayerFields[], teamB: PlayerFields[], scA: string, scB: string, includeEmpty = false): SavePlan {
   const rows: RatingRow[] = [];
   const tot = { A: { goals: 0, assist: 0 }, B: { goals: 0, assist: 0 } };
   const all: Array<[PlayerFields, 'A' | 'B']> = [...teamA.map((p) => [p, 'A'] as [PlayerFields, 'A']), ...teamB.map((p) => [p, 'B'] as [PlayerFields, 'B'])];
   all.forEach(([p, side]) => {
     const tit = (p.tit || '').trim().slice(0, 60);
     const desc = (p.desc || '').trim().slice(0, 2000);
-    const v = clampRating(p.rating); // vuoto o non valido → niente voto; altrimenti 1–10 a passi di 0,5
+    const v = clampRating(p.rating);
+    const editorV = clampRating(p.editorRating);
     const g = clampInt(p.goals, 0, 20, 0);
     const asv = clampInt(p.assist, 0, 20, 0);
     const rsv = clampInt(p.rigori, 0, 10, 0);
@@ -62,8 +64,8 @@ export function planSave(teamA: PlayerFields[], teamB: PlayerFields[], scA: stri
     const mt = clampInt(p.meta, 0, 50, 0);
     tot[side].goals += g;
     tot[side].assist += asv;
-    if (v !== null || g > 0 || asv > 0 || ag > 0 || rsv > 0 || mt > 0 || tit || desc) {
-      rows.push({ playerId: p.id || '', player: p.name, rating: v, notes: desc, titolo: tit, goals: g, autogol: ag, meta: mt, assist: asv, rigoriSbagliati: rsv });
+    if ((includeEmpty && p.id) || v !== null || editorV !== null || g > 0 || asv > 0 || ag > 0 || rsv > 0 || mt > 0 || tit || desc) {
+      rows.push({ playerId: p.id || '', player: p.name, rating: v, editorRating: editorV, notes: desc, titolo: tit, goals: g, autogol: ag, meta: mt, assist: asv, rigoriSbagliati: rsv });
     }
   });
   const scoreA = scA !== '' ? clampInt(scA, 0, 99, 0) : '';

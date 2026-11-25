@@ -1,5 +1,4 @@
-// "📥 Importa pagelle da WhatsApp": si incolla il messaggio, l'app riconosce i giocatori e assegna SOLO titolo e descrizione.
-// Voti, gol e risultato restano quelli inseriti a mano.
+// "📥 Importa pagelle da WhatsApp": assegna titolo, descrizione e voto editoriale.
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useToast } from '../../app/Toast';
@@ -29,7 +28,7 @@ export function WhatsAppImport({ data, m, hasRating, onAssign, defaultOpen = fal
   m: Match;
   /** il giocatore (chiave dei campi) ha già un voto nella scheda? */
   hasRating: (key: string) => boolean;
-  onAssign: (key: string, title: string, desc: string) => void;
+  onAssign: (key: string, title: string, desc: string, editorRating: string) => void;
   /** parte aperto (es. quando la redazione sceglie «Importa da WhatsApp» dal menu); di norma è chiuso */
   defaultOpen?: boolean;
 }) {
@@ -53,7 +52,7 @@ export function WhatsAppImport({ data, m, hasRating, onAssign, defaultOpen = fal
     if (!an) return;
     const map = readAliasMap();
     const { items, remember } = waApply(an, (k) => on[k] ?? !!(an.res.blocks[k] as { assign?: string }).assign, map);
-    items.forEach((it) => onAssign(slotKey(it.pk, sizeA), it.title, it.desc));
+    items.forEach((it) => onAssign(slotKey(it.pk, sizeA), it.title, it.desc, String(Math.max(1, Math.min(10, Math.round(it.vote * 2) / 2)))));
     // soprannomi imparati a mano ("Gianluca" → Cioccolata): restano sul telefono e nella lega
     let cur = map;
     const learned = new Map<string, string[]>();
@@ -73,7 +72,7 @@ export function WhatsAppImport({ data, m, hasRating, onAssign, defaultOpen = fal
         .then(() => qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY }))
         .catch(() => undefined);
     }
-    toast(`📥 Titolo e descrizione assegnati a ${items.length} giocatori: controlla e salva 💾`);
+    toast(`📥 Pagelle e voti editoriali assegnati a ${items.length} giocatori: controlla e salva 💾`);
     setAn(null);
   };
 
@@ -87,7 +86,7 @@ export function WhatsAppImport({ data, m, hasRating, onAssign, defaultOpen = fal
       </button>
       <div id="wa-body" hidden={!open}>
       <div className="mb-note" style={{ margin: '8px 0 8px' }}>
-        Incolla qui tutto il messaggio delle pagelle: l'app riconosce i giocatori e assegna a ciascuno <b>titolo e descrizione</b>. Voti, gol e risultato restano quelli che inserisci tu. Prima di assegnare ti mostra cosa ha capito.
+        Incolla qui tutto il messaggio delle pagelle: l'app riconosce i giocatori e assegna a ciascuno <b>titolo, descrizione e voto dell’editore</b>. Il voto dei votanti, i gol e il risultato non cambiano. Prima di assegnare ti mostra cosa ha capito.
       </div>
       <textarea id="wa-text" rows={5} placeholder="Incolla il messaggio di WhatsApp…" value={text} onChange={(e) => setText(e.target.value)} />
       <button type="button" className="btn btn-secondary btn-full" onClick={analyze}>🔍 Analizza il messaggio</button>
@@ -96,7 +95,7 @@ export function WhatsAppImport({ data, m, hasRating, onAssign, defaultOpen = fal
         {an && blocks.length ? (
           <>
             <div className="wa-sum">
-              Trovate <b>{blocks.length}</b> pagelle · riconosciuti <b>{blocks.filter((b) => b.assign).length}</b> giocatori · verranno assegnati solo <b>titolo e descrizione</b>
+              Trovate <b>{blocks.length}</b> pagelle · riconosciuti <b>{blocks.filter((b) => b.assign).length}</b> giocatori · verranno assegnati <b>titolo, descrizione e voto editoriale</b>
             </div>
             {blocks.map((b, k) => {
               const st = !b.assign ? 'miss' : b.guess ? 'guess' : b.m.slot && b.m.slot.pk === b.assign ? 'ok' : 'manual';
@@ -113,16 +112,16 @@ export function WhatsAppImport({ data, m, hasRating, onAssign, defaultOpen = fal
                     </select>
                   </div>
                   <div className="wa-det">
-                    {b.title ? <i>«{b.title}»</i> : <span style={{ color: 'var(--text3)' }}>senza titolo</span>}
+                    {b.title ? <i>«{b.title}»</i> : <span style={{ color: 'var(--text3)' }}>senza titolo</span>} · voto editore {b.vote}
                     {why ? <> · <span className="wa-why">{why}</span></> : null}
-                    {b.assign && !hasRating(slotKey(b.assign, sizeA)) ? <> · <span className="wa-why">manca il voto nell'app</span></> : null}
+                    {b.assign && !hasRating(slotKey(b.assign, sizeA)) ? <> · <span className="wa-why">voto editoriale da importare</span></> : null}
                   </div>
                   {b.desc ? <div className="wa-desc">{b.desc.slice(0, 140)}{b.desc.length > 140 ? '…' : ''}</div> : null}
                 </div>
               );
             })}
             {missing.length ? <div className="mb-note">Senza pagella nel messaggio: {missing.join(', ')}</div> : null}
-            <button type="button" className="btn btn-primary btn-full" style={{ marginTop: 8 }} onClick={apply}>✅ Assegna titoli e descrizioni</button>
+            <button type="button" className="btn btn-primary btn-full" style={{ marginTop: 8 }} onClick={apply}>✅ Assegna pagelle e voti editoriali</button>
           </>
         ) : null}
       </div>

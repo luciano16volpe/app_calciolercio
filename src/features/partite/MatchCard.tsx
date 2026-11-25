@@ -174,8 +174,8 @@ function Counter({ emoji, title, val, max, edit }: {
   );
 }
 
-function TeamPanel({ title, team, ratings, blue, side, ed, lockRating = false, hideRating = false }: {
-  title: string; team: Array<{ id: string | null; name: string }>; ratings: Rating[]; blue: boolean; side: 'A' | 'B'; ed?: FieldEditor; lockRating?: boolean; hideRating?: boolean;
+function TeamPanel({ title, team, ratings, blue, side, ed, hideRating = false }: {
+  title: string; team: Array<{ id: string | null; name: string }>; ratings: Rating[]; blue: boolean; side: 'A' | 'B'; ed?: FieldEditor; hideRating?: boolean;
 }) {
   const getRating = (pl: { id: string | null; name: string }) =>
     ratings.find((r) => (r.playerId && pl.id && r.playerId === pl.id) || r.player === pl.name);
@@ -187,7 +187,7 @@ function TeamPanel({ title, team, ratings, blue, side, ed, lockRating = false, h
         const f = ed ? ed.get(key) : null;
         const r = getRating(pl);
         const or = (v: unknown): string | number => (v ? (v as number | string) : '');
-        const val = hideRating ? '' : f ? f.rating : r && r.rating != null ? String(r.rating) : '';
+        const val = hideRating ? '' : r && r.rating != null ? String(r.rating) : '';
         const tit = f ? f.tit : r && r.titolo ? String(r.titolo) : '';
         const desc = f ? f.desc : r && r.notes ? String(r.notes) : '';
         const editorRating = f ? f.editorRating ?? '' : r?.editorRating != null ? String(r.editorRating) : '';
@@ -202,16 +202,23 @@ function TeamPanel({ title, team, ratings, blue, side, ed, lockRating = false, h
           <div key={`${pl.name}-${i}`} style={{ padding: '7px 0', borderBottom: '1px solid rgba(128,128,128,0.12)' }}>
             <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pl.name}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
-              <span style={{ fontSize: 10, color: 'var(--text2)', fontWeight: 700 }}>VOTO</span>
+              <span style={{ fontSize: 10, color: 'var(--text2)', fontWeight: 700 }}>VOTO VOTANTI</span>
               <div className="rate-stepper">
-                {ed && f && full && !lockRating ? <button type="button" onClick={() => ed.set(key, { rating: stepRating(f.rating, -1) })} className="rate-btn rate-btn-minus">−</button> : null}
                 <input
                   type="number" min={1} max={10} step={0.5} placeholder="—" value={val} inputMode="decimal"
-                  disabled={!full || lockRating} readOnly={!full || lockRating} style={rateColors(val)} onChange={full && !lockRating ? (e) => ed.set(key, { rating: e.target.value }) : undefined}
+                  disabled readOnly style={rateColors(val)}
                 />
-                {ed && f && full && !lockRating ? <button type="button" onClick={() => ed.set(key, { rating: stepRating(f.rating, 1) })} className="rate-btn rate-btn-plus">+</button> : null}
               </div>
             </div>
+            {ed && f ? <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+              <span style={{ fontSize: 10, color: 'var(--text2)', fontWeight: 700 }}>VOTO EDITORE</span>
+              <div className="rate-stepper">
+                <button type="button" onClick={() => ed.set(key, { editorRating: stepRating(editorRating, -1) })} className="rate-btn rate-btn-minus">−</button>
+                <input type="number" min={1} max={10} step={0.5} placeholder="—" value={editorRating} inputMode="decimal"
+                  style={rateColors(editorRating)} onChange={(e) => ed.set(key, { editorRating: e.target.value })} />
+                <button type="button" onClick={() => ed.set(key, { editorRating: stepRating(editorRating, 1) })} className="rate-btn rate-btn-plus">+</button>
+              </div>
+            </div> : null}
             <div className="mcnt-row">
               {cnt('goals', '⚽', 'Gol', 20, r?.goals)}
               {cnt('assist', '🅰️', 'Assist', 20, r?.assist)}
@@ -403,7 +410,11 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
     if (!draft) return;
     if (textOnly) return saveTexts();
     const side = (s: 'A' | 'B', n: number) => Array.from({ length: n }, (_, i) => draft.fields[`${s}${i}`] as PlayerFields);
-    const plan = planSave(side('A', teamA.length), side('B', teamB.length), draft.scA, draft.scB);
+    if (Object.values(draft.fields).some((f) => f.editorRating && clampRating(f.editorRating) === null)) {
+      toast('Il voto editoriale deve essere tra 1 e 10, a passi di mezzo punto');
+      return;
+    }
+    const plan = planSave(side('A', teamA.length), side('B', teamB.length), draft.scA, draft.scB, true);
     if (plan.overAssist.length) {
       const go = await confirm({
         icon: '🅰️', title: 'Assist più dei gol?', lines: [...plan.overAssist, '', 'Controlla i dati inseriti. Vuoi salvare comunque?'], okLabel: 'Salva comunque', cancelLabel: 'Correggi',
@@ -621,10 +632,10 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               ) : null}
             </div>
             <div style={{ ...LABEL, margin: '14px 0 8px' }}>Gol, assist e voti (facoltativi)</div>
-            {full ? <div className="mb-note" style={{ marginBottom: 8 }}>Puoi salvare gol e assist ora e aggiungere i voti più tardi.</div> : null}
+              {full ? <div className="mb-note" style={{ marginBottom: 8 }}>Puoi salvare gol, assist e voto dell’editore. Il voto dei votanti si calcola alla chiusura della votazione.</div> : null}
             <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-              <TeamPanel title="🔵 Blu" team={teamA} ratings={ratings} blue side="A" ed={ed} lockRating={communityVote.data?.enabled} hideRating={hideCommunityRatings} />
-              <TeamPanel title="⚪ Bianchi" team={teamB} ratings={ratings} blue={false} side="B" ed={ed} lockRating={communityVote.data?.enabled} hideRating={hideCommunityRatings} />
+              <TeamPanel title="🔵 Blu" team={teamA} ratings={ratings} blue side="A" ed={ed} hideRating={hideCommunityRatings} />
+              <TeamPanel title="⚪ Bianchi" team={teamB} ratings={ratings} blue={false} side="B" ed={ed} hideRating={hideCommunityRatings} />
             </div>
             <button type="button" className="btn btn-secondary btn-full eq-toggle" id="match-balance-btn" onClick={() => setBalanceOpen((o) => !o)}>
               ⚖️ Equilibrio squadre {balanceOpen ? '▴' : '▾'}
@@ -644,8 +655,8 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               <div className="staff-only staff-block" style={{ marginBottom: 8 }}>
                 <WhatsAppImport
                   data={data} m={m}
-                  hasRating={(k) => clampRating((draft.fields[k] as PlayerFields | undefined)?.rating) !== null}
-                  onAssign={(k, tit, desc) => ed?.set(k, { tit, desc })}
+                  hasRating={(k) => clampRating((draft.fields[k] as PlayerFields | undefined)?.editorRating) !== null}
+                    onAssign={(k, tit, desc, editorRating) => ed?.set(k, { tit, desc, editorRating })}
                   defaultOpen={startText}
                 />
               </div>

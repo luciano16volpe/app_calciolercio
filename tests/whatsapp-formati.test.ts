@@ -1,6 +1,6 @@
 // WhatsApp: quali forme del messaggio si leggono, e che messaggio chiaro compare per quelle che non si leggono.
 import { describe, expect, it } from 'vitest';
-import { analyzePagelle, whatsappProblem } from '../src/domain/whatsapp';
+import { analyzePagelle, waApply, whatsappProblem } from '../src/domain/whatsapp';
 import type { Dataset, Match } from '../src/domain/types';
 
 const names = ['Steppata', 'Fabio', 'Nico', 'Peppe'];
@@ -40,6 +40,10 @@ describe('formati che si leggono', () => {
     const a = analyzePagelle(msg((n, v) => `\u200e*${n} ${v}*`), match, data)!;
     expect(a.res.blocks[0]).toMatchObject({ written: 'Steppata', title: 'STEPPATA IL GRANDE 🔋' });
     expect(a.res.blocks[0]!.desc).toBe('ha giocato bene e ha fatto una partita di sostanza.');
+  });
+  it('il voto letto viene passato alla pagella editoriale', () => {
+    const a = analyzePagelle(msg((n, v) => `*${n} ${v}*`), match, data)!;
+    expect(waApply(a, () => true).items.map((item) => item.vote)).toEqual([6.5, 6, 5.5, 7]);
   });
 });
 
