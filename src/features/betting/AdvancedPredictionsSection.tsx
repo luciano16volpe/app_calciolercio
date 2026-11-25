@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../app/auth';
 import { useToast } from '../../app/Toast';
 import { PlayerAvatar } from '../player/PlayerAvatar';
-import { advancedBoardKey, selectAdvancedPrediction, useAdvancedBoard, useAdvancedEnabled, useAdvancedHistory, useAdvancedLeaderboard, useAdvancedStats, type AdvancedAssignment, type AdvancedHistoryFilters, type AdvancedStanding } from '../../data/advancedPredictions';
+import { advancedBoardKey, selectAdvancedPrediction, useAdvancedBoard, useAdvancedEnabled, useAdvancedHistory, useAdvancedLeaderboard, useAdvancedStats, type AdvancedAssignment, type AdvancedHistoryFilters } from '../../data/advancedPredictions';
 import { photoUrl } from '../../data/queries';
 import { scorePredictions, type Difficulty } from '../../domain/advancedPredictions';
 import { formatDate } from '../../domain/format';
@@ -87,15 +87,11 @@ export function MatchPredictions({match,embedded=false}:{match:BettingMatch;embe
   </div>;
 }
 
-function LeaderboardView({leagueId,season,players,photos}:{leagueId:string;season:string;players:readonly {id:string;name:string}[];photos:Record<string,string|null>}){
+function LeaderboardView({leagueId,season,photos}:{leagueId:string;season:string;photos:Record<string,string|null>}){
   const board=useAdvancedLeaderboard(leagueId,season,'PROFETA');
-  const byId=new Map((board.data??[]).map(row=>[row.player_id,row]));
-  const ranked=board.data??[];
-  const withoutResults=players.filter(player=>!byId.has(player.id)).sort((a,b)=>a.name.localeCompare(b.name,'it'));
-  const rows:Array<{player:{id:string;name:string};standing:AdvancedStanding|null}>=[
-    ...ranked.map(standing=>({player:{id:standing.player_id,name:standing.name},standing})),
-    ...withoutResults.map(player=>({player,standing:null})),
-  ];
+  // solo chi ha fatto almeno una giocata (1-X-2, risultato esatto o pronostici sui giocatori)
+  const rows=(board.data??[]).filter(standing=>standing.selected_count>0)
+    .map(standing=>({player:{id:standing.player_id,name:standing.name},standing}));
   return <div className="card"><h3>Classifica Bet</h3>
     <p className="betting-hint">Punti della stagione. Tocca un giocatore per vedere i dettagli delle sue giocate.</p>
     {board.isPending?<p>Caricamento classifica…</p>:board.isError?<p>Classifica non disponibile per questa lega.</p>:
@@ -114,7 +110,7 @@ function LeaderboardView({leagueId,season,players,photos}:{leagueId:string;seaso
           <div><span>Precisione</span><b>{standing?`${Math.round(standing.accuracy*100)}%`:'—'}</b></div>
           <div><span>Bonus</span><b>{standing?points(standing.bonus_units):'0'} pt</b></div>
         </div>
-      </details>)}</div>:<p>Nessun giocatore nella lega.</p>}
+      </details>)}</div>:<p>Nessuno ha ancora fatto una giocata in questa stagione.</p>}
   </div>;
 }
 function StatsView({leagueId,season}:{leagueId:string;season:string}){
@@ -182,7 +178,7 @@ export function AdvancedPredictionsSection({leagueId,matches,players,photos}:{le
     {view==='results'?<HistoryView leagueId={leagueId} matches={matches} players={players}/>:null}
     {(view==='leaderboard'||view==='stats')&&season?<><label className="advanced-prediction-picker">Stagione <select value={season.key} onChange={e=>setChosenSeason(e.target.value)}>
       {seasons.map(x=><option key={x.key} value={x.key}>{x.label}</option>)}</select></label>
-      {view==='leaderboard'?<LeaderboardView leagueId={leagueId} season={season.key} players={players} photos={photos}/>:
+      {view==='leaderboard'?<LeaderboardView leagueId={leagueId} season={season.key} photos={photos}/>:
         <StatsView leagueId={leagueId} season={season.key}/>}</>:null}
   </section>;
 }
