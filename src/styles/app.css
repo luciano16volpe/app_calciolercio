@@ -62,7 +62,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:linear-grad
 html[data-theme="dark"] body::before{background:linear-gradient(160deg,#141b28 0%,#171b24 50%,#12161f 100%)}
 
 /* ─── header ─── */
-header{background:linear-gradient(120deg,var(--green) 0%,var(--green-mid) 100%);color:#fff;padding:calc(2px + env(safe-area-inset-top,0px)) 14px 2px;display:flex;align-items:center;justify-content:flex-start;position:sticky;top:0;z-index:200;box-shadow:0 2px 14px rgba(0,0,0,0.2)}
+header{background:linear-gradient(120deg,#1a4a8f 0%,#2e69c4 100%);color:#fff;padding:calc(2px + env(safe-area-inset-top,0px)) 14px 2px;display:flex;align-items:center;justify-content:flex-start;position:sticky;top:0;z-index:200;box-shadow:0 2px 14px rgba(0,0,0,0.2)}
 .logo{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;letter-spacing:-0.4px}
 .logo svg{width:24px;height:24px;flex-shrink:0}
 
