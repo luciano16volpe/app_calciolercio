@@ -31,7 +31,7 @@ export function useAdvancedBoard(matchId:string,enabled=true) {
   const { user } = useAuth();
   return useQuery({queryKey:advancedBoardKey(user?.id,matchId),enabled:enabled&&!!user&&!!matchId,
     queryFn:async()=>{const {data,error}=await supabase.functions.invoke<AdvancedBoard>('advanced-predictions',{body:{action:'board',matchId}});
-      if(error)throw error;if(!data)throw new Error('Nessun pronostico disponibile');return data;},
+      if(error)throw error;if(!data)throw new Error('Nessuna Bet disponibile');return data;},
     staleTime:30_000,retry:false});
 }
 export async function selectAdvancedPrediction(assignmentId:string,selected:boolean){

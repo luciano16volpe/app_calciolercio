@@ -55,7 +55,7 @@ export function LeagueSettingsPanel({ data, onClose }: { data: LeagueData; onClo
     try {
       await setAdvancedEnabled(lid, next);
       await qc.invalidateQueries({ queryKey: ['advanced-predictions-enabled'] });
-      toast(next ? 'Pronostici attivati' : 'Pronostici disattivati');
+      toast(next ? 'Bet attivata' : 'Bet disattivata');
     } catch (e) {
       toast('Errore: ' + (e as Error).message);
     } finally {
@@ -132,9 +132,9 @@ export function LeagueSettingsPanel({ data, onClose }: { data: LeagueData; onClo
       </div>
 
       <div className="card" style={{ marginTop: 12 }} id="ls-predictions">
-        <div className="section-header">🎯 Pronostici e scommesse</div>
-        <div className="f-hint" style={{ marginTop: 0 }}>{predictions.data ? 'Attivi: la sezione Scommesse è visibile ai membri della lega.' : 'Non attivi: la sezione Scommesse non compare nella lega.'}</div>
-        <button type="button" className="f-btn" id="ls-predictions-toggle" disabled={busy || !predictions.isSuccess} onClick={() => void togglePredictions(!predictions.data)}>{predictions.data ? 'Disattiva i pronostici' : 'Attiva i pronostici'}</button>
+        <div className="section-header">🎯 Bet</div>
+        <div className="f-hint" style={{ marginTop: 0 }}>{predictions.data ? 'Attiva: la sezione Bet è visibile ai membri della lega.' : 'Non attiva: la sezione Bet non compare nella lega.'}</div>
+        <button type="button" className="f-btn" id="ls-predictions-toggle" disabled={busy || !predictions.isSuccess} onClick={() => void togglePredictions(!predictions.data)}>{predictions.data ? 'Disattiva Bet' : 'Attiva Bet'}</button>
       </div>
 
       <div className="card" style={{ marginTop: 12 }}>

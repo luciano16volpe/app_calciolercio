@@ -32,7 +32,7 @@ function BettingCard({ match, leagueId }: { match: BettingMatch; leagueId: strin
     try {
       await savePrediction(match.match_id, outcome, a, b);
       await qc.invalidateQueries({ queryKey: bettingKey(leagueId, user?.id) });
-      toast('Pronostico salvato');
+      toast('Bet salvata');
     } catch (error) { toast('Errore: ' + (error as Error).message); }
     finally { setBusy(false); }
   };
@@ -42,7 +42,7 @@ function BettingCard({ match, leagueId }: { match: BettingMatch; leagueId: strin
     {match.score_a !== null && match.score_b !== null ? <p>Risultato: <b>Blu {match.score_a} – {match.score_b} Bianchi</b></p> : null}
     {match.is_open ? <>
       <p className="betting-hint">Scegli 1, X o 2. Il risultato esatto è facoltativo.</p>
-      <div className="betting-outcomes" role="group" aria-label="Pronostico 1 X 2">
+      <div className="betting-outcomes" role="group" aria-label="Bet 1 X 2">
         {(['1', 'X', '2'] as const).map((pick) => <button type="button" key={pick} className={outcome === pick ? 'selected' : ''}
           aria-pressed={outcome === pick} onClick={() => setOutcome(pick)}>{outcomeLabel[pick]}</button>)}
       </div>
@@ -52,16 +52,16 @@ function BettingCard({ match, leagueId }: { match: BettingMatch; leagueId: strin
       </div>
       {exact && outcome && exactOutcome !== outcome ? <p className="betting-error">Il risultato esatto deve corrispondere alla scelta {outcome}.</p> : null}
       {(scoreA !== '') !== (scoreB !== '') ? <p className="betting-error">Inserisci entrambi i gol o lascia vuoti entrambi i campi.</p> : null}
-      <button type="button" className="btn btn-primary betting-save" disabled={!valid || busy} onClick={() => void save()}>{busy ? 'Salvataggio…' : 'Salva pronostico'}</button>
-    </> : <p className="betting-hint">Pronostici chiusi{!match.play_time && match.score_a === null ? ': manca l’orario della partita' : ''}.</p>}
+      <button type="button" className="btn btn-primary betting-save" disabled={!valid || busy} onClick={() => void save()}>{busy ? 'Salvataggio…' : 'Salva Bet'}</button>
+    </> : <p className="betting-hint">Bet chiuse{!match.play_time && match.score_a === null ? ': manca l’orario della partita' : ''}.</p>}
     {match.my_prediction ? <p className="betting-mine">La tua scelta: <b>{predictionLabel(match.my_prediction.outcome, match.my_prediction.score_a, match.my_prediction.score_b)}</b></p> : null}
-    <p className="betting-hint">{match.total} {match.total === 1 ? 'pronostico registrato' : 'pronostici registrati'}.</p>
+    <p className="betting-hint">{match.total} {match.total === 1 ? 'Bet registrata' : 'Bet registrate'}.</p>
   </article>;
 }
 
 export function BettingPage({ data }: { data: LeagueData }) {
   const enabled = useAdvancedEnabled(data.league.id);
-  if (enabled.isSuccess && !enabled.data) return <div className="betting-page"><div className="card"><div className="section-header">🎯 Scommesse</div><p>La sezione Pronostici non è attiva per questa lega. Può attivarla l’admin dalle Impostazioni della lega.</p></div></div>;
+  if (enabled.isSuccess && !enabled.data) return <div className="betting-page"><div className="card"><div className="section-header">🎯 Bet</div><p>La sezione Bet non è attiva per questa lega. Può attivarla l’admin dalle Impostazioni della lega.</p></div></div>;
   return <BettingContent data={data} />;
 }
 
@@ -73,14 +73,14 @@ function BettingContent({ data }: { data: LeagueData }) {
     .sort((a, b) => a.date.localeCompare(b.date));
   const history = matches.filter((m) => !upcoming.includes(m) && (m.my_prediction || m.total > 0));
   return <div className="betting-page">
-    <div className="card"><div className="section-header">🎯 Scommesse</div>
-      <p>Pronostica le partite della tua lega. Nessuna puntata in denaro: per ora registriamo soltanto le scelte.</p></div>
-    {board.isError ? <div className="card" role="alert">Impossibile caricare i pronostici. <button type="button" onClick={() => void board.refetch()}>Riprova</button></div> : null}
+    <div className="card"><div className="section-header">🎯 Bet</div>
+      <p>Gioca sulle partite della tua lega. Nessuna puntata in denaro.</p></div>
+    {board.isError ? <div className="card" role="alert">Impossibile caricare le Bet. <button type="button" onClick={() => void board.refetch()}>Riprova</button></div> : null}
     {!board.isError && board.isPending ? <div className="card">Caricamento partite…</div> : null}
     {board.isSuccess ? <>
       <h2>Prossime partite</h2>
       {upcoming.length ? upcoming.map((match) => <BettingCard key={match.match_id} match={match} leagueId={data.league.id} />) : <div className="card">Nessuna prossima partita in programma.</div>}
-      {history.length ? <><h2>Storico pronostici</h2>{history.map((match) => <BettingCard key={match.match_id} match={match} leagueId={data.league.id} />)}</> : null}
+      {history.length ? <><h2>Storico Bet 1/X/2</h2>{history.map((match) => <BettingCard key={match.match_id} match={match} leagueId={data.league.id} />)}</> : null}
       <AdvancedPredictionsSection leagueId={data.league.id} matches={matches} players={data.dataset.players} photos={data.photos} />
     </> : null}
   </div>;

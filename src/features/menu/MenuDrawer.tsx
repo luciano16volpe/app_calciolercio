@@ -167,7 +167,7 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
           {isAdmin && data ? (
             <>
               <div className="menu-sec">Gestione · {data.league.name}</div>
-              <Item icon={<AdminIcon name="shield" />} title="ADMIN LEGA" sub="inviti, membri e statistiche pronostici" badge={(claims.data?.length ?? 0) + (proposals.data?.length ?? 0)} hot onClick={() => open('league-admin-hub')} id="menu-league-admin" admin />
+              <Item icon={<AdminIcon name="shield" />} title="ADMIN LEGA" sub="inviti, membri e Bet" badge={(claims.data?.length ?? 0) + (proposals.data?.length ?? 0)} hot onClick={() => open('league-admin-hub')} id="menu-league-admin" admin />
               <Item icon="🗂️" title="Partite senza pagelle" sub={pending.length ? `${pending.length} da scrivere o saltare` : 'tutto scritto'} onClick={() => open('pending')} id="menu-pending" staff />
               {!isSuper ? <Item icon="🎮" title="Regole di gioco" sub="formazioni, forma, pesi (sola lettura)" onClick={() => open('game-settings')} id="menu-game-settings" admin /> : null}
               {isPremiumAdmin || isSuper ? <Item icon="⚙️" title="Impostazioni della lega" sub="nome, visibilità, regole" onClick={() => open('league-settings')} id="menu-league-settings" admin /> : null}

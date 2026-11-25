@@ -17,7 +17,7 @@ export function LeagueAdminHub({ data, onClose, onOpen }: { data: LeagueData; on
     { panel: 'invites', icon: 'link', title: 'Inviti giocatori', description: 'Link personali per entrare nella lega', color: 'premium-tile-trial' },
     { panel: 'claims', icon: 'hand', title: 'Richieste "sono io"', description: 'Conferma i collegamenti agli account', color: 'player-tile-awards', badge: claims.data?.length },
     { panel: 'bench', icon: 'bench', title: 'Panchina', description: 'Giocatori senza lega', color: 'player-tile-records' },
-    { panel: 'prediction-admin-stats', icon: 'audit', title: 'Statistiche', description: 'Partecipazione e monitoraggio dei pronostici', color: 'player-tile-records' },
+    { panel: 'prediction-admin-stats', icon: 'audit', title: 'BET', description: 'Partecipazione e monitoraggio delle giocate', color: 'player-tile-records' },
     ...(owner ? [{ panel: 'admin-proposals' as const, icon: 'shield' as const, title: 'Proposte di amministratore', description: 'Valuta le richieste di amministrazione', color: 'premium-tile-trial', badge: proposals.data?.length }] : []),
     { panel: 'members', icon: 'users', title: 'Membri e ruoli', description: 'Gestisci gli accessi alla lega', color: 'premium-tile-users' },
     { panel: 'merge', icon: 'merge', title: 'Unisci giocatori', description: 'Riunisci le schede duplicate', color: 'player-tile-awards' },

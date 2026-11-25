@@ -969,24 +969,33 @@ input[type=file]{display:none}
 .advanced-view-tabs { display: flex; gap: .35rem; overflow-x: auto; margin: 1rem 0; padding-bottom: .25rem; }
 .advanced-view-tabs button { flex: 0 0 auto; padding: .55rem .8rem; border-radius: .5rem; border: 1px solid var(--gray3); background: var(--gray); color: var(--text); }
 .advanced-view-tabs button.selected { background: var(--green-light); color: var(--green); border-color: var(--green); font-weight: 800; }
-.advanced-standings-scroll { max-width: 100%; overflow-x: auto; border: 1px solid var(--gray3); border-radius: .7rem; }
-.advanced-standings-table { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size: .84rem; font-variant-numeric: tabular-nums; }
-.advanced-standings-table th,.advanced-standings-table td { padding: .7rem .6rem; border-bottom: 1px solid var(--gray3); text-align: center; white-space: nowrap; }
-.advanced-standings-table thead th { background: var(--gray2); color: var(--text2); font-size: .75rem; font-weight: 800; }
-.advanced-standings-table tbody tr { background: var(--gray); }
-.advanced-standings-table tbody tr:last-child th,.advanced-standings-table tbody tr:last-child td { border-bottom: 0; }
-.advanced-standings-table th:nth-child(1),.advanced-standings-table td:first-child { position: sticky; left: 0; min-width: 2.5rem; z-index: 1; background: var(--gray); }
-.advanced-standings-table th:nth-child(2) { position: sticky; left: 2.5rem; min-width: 9rem; max-width: 12rem; z-index: 1; background: var(--gray); text-align: left; }
-.advanced-standings-table thead th:nth-child(-n+2) { z-index: 2; background: var(--gray2); }
-.advanced-standings-player { display: flex; align-items: center; gap: .45rem; white-space: normal; line-height: 1.2; }
-.advanced-standings-player .avatar { flex: none; }
-.advanced-standings-points { color: var(--green); font-weight: 900; }
+.bet-standings-list { display: grid; gap: 7px; }
+.bet-standing { min-width: 0; border: 1px solid var(--gray3); border-radius: var(--radius-sm); background: var(--gray); overflow: hidden; }
+.bet-standing-podium { background: var(--green-light); border-left: 3px solid var(--green); }
+.bet-standing summary { display: flex; align-items: center; gap: 9px; min-width: 0; padding: 10px; cursor: pointer; list-style: none; }
+.bet-standing summary::-webkit-details-marker { display: none; }
+.bet-standing summary:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
+.bet-standing-position { flex: 0 0 25px; color: var(--text2); font-size: 15px; font-weight: 900; text-align: center; }
+.bet-standing summary .avatar { flex: none; }
+.bet-standing-identity { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; }
+.bet-standing-identity strong { display: -webkit-box; overflow: hidden; color: var(--text); font-size: 14px; line-height: 1.2; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.bet-standing-identity small { overflow: hidden; color: var(--text2); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.bet-standing-score { display: flex; flex: none; flex-direction: column; align-items: flex-end; color: var(--green); font-variant-numeric: tabular-nums; }
+.bet-standing-score b { font-size: 17px; line-height: 1; }
+.bet-standing-score small { color: var(--text2); font-size: 10px; }
+.bet-standing-chevron { flex: none; color: var(--text2); font-size: 16px; transition: transform var(--tr); }
+.bet-standing[open] .bet-standing-chevron { transform: rotate(180deg); }
+.bet-standing-details { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1px; border-top: 1px solid var(--gray3); background: var(--gray3); }
+.bet-standing-details div { display: flex; justify-content: space-between; gap: 6px; min-width: 0; padding: 9px 11px; background: var(--gray); font-size: 12px; }
+.bet-standing-details span { color: var(--text2); }
+.bet-standing-details b { color: var(--text); font-variant-numeric: tabular-nums; }
+.bet-standing-details div:last-child:nth-child(odd) { grid-column: 1 / -1; }
+@media(max-width:360px) { .bet-standing summary { gap: 6px; padding: 9px 7px; } .bet-standing-position { flex-basis: 21px; } }
 .prediction-admin-list { list-style: none; margin: .6rem 0 0; padding: 0; }
 .prediction-admin-list li { display: flex; flex-wrap: wrap; gap: .3rem .7rem; justify-content: space-between; padding: .6rem 0; border-bottom: 1px solid var(--gray3); }
 .prediction-admin-list li:last-child { border-bottom: 0; }
 .prediction-admin-list span { color: var(--text2); }
 .advanced-predictions-section .card select { border: 1px solid var(--gray3); background: var(--gray2); color: var(--text); }
-.advanced-leaderboard li span:nth-of-type(2) { display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .advanced-badges { display: flex; flex-wrap: wrap; gap: .45rem; }
 .advanced-badges span { border-radius: 999px; background: #f3e3aa; color: #503900; padding: .3rem .65rem; font-size: .82rem; font-weight: 700; }
 .advanced-history-filters { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,160px),1fr)); gap: .6rem; margin: 1rem 0; }

@@ -118,10 +118,10 @@ function MyPredictionProfile({data}:{data:LeagueData}){
   const stats=useAdvancedStats(data.league.id,season,enabled.data===true);
   if(!enabled.data||!stats.data)return null;
   const settled=(stats.data.won??0)+(stats.data.lost??0);
-  return <div className="card"><div className="section-header">Il mio profilo da profeta</div>
-    <p>{settled} pronostici validati · {stats.data.won??0} indovinati · {settled?Math.round((stats.data.won??0)*100/settled):0}% precisione</p>
+  return <div className="card"><div className="section-header">Il mio Bet</div>
+    <p>{settled} Bet verificate · {stats.data.won??0} indovinate · {settled?Math.round((stats.data.won??0)*100/settled):0}% precisione</p>
     <p>{stats.data.selected??0} scelti su {stats.data.received??0} ricevuti · Difficoltà media {stats.data.average_difficulty??'—'}</p>
-    <p>Badge celebrativi e dettagli sono nella sezione Scommesse → Le mie statistiche.</p>
+    <p>Badge e dettagli sono nella sezione Bet → Il mio Bet.</p>
   </div>;
 }
 

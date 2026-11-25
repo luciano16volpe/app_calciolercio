@@ -46,7 +46,7 @@ const ITEMS: Array<{ id: Exclude<PageName, 'settings'>; label: string; icon: Rea
   },
   {
     id: 'betting',
-    label: 'Scommesse',
+    label: 'Bet',
     icon: svg(<><path d="M4 5h16v14H4z" /><path d="M8 9h8M8 13h5" /><circle cx="17" cy="15" r="1" /></>),
   },
   {

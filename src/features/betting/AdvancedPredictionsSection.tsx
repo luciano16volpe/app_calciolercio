@@ -21,11 +21,11 @@ function PredictionCard({assignment,matchId,canSelect}:{assignment:AdvancedAssig
   const change=async()=>{if(busy)return;setBusy(true);try{
     await selectAdvancedPrediction(assignment.id,!selected);
     await qc.invalidateQueries({queryKey:advancedBoardKey(user?.id,matchId)});
-    toast(selected?'Pronostico rimosso':'Pronostico selezionato');
+    toast(selected?'Giocata rimossa':'Giocata selezionata');
   }catch(error){toast((error as Error).message);}finally{setBusy(false);}};
   const outcome=assignment.result?.outcome;
   const status=outcome==='WON'?'Indovinato':outcome==='LOST'?'Sbagliato':outcome==='VOID'?'Annullato':
-    selected?'In attesa di validazione':'Non selezionato';
+    selected?'In attesa di verifica':'Non giocata';
   return <article className={`advanced-prediction-card difficulty-${assignment.difficulty.toLowerCase()} outcome-${(outcome??'pending').toLowerCase()}`}>
     <div className="advanced-prediction-person"><PlayerAvatar name={assignment.target_name??'Avversario'} photo={photoUrl(assignment.photo_path)} />
       <div><strong>{assignment.target_name??'Avversario'}</strong><span>{categoryLabel[assignment.category]??assignment.category}</span></div></div>
@@ -39,7 +39,7 @@ function PredictionCard({assignment,matchId,canSelect}:{assignment:AdvancedAssig
       Risultato: {(['goals','assists','ownGoals','metas','rating'] as const).map(key=>`${{goals:'gol',assists:'assist',ownGoals:'autogol',metas:'mete',rating:'voto'}[key]} ${assignment.result?.observed_values?.[key]??'—'}`).join(' · ')}</p>:
       <p className="advanced-prediction-result">{status}</p>}
     {canSelect&&assignment.status!=='EXPIRED'?<button type="button" className={`btn ${selected?'':'btn-primary'}`} disabled={busy} aria-pressed={selected}
-      onClick={()=>void change()}>{busy?'Salvataggio…':selected?'Deseleziona':'Seleziona pronostico'}</button>:null}
+      onClick={()=>void change()}>{busy?'Salvataggio…':selected?'Rimuovi giocata':'Gioca questa Bet'}</button>:null}
   </article>;
 }
 
@@ -55,14 +55,14 @@ function MatchPredictions({match}:{match:BettingMatch}){
   const simulated=scorePredictions(selected.map(x=>({result:'WON' as const,weight:x.weight})));
   const weight=selected.reduce((s,x)=>s+x.weight,0);
   return <div className="advanced-prediction-match">
-    {board.isPending?<div className="card">Caricamento pronostici personalizzati…</div>:null}
-    {board.isError?<div className="card" role="alert">Pronostici non disponibili per questa partita. <button type="button" onClick={()=>void board.refetch()}>Riprova</button></div>:null}
+    {board.isPending?<div className="card">Caricamento Bet personalizzate…</div>:null}
+    {board.isError?<div className="card" role="alert">Bet non disponibili per questa partita. <button type="button" onClick={()=>void board.refetch()}>Riprova</button></div>:null}
     {board.isSuccess?<>
       <div className="card"><h3>Partita del {formatDate(match.date)}</h3><p>{match.play_time?`Ore ${match.play_time.slice(0,5)}`:'Orario da definire'} · Blu contro Bianchi</p>
-        <p><b>{selected.length}/{assignments.length}</b> pronostici selezionati</p>
-        {board.data.replacedCount?<p role="status">{board.data.replacedCount} pronostici sostituiti dopo la modifica delle squadre. Le nuove scelte non sono selezionate automaticamente.</p>:null}
+        <p><b>{selected.length}/{assignments.length}</b> Bet giocate</p>
+        {board.data.replacedCount?<p role="status">{board.data.replacedCount} Bet sostituite dopo la modifica delle squadre. Le nuove scelte non sono selezionate automaticamente.</p>:null}
         {board.data.isOpen?<p>Chiusura tra {minutesLeft===null?'—':minutesLeft>=1440?`${Math.floor(minutesLeft/1440)} giorni e ${Math.floor(minutesLeft%1440/60)} ore`:
-          `${Math.floor(minutesLeft/60)} ore e ${minutesLeft%60} minuti`}.</p>:<p>Selezioni chiuse. I pronostici scelti sono in sola lettura.</p>}
+          `${Math.floor(minutesLeft/60)} ore e ${minutesLeft%60} minuti`}.</p>:<p>Selezioni chiuse. Le Bet giocate sono in sola lettura.</p>}
         <div className="advanced-prediction-risk"><span>Massimo base: <b>+{weight}</b></span><span>Minimo: <b>−{weight}</b></span>
           <span>Moltiplicatore ideale: <b>×{points(simulated.multiplierBasisPoints)}</b></span>
           <span>Massimo teorico: <b>+{points(simulated.finalUnits)}</b></span></div>
@@ -71,7 +71,7 @@ function MatchPredictions({match}:{match:BettingMatch}){
           <p>Servono almeno il 70% di precisione e un saldo base positivo. Il bonus si applica solo al saldo netto.</p></details>
         <small>Il massimo è teorico: condizioni correlate possono renderlo irraggiungibile.</small>
       </div>
-      {board.data.summary?<div className="card"><h3>Risultato dei pronostici</h3>
+      {board.data.summary?<div className="card"><h3>Risultato Bet</h3>
         <p>{board.data.summary.selected_count} giocati · {board.data.summary.won_count} indovinati · {board.data.summary.lost_count} sbagliati · {board.data.summary.void_count} annullati</p>
         <p>Precisione {board.data.summary.won_count+board.data.summary.lost_count?
           Math.round(board.data.summary.won_count*100/(board.data.summary.won_count+board.data.summary.lost_count))+'%':'—'}</p>
@@ -93,28 +93,34 @@ function LeaderboardView({leagueId,season,players,photos}:{leagueId:string;seaso
     ...ranked.map(standing=>({player:{id:standing.player_id,name:standing.name},standing})),
     ...withoutResults.map(player=>({player,standing:null})),
   ];
-  return <div className="card"><h3>Classifica pronostici</h3>
-    <p className="betting-hint">Punti e risultati della stagione. I giocatori senza pronostici risolti compaiono senza posizione.</p>
+  return <div className="card"><h3>Classifica Bet</h3>
+    <p className="betting-hint">Punti della stagione. Tocca un giocatore per vedere i dettagli delle sue giocate.</p>
     {board.isPending?<p>Caricamento classifica…</p>:board.isError?<p>Classifica non disponibile per questa lega.</p>:
-      rows.length?<div className="advanced-standings-scroll" role="region" aria-label="Classifica pronostici, scorri per vedere tutte le statistiche" tabIndex={0}>
-        <table className="advanced-standings-table"><thead><tr><th scope="col">Pos.</th><th scope="col">Giocatore</th><th scope="col">Punti</th>
-          <th scope="col">Partite pron.</th><th scope="col">Giocati</th><th scope="col">Indovinati</th><th scope="col">Sbagliati</th>
-          <th scope="col">Annullati</th><th scope="col">Precisione</th><th scope="col">Bonus</th></tr></thead>
-          <tbody>{rows.map(({player,standing})=><tr key={player.id}><td>{standing?standing.position:'—'}</td>
-            <th scope="row"><span className="advanced-standings-player"><PlayerAvatar name={player.name} photo={photoUrl(photos[player.id]??standing?.photo_path??null)} />{player.name}</span></th>
-            <td className="advanced-standings-points">{standing?points(standing.final_units):'0'}</td><td>{standing?.played_matches??0}</td>
-            <td>{standing?.selected_count??0}</td><td>{standing?.won_count??0}</td><td>{standing?.lost_count??0}</td>
-            <td>{standing?.void_count??0}</td><td>{standing?`${Math.round(standing.accuracy*100)}%`:'—'}</td>
-            <td>{standing?points(standing.bonus_units):'0'}</td></tr>)}</tbody></table></div>:<p>Nessun giocatore nella lega.</p>}
+      rows.length?<div className="bet-standings-list">{rows.map(({player,standing})=><details key={player.id} className={`bet-standing${standing?.position&&standing.position<=3?' bet-standing-podium':''}`}>
+        <summary><span className="bet-standing-position" aria-label={standing?`Posizione ${standing.position}`:'Senza posizione'}>{standing?.position===1?'🥇':standing?.position===2?'🥈':standing?.position===3?'🥉':standing?.position??'—'}</span>
+          <PlayerAvatar name={player.name} photo={photoUrl(photos[player.id]??standing?.photo_path??null)} />
+          <span className="bet-standing-identity"><strong>{player.name}</strong><small>{standing?`${standing.won_count} corrette · ${standing.played_matches} partite Bet`:'Nessuna giocata risolta'}</small></span>
+          <span className="bet-standing-score"><b>{standing?points(standing.final_units):'0'}</b><small>punti</small></span>
+          <span className="bet-standing-chevron" aria-hidden="true">⌄</span></summary>
+        <div className="bet-standing-details">
+          <div><span>Partite Bet</span><b>{standing?.played_matches??0}</b></div>
+          <div><span>Giocate</span><b>{standing?.selected_count??0}</b></div>
+          <div><span>Corrette</span><b>{standing?.won_count??0}</b></div>
+          <div><span>Errate</span><b>{standing?.lost_count??0}</b></div>
+          <div><span>Annullate</span><b>{standing?.void_count??0}</b></div>
+          <div><span>Precisione</span><b>{standing?`${Math.round(standing.accuracy*100)}%`:'—'}</b></div>
+          <div><span>Bonus</span><b>{standing?points(standing.bonus_units):'0'} pt</b></div>
+        </div>
+      </details>)}</div>:<p>Nessun giocatore nella lega.</p>}
   </div>;
 }
 function StatsView({leagueId,season}:{leagueId:string;season:string}){
   const stats=useAdvancedStats(leagueId,season);
-  if(stats.isPending)return <div className="card">Caricamento statistiche…</div>;
-  if(stats.isError)return <div className="card">Statistiche non disponibili.</div>;
+  if(stats.isPending)return <div className="card">Caricamento rendimento Bet…</div>;
+  if(stats.isError)return <div className="card">Rendimento Bet non disponibile.</div>;
   const value=stats.data;
   const unlocked=predictionFeats(value);
-  return <div className="card"><h3>Le mie statistiche</h3>
+  return <div className="card"><h3>Il mio rendimento Bet</h3>
     <div className="advanced-prediction-risk"><span>Ricevuti <b>{value.received??0}</b></span><span>Scelti <b>{value.selected??0}</b></span>
       <span>Indovinati <b>{value.won??0}</b></span><span>Sbagliati <b>{value.lost??0}</b></span>
       <span>Annullati <b>{value.void??0}</b></span><span>Precisione ponderata <b>{value.weighted_accuracy??'—'}%</b></span></div>
@@ -123,7 +129,7 @@ function StatsView({leagueId,season}:{leagueId:string;season:string}){
     <h4>Per difficoltà</h4><ul>{Object.entries(value.difficulties??{}).map(([difficulty,item])=><li key={difficulty}>
       {difficultyLabel[difficulty as Difficulty]??difficulty}: {item.won}/{item.validated} indovinati · {points(item.net_units)} pt</li>)}</ul>
     <h4>Badge conquistati</h4>{unlocked.size?<div className="advanced-badges">{PREDICTION_FEATS.filter(x=>unlocked.has(x.k)).map(x=><span key={x.k} title={x.d}>{x.t}</span>)}</div>:
-      <p>Il primo badge arriva con un pronostico indovinato.</p>}
+      <p>Il primo badge arriva con una Bet indovinata.</p>}
   </div>;
 }
 const emptyHistoryFilters:AdvancedHistoryFilters={season:null,match:null,category:null,target:null,difficulty:null,outcome:null};
@@ -144,7 +150,7 @@ function HistoryView({leagueId,matches,players}:{leagueId:string;matches:Betting
     </div>
     {history.isPending?<p>Caricamento storico…</p>:history.isError?<p>Storico non disponibile.</p>:
       history.data.length?<ul>{history.data.map(x=><li key={x.assignment_id}><b>{formatDate(x.date)} · {x.target_name}</b>: {x.description}
-        <span> · {x.outcome??x.status}{x.points_units!==null?` · ${points(x.points_units)} pt`:''}</span></li>)}</ul>:<p>Nessun pronostico per questi filtri.</p>}
+        <span> · {x.outcome??x.status}{x.points_units!==null?` · ${points(x.points_units)} pt`:''}</span></li>)}</ul>:<p>Nessuna Bet per questi filtri.</p>}
     <div className="advanced-history-pages"><button type="button" className="btn" disabled={offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Precedenti</button>
       <span>Pagina {Math.floor(offset/50)+1}</span><button type="button" className="btn" disabled={!history.data||history.data.length<50} onClick={()=>setOffset(offset+50)}>Successivi</button></div>
   </details>;
@@ -162,10 +168,10 @@ export function AdvancedPredictionsSection({leagueId,matches,players,photos}:{le
   const visible=view==='results'?finished:upcoming;
   const current=visible.find(x=>x.match_id===matchId)??visible[0];
   if(!enabled.data)return null;
-  return <section className="advanced-predictions-section"><h2>Pronostici sui giocatori avversari</h2>
+  return <section className="advanced-predictions-section"><h2>Bet sugli avversari</h2>
     <p>Scegli liberamente fino a cinque condizioni. Nessuna puntata in denaro.</p>
-    <div className="advanced-view-tabs" role="tablist" aria-label="Viste pronostici">
-      {([['upcoming','Prossima partita'],['results','Risultati'],['leaderboard','Classifica'],['stats','Le mie statistiche']] as const)
+    <div className="advanced-view-tabs" role="tablist" aria-label="Viste Bet">
+      {([['upcoming','Prossima partita'],['results','Risultati'],['leaderboard','Classifica'],['stats','Il mio Bet']] as const)
         .map(([key,label])=><button type="button" key={key} role="tab" aria-selected={view===key} className={view===key?'selected':''}
           onClick={()=>setView(key)}>{label}</button>)}</div>
     {(view==='upcoming'||view==='results')?<>{visible.length?<><label className="advanced-prediction-picker">Partita <select value={current?.match_id??''} onChange={e=>setMatchId(e.target.value)}>

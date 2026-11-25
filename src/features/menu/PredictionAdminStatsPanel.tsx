@@ -18,8 +18,8 @@ function MatchMonitoring({match}:{match:BettingMatch}){
   const results=useAdvancedAdminResults(match.match_id,finished);
   return <>
     <div className="card"><h3>Partecipazione · {formatDate(match.date)}</h3>
-      <p><b>{advanced.data?.count??0}</b> giocatori hanno scelto pronostici sugli avversari.</p>
-      {advanced.isError?<p role="alert">Partecipazione ai pronostici non disponibile.</p>:
+      <p><b>{advanced.data?.count??0}</b> giocatori hanno scelto Bet sugli avversari.</p>
+      {advanced.isError?<p role="alert">Partecipazione alle Bet non disponibile.</p>:
         advanced.data?.players.length?<p className="betting-hint">{advanced.data.players.map(player=>player.name).join(' · ')}</p>:null}
       <p><b>{simple.data?.length??match.total}</b> giocatori hanno giocato 1/X/2.</p>
       {simple.isError?<p role="alert">Partecipazione 1/X/2 non disponibile.</p>:
@@ -61,7 +61,7 @@ export function PredictionAdminStatsPanel({data,onClose}:{data:LeagueData;onClos
   const current=matches.find(match=>match.match_id===matchId)??upcoming[0]??matches[0];
   const season=current?seasonOf(current.date)?.key:null;
   if(!isAdmin)return null;
-  return <Sheet admin title="Statistiche pronostici" onClose={onClose} id="sheet-prediction-admin-stats">
+  return <Sheet admin title="BET" onClose={onClose} id="sheet-prediction-admin-stats">
     <p className="betting-hint">Monitora la partecipazione della lega. Le scelte restano riservate fino alla conclusione della partita o del sondaggio pagelle.</p>
     {board.isPending?<div className="card">Caricamento partite…</div>:board.isError?<div className="card" role="alert">Partite non disponibili.</div>:
       current?<><label className="advanced-prediction-picker">Partita <select value={current.match_id} onChange={event=>setMatchId(event.target.value)}>
