@@ -959,21 +959,24 @@ input[type=file]{display:none}
 .advanced-predictions-section { margin-top: 2rem; color: var(--text); }
 .advanced-prediction-picker { display: flex; align-items: center; gap: .7rem; margin: 1rem 0; flex-wrap: wrap; }
 .advanced-prediction-picker select { max-width: 100%; padding: .55rem; border: 1px solid var(--gray3); border-radius: .5rem; background: var(--gray2); color: var(--text); }
-.advanced-prediction-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,280px),1fr)); gap: .8rem; margin-top: 1rem; }
-.advanced-prediction-card { background: var(--gray); color: var(--text); border: 1px solid var(--gray3); border-left: 4px solid var(--text2); border-radius: .75rem; padding: 1rem; min-width: 0; box-shadow: var(--shadow); }
+.advanced-prediction-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,300px),1fr)); gap: .45rem; margin-top: .6rem; }
+.advanced-prediction-card { background: var(--gray); color: var(--text); border: 1px solid var(--gray3); border-left: 4px solid var(--text2); border-radius: .6rem; padding: .5rem .65rem; min-width: 0; box-shadow: none; }
+.advanced-prediction-card.is-selected { background: var(--gray2); }
 .advanced-prediction-card.difficulty-uncommon { border-left-color: #3a9b58; }
 .advanced-prediction-card.difficulty-rare { border-left-color: #3e81d5; }
 .advanced-prediction-card.difficulty-epic { border-left-color: #a65bce; }
 .advanced-prediction-card.difficulty-legendary { border-left-color: #cf9d27; }
-.advanced-prediction-person { display: flex; align-items: center; gap: .65rem; }
-.advanced-prediction-person div:last-child { display: flex; flex-direction: column; }
-.advanced-prediction-person span { font-size: .82rem; color: var(--text2); }
-.advanced-prediction-card h4 { margin: .8rem 0; font-size: 1rem; line-height: 1.4; color: var(--text); }
+.advanced-prediction-person { display: flex; align-items: center; gap: .45rem; min-width: 0; }
+.advanced-prediction-person strong { font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.advanced-prediction-person .btn { margin-left: auto; padding: .3rem .8rem; min-height: 32px; font-size: .82rem; flex-shrink: 0; }
+.advanced-prediction-person span { font-size: .75rem; color: var(--text2); white-space: nowrap; }
+.advanced-prediction-card h4 { margin: .3rem 0 .25rem; font-size: .92rem; font-weight: 600; line-height: 1.3; color: var(--text); }
 .advanced-prediction-meta,.advanced-prediction-risk { display: flex; flex-wrap: wrap; gap: .35rem .8rem; }
 .advanced-prediction-meta span,.advanced-prediction-risk span { font-size: .85rem; color: var(--text2); }
 .advanced-prediction-meta b,.advanced-prediction-risk b { color: var(--text); }
 .advanced-prediction-meta .difficulty-tag { font-weight: 700; }
-.advanced-prediction-result { margin: .8rem 0; color: var(--text2); line-height: 1.45; }
+.advanced-prediction-result { margin: 0 0 0 auto; color: var(--text2); font-weight: 700; }
+.advanced-prediction-detail { display: block; margin-top: .2rem; color: var(--text2); font-size: .75rem; line-height: 1.3; }
 .advanced-prediction-card.outcome-won .advanced-prediction-result { color: var(--mid); }
 .advanced-prediction-card.outcome-lost .advanced-prediction-result { color: var(--red); }
 .advanced-prediction-card.outcome-void .advanced-prediction-result { color: var(--text2); }

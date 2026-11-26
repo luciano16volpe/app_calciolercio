@@ -26,20 +26,19 @@ function PredictionCard({assignment,matchId,canSelect}:{assignment:AdvancedAssig
   const outcome=assignment.result?.outcome;
   const status=outcome==='WON'?'Indovinato':outcome==='LOST'?'Sbagliato':outcome==='VOID'?'Annullato':
     selected?'In attesa di verifica':'Non giocata';
-  return <article className={`advanced-prediction-card difficulty-${assignment.difficulty.toLowerCase()} outcome-${(outcome??'pending').toLowerCase()}`}>
-    <div className="advanced-prediction-person"><PlayerAvatar name={assignment.target_name??'Avversario'} photo={photoUrl(assignment.photo_path)} />
-      <div><strong>{assignment.target_name??'Avversario'}</strong><span>{categoryLabel[assignment.category]??assignment.category}</span></div></div>
-    <h4>{assignment.description}</h4>
+  const name=assignment.target_name??'Avversario';
+  const text=assignment.description.startsWith(`${name}: `)?assignment.description.slice(name.length+2):assignment.description;
+  const observed=assignment.result?(['goals','assists','ownGoals','metas','rating'] as const).map(key=>`${{goals:'gol',assists:'assist',ownGoals:'autogol',metas:'mete',rating:'voto'}[key]} ${assignment.result?.observed_values?.[key]??'—'}`).join(' · '):'';
+  return <article className={`advanced-prediction-card difficulty-${assignment.difficulty.toLowerCase()} outcome-${(outcome??'pending').toLowerCase()}${selected?' is-selected':''}`}>
+    <div className="advanced-prediction-person"><PlayerAvatar name={name} photo={photoUrl(assignment.photo_path)} />
+      <strong>{name}</strong><span>{categoryLabel[assignment.category]??assignment.category}</span>
+      {canSelect&&assignment.status!=='EXPIRED'?<button type="button" className={`btn btn-sm ${selected?'':'btn-primary'}`} disabled={busy} aria-pressed={selected}
+        onClick={()=>void change()}>{busy?'…':selected?'Rimuovi':'Gioca'}</button>:null}</div>
+    <h4>{text}</h4>
     <div className="advanced-prediction-meta"><span className="difficulty-tag">{difficultyLabel[assignment.difficulty]}</span>
-      <span>Se indovini <b>+{assignment.weight}</b> pt</span><span>Se sbagli <b>−{assignment.weight}</b> pt</span></div>
-    {assignment.estimation_method==='INDIVIDUAL'&&assignment.historical_sample_size>=5&&assignment.estimated_probability!==null?
-      <p className="betting-hint">Frequenza storica stimata: {Math.round(assignment.estimated_probability*100)}% su {assignment.historical_sample_size} partite valutabili. Indicativa, non garantita.</p>:
-      null}
-    {assignment.result?<p className="advanced-prediction-result"><b>{status} · {points(assignment.result.points_units)} pt</b><br />{assignment.result.reason}<br />
-      Risultato: {(['goals','assists','ownGoals','metas','rating'] as const).map(key=>`${{goals:'gol',assists:'assist',ownGoals:'autogol',metas:'mete',rating:'voto'}[key]} ${assignment.result?.observed_values?.[key]??'—'}`).join(' · ')}</p>:
-      <p className="advanced-prediction-result">{status}</p>}
-    {canSelect&&assignment.status!=='EXPIRED'?<button type="button" className={`btn ${selected?'':'btn-primary'}`} disabled={busy} aria-pressed={selected}
-      onClick={()=>void change()}>{busy?'Salvataggio…':selected?'Rimuovi giocata':'Gioca questa Bet'}</button>:null}
+      <span><b>+{assignment.weight}</b> / <b>−{assignment.weight}</b> pt</span>
+      <span className="advanced-prediction-result">{assignment.result?`${status} · ${points(assignment.result.points_units)} pt`:selected?'Giocata':''}</span></div>
+    {assignment.result?<small className="advanced-prediction-detail">{assignment.result.reason} · {observed}</small>:null}
   </article>;
 }
 
