@@ -580,6 +580,10 @@ html[data-theme="dark"] .conv-item{background:#1e232e}
 .btn.premium-vote-btn:hover,.btn.premium-locked:hover{background:var(--gold1);color:var(--gold-text)}
 .btn.premium-vote-btn:focus-visible,.btn.premium-locked:focus-visible{outline:3px solid var(--text);outline-offset:2px}
 .premium-vote-btn span{font-size:10px;font-weight:800;letter-spacing:.02em}
+.btn.vote-closed-btn{border:1.5px solid var(--text2);box-shadow:0 3px 8px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.12);font-weight:800;cursor:pointer;transition:transform var(--tr),box-shadow var(--tr)}
+.btn.vote-closed-btn span{font-size:16px;line-height:1;margin-left:2px}
+.btn.vote-closed-btn:active{transform:translateY(1px);box-shadow:0 1px 3px rgba(0,0,0,.28)}
+
 .premium-badge{display:inline-flex;align-items:center;flex:none;padding:3px 8px;border-radius:99px;border:1px solid var(--gold-edge);background:linear-gradient(135deg,var(--gold1),var(--gold2));color:var(--gold-text);font-size:10px;font-weight:900;letter-spacing:.02em;line-height:1.2;white-space:nowrap}
 .premium-note{padding:12px 13px;border:1px solid var(--gold-tint-edge);border-radius:12px;background:var(--gold-tint);color:var(--text);font-size:13px;line-height:1.45}
 .premium-note b{display:block;margin-bottom:3px;color:var(--gold-label);font-size:14px}

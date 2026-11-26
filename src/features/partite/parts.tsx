@@ -72,7 +72,7 @@ export function MatchButtons({ data, m, act, withPlace = true }: { data: LeagueD
       <VoteStatus matchId={m.id} />
       {sum}
       {communityVote.data?.is_open ? <button type="button" className="btn btn-sm mbar-btn premium-vote-btn" onClick={() => act.openMatchVote(m.id)} title="Vota">⭐ Vota</button>
-        : communityVote.data?.enabled ? <button type="button" className="btn btn-secondary btn-sm mbar-btn" onClick={() => act.openMatchVote(m.id)} title="Vedi i voti espressi">🔒 Voto chiuso</button> : null}
+        : communityVote.data?.enabled ? <button type="button" className="btn btn-secondary btn-sm mbar-btn vote-closed-btn" onClick={() => act.openMatchVote(m.id)} title="Vedi i voti espressi">🔒 Voto chiuso <span aria-hidden="true">›</span></button> : null}
       {data.gazzette[m.id] ? <button className="btn btn-secondary btn-sm mbar-btn" onClick={() => act.openGazzetta(m.id)} title="Apri la Gazzetta">📰 Gazzetta</button> : null}
       {matchHasDesc(data.dataset, m.id) ? (
         <button className="btn btn-primary btn-sm mbar-btn" onClick={() => act.openPagelleText(m.id)} style={{ background: '#25D366', borderColor: '#25D366' }} title="Tutte le pagelle in un testo">📜 Pagelle</button>
