@@ -1,7 +1,15 @@
 -- Punto 2: ogni elemento scelto del Bet costa un dollalercio.
 -- La puntata e la scelta vengono salvate nella stessa transazione.
 -- Le giocate già presenti prima di questa migrazione restano gratuite: si addebitano solo nuove scelte.
-create table public.wallet_stakes (
+do $$
+begin
+  if to_regclass('public.wallet_transactions') is null
+      or to_regprocedure('public.wallet_state(uuid)') is null then
+    raise exception 'Manca la migrazione 20270111000000_dollalerci_conto.sql (punto 1)';
+  end if;
+end $$;
+
+create table if not exists public.wallet_stakes (
   league_id uuid not null references public.leagues(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
   match_id uuid not null references public.matches(id) on delete cascade,
@@ -9,11 +17,11 @@ create table public.wallet_stakes (
   created_at timestamptz not null default now(),
   primary key (league_id,user_id,match_id,element_key)
 );
-create index wallet_stakes_match_idx on public.wallet_stakes(match_id);
+create index if not exists wallet_stakes_match_idx on public.wallet_stakes(match_id);
 alter table public.wallet_stakes enable row level security;
 revoke all on public.wallet_stakes from anon,authenticated;
 
-create function public.wallet_place_stake(p_league uuid,p_user uuid,p_match uuid,p_key text)
+create or replace function public.wallet_place_stake(p_league uuid,p_user uuid,p_match uuid,p_key text)
 returns void language plpgsql security definer set search_path=public as $$
 declare initial_id uuid; balance integer;
 begin
@@ -37,7 +45,7 @@ begin
 end $$;
 revoke all on function public.wallet_place_stake(uuid,uuid,uuid,text) from public,anon,authenticated;
 
-create function public.wallet_release_stake(p_user uuid,p_match uuid,p_key text)
+create or replace function public.wallet_release_stake(p_user uuid,p_match uuid,p_key text)
 returns void language plpgsql security definer set search_path=public as $$
 declare lid uuid; initial_id uuid;
 begin
@@ -55,7 +63,7 @@ end $$;
 revoke all on function public.wallet_release_stake(uuid,uuid,text) from public,anon,authenticated;
 
 -- Rimborsa anche le scelte tolte automaticamente quando cambiano le formazioni.
-create function public.wallet_assignment_release()
+create or replace function public.wallet_assignment_release()
 returns trigger language plpgsql security definer set search_path=public as $$
 declare owner_user uuid;
 begin
@@ -71,23 +79,26 @@ begin
   end if;
   if tg_op='DELETE' then return old; else return new; end if;
 end $$;
+drop trigger if exists wallet_assignment_release_update on public.advanced_prediction_assignments;
 create trigger wallet_assignment_release_update after update of selected_at,status
   on public.advanced_prediction_assignments for each row execute function public.wallet_assignment_release();
+drop trigger if exists wallet_assignment_release_delete on public.advanced_prediction_assignments;
 create trigger wallet_assignment_release_delete after delete
   on public.advanced_prediction_assignments for each row execute function public.wallet_assignment_release();
 
-create function public.wallet_prediction_release()
+create or replace function public.wallet_prediction_release()
 returns trigger language plpgsql security definer set search_path=public as $$
 begin
   perform public.wallet_release_stake(old.user_id,old.match_id,'OUTCOME');
   perform public.wallet_release_stake(old.user_id,old.match_id,'EXACT');
   return old;
 end $$;
+drop trigger if exists wallet_prediction_release_delete on public.match_predictions;
 create trigger wallet_prediction_release_delete after delete
   on public.match_predictions for each row execute function public.wallet_prediction_release();
 
 -- La cancellazione di una partita restituisce le puntate prima delle eliminazioni a cascata.
-create function public.wallet_match_release()
+create or replace function public.wallet_match_release()
 returns trigger language plpgsql security definer set search_path=public as $$
 declare stake record;
 begin
@@ -96,6 +107,7 @@ begin
   end loop;
   return old;
 end $$;
+drop trigger if exists wallet_match_release_delete on public.matches;
 create trigger wallet_match_release_delete before delete
   on public.matches for each row execute function public.wallet_match_release();
 

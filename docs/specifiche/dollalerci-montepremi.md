@@ -1,5 +1,14 @@
 # Montepremi Dollalerci: esempi di calcolo
 
+## Applicazione su Supabase
+
+Applicare nell'ordine i file completi `20270111000000_dollalerci_conto.sql`,
+`20270112000000_dollalerci_puntate.sql` e
+`20270113000000_dollalerci_montepremi.sql`. Se il conto del punto 1 è già attivo,
+partire dal punto 2. Il punto 3 controlla le dipendenze prima di modificare il
+database. I punti 2 e 3 si possono ripetere se un tentativo precedente si è
+interrotto a metà; ripetere il punto 2 sempre **prima** del punto 3.
+
 Ogni elemento confermato costa 1 dollalercio. Contano solo le scelte pagate dopo
 l'attivazione delle puntate. Il montepremi di una partita comprende le puntate
 valide della partita; quelle annullate vengono restituite.

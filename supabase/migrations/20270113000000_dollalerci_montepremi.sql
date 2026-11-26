@@ -1,5 +1,18 @@
 -- Punto 3: montepremi per partita, ricalcolabile dopo correzioni ufficiali.
-create table public.wallet_match_pools (
+-- Controllo prima di ogni modifica: questo file dipende dai punti 1 e 2.
+do $$
+begin
+  if to_regclass('public.wallet_transactions') is null
+      or to_regprocedure('public.wallet_state(uuid)') is null then
+    raise exception 'Manca la migrazione 20270111000000_dollalerci_conto.sql (punto 1)';
+  end if;
+  if to_regclass('public.wallet_stakes') is null
+      or to_regprocedure('public.wallet_place_stake(uuid,uuid,uuid,text)') is null then
+    raise exception 'Manca la migrazione 20270112000000_dollalerci_puntate.sql (punto 2)';
+  end if;
+end $$;
+
+create table if not exists public.wallet_match_pools (
   match_id uuid primary key references public.matches(id) on delete cascade,
   league_id uuid not null references public.leagues(id) on delete cascade,
   staked integer not null check (staked>=0),
@@ -9,7 +22,7 @@ create table public.wallet_match_pools (
   settled_at timestamptz not null default now(),
   check (staked=returned+paid+remainder)
 );
-create table public.wallet_settlements (
+create table if not exists public.wallet_settlements (
   match_id uuid not null references public.matches(id) on delete cascade,
   league_id uuid not null references public.leagues(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -19,7 +32,7 @@ create table public.wallet_settlements (
   payout integer not null check (payout>=0),
   primary key (match_id,user_id,element_key)
 );
-create index wallet_settlements_league_user_idx on public.wallet_settlements(league_id,user_id);
+create index if not exists wallet_settlements_league_user_idx on public.wallet_settlements(league_id,user_id);
 alter table public.wallet_match_pools enable row level security;
 alter table public.wallet_settlements enable row level security;
 revoke all on public.wallet_match_pools,public.wallet_settlements from anon,authenticated;
@@ -60,7 +73,7 @@ begin
   return old;
 end $$;
 
-create function public.wallet_settle_match(p_match uuid)
+create or replace function public.wallet_settle_match(p_match uuid)
 returns void language plpgsql security definer set search_path=public as $$
 declare m matches%rowtype; item jsonb; calculated jsonb; old_payout integer; delta integer;
   staked_count integer; returned_count integer; paid_count integer; remainder_count integer;
@@ -142,9 +155,14 @@ end $$;
 revoke all on function public.wallet_settle_match(uuid) from public,anon,authenticated;
 
 -- Il calcolo del Bet e il conguaglio dei dollalerci devono essere atomici.
-alter function public.advanced_prediction_reconcile(uuid,jsonb) rename to advanced_prediction_reconcile_core;
+do $$
+begin
+  if to_regprocedure('public.advanced_prediction_reconcile_core(uuid,jsonb)') is null then
+    alter function public.advanced_prediction_reconcile(uuid,jsonb) rename to advanced_prediction_reconcile_core;
+  end if;
+end $$;
 revoke all on function public.advanced_prediction_reconcile_core(uuid,jsonb) from public,anon,authenticated,service_role;
-create function public.advanced_prediction_reconcile(p_match uuid,p_results jsonb)
+create or replace function public.advanced_prediction_reconcile(p_match uuid,p_results jsonb)
 returns void language plpgsql security definer set search_path=public as $$
 begin
   perform public.advanced_prediction_reconcile_core(p_match,p_results);
@@ -154,7 +172,7 @@ revoke all on function public.advanced_prediction_reconcile(uuid,jsonb) from pub
 grant execute on function public.advanced_prediction_reconcile(uuid,jsonb) to service_role;
 
 -- Cancellare la partita annulla gli eventuali premi e restituisce le puntate.
-create function public.wallet_settlement_reverse_delete()
+create or replace function public.wallet_settlement_reverse_delete()
 returns trigger language plpgsql security definer set search_path=public as $$
 declare item record;
 begin
@@ -164,11 +182,12 @@ begin
   end loop;
   return old;
 end $$;
+drop trigger if exists wallet_settlement_reverse_delete on public.matches;
 create trigger wallet_settlement_reverse_delete before delete on public.matches
   for each row execute function public.wallet_settlement_reverse_delete();
 
 -- Tutti i membri vedono solo partite consolidate; niente scelte altrui prima della chiusura.
-create function public.wallet_match_receipt(p_match uuid)
+create or replace function public.wallet_match_receipt(p_match uuid)
 returns jsonb language plpgsql stable security definer set search_path=public as $$
 declare m matches%rowtype; result jsonb;
 begin
@@ -197,7 +216,7 @@ end $$;
 revoke all on function public.wallet_match_receipt(uuid) from public,anon;
 grant execute on function public.wallet_match_receipt(uuid) to authenticated;
 
-create function public.wallet_leaderboard(p_league uuid,p_season text)
+create or replace function public.wallet_leaderboard(p_league uuid,p_season text)
 returns jsonb language plpgsql stable security definer set search_path=public as $$
 declare result jsonb;
 begin
