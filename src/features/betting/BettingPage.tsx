@@ -127,7 +127,7 @@ function GiocataUnica({ match, leagueId }: { match: BettingMatch; leagueId: stri
   const { draft, status } = useDraft(match, leagueId);
   return <section className="giocata-unica" aria-label={`Giocata del ${formatDate(match.date)}`}>
     <BettingCard match={match} draft={draft} />
-    <MatchPredictions match={match} embedded />
+    <MatchPredictions match={match} leagueId={leagueId} embedded />
     {match.is_open ? <GiocataBar match={match} outcome={draft.outcome} scoreA={draft.scoreA} scoreB={draft.scoreB} status={status} /> : null}
   </section>;
 }

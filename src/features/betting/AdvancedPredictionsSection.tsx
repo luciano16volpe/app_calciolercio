@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../../app/auth';
+import { useAuth, useRole } from '../../app/auth';
 import { useToast } from '../../app/Toast';
 import { PlayerAvatar } from '../player/PlayerAvatar';
-import { advancedBoardKey, selectAdvancedPrediction, useAdvancedBoard, useAdvancedEnabled, useAdvancedHistory, useAdvancedLeaderboard, useAdvancedStats, type AdvancedAssignment, type AdvancedHistoryFilters } from '../../data/advancedPredictions';
+import { advancedBoardKey, confirmAdvancedStats, selectAdvancedPrediction, useAdvancedBoard, useAdvancedEnabled, useAdvancedHistory, useAdvancedLeaderboard, useAdvancedStats, type AdvancedAssignment, type AdvancedHistoryFilters } from '../../data/advancedPredictions';
 import { photoUrl } from '../../data/queries';
 import { scorePredictions, type Difficulty } from '../../domain/advancedPredictions';
 import { formatDate } from '../../domain/format';
@@ -72,8 +72,20 @@ export function GiocataBar({match,outcome,scoreA,scoreB,status}:{match:BettingMa
   </div>;
 }
 
-export function MatchPredictions({match,embedded=false}:{match:BettingMatch;embedded?:boolean}){
+export function MatchPredictions({match,leagueId,embedded=false}:{match:BettingMatch;leagueId:string;embedded?:boolean}){
   const board=useAdvancedBoard(match.match_id);
+  const {isAdmin}=useRole(leagueId);
+  const qc=useQueryClient();
+  const toast=useToast();
+  const [confirming,setConfirming]=useState(false);
+  const confirm=async()=>{if(confirming)return;setConfirming(true);try{
+    await confirmAdvancedStats(match.match_id);
+    await Promise.all([
+      qc.invalidateQueries({queryKey:['advanced-predictions-board']}),
+      qc.invalidateQueries({queryKey:['wallet-receipt']}),
+    ]);
+    toast('Statistiche confermate. Il montepremi sarà calcolato a breve.');
+  }catch(error){toast((error as Error).message);}finally{setConfirming(false);}};
   const [now,setNow]=useState(()=>new Date());
   useEffect(()=>{const timer=window.setInterval(()=>setNow(new Date()),60_000);return()=>window.clearInterval(timer);},[]);
   const romeNow=now.toLocaleString('sv-SE',{timeZone:'Europe/Rome',hour12:false}).replace(' ','T');
@@ -110,6 +122,13 @@ export function MatchPredictions({match,embedded=false}:{match:BettingMatch;embe
       <div className="advanced-prediction-grid">{assignments.map(x=><PredictionCard key={x.id} assignment={x} matchId={match.match_id} canSelect={!!board.data.isOpen} />)}</div>
       {!assignments.length?<div className="card">Non ci sono condizioni compatibili per questa partita.</div>:null}
     </>:null}
+    {!embedded&&isAdmin&&match.score_a!==null&&match.score_b!==null?<div className="card admin-only">
+      <h3>Calcolo del Bet</h3>
+      <p>Conferma gol, assist, autogol, mete e voti della partita prima di calcolare premi e classifica.</p>
+      <button type="button" className="btn" disabled={confirming} onClick={()=>void confirm()}>
+        {confirming?'Confermo…':board.data?.ready?'Ricalcola dopo una correzione':'Conferma statistiche e calcola'}
+      </button>
+    </div>:null}
     {match.score_a!==null&&match.score_b!==null?<WalletReceiptView matchId={match.match_id} assignments={assignments}/>:null}
   </div>;
 }
@@ -234,7 +253,7 @@ export function AdvancedPredictionsSection({leagueId,matches,resultMatches,playe
           onClick={()=>setView(key)}>{label}</button>)}</div>}
     {view==='results'?<>{visible.length?<><label className="advanced-prediction-picker">Partita <select value={current?.match_id??''} onChange={e=>setMatchId(e.target.value)}>
       {visible.map(x=><option key={x.match_id} value={x.match_id}>{formatDate(x.date)}</option>)}</select></label>
-      {current?<MatchPredictions key={current.match_id} match={current}/>:null}</>:<div className="card">Nessuna partita disponibile.</div>}</>:null}
+      {current?<MatchPredictions key={current.match_id} match={current} leagueId={leagueId}/>:null}</>:<div className="card">Nessuna partita disponibile.</div>}</>:null}
     {view==='results'?<HistoryView leagueId={leagueId} matches={resultMatches} players={players}/>:null}
     {(view==='leaderboard'||view==='stats')&&season?<><label className="advanced-prediction-picker">Stagione <select value={season.key} onChange={e=>setChosenSeason(e.target.value)}>
       {seasons.map(x=><option key={x.key} value={x.key}>{x.label}</option>)}</select></label>
