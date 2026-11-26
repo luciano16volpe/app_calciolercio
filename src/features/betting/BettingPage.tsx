@@ -75,11 +75,12 @@ function BettingContent({ data }: { data: LeagueData }) {
   const board = useBettingBoard(data.league.id);
   const matches = board.data ?? [];
   const bettingEnabled = new Set(data.dataset.matches.filter((match) => match.bettingEnabled === true).map((match) => match.id));
-  const resultMatches = matches.filter((match) => bettingEnabled.has(match.match_id) && match.play_time !== null && match.score_a !== null && match.score_b !== null);
+  const wasBettable = (match: BettingMatch) => bettingEnabled.has(match.match_id) && match.play_time !== null;
+  const resultMatches = matches.filter((match) => wasBettable(match) && match.score_a !== null && match.score_b !== null);
   const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' });
   const upcoming = matches.filter((m) => m.score_a === null && m.score_b === null && m.date >= today)
     .sort((a, b) => a.date.localeCompare(b.date));
-  const history = matches.filter((m) => !upcoming.includes(m) && (m.my_prediction || m.total > 0));
+  const history = matches.filter((m) => wasBettable(m) && !upcoming.includes(m) && (m.my_prediction || m.total > 0));
   return <div className="betting-page">
     <div className="card"><div className="section-header">🎯 Bet</div>
       <p>Una sola giocata per partita: l’esito 1-X-2 (+3 pt), il risultato esatto (+5 pt in più) e fino a 5 pronostici sui giocatori avversari. Contano tutti insieme per il moltiplicatore. Nessuna puntata in denaro.</p></div>
