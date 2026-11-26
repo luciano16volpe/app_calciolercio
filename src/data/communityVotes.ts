@@ -31,6 +31,25 @@ export interface CommunityVoteProgress {
   remaining: number;
 }
 
+export interface CommunityVoteDisagreement {
+  player_id: string;
+  dispersion: number;
+  votes: number;
+}
+
+export function useCommunityVoteDisagreement(matchId: string, finalized: boolean) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['community-vote-disagreement', matchId, user?.id],
+    enabled: !!user && !!matchId && finalized,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('community_vote_disagreement', { p_match: matchId });
+      if (error) throw error;
+      return data as CommunityVoteDisagreement | null;
+    },
+  });
+}
+
 export const communityVoteKey = (matchId: string, userId?: string) => ['community-vote', matchId, userId] as const;
 export const communityVoteProgressKey = (matchId: string, userId?: string) => ['community-vote-progress', matchId, userId] as const;
 

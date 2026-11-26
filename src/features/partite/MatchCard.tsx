@@ -8,7 +8,7 @@ import { canPlanMatch } from '../../domain/plannedMatch';
 import { PlannedMatchEditor } from './PlannedMatchEditor';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../app/auth';
-import { useCommunityVoteState } from '../../data/communityVotes';
+import { useCommunityVoteDisagreement, useCommunityVoteState, type CommunityVoteDisagreement } from '../../data/communityVotes';
 import { useFormationPollState } from '../../data/formationPolls';
 import { CommunityVoteControls } from './CommunityVote';
 import { FormationVoteSummary } from './FormationVoteSummary';
@@ -21,7 +21,7 @@ import { useAdvancedEnabled } from '../../data/advancedPredictions';
 import { LEAGUE_HISTORY_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
 import { formatDate, whenWhere } from '../../domain/format';
-import { matchBalance, rateColors, type MatchBalance } from '../../domain/matches';
+import { matchBalance, matchHighlights, rateColors, type MatchBalance } from '../../domain/matches';
 import { clampRating, normalizeTeam } from '../../domain/stats';
 import type { Match, Rating } from '../../domain/types';
 import { waHTML } from '../../domain/whatsapp';
@@ -33,6 +33,36 @@ import { PlaceShare } from './PlaceShare';
 import { placeOf } from '../../domain/place';
 
 const LABEL = { fontSize: 12, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase' as const, letterSpacing: '.5px' };
+
+function Highlights({ data, m, ratings, finalized, disagreement }: {
+  data: LeagueData; m: Match; ratings: Rating[]; finalized: boolean; disagreement: CommunityVoteDisagreement | null | undefined;
+}) {
+  const h = matchHighlights({ ...data.dataset, ratings }, m);
+  const fmt = (value: number) => value.toFixed(1).replace('.', ',');
+  const paired = finalized ? ratings.flatMap((rating) => {
+    const community = rating.rating == null ? NaN : Number(rating.rating);
+    const editor = rating.editorRating == null ? NaN : Number(rating.editorRating);
+    if (!Number.isFinite(community) || !Number.isFinite(editor)) return [];
+    return [{ id: rating.playerId, name: data.dataset.players.find((player) => player.id === rating.playerId)?.name ?? rating.player ?? '', gap: Math.abs(community - editor) }];
+  }).sort((a, b) => b.gap - a.gap || a.name.localeCompare(b.name)) : [];
+  const editorialGap = paired[0];
+  const voterGapPlayer = disagreement ? data.dataset.players.find((player) => player.id === disagreement.player_id) : null;
+  const items = [
+    h.mvp ? { label: '⭐ MVP', name: h.mvp.name, value: `Voto ${fmt(h.mvp.v)}` } : null,
+    h.worst && h.worst.name !== h.mvp?.name ? { label: '🥴 Peggiore', name: h.worst.name, value: `Voto ${fmt(h.worst.v)}` } : null,
+    h.topScorer ? { label: '⚽ Capocannoniere', name: h.topScorer.name, value: `${h.topScorer.g} gol` } : null,
+    h.topAssist ? { label: '🅰️ Assistman', name: h.topAssist.name, value: `${h.topAssist.a} assist` } : null,
+    editorialGap ? { label: '↔️ Editore e votanti', name: editorialGap.name, value: `${fmt(editorialGap.gap)} punti di differenza` } :
+      voterGapPlayer && disagreement ? { label: '↔️ Votanti più divisi', name: voterGapPlayer.name, value: `Dispersione ${fmt(disagreement.dispersion)} · ${disagreement.votes} voti` } : null,
+  ].filter((item): item is { label: string; name: string; value: string } => item !== null);
+  if (!items.length) return null;
+  return <section className="match-highlights" aria-label="Highlights della partita">
+    <div className="match-highlights-title">Highlights</div>
+    <div className="match-highlights-grid">{items.map((item) => <div className="match-highlight" key={item.label}>
+      <small>{item.label}</small><strong>{item.name}</strong><span>{item.value}</span>
+    </div>)}</div>
+  </section>;
+}
 
 // ── equilibrio squadre ─────────────────────────────────────────────────────
 function Pill({ p }: { p: { level: 'ok' | 'warn' | 'bad'; text: string; sub: string } }) {
@@ -326,6 +356,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
   const m = data.dataset.matches.find((x) => x.id === matchId);
   const { user } = useAuth();
   const communityVote = useCommunityVoteState(matchId);
+  const disagreement = useCommunityVoteDisagreement(matchId, communityVote.data?.finalized === true);
   const bettingEnabled = useAdvancedEnabled(data.league.id);
   const toast = useToast();
   const confirm = useConfirm();
@@ -598,6 +629,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               {stepper('sc-b', draft ? draft.scB : scoreB, 'scB')}
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--teamb)' }}>⚪ Bianchi</span>
             </div>
+            {!editing ? <Highlights data={data} m={m} ratings={ratings} finalized={communityVote.data?.finalized === true} disagreement={disagreement.data} /> : null}
             {!editing ? <CommunityVoteControls match={m} state={communityVote.data} canEdit={canEdit} userId={user?.id} /> : null}
             <div className="gaz-sec" id="gaz-sec">
               {g ? (

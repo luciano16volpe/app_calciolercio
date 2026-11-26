@@ -1498,6 +1498,7 @@ export type Database = {
         Returns: undefined
       }
       rename_my_player: { Args: { p_name: string }; Returns: string }
+      community_vote_disagreement: { Args: { p_match: string }; Returns: Json }
       admin_rename_player: { Args: { p_player: string; p_name: string }; Returns: string }
       request_claim: { Args: { l: string; p: string }; Returns: undefined }
       request_league: {
