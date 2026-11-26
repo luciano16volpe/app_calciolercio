@@ -173,6 +173,19 @@ html[data-theme="dark"] .card{background:rgba(32,38,50,0.62);border-color:rgba(2
 .pgt-editor-rating{margin-top:3px;font-size:11px;font-weight:700;color:var(--text2)}
 .pgt-desc{font-size:11.5px;color:var(--text2);line-height:1.4;margin-top:2px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
 .pgt-view.open .pgt-desc{display:block;-webkit-line-clamp:unset}
+.match-overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.match-overview-team{min-width:0;padding:10px;border-radius:var(--radius-sm);background:var(--blue-light)}
+.match-overview-white{background:var(--teamb-light)}
+.match-overview-team-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;color:var(--text)}
+.match-overview-team-head strong{font-size:13px}.match-overview-team-head span{font-size:10px;font-weight:700;color:var(--text2);text-align:right}
+.match-overview-player{padding:9px;margin-top:6px;border-radius:9px;background:var(--gray);border:1px solid var(--gray3)}
+.match-overview-player-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.match-overview-player-top>strong{min-width:0;overflow-wrap:anywhere;font-size:13px;color:var(--text)}
+.match-overview-votes{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none}
+.match-overview-votes span{padding:3px 6px;border-radius:6px;font-size:10px;font-weight:800;white-space:nowrap}
+.match-overview-vote-community{background:#dcecff;color:#155a9f}.match-overview-vote-editor{background:#f3e3f7;color:#81369a}
+.match-overview-stats{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.match-overview-stats span{padding:2px 5px;border-radius:5px;background:var(--gray2);color:var(--text2);font-size:11px;font-weight:700}
+@media(max-width:560px){.match-overview-grid{grid-template-columns:1fr}}
 .pgt-add{width:auto!important;height:auto!important;margin-top:6px;padding:5px 10px!important;font-size:11px!important;font-weight:800;border-radius:99px!important}
 .rate-btn.pgt-add{display:inline-flex;background:var(--gray2);color:var(--text)}
 #pgt-dialog{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:650;padding:18px;padding-top:calc(18px + env(safe-area-inset-top,0px));align-items:center;justify-content:center}

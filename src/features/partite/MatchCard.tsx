@@ -1,8 +1,8 @@
 import { PremiumBadge, usePremiumExplain } from '../../app/premium';
 import { MatchTextBoundary } from './MatchTextBoundary';
-// Scheda partita (in lettura; con il ✏️ per chi ha il permesso diventa modificabile): pulsanti, risultato, highlights, Gazzetta, equilibrio squadre, pagelle di ogni giocatore.
+// Scheda partita (in lettura; con il ✏️ per chi ha il permesso diventa modificabile): pulsanti, risultato, quadro dei giocatori, Gazzetta, equilibrio squadre, pagelle di ogni giocatore.
 // Modifica di voti, gol, risultato e pagelle: passo 3.7b. Importazione WhatsApp e Gazzetta: 3.7c e 3.7e.
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { HourSelect } from '../../app/HourSelect';
 import { canPlanMatch } from '../../domain/plannedMatch';
 import { PlannedMatchEditor } from './PlannedMatchEditor';
@@ -21,7 +21,7 @@ import { useAdvancedEnabled } from '../../data/advancedPredictions';
 import { LEAGUE_HISTORY_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
 import { formatDate, whenWhere } from '../../domain/format';
-import { matchBalance, matchHighlights, needsRatings, rateColors, type MatchBalance } from '../../domain/matches';
+import { matchBalance, needsRatings, rateColors, type MatchBalance } from '../../domain/matches';
 import { clampRating, normalizeTeam } from '../../domain/stats';
 import type { Match, Rating } from '../../domain/types';
 import { waHTML } from '../../domain/whatsapp';
@@ -33,43 +33,6 @@ import { PlaceShare } from './PlaceShare';
 import { placeOf } from '../../domain/place';
 
 const LABEL = { fontSize: 12, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase' as const, letterSpacing: '.5px' };
-
-// ── highlights ─────────────────────────────────────────────────────────────
-function Highlights({ data, m, hideRatings = false }: { data: LeagueData; m: Match; hideRatings?: boolean }) {
-  const dataset = hideRatings ? {
-    ...data.dataset,
-    ratings: data.dataset.ratings.map((rating) => rating.matchId === m.id ? { ...rating, rating: null } : rating),
-  } : data.dataset;
-  const h = matchHighlights(dataset, m);
-  if (!h.mvp && !h.topScorer && h.avgA == null) return null; // ancora nessuna pagella
-  const short = (n: string) => (n && n.length > 12 ? n.slice(0, 11) + '…' : n);
-  const cell = (icon: string, label: string, content: ReactNode, col?: string) => (
-    <div key={label} style={{ flex: 1, minWidth: 0, background: 'rgba(128,128,128,0.08)', borderRadius: 'var(--radius-sm)', padding: '8px 9px' }}>
-      <div style={{ fontSize: 9, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.3px', marginBottom: 2 }}>{icon} {label}</div>
-      <div style={{ fontSize: 12, fontWeight: 800, color: col || 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{content}</div>
-    </div>
-  );
-  const line1: ReactNode[] = [];
-  if (h.mvp) line1.push(cell('⭐', 'MVP', `${short(h.mvp.name)} · ${h.mvp.v.toFixed(1)}`, 'var(--green)'));
-  if (h.worst && !(h.mvp && h.worst.name === h.mvp.name)) line1.push(cell('🥴', 'Peggiore', `${short(h.worst.name)} · ${h.worst.v.toFixed(1)}`, 'var(--red)'));
-  const line2: ReactNode[] = [cell('⚽', 'Capocannoniere', h.topScorer ? `${short(h.topScorer.name)} (${h.topScorer.g})` : '—', h.topScorer ? 'var(--green)' : 'var(--text3)')];
-  if (h.avgA != null || h.avgB != null) {
-    line2.push(
-      cell('📊', 'Media voto', (
-        <>
-          <span style={{ color: 'var(--blue)' }}>{h.avgA != null ? h.avgA.toFixed(1) : '—'}</span> · <span style={{ color: 'var(--teamb)' }}>{h.avgB != null ? h.avgB.toFixed(1) : '—'}</span>
-        </>
-      )),
-    );
-  }
-  return (
-    <div style={{ margin: '12px 0 4px' }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 6 }}>Highlights</div>
-      {line1.length ? <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{line1}</div> : null}
-      <div style={{ display: 'flex', gap: 6 }}>{line2}</div>
-    </div>
-  );
-}
 
 // ── equilibrio squadre ─────────────────────────────────────────────────────
 function Pill({ p }: { p: { level: 'ok' | 'warn' | 'bad'; text: string; sub: string } }) {
@@ -237,6 +200,53 @@ function TeamPanel({ title, team, ratings, blue, side, ed, hideRating = false }:
       })}
     </div>
   );
+}
+
+/** Quadro compatto della partita in lettura, con tutti i giocatori visibili insieme. */
+function MatchOverview({ m, ratings }: { m: Match; ratings: Rating[] }) {
+  const number = (value: unknown): number | null => {
+    if (value === null || value === undefined || value === '') return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+  const teams = [
+    { label: 'Blu', side: 'blue', players: normalizeTeam(m.teamA) },
+    { label: 'Bianchi', side: 'white', players: normalizeTeam(m.teamB) },
+  ];
+  return <section className="match-overview" aria-label="Quadro della partita">
+    <div className="match-overview-grid">
+      {teams.map((team) => {
+        const rows = team.players.map((player) => ({ player, rating: ratings.find((r) =>
+          (player.id && r.playerId === player.id) || (!player.id && r.player === player.name)) }));
+        const votes = rows.map(({ rating }) => number(rating?.rating)).filter((value): value is number => value !== null);
+        const average = votes.length ? (votes.reduce((sum, value) => sum + value, 0) / votes.length).toFixed(1).replace('.', ',') : null;
+        return <div className={`match-overview-team match-overview-${team.side}`} key={team.side}>
+          <div className="match-overview-team-head"><strong>{team.side === 'blue' ? '🔵' : '⚪'} {team.label}</strong><span>{average ? `Media votanti ${average}` : `${rows.length} giocatori`}</span></div>
+          {rows.map(({ player, rating }, index) => {
+            const vote = number(rating?.rating);
+            const editorVote = number(rating?.editorRating);
+            const stats = [
+              [rating?.goals, '⚽', 'Gol'], [rating?.assist, '🅰️', 'Assist'],
+              [rating?.autogol, '🙃', 'Autogol'], [rating?.rigoriSbagliati, '❌', 'Rigori sbagliati'],
+              [rating?.meta, '🚀', 'Meta'],
+            ] as const;
+            const title = rating?.titolo ? String(rating.titolo) : '';
+            const desc = rating?.notes ? String(rating.notes) : '';
+            return <div className="match-overview-player" key={player.id ?? `${player.name}-${index}`}>
+              <div className="match-overview-player-top"><strong>{player.name}</strong><div className="match-overview-votes">
+                {vote !== null ? <span className="match-overview-vote-community" title="Media dei votanti">Votanti {String(vote).replace('.', ',')}</span> : null}
+                {editorVote !== null ? <span className="match-overview-vote-editor" title="Voto dell'editore">Editore {String(editorVote).replace('.', ',')}</span> : null}
+              </div></div>
+              {stats.some(([value]) => (number(value) ?? 0) > 0) ? <div className="match-overview-stats">
+                {stats.map(([value, icon, label]) => (number(value) ?? 0) > 0 ? <span key={label} title={label}>{icon} {value}</span> : null)}
+              </div> : null}
+              <PgtView tit={title} desc={desc} editorRating="" />
+            </div>;
+          })}
+        </div>;
+      })}
+    </div>
+  </section>;
 }
 
 /** Finestra "📝 Pagella di …": titolo e descrizione della prestazione. */
@@ -607,7 +617,6 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               {stepper('sc-b', draft ? draft.scB : scoreB, 'scB')}
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--teamb)' }}>⚪ Bianchi</span>
             </div>
-            {!editing ? <Highlights data={data} m={m} hideRatings={hideCommunityRatings} /> : null}
             {!editing ? <CommunityVoteControls match={m} state={communityVote.data} canEdit={canEdit} userId={user?.id} /> : null}
             <div className="gaz-sec" id="gaz-sec">
               {g ? (
@@ -631,12 +640,12 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
                 </div>
               ) : null}
             </div>
-            <div style={{ ...LABEL, margin: '14px 0 8px' }}>Gol, assist e voti (facoltativi)</div>
+            <div style={{ ...LABEL, margin: '14px 0 8px' }}>{editing ? 'Gol, assist e voti (facoltativi)' : 'Giocatori e pagelle'}</div>
               {full ? <div className="mb-note" style={{ marginBottom: 8 }}>Puoi salvare gol, assist e voto dell’editore. Il voto dei votanti si calcola alla chiusura della votazione.</div> : null}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+            {editing ? <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
               <TeamPanel title="🔵 Blu" team={teamA} ratings={ratings} blue side="A" ed={ed} hideRating={hideCommunityRatings} />
               <TeamPanel title="⚪ Bianchi" team={teamB} ratings={ratings} blue={false} side="B" ed={ed} hideRating={hideCommunityRatings} />
-            </div>
+            </div> : <MatchOverview m={m} ratings={ratings} />}
             {!editing ? <><button type="button" className="btn btn-secondary btn-full eq-toggle" id="match-balance-btn" onClick={() => setBalanceOpen((o) => !o)}>
               ⚖️ Equilibrio squadre {balanceOpen ? '▴' : '▾'}
             </button>
