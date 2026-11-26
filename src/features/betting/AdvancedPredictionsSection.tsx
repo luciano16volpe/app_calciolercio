@@ -155,15 +155,14 @@ function HistoryView({leagueId,matches,players}:{leagueId:string;matches:Betting
   </details>;
 }
 
-export function AdvancedPredictionsSection({leagueId,matches,players,photos}:{leagueId:string;matches:BettingMatch[];players:readonly {id:string;name:string}[];photos:Record<string,string|null>}){
+export function AdvancedPredictionsSection({leagueId,matches,resultMatches,players,photos}:{leagueId:string;matches:BettingMatch[];resultMatches:BettingMatch[];players:readonly {id:string;name:string}[];photos:Record<string,string|null>}){
   const enabled=useAdvancedEnabled(leagueId);
   const [matchId,setMatchId]=useState('');
   const [view,setView]=useState<'results'|'leaderboard'|'stats'>('results');
   const seasons=[...new Map(matches.map(x=>seasonOf(x.date)).filter(x=>x!==null).map(x=>[x.key,x])).values()];
   const [chosenSeason,setChosenSeason]=useState('');
   const season=seasons.find(x=>x.key===chosenSeason)??seasons[0];
-  const finished=matches.filter(x=>x.score_a!==null&&x.score_b!==null);
-  const visible=finished;
+  const visible=resultMatches;
   const current=visible.find(x=>x.match_id===matchId)??visible[0];
   if(!enabled.data)return null;
   return <section className="advanced-predictions-section"><h2>Bet sugli avversari</h2>
@@ -175,7 +174,7 @@ export function AdvancedPredictionsSection({leagueId,matches,players,photos}:{le
     {view==='results'?<>{visible.length?<><label className="advanced-prediction-picker">Partita <select value={current?.match_id??''} onChange={e=>setMatchId(e.target.value)}>
       {visible.map(x=><option key={x.match_id} value={x.match_id}>{formatDate(x.date)}</option>)}</select></label>
       {current?<MatchPredictions key={current.match_id} match={current}/>:null}</>:<div className="card">Nessuna partita disponibile.</div>}</>:null}
-    {view==='results'?<HistoryView leagueId={leagueId} matches={matches} players={players}/>:null}
+    {view==='results'?<HistoryView leagueId={leagueId} matches={resultMatches} players={players}/>:null}
     {(view==='leaderboard'||view==='stats')&&season?<><label className="advanced-prediction-picker">Stagione <select value={season.key} onChange={e=>setChosenSeason(e.target.value)}>
       {seasons.map(x=><option key={x.key} value={x.key}>{x.label}</option>)}</select></label>
       {view==='leaderboard'?<LeaderboardView leagueId={leagueId} season={season.key} photos={photos}/>:

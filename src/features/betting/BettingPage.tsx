@@ -74,6 +74,8 @@ export function BettingPage({ data }: { data: LeagueData }) {
 function BettingContent({ data }: { data: LeagueData }) {
   const board = useBettingBoard(data.league.id);
   const matches = board.data ?? [];
+  const bettingEnabled = new Set(data.dataset.matches.filter((match) => match.bettingEnabled === true).map((match) => match.id));
+  const resultMatches = matches.filter((match) => bettingEnabled.has(match.match_id) && match.play_time !== null && match.score_a !== null && match.score_b !== null);
   const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' });
   const upcoming = matches.filter((m) => m.score_a === null && m.score_b === null && m.date >= today)
     .sort((a, b) => a.date.localeCompare(b.date));
@@ -90,7 +92,7 @@ function BettingContent({ data }: { data: LeagueData }) {
         <MatchPredictions match={match} embedded />
       </section>) : <div className="card">Nessuna prossima partita in programma.</div>}
       {history.length ? <><h2>Storico Bet 1/X/2</h2>{history.map((match) => <BettingCard key={match.match_id} match={match} leagueId={data.league.id} />)}</> : null}
-      <AdvancedPredictionsSection leagueId={data.league.id} matches={matches} players={data.dataset.players} photos={data.photos} />
+      <AdvancedPredictionsSection leagueId={data.league.id} matches={matches} resultMatches={resultMatches} players={data.dataset.players} photos={data.photos} />
     </> : null}
   </div>;
 }
