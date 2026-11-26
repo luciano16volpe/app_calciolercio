@@ -16,12 +16,12 @@ import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { formOn } from '../../data/gameSettings';
 import { useToast } from '../../app/Toast';
 import { compressGazzetta, makeGazzettaThumb } from '../../canvas/gazzetta';
-import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, setMatchBetEnabled, setRatingsSkipped } from '../../data/mutations';
+import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, setMatchBetEnabled } from '../../data/mutations';
 import { useAdvancedEnabled } from '../../data/advancedPredictions';
 import { LEAGUE_HISTORY_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
 import { formatDate, whenWhere } from '../../domain/format';
-import { matchBalance, needsRatings, rateColors, type MatchBalance } from '../../domain/matches';
+import { matchBalance, rateColors, type MatchBalance } from '../../domain/matches';
 import { clampRating, normalizeTeam } from '../../domain/stats';
 import type { Match, Rating } from '../../domain/types';
 import { waHTML } from '../../domain/whatsapp';
@@ -480,18 +480,6 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
       toast('❌ Non riuscito: ' + (e as Error).message);
     }
   };
-  /** «Salta le pagelle»: la partita esce dall'elenco delle pagelle da scrivere (amministratore e redazione). */
-  const toggleSkip = async () => {
-    if (!m) return;
-    const skip = !m.ratingsSkipped;
-    try {
-      await setRatingsSkipped(matchId, skip);
-      await qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
-      toast(skip ? 'Pagelle saltate: la partita non compare più tra quelle da scrivere' : 'Pagelle rimesse tra quelle da scrivere');
-    } catch (e) {
-      toast('Errore: ' + (e as Error).message);
-    }
-  };
   const toggleBet = async () => {
     if (!m || betBusy) return;
     const enabled = m.bettingEnabled === false;
@@ -563,13 +551,6 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               </button>
             ) : null}
           </div>
-          {(canEdit || canEditText) && !editing && m && (m.ratingsSkipped || needsRatings(data.dataset, m)) ? (
-            <div style={{ marginBottom: 10 }}>
-              <button type="button" id="skip-ratings" className="btn btn-secondary btn-full btn-sm staff-only" style={{ whiteSpace: 'normal' }} onClick={() => void toggleSkip()}>
-                {m.ratingsSkipped ? '↩ Rimetti tra le pagelle da scrivere' : '⏭️ Non scrivere le pagelle di questa partita'}
-              </button>
-            </div>
-          ) : null}
           {canEdit && bettingEnabled.data === true ? <div className="match-bet-setting admin-only">
             <div><strong>Bet {m.bettingEnabled === false ? 'disattivato' : 'attivo'}</strong>
               <small>Le giocate già registrate restano salvate. Quando Bet è disattivato non contano nelle classifiche; riattivandolo tornano valide.</small></div>
