@@ -206,7 +206,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
         <div className="vote-modal-title-row">
           <span className="vote-modal-icon" aria-hidden="true">⭐</span>
           <div>
-            <div id="community-vote-title" className="vote-modal-title">Dai i tuoi voti</div>
+            <div id="community-vote-title" className="vote-modal-title">{state && !state.is_open ? 'Voti espressi' : 'Dai i tuoi voti'}</div>
             <div className="vote-modal-date">Partita del {formatDate(match.date)}</div>
           </div>
         </div>
