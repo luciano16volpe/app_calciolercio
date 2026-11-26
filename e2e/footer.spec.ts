@@ -36,3 +36,25 @@ test('Il footer resta visibile sopra i pannelli del menu e porta alla sezione sc
   await expect(page.locator('#menu-drawer')).toHaveCount(0);
   await expect(page.locator('#page-partite')).toHaveClass(/active/);
 });
+
+test('Nell’app installata lo swipe Indietro dal footer torna al Profilo senza accumulare tappe', async ({ page }) => {
+  await setup(page);
+  await page.addInitScript(() => {
+    const original = window.matchMedia.bind(window);
+    window.matchMedia = (query) => query === '(display-mode: standalone)'
+      ? { matches: true } as MediaQueryList
+      : original(query);
+  });
+  await openApp(page, '/l/san-marcello/profilo');
+  await expect(page.locator('#page-profilo')).toHaveClass(/active/);
+  const initialLength = await page.evaluate(() => history.length);
+  for (const section of ['Rosa', 'Partite', 'Rosa']) {
+    await page.locator('.bottom-nav').getByRole('button', { name: section }).click();
+  }
+  await expect(page.locator('#page-rosa')).toHaveClass(/active/);
+  expect(await page.evaluate(() => history.length)).toBe(initialLength);
+  expect(await page.evaluate(() => history.state?.calciolercioBackGuard)).toBe(true);
+  await page.evaluate(() => history.back());
+  await expect(page.locator('#page-profilo')).toHaveClass(/active/);
+  expect(await page.evaluate(() => history.length)).toBe(initialLength);
+});

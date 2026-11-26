@@ -57,7 +57,7 @@ export function setSelectedLeague(slug: string | null): void {
   const cur = parsePath(window.location.pathname);
   if (cur.slug !== null || cur.invite !== null) {
     const next = slug ? buildPath(slug, cur.page ?? HOME_PAGE) : '/';
-    if (window.location.pathname !== next) window.history.replaceState(null, '', next);
+    if (window.location.pathname !== next) window.history.replaceState(window.history.state, '', next);
   }
   window.dispatchEvent(new Event(EVENT));
 }
@@ -89,7 +89,7 @@ export function useSelectedLeague(): string | null {
 /** Cambia l'indirizzo senza ricaricare. */
 export function navigate(path: string, replace = false): void {
   if (window.location.pathname === path) return;
-  if (replace) window.history.replaceState(null, '', path);
+  if (replace) window.history.replaceState(window.history.state, '', path);
   else window.history.pushState(null, '', path);
   window.dispatchEvent(new Event(EVENT));
 }

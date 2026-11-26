@@ -19,7 +19,7 @@ export function useShellWindows() {
     if (!notificationMatch(window.location.pathname, window.location.search)) return;
     const url = new URL(window.location.href);
     url.searchParams.delete('match');
-    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
   }, []);
   const [menuOpen, setMenuOpen] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
