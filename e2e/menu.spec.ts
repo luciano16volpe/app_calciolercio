@@ -40,6 +40,38 @@ test('Menu: voci comuni e accesso alle funzioni giocatori', async ({ page }) => 
   for (const id of ['#menu-compare', '#menu-couples', '#menu-albo', '#menu-records']) await expect(page.locator(id)).toBeVisible();
 });
 
+test('Menu e sottosezioni si chiudono solo nel rispettivo verso di swipe', async ({ page }) => {
+  await setup(page);
+  await openApp(page);
+  await openMenu(page);
+  const drawer = page.locator('#menu-drawer');
+  const swipe = async (selector: string, from: number, to: number) => {
+    await page.locator(selector).evaluate((target, { from, to }) => {
+      const touch = (x: number) => ({ identifier: 1, target, clientX: x, clientY: 200 });
+      const start = touch(from);
+      const end = touch(to);
+      const emit = (type: string, touches: object[], changedTouches: object[]) => target.dispatchEvent(Object.assign(new Event(type, { bubbles: true }), { touches, changedTouches }));
+      emit('touchstart', [start], [start]);
+      emit('touchmove', [end], [end]);
+      emit('touchend', [], [end]);
+    }, { from, to });
+  };
+  await swipe('#menu-drawer', 10, 110);
+  await expect(drawer).toBeVisible();
+  await swipe('#menu-drawer', 200, 100);
+  await expect(drawer).toHaveCount(0);
+
+  await openMenu(page);
+  await page.locator('#menu-players').click();
+  await page.locator('#menu-couples').click();
+  const sheet = page.locator('#sheet-coppie');
+  await expect(sheet).toBeVisible();
+  await swipe('#sheet-coppie', 110, 10);
+  await expect(sheet).toBeVisible();
+  await swipe('#sheet-coppie', 10, 110);
+  await expect(page.locator('#sheet-players-hub')).toBeVisible();
+});
+
 test('Giocatori: lo swipe dal bordo torna ai riquadri senza intercettare lo scorrimento centrale', async ({ page }) => {
   await setup(page);
   await openApp(page);
