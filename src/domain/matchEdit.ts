@@ -47,6 +47,17 @@ export interface SavePlan {
   overAssist: string[];
 }
 
+/** Gol segnati e autogol accreditati alla squadra avversaria. */
+export function scoreFromEvents(teamA: PlayerFields[], teamB: PlayerFields[]): { a: number; b: number; hasGoals: boolean } {
+  const sum = (team: PlayerFields[], field: 'goals' | 'autogol') =>
+    team.reduce((total, player) => total + clampInt(player[field], 0, 20), 0);
+  const goalsA = sum(teamA, 'goals');
+  const goalsB = sum(teamB, 'goals');
+  const ownA = sum(teamA, 'autogol');
+  const ownB = sum(teamB, 'autogol');
+  return { a: goalsA + ownB, b: goalsB + ownA, hasGoals: goalsA + goalsB + ownA + ownB > 0 };
+}
+
 /** Prepara il salvataggio della scheda partita. */
 export function planSave(teamA: PlayerFields[], teamB: PlayerFields[], scA: string, scB: string, includeEmpty = false): SavePlan {
   const rows: RatingRow[] = [];

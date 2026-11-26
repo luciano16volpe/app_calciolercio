@@ -19,7 +19,7 @@ import { compressGazzetta, makeGazzettaThumb } from '../../canvas/gazzetta';
 import { deleteMatch, removeGazzetta, saveMatchRatings, saveMatchTexts, setGazzetta, setMatchBetEnabled } from '../../data/mutations';
 import { useAdvancedEnabled } from '../../data/advancedPredictions';
 import { LEAGUE_HISTORY_QUERY_KEY, type LeagueData } from '../../data/queries';
-import { planSave, stepCount, stepRating, stepScore, type PlayerFields } from '../../domain/matchEdit';
+import { planSave, scoreFromEvents, stepCount, stepRating, type PlayerFields } from '../../domain/matchEdit';
 import { formatDate, whenWhere } from '../../domain/format';
 import { matchBalance, matchHighlights, rateColors, type MatchBalance } from '../../domain/matches';
 import { clampRating, normalizeTeam } from '../../domain/stats';
@@ -308,8 +308,7 @@ function PagellaDialog({ name, tit, desc, editorRating, editorial, onCancel, onD
 /** Cosa c'è scritto nella scheda mentre la si modifica. */
 interface Draft {
   fields: Record<string, PlayerFields>;
-  scA: string;
-  scB: string;
+  goallessPlayed: boolean;
   notes: string;
   /** ora (hh:mm) e luogo */
   time: string;
@@ -336,8 +335,7 @@ function startDraft(m: Match, ratings: Rating[]): Draft {
   return {
     fields,
     base: Object.fromEntries(Object.entries(fields).map(([k, f]) => [k, { tit: f.tit, desc: f.desc }])),
-    scA: m.scoreA !== '' && m.scoreA != null ? String(m.scoreA) : '',
-    scB: m.scoreB !== '' && m.scoreB != null ? String(m.scoreB) : '',
+    goallessPlayed: String(m.scoreA) === '0' && String(m.scoreB) === '0',
     notes: String(m.notes ?? ''),
     time: String(m.time ?? ''),
     place: String(m.place ?? ''),
@@ -403,6 +401,11 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
   const full = editing && !textOnly; // modifica completa (amministratore)
   const teamA = normalizeTeam(m.teamA);
   const teamB = normalizeTeam(m.teamB);
+  const fieldsFor = (side: 'A' | 'B', count: number) => Array.from({ length: count }, (_, index) => draft?.fields[`${side}${index}`] as PlayerFields);
+  const counted = draft && full ? scoreFromEvents(fieldsFor('A', teamA.length), fieldsFor('B', teamB.length)) : null;
+  const scoreKnown = !!counted && (counted.hasGoals || draft?.goallessPlayed === true || scoreA !== '' && scoreB !== '');
+  const shownScoreA = counted ? scoreKnown ? String(counted.a) : '' : scoreA;
+  const shownScoreB = counted ? scoreKnown ? String(counted.b) : '' : scoreB;
   const upd = (patch: Partial<Draft>) => setDraft((d) => (d ? { ...d, ...patch } : d));
   const ed: FieldEditor | undefined = draft
     ? {
@@ -455,7 +458,9 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
       toast('Il voto editoriale deve essere tra 1 e 10, a passi di mezzo punto');
       return;
     }
-    const plan = planSave(side('A', teamA.length), side('B', teamB.length), draft.scA, draft.scB, true);
+    const autoScore = scoreFromEvents(side('A', teamA.length), side('B', teamB.length));
+    const scored = autoScore.hasGoals || draft.goallessPlayed || scoreA !== '' && scoreB !== '';
+    const plan = planSave(side('A', teamA.length), side('B', teamB.length), scored ? String(autoScore.a) : '', scored ? String(autoScore.b) : '', true);
     if (plan.overAssist.length) {
       const go = await confirm({
         icon: '🅰️', title: 'Assist più dei gol?', lines: [...plan.overAssist, '', 'Controlla i dati inseriti. Vuoi salvare comunque?'], okLabel: 'Salva comunque', cancelLabel: 'Correggi',
@@ -545,11 +550,9 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
     }
   };
 
-  const stepper = (id: 'sc-a' | 'sc-b', val: string, field: 'scA' | 'scB') => (
+  const stepper = (id: 'sc-a' | 'sc-b', val: string) => (
     <div className="score-stepper">
-      {full ? <button type="button" onClick={() => upd({ [field]: stepScore(val, -1) })} className="rate-btn rate-btn-minus">−</button> : null}
-      <input type="number" min={0} max={99} id={id} value={val} placeholder="0" inputMode="numeric" disabled={!full} readOnly={!full} onChange={full ? (e) => upd({ [field]: e.target.value }) : undefined} />
-      {full ? <button type="button" onClick={() => upd({ [field]: stepScore(val, 1) })} className="rate-btn rate-btn-plus">+</button> : null}
+      <input type="number" min={0} max={99} id={id} value={val} placeholder="—" disabled readOnly aria-label={id === 'sc-a' ? 'Gol Blu calcolati' : 'Gol Bianchi calcolati'} />
     </div>
   );
 
@@ -624,11 +627,15 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '.5px', textAlign: 'center', marginTop: 8 }}>Risultato</div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '10px 0 4px' }}>
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--blue)' }}>🔵 Blu</span>
-              {stepper('sc-a', draft ? draft.scA : scoreA, 'scA')}
+              {stepper('sc-a', shownScoreA)}
               <span style={{ fontSize: 18, color: 'var(--text3)', fontWeight: 300 }}>-</span>
-              {stepper('sc-b', draft ? draft.scB : scoreB, 'scB')}
+              {stepper('sc-b', shownScoreB)}
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--teamb)' }}>⚪ Bianchi</span>
             </div>
+            {full && draft && !counted?.hasGoals && scoreA === '' && scoreB === '' ? <label style={{ display: 'block', textAlign: 'center', fontSize: 12, color: 'var(--text2)', marginBottom: 8 }}>
+              <input type="checkbox" checked={draft.goallessPlayed} onChange={(event) => upd({ goallessPlayed: event.target.checked })} /> Partita giocata 0‑0
+            </label> : null}
+            {full ? <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text2)', marginBottom: 8 }}>Risultato calcolato da gol e autogol dei giocatori.</div> : null}
             {!editing ? <Highlights data={data} m={m} ratings={ratings} finalized={communityVote.data?.finalized === true} disagreement={disagreement.data} /> : null}
             {!editing ? <CommunityVoteControls match={m} state={communityVote.data} canEdit={canEdit} userId={user?.id} /> : null}
             <div className="gaz-sec" id="gaz-sec">
@@ -669,7 +676,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
             </div></> : null}
             {full && draft ? (
               <SheetScan data={data} m={m} onApply={(r) => setDraft((d) => (d ? {
-                ...d, scA: r.scA, scB: r.scB,
+                  ...d, goallessPlayed: r.scA === '0' && r.scB === '0',
                 fields: { ...d.fields, ...Object.fromEntries(Object.entries(r.fields).filter(([k]) => d.fields[k]).map(([k, v]) => [k, { ...(d.fields[k] as PlayerFields), goals: v.goals, assist: v.assist, autogol: v.autogol }])) },
               } : d))} />
             ) : null}
