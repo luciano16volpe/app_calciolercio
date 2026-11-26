@@ -81,7 +81,7 @@ describe('notifiche degli eventi', () => {
   it('apertura voto: invita i partecipanti e apre le Partite', () => {
     const message = buildMessage(ev({ kind: 'community_vote_open' }));
     expect(message.body).toContain('Votazioni aperte per la partita del 28/10');
-    expect(message.body).toContain('24 ore');
+    expect(message.body).toContain('12 ore');
     expect(message.url).toBe('/l/san-marcello/partite');
     expect(message.tag).toBe('community-vote-m1');
   });

@@ -43,6 +43,34 @@ function VoteDetails({ matchId }: { matchId: string }) {
   </div>;
 }
 
+function remainingText(ms: number) {
+  const minutes = Math.max(0, Math.floor(ms / 60_000));
+  if (minutes < 1) return 'meno di 1 min';
+  const hours = Math.floor(minutes / 60);
+  return hours ? `${hours} h ${minutes % 60} min` : `${minutes} min`;
+}
+
+function VoteStatusOpen({ matchId, until }: { matchId: string; until: string }) {
+  const progress = useCommunityVoteProgress(matchId, true);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const left = new Date(until).getTime() - now;
+  return <div className="vote-status" role="status" style={{ flexBasis: '100%', textAlign: 'center', fontSize: 12, color: 'var(--text2)', margin: '2px 0' }}>
+    ⏳ Voto aperto · chiude tra <b style={{ color: 'var(--text)' }}>{remainingText(left)}</b>
+    {progress.data ? <> · <b style={{ color: 'var(--text)' }}>{progress.data.voted}</b> {progress.data.voted === 1 ? 'ha votato' : 'hanno votato'} · <b style={{ color: 'var(--text)' }}>{progress.data.remaining}</b> {progress.data.remaining === 1 ? 'manca' : 'mancano'}</> : null}
+  </div>;
+}
+
+/** Conto alla rovescia e votanti: compare solo mentre il voto dei partecipanti è aperto. */
+export function VoteStatus({ matchId }: { matchId: string }) {
+  const state = useCommunityVoteState(matchId);
+  if (!state.data?.is_open || !state.data.open_until) return null;
+  return <VoteStatusOpen matchId={matchId} until={state.data.open_until} />;
+}
+
 function AdminVoteProgress({ matchId, isOpen }: { matchId: string; isOpen: boolean }) {
   const progress = useCommunityVoteProgress(matchId, isOpen);
   if (progress.isError) return <p className="cv-progress-note">Impossibile caricare il riepilogo dei votanti.</p>;
@@ -85,7 +113,7 @@ export function CommunityVoteControls({ match, state, canEdit, userId }: {
   return <section className="admin-only" style={{ border: '1px solid var(--gray3)', borderRadius: 'var(--radius-sm)', padding: 12, margin: '12px 0' }}>
     <strong>⭐ Voto dei partecipanti</strong>
     {!state.enabled && state.can_activate && hasScore ? <>
-      <p style={{ fontSize: 12, color: 'var(--text2)' }}>Manca il pagellista? Apri il voto per questa partita. Chi ha giocato e ha Premium attivo, incluso l'admin se ha partecipato, potrà votare gli altri per 24 ore da quando lo attivi.</p>
+      <p style={{ fontSize: 12, color: 'var(--text2)' }}>Manca il pagellista? Apri il voto per questa partita. Chi ha giocato e ha Premium attivo, incluso l'admin se ha partecipato, potrà votare gli altri per 12 ore da quando lo attivi.</p>
       <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => void activate()}>Attiva il voto</button>
     </> : null}
     {state.enabled ? <p style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 8 }}>

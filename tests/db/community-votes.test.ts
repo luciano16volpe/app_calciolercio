@@ -156,10 +156,10 @@ test('l’admin può aprire il voto anche oltre 24 ore dal risultato', async () 
   await db.query(activate, [match]);
   await db.exec('reset role');
   const { rows } = await db.query<{ started_at: Date; result_at: Date; hours: number }>(`
-    select c.started_at,s.result_at,extract(epoch from (c.started_at + interval '24 hours' - c.started_at))/3600 as hours
+    select c.started_at,s.result_at,extract(epoch from (c.started_at + interval '12 hours' - c.started_at))/3600 as hours
       from community_vote_settings c join match_stamps s on s.match_id=c.match_id where c.match_id=$1`, [match]);
   expect(rows[0]!.started_at.getTime()).toBeGreaterThan(rows[0]!.result_at.getTime());
-  expect(Number(rows[0]!.hours)).toBe(24);
+  expect(Number(rows[0]!.hours)).toBe(12);
 });
 
 test('non attivabile se esiste già un voto editoriale', async () => {
@@ -246,10 +246,10 @@ test('solo admin vede quanti partecipanti abilitati hanno votato almeno una volt
   await db.query(vote, [match, JSON.stringify([
     { player_id: players[1], rating: 7 }, { player_id: players[2], rating: 8 },
   ])]);
-  await fails(progress, [match], /Permesso negato/);
+  // i numeri (non i nomi) li vede ogni membro della lega
+  expect((await db.query(progress, [match])).rows[0]).toEqual({ progress: { eligible: 4, voted: 1, remaining: 3 } });
   await asUser(users[1]!);
   await db.query(vote, [match, ballot(players[0]!, 7.5)]);
-  await fails(progress, [match], /Permesso negato/);
   await asUser(admin);
   expect((await db.query(progress, [match])).rows[0]).toEqual({ progress: { eligible: 4, voted: 2, remaining: 2 } });
 });

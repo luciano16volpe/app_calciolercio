@@ -68,11 +68,11 @@ export function useCommunityVoteState(matchId: string) {
   });
 }
 
-export function useCommunityVoteProgress(matchId: string, isOpen: boolean) {
+export function useCommunityVoteProgress(matchId: string, isOpen: boolean, enabled = true) {
   const { user } = useAuth();
   return useQuery({
     queryKey: communityVoteProgressKey(matchId, user?.id),
-    enabled: !!user && !!matchId,
+    enabled: !!user && !!matchId && enabled,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('community_vote_progress', { p_match: matchId });
       if (error) throw error;

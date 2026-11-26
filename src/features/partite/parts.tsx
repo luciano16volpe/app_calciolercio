@@ -5,6 +5,7 @@ import { useElementVisibility } from '../../app/visibility';
 import { MatchTextBoundary } from './MatchTextBoundary';
 import { useMatchTexts, withMatchTexts } from '../../data/matchTexts';
 import { useCommunityVoteState } from '../../data/communityVotes';
+import { VoteStatus } from './CommunityVote';
 // Pezzi delle Partite: pulsanti della partita, ultima partita, elenco, Gazzette (striscia, archivio, visualizzatore),
 // testo delle pagelle.
 import { Fragment, useMemo, useState, type ReactNode } from 'react';
@@ -68,6 +69,7 @@ export function MatchButtons({ data, m, act, withPlace = true }: { data: LeagueD
   }
   return (
     <>
+      <VoteStatus matchId={m.id} />
       {sum}
       {communityVote.data && (communityVote.data.is_open || (communityVote.data.finalized && communityVote.data.has_premium)) ? <button type="button" className="btn btn-sm mbar-btn premium-vote-btn" onClick={() => act.openMatchVote(m.id)} title="Vota">⭐ Vota</button> : null}
       {data.gazzette[m.id] ? <button className="btn btn-secondary btn-sm mbar-btn" onClick={() => act.openGazzetta(m.id)} title="Apri la Gazzetta">📰 Gazzetta</button> : null}

@@ -100,7 +100,7 @@ export function buildMessage(r: EventInput): PushMessage {
     case 'ratings':
       return { title: r.league_name, body: `📝 Le pagelle della partita del ${ddmm(r.match_date)} sono pronte`, url: `/l/${r.league_slug}/partite`, tag: `ratings-${r.match_id}` };
     case 'community_vote_open':
-      return { title: r.league_name, body: `🗳️ Votazioni aperte per la partita del ${ddmm(r.match_date)}. Dai un voto agli altri giocatori entro 24 ore dall'apertura.`, url: `/l/${r.league_slug}/partite`, tag: `community-vote-${r.match_id}` };
+      return { title: r.league_name, body: `🗳️ Votazioni aperte per la partita del ${ddmm(r.match_date)}. Dai un voto agli altri giocatori entro 12 ore dall'apertura.`, url: `/l/${r.league_slug}/partite`, tag: `community-vote-${r.match_id}` };
     case 'community_vote_published':
       return { title: r.league_name, body: `⭐ I voti della partita del ${ddmm(r.match_date)} sono stati pubblicati. Tocca per vederli.`, url: `/l/${r.league_slug}/partite?match=${r.match_id}`, tag: `community-vote-published-${r.match_id}` };
     case 'formation_published': {

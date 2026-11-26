@@ -184,11 +184,11 @@ Le decisioni recenti dell'utente prevalgono sulle descrizioni delle fasi inizial
 - Possono votare solo i giocatori presenti nella partita e collegati a un account della lega. Ciascuno vota gli altri, mai se stesso, da 1 a 10 a passi di mezzo punto.
 - Anche l'admin può votare, con le stesse regole, se ha partecipato alla partita ed è collegato al proprio giocatore.
 - I partecipanti possono inserire soltanto il voto numerico; gol, assist e tutte le altre statistiche restano modificabili solo dall'admin.
-- L'admin decide quando aprire il voto dopo il risultato. Le 24 ore partono dall'attivazione e le correzioni del risultato non spostano la scadenza.
+- L'admin decide quando aprire il voto dopo il risultato. Le 12 ore partono dall'attivazione e le correzioni del risultato non spostano la scadenza.
 - All'apertura del voto, i partecipanti con account collegato e notifiche attive ricevono una push entro il successivo controllo del job eventi. Si rispettano la sospensione generale e la preferenza per le notifiche delle pagelle; ogni utente riceve un solo avviso per partita.
-- Durante le 24 ore i voti individuali restano riservati e nessuna media compare nella partita o nelle statistiche. Alla chiusura un job pubblica automaticamente il voto, arrotondato a un decimale: con almeno 5 voti ricevuti scarta un voto minimo e uno massimo e calcola la media degli altri; con meno di 5 usa la media di tutti. La regola si applica alle votazioni non ancora finalizzate. Il partecipante può correggere i propri voti fino alla scadenza.
+- Durante le 12 ore i voti individuali restano riservati e nessuna media compare nella partita o nelle statistiche. Alla chiusura un job pubblica automaticamente il voto, arrotondato a un decimale: con almeno 5 voti ricevuti scarta un voto minimo e uno massimo e calcola la media degli altri; con meno di 5 usa la media di tutti. La regola si applica alle votazioni non ancora finalizzate. Il partecipante può correggere i propri voti fino alla scadenza.
 - Solo l'admin della lega vede il pulsante "Vedi voti espressi" nella partita e può consultare chi ha votato chi e quale voto ha dato. Il controllo è applicato anche dal database.
-- L'admin vede anche quanti partecipanti abilitati hanno espresso almeno un voto e quanti non hanno ancora votato. Il conteggio include solo chi ha giocato, ha un account collegato ed è membro della lega; si aggiorna durante la votazione.
+- Tutti i membri della lega vedono il conto alla rovescia e quanti hanno votato e quanti mancano (solo i numeri). L'admin vede anche quanti partecipanti abilitati hanno espresso almeno un voto e quanti non hanno ancora votato. Il conteggio include solo chi ha giocato, ha un account collegato ed è membro della lega; si aggiorna durante la votazione.
 - Dopo l'attivazione, l'admin può ancora correggere risultato, gol, assist e testi, ma non sovrascrivere le medie dei partecipanti.
 
 ## Bet: pronostici sui giocatori (regole versione 5)
