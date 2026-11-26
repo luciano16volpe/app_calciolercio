@@ -7,6 +7,8 @@ import type { LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';
 import { AdvancedPredictionsSection, GiocataBar, MatchPredictions } from './AdvancedPredictionsSection';
 import { useAdvancedEnabled } from '../../data/advancedPredictions';
+import { useWallet } from '../../data/wallet';
+import { Dollalercio } from './Dollalercio';
 
 const outcomeLabel: Record<Outcome, string> = { '1': '1 · Blu', X: 'X · Pareggio', '2': '2 · Bianchi' };
 const predictionLabel = (outcome: Outcome, a: number | null, b: number | null) =>
@@ -122,6 +124,7 @@ const fixedView = { risultati: 'results', classifica: 'leaderboard', mio: 'stats
 
 function BettingContent({ data }: { data: LeagueData }) {
   const board = useBettingBoard(data.league.id);
+  const wallet = useWallet(data.league.id);
   const [tab, setTab] = useState<'gioca' | 'risultati' | 'classifica' | 'mio'>('gioca');
   const matches = board.data ?? [];
   const bettingEnabled = new Set(data.dataset.matches.filter((match) => match.bettingEnabled === true).map((match) => match.id));
@@ -132,7 +135,10 @@ function BettingContent({ data }: { data: LeagueData }) {
     .sort((a, b) => a.date.localeCompare(b.date));
   const history = matches.filter((m) => wasBettable(m) && !upcoming.includes(m) && (m.my_prediction || m.total > 0));
   return <div className="betting-page">
-    <div className="card"><div className="section-header">🎯 Bet</div>
+    <div className="card"><div className="section-header">🎯 Bet
+        {wallet.data ? <span className="wallet-badge" title="I tuoi dollalerci"><Dollalercio size={20} /> {wallet.data.balance} <small>dollalerci</small></span> : null}</div>
+      {wallet.data?.first_time ? <p className="betting-hint" role="status">Benvenuto! Hai ricevuto 50 dollalerci per iniziare.</p> : null}
+      {wallet.data && wallet.data.topped_up > 0 ? <p className="betting-hint" role="status">Ricarica settimanale: +{wallet.data.topped_up} dollalerci, sei tornato a 20.</p> : null}
       <div className="advanced-view-tabs" role="tablist" aria-label="Sezioni Bet" style={{ marginBottom: 0 }}>
         {tabs.map(([key, label]) => <button type="button" key={key} role="tab" aria-selected={tab === key} className={tab === key ? 'selected' : ''}
           onClick={() => setTab(key)}>{label}</button>)}</div></div>

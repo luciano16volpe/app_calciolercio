@@ -1061,3 +1061,9 @@ input[type=file]{display:none}
 .bet-switch.on .bet-switch-knob { transform: translateX(18px); }
 .bet-switch:disabled { opacity: .6; }
 .bet-switch:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+
+.wallet-badge { margin-left: auto; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--gold-edge); background: var(--gold-tint); color: var(--text); font-size: 13px; font-weight: 800; }
+.betting-page .section-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.wallet-badge { display: inline-flex; align-items: center; gap: 5px; }
+.wallet-badge small { font-size: 11px; font-weight: 600; color: var(--text2); }
+.dollalercio-icon { flex: none; display: block; }
