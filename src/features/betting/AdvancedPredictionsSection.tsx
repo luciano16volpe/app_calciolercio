@@ -32,14 +32,39 @@ function PredictionCard({assignment,matchId,canSelect}:{assignment:AdvancedAssig
   return <article className={`advanced-prediction-card difficulty-${assignment.difficulty.toLowerCase()} outcome-${(outcome??'pending').toLowerCase()}${selected?' is-selected':''}`}>
     <div className="advanced-prediction-person"><PlayerAvatar name={name} photo={photoUrl(assignment.photo_path)} />
       <strong>{name}</strong><span>{categoryLabel[assignment.category]??assignment.category}</span>
-      {canSelect&&assignment.status!=='EXPIRED'?<button type="button" className={`btn btn-sm ${selected?'':'btn-primary'}`} disabled={busy} aria-pressed={selected}
-        onClick={()=>void change()}>{busy?'…':selected?'Rimuovi':'Gioca'}</button>:null}</div>
+      {canSelect&&assignment.status!=='EXPIRED'?<button type="button" role="switch" aria-checked={selected} aria-label={`Gioca la Bet su ${name}`}
+        className={`bet-switch${selected?' on':''}`} disabled={busy} onClick={()=>void change()}><span className="bet-switch-knob" /></button>:null}</div>
     <h4>{text}</h4>
     <div className="advanced-prediction-meta"><span className="difficulty-tag">{difficultyLabel[assignment.difficulty]}</span>
       <span><b>+{assignment.weight}</b> / <b>−{assignment.weight}</b> pt</span>
       <span className="advanced-prediction-result">{assignment.result?`${status} · ${points(assignment.result.points_units)} pt`:selected?'Giocata':''}</span></div>
     {assignment.result?<small className="advanced-prediction-detail">{assignment.result.reason} · {observed}</small>:null}
   </article>;
+}
+
+/** Punteggio massimo possibile della giocata: 1-X-2 e risultato esatto già salvati + i pronostici sui giocatori scelti. */
+export function simulateGiocata(match:BettingMatch,selectedWeights:readonly number[]){
+  const mine=match.my_prediction;
+  const items=[...(mine?[{result:'WON' as const,weight:3}]:[]),...(mine&&mine.score_a!==null?[{result:'WON' as const,weight:5}]:[]),
+    ...selectedWeights.map(weight=>({result:'WON' as const,weight}))];
+  return scorePredictions(items);
+}
+
+const outcomeShort:Record<'1'|'X'|'2',string>={'1':'Blu',X:'Pari','2':'Bianchi'};
+/** Barra fissa in basso: a colpo d'occhio cosa hai già giocato. */
+export function GiocataBar({match,outcome,scoreA,scoreB,status}:{match:BettingMatch;outcome:'1'|'X'|'2'|null;scoreA:number|null;scoreB:number|null;status:'idle'|'saving'|'saved'|'error'}){
+  const board=useAdvancedBoard(match.match_id);
+  const assignments=board.data?.assignments??[];
+  const selected=assignments.filter(x=>x.selected_at!==null);
+  const max=simulateGiocata(match,selected.map(x=>x.weight)).finalUnits;
+  return <div className="giocata-bar" role="status">
+    <div className="giocata-bar-items">
+      <span className={outcome?'done':''}>{outcome?'✓':'○'} 1-X-2 {outcome?`${outcomeShort[outcome]}${scoreA!==null&&scoreB!==null?` ${scoreA}-${scoreB}`:''}`:'da scegliere'}</span>
+      {board.isSuccess&&assignments.length?<span className={selected.length?'done':''}>{selected.length?'✓':'○'} Giocatori {selected.length}/{assignments.length}</span>:null}
+    </div>
+    <div className="giocata-bar-end"><b>fino a +{points(max)} pt</b>
+      <small>{status==='saving'?'Salvo…':status==='saved'?'Salvato ✓':status==='error'?'Non salvato':''}</small></div>
+  </div>;
 }
 
 export function MatchPredictions({match,embedded=false}:{match:BettingMatch;embedded?:boolean}){
@@ -52,24 +77,23 @@ export function MatchPredictions({match,embedded=false}:{match:BettingMatch;embe
   const assignments=board.data?.assignments??[];
   const selected=assignments.filter(x=>x.selected_at!==null);
   // la giocata unica: 1-X-2 (3 pt) e risultato esatto (5 pt) contano insieme ai pronostici sui giocatori
-  const mine=match.my_prediction;
-  const matchItems=[...(mine?[{result:'WON' as const,weight:3}]:[]),...(mine&&mine.score_a!==null?[{result:'WON' as const,weight:5}]:[])];
-  const simulated=scorePredictions([...matchItems,...selected.map(x=>({result:'WON' as const,weight:x.weight}))]);
+  const simulated=simulateGiocata(match,selected.map(x=>x.weight));
   const weight=selected.reduce((s,x)=>s+x.weight,0);
   return <div className="advanced-prediction-match">
     {board.isPending?<div className="card">Caricamento Bet personalizzate…</div>:null}
     {board.isError?<div className="card" role="alert">{embedded?'I pronostici sui giocatori compaiono quando le formazioni sono definitive. ':'Bet non disponibili per questa partita. '}<button type="button" onClick={()=>void board.refetch()}>Riprova</button></div>:null}
     {board.isSuccess?<>
       <div className="card">{embedded?<h3>Pronostici sui giocatori</h3>:<><h3>Partita del {formatDate(match.date)}</h3><p>{match.play_time?`Ore ${match.play_time.slice(0,5)}`:'Orario da definire'} · Blu contro Bianchi</p></>}
-        <p><b>{selected.length}/{assignments.length}</b> Bet giocate</p>
+        <p><b>{selected.length}/{assignments.length}</b> giocate · fino a <b>+{points(simulated.finalUnits)} pt</b></p>
         {board.data.replacedCount?<p role="status">{board.data.replacedCount} Bet sostituite dopo la modifica delle squadre. Le nuove scelte non sono selezionate automaticamente.</p>:null}
         {board.data.isOpen?<p>Chiusura tra {minutesLeft===null?'—':minutesLeft>=1440?`${Math.floor(minutesLeft/1440)} giorni e ${Math.floor(minutesLeft%1440/60)} ore`:
           `${Math.floor(minutesLeft/60)} ore e ${minutesLeft%60} minuti`}.</p>:<p>Selezioni chiuse. Le Bet giocate sono in sola lettura.</p>}
-        <div className="advanced-prediction-risk"><span>Massimo base: <b>+{weight}</b></span><span>Minimo: <b>−{weight}</b></span>
-          <span>Moltiplicatore ideale: <b>×{points(simulated.multiplierBasisPoints)}</b></span>
-          <span>Massimo teorico: <b>+{points(simulated.finalUnits)}</b></span></div>
-        <p className="betting-hint">Difficoltà scelte: {Object.entries(difficultyLabel).map(([code,label])=>`${label} ${selected.filter(x=>x.difficulty===code).length}`).join(' · ')}</p>
-        <small>Il massimo è teorico: condizioni correlate possono renderlo irraggiungibile.</small>
+        <details className="bet-info"><summary>ⓘ Dettagli punti</summary>
+          <div className="advanced-prediction-risk"><span>Massimo base: <b>+{weight}</b></span><span>Minimo: <b>−{weight}</b></span>
+            <span>Moltiplicatore ideale: <b>×{points(simulated.multiplierBasisPoints)}</b></span>
+            <span>Massimo teorico: <b>+{points(simulated.finalUnits)}</b></span></div>
+          <p className="betting-hint">Difficoltà scelte: {Object.entries(difficultyLabel).map(([code,label])=>`${label} ${selected.filter(x=>x.difficulty===code).length}`).join(' · ')}</p>
+          <small>Il massimo è teorico: condizioni correlate possono renderlo irraggiungibile.</small></details>
       </div>
       {board.data.summary?<div className="card"><h3>Risultato Bet</h3>
         <p>{board.data.summary.selected_count} giocati · {board.data.summary.won_count} indovinati · {board.data.summary.lost_count} sbagliati · {board.data.summary.void_count} annullati</p>
@@ -152,21 +176,22 @@ function HistoryView({leagueId,matches,players}:{leagueId:string;matches:Betting
   </details>;
 }
 
-export function AdvancedPredictionsSection({leagueId,matches,resultMatches,players,photos}:{leagueId:string;matches:BettingMatch[];resultMatches:BettingMatch[];players:readonly {id:string;name:string}[];photos:Record<string,string|null>}){
+export function AdvancedPredictionsSection({leagueId,matches,resultMatches,players,photos,fixedView}:{fixedView?:'results'|'leaderboard'|'stats';leagueId:string;matches:BettingMatch[];resultMatches:BettingMatch[];players:readonly {id:string;name:string}[];photos:Record<string,string|null>}){
   const enabled=useAdvancedEnabled(leagueId);
   const [matchId,setMatchId]=useState('');
-  const [view,setView]=useState<'results'|'leaderboard'|'stats'>('results');
+  const [viewState,setView]=useState<'results'|'leaderboard'|'stats'>('results');
+  const view=fixedView??viewState;
   const seasons=[...new Map(matches.map(x=>seasonOf(x.date)).filter(x=>x!==null).map(x=>[x.key,x])).values()];
   const [chosenSeason,setChosenSeason]=useState('');
   const season=seasons.find(x=>x.key===chosenSeason)??seasons[0];
   const visible=resultMatches;
   const current=visible.find(x=>x.match_id===matchId)??visible[0];
   if(!enabled.data)return null;
-  return <section className="advanced-predictions-section"><h2>Bet sugli avversari</h2>
-    <div className="advanced-view-tabs" role="tablist" aria-label="Viste Bet">
+  return <section className="advanced-predictions-section">{fixedView?null:<h2>Bet sugli avversari</h2>}
+    {fixedView?null:<div className="advanced-view-tabs" role="tablist" aria-label="Viste Bet">
       {([['results','Risultati'],['leaderboard','Classifica'],['stats','Il mio Bet']] as const)
         .map(([key,label])=><button type="button" key={key} role="tab" aria-selected={view===key} className={view===key?'selected':''}
-          onClick={()=>setView(key)}>{label}</button>)}</div>
+          onClick={()=>setView(key)}>{label}</button>)}</div>}
     {view==='results'?<>{visible.length?<><label className="advanced-prediction-picker">Partita <select value={current?.match_id??''} onChange={e=>setMatchId(e.target.value)}>
       {visible.map(x=><option key={x.match_id} value={x.match_id}>{formatDate(x.date)}</option>)}</select></label>
       {current?<MatchPredictions key={current.match_id} match={current}/>:null}</>:<div className="card">Nessuna partita disponibile.</div>}</>:null}
