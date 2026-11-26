@@ -6,7 +6,7 @@ import { useToast } from './Toast';
 
 const TRIGGER = 70; // quanto tirare (px) perché si ricarichi
 const MAX = 110;
-const BLOCKED = '#menu-drawer, .sheet, #match-modal, #app-modal, #img-viewer, .pchip, input, textarea, select';
+const BLOCKED = '.app-header, #menu-drawer, .sheet, #match-modal, #app-modal, #img-viewer, .pchip, input, textarea, select';
 
 type Phase = 'idle' | 'pull' | 'ready' | 'loading';
 
