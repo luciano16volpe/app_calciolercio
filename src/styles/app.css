@@ -1067,3 +1067,17 @@ input[type=file]{display:none}
 .wallet-badge { display: inline-flex; align-items: center; gap: 5px; }
 .wallet-badge small { font-size: 11px; font-weight: 600; color: var(--text2); }
 .dollalercio-icon { flex: none; display: block; }
+.wallet-receipt ul,.wallet-leaderboard ol { margin: .6rem 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.wallet-receipt li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--gray3); font-size: 13px; }
+.wallet-receipt li span { min-width: 0; overflow-wrap: anywhere; }
+.wallet-receipt li b { flex: none; font-variant-numeric: tabular-nums; }
+.wallet-leaderboard ol { counter-reset: wallet-rank; }
+.wallet-leaderboard li { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 2px 10px; padding: 8px 10px; border: 1px solid var(--gray3); border-radius: var(--radius-sm); }
+.wallet-leaderboard li span { min-width: 0; overflow-wrap: anywhere; font-weight: 700; }
+.wallet-leaderboard li span::before { counter-increment: wallet-rank; content: counter(wallet-rank) '. '; color: var(--text2); }
+.wallet-leaderboard li b { font-variant-numeric: tabular-nums; }
+.wallet-leaderboard li small { grid-column: 1 / -1; color: var(--text2); }
+.bet-entries { padding: 0; margin: .6rem 0 0; list-style: none; display: grid; gap: 5px; }
+.bet-entries li { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--gray3); font-size: 13px; }
+.bet-entries li span { min-width: 0; overflow-wrap: anywhere; }
+.bet-entries li b { flex: none; text-align: right; }

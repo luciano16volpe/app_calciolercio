@@ -114,6 +114,10 @@ function BettingCard({ match, draft }: { match: BettingMatch; draft?: Draft }) {
       const exactWon = match.my_prediction.score_a === match.score_a && match.my_prediction.score_b === match.score_b;
       return <p className="betting-mine">{outcomeWon ? 'Esito indovinato: +3 pt' : 'Esito sbagliato: 0 pt'}{match.my_prediction.score_a !== null ? (exactWon ? ' · Risultato esatto: +5 pt' : ' · Risultato esatto sbagliato: 0 pt') : ''}</p>;
     })() : null}
+    {!match.is_open && match.entries?.length ? <details className="bet-info"><summary>Scelte 1-X-2 del gruppo ({match.entries.length})</summary>
+      <ul className="bet-entries">{match.entries.map(entry => <li key={entry.user_id}><span>{entry.name}</span>
+        <b>{predictionLabel(entry.outcome, entry.score_a, entry.score_b)}</b></li>)}</ul>
+    </details> : null}
     {!editing ? <p className="betting-hint">{match.total} {match.total === 1 ? 'Bet registrata' : 'Bet registrate'}.</p> : null}
   </article>;
 }

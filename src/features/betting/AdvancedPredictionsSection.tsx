@@ -10,6 +10,7 @@ import { formatDate } from '../../domain/format';
 import { seasonOf } from '../../domain/seasons';
 import { PREDICTION_FEATS, predictionFeats } from '../../domain/awards';
 import type { BettingMatch } from '../../data/betting';
+import { useWalletLeaderboard, useWalletMatchReceipt } from '../../data/wallet';
 
 const difficultyLabel:Record<Difficulty,string>={COMMON:'Comune',UNCOMMON:'Non comune',RARE:'Raro',EPIC:'Epico',LEGENDARY:'Leggendario'};
 const categoryLabel:Record<string,string>={GOALS:'Gol',ASSISTS:'Assist',OWN_GOALS:'Autogol',METAS:'Mete',COMPARISONS:'Confronti',RANKINGS:'Classifiche',SPECIAL:'Speciali',RATINGS:'Pagelle',RATING_RANKINGS:'Classifiche pagelle',RATING_SPECIAL:'Speciali con voto'};
@@ -109,6 +110,41 @@ export function MatchPredictions({match,embedded=false}:{match:BettingMatch;embe
       <div className="advanced-prediction-grid">{assignments.map(x=><PredictionCard key={x.id} assignment={x} matchId={match.match_id} canSelect={!!board.data.isOpen} />)}</div>
       {!assignments.length?<div className="card">Non ci sono condizioni compatibili per questa partita.</div>:null}
     </>:null}
+    {match.score_a!==null&&match.score_b!==null?<WalletReceiptView matchId={match.match_id} assignments={assignments}/>:null}
+  </div>;
+}
+
+function WalletReceiptView({matchId,assignments}:{matchId:string;assignments:AdvancedAssignment[]}){
+  const receipt=useWalletMatchReceipt(matchId);
+  if(receipt.isPending)return <div className="card">Calcolo del montepremi in corso…</div>;
+  if(receipt.isError)return <div className="card" role="alert">Resoconto dollalerci non disponibile.</div>;
+  if(!receipt.data)return <div className="card">Il montepremi sarà disponibile dopo la verifica delle statistiche.</div>;
+  const value=receipt.data;
+  const name=(key:string)=>key==='OUTCOME'?'1-X-2':key==='EXACT'?'Risultato esatto':
+    assignments.find(x=>key===`ASSIGNMENT:${x.id}`)?.description??'Pronostico giocatore';
+  const label={WON:'Indovinato',LOST:'Sbagliato',VOID:'Annullato'} as const;
+  const received=value.mine.reduce((sum,item)=>sum+item.payout,0);
+  const net=received-value.mine.length;
+  return <div className="card wallet-receipt"><h3>Montepremi Dollalerci</h3>
+    <p>{value.staked} puntati · {value.returned} restituiti · {value.paid} distribuiti · {value.remainder} nel fondo</p>
+    {value.boldest?<p>🎯 Pronostico più coraggioso: <b>{value.boldest.name}</b> · {value.boldest.description}</p>:null}
+    {value.best?<p>🏆 Miglior guadagno: <b>{value.best.name}</b> · +{value.best.net} {value.best.net===1?'dollalercio':'dollalerci'}</p>:null}
+    {value.mine.length?<><h4>Le mie puntate</h4><ul>{value.mine.map(item=><li key={item.element_key}>
+      <span>{name(item.element_key)} · {label[item.outcome]}</span><b>1 → {item.payout}</b>
+    </li>)}</ul><strong>Saldo della partita: {net>0?'+':''}{net} {net===1||net===-1?'dollalercio':'dollalerci'}</strong></>:
+      <p>Non hai puntato dollalerci su questa partita.</p>}
+  </div>;
+}
+
+function WalletLeaderboardView({leagueId,season}:{leagueId:string;season:string}){
+  const board=useWalletLeaderboard(leagueId,season);
+  return <div className="card wallet-leaderboard"><h3>Classifica Dollalerci</h3>
+    <p className="betting-hint">Guadagno netto dalle partite concluse. Credito iniziale e ricariche non contano.</p>
+    {board.isPending?<p>Caricamento classifica…</p>:board.isError?<p>Classifica dollalerci non disponibile.</p>:
+      board.data.length?<ol>{board.data.map(row=><li key={row.user_id}>
+        <span>{row.name}</span><b>{row.net>0?'+':''}{row.net}</b>
+        <small>{row.staked} puntati · {row.won} ricevuti</small>
+      </li>)}</ol>:<p>Nessuna puntata ancora calcolata.</p>}
   </div>;
 }
 
@@ -202,7 +238,7 @@ export function AdvancedPredictionsSection({leagueId,matches,resultMatches,playe
     {view==='results'?<HistoryView leagueId={leagueId} matches={resultMatches} players={players}/>:null}
     {(view==='leaderboard'||view==='stats')&&season?<><label className="advanced-prediction-picker">Stagione <select value={season.key} onChange={e=>setChosenSeason(e.target.value)}>
       {seasons.map(x=><option key={x.key} value={x.key}>{x.label}</option>)}</select></label>
-      {view==='leaderboard'?<LeaderboardView leagueId={leagueId} season={season.key} photos={photos}/>:
+      {view==='leaderboard'?<><WalletLeaderboardView leagueId={leagueId} season={season.key}/><LeaderboardView leagueId={leagueId} season={season.key} photos={photos}/></>:
         <StatsView leagueId={leagueId} season={season.key}/>}</>:null}
   </section>;
 }

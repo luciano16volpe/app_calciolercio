@@ -1284,6 +1284,8 @@ export type Database = {
       close_community_voting: { Args: { p_match: string }; Returns: undefined }
       reopen_community_voting: { Args: { p_match: string }; Returns: undefined }
       wallet_state: { Args: { p_league: string }; Returns: Json }
+      wallet_match_receipt: { Args: { p_match: string }; Returns: Json }
+      wallet_leaderboard: { Args: { p_league: string; p_season: string }; Returns: Json }
       create_player_in_league: {
         Args: { p_league: string; p_name: string }
         Returns: string
