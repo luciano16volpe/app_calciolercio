@@ -37,7 +37,7 @@ test('Il footer resta visibile sopra i pannelli del menu e porta alla sezione sc
   await expect(page.locator('#page-partite')).toHaveClass(/active/);
 });
 
-test('Nell’app installata lo swipe Indietro dal footer torna al Profilo senza accumulare tappe', async ({ page }) => {
+test('Nell’app installata Indietro non cambia le sezioni del footer ma chiude il menu', async ({ page }) => {
   await setup(page);
   await page.addInitScript(() => {
     const original = window.matchMedia.bind(window);
@@ -55,6 +55,11 @@ test('Nell’app installata lo swipe Indietro dal footer torna al Profilo senza 
   expect(await page.evaluate(() => history.length)).toBe(initialLength);
   expect(await page.evaluate(() => history.state?.calciolercioBackGuard)).toBe(true);
   await page.evaluate(() => history.back());
-  await expect(page.locator('#page-profilo')).toHaveClass(/active/);
+  await expect(page.locator('#page-rosa')).toHaveClass(/active/);
+  await expect(page).toHaveURL(/\/rosa$/);
+  await openMenu(page);
+  await page.evaluate(() => history.back());
+  await expect(page.locator('#menu-drawer')).toHaveCount(0);
+  await expect(page.locator('#page-rosa')).toHaveClass(/active/);
   expect(await page.evaluate(() => history.length)).toBe(initialLength);
 });

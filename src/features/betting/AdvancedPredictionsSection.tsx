@@ -59,7 +59,7 @@ export function MatchPredictions({match,embedded=false}:{match:BettingMatch;embe
   const weight=selected.reduce((s,x)=>s+x.weight,0);
   return <div className="advanced-prediction-match">
     {board.isPending?<div className="card">Caricamento Bet personalizzate…</div>:null}
-    {board.isError?<div className="card" role="alert">{embedded?'I pronostici sui giocatori sono per chi gioca la partita, a formazioni definitive. ':'Bet non disponibili per questa partita. '}<button type="button" onClick={()=>void board.refetch()}>Riprova</button></div>:null}
+    {board.isError?<div className="card" role="alert">{embedded?'I pronostici sui giocatori compaiono quando le formazioni sono definitive. ':'Bet non disponibili per questa partita. '}<button type="button" onClick={()=>void board.refetch()}>Riprova</button></div>:null}
     {board.isSuccess?<>
       <div className="card">{embedded?<h3>Pronostici sui giocatori</h3>:<><h3>Partita del {formatDate(match.date)}</h3><p>{match.play_time?`Ore ${match.play_time.slice(0,5)}`:'Orario da definire'} · Blu contro Bianchi</p></>}
         <p><b>{selected.length}/{assignments.length}</b> Bet giocate</p>

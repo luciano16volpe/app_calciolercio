@@ -83,7 +83,7 @@ function BettingContent({ data }: { data: LeagueData }) {
   const history = matches.filter((m) => wasBettable(m) && !upcoming.includes(m) && (m.my_prediction || m.total > 0));
   return <div className="betting-page">
     <div className="card"><div className="section-header">🎯 Bet</div>
-      <p>Una sola giocata per partita: l’esito 1-X-2 (+3 pt), il risultato esatto (+5 pt in più) e fino a 5 pronostici sui giocatori avversari. Contano tutti insieme per il moltiplicatore. Nessuna puntata in denaro.</p></div>
+      <p>Una sola giocata per partita: l’esito 1-X-2 (+3 pt), il risultato esatto (+5 pt in più) e fino a 6 pronostici sui giocatori: se giochi, sugli avversari; se non giochi, 3 per squadra. Contano tutti insieme per il moltiplicatore. Nessuna puntata in denaro.</p></div>
     {board.isError ? <div className="card" role="alert">Impossibile caricare le Bet. <button type="button" onClick={() => void board.refetch()}>Riprova</button></div> : null}
     {!board.isError && board.isPending ? <div className="card">Caricamento partite…</div> : null}
     {board.isSuccess ? <>

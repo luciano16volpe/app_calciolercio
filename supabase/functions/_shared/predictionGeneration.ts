@@ -10,6 +10,8 @@ export interface GenerationInput {
   leagueHistoricalMatches?: readonly { target: Performance; players: Performance[]; date?: string }[];
   recentAssignments?: readonly { templateCode: string; targetPlayerId: string }[];
   seed: string; matchDate?: string; rules?: PredictionRules; allowRatings?: boolean;
+  /** Chi non gioca la partita: vede giocatori di entrambe le squadre, metà per squadra. */
+  spectator?: boolean;
 }
 const seasonKey=(date:string)=>{const year=Number(date.slice(0,4));const month=Number(date.slice(5,7));
   return month>=3&&month<=5?`${year}-PRI`:month>=6&&month<=8?`${year}-EST`:
@@ -75,7 +77,7 @@ function usableParameters(template:Template, parameters:Record<string,number>):b
 export function buildCandidates(input:GenerationInput):Candidate[] {
   const rules=input.rules??PREDICTION_RULES;
   const own=input.predictor;
-  const targets=input.players.filter(x=>x.team!==own.team&&x.playerId!==own.playerId&&input.ownLeaguePlayerIds.has(x.playerId));
+  const targets=input.players.filter(x=>(input.spectator||x.team!==own.team)&&x.playerId!==own.playerId&&input.ownLeaguePlayerIds.has(x.playerId));
   const recent=input.recentAssignments??[];
   const output:Candidate[]=[];
   for(const target of targets)for(const template of PREDICTION_CATALOG){
@@ -126,9 +128,11 @@ export function generateAssignmentDraft(input:GenerationInput, preserved:readonl
   const chosen:AssignmentDraft[]=preserved.map(x=>({...x,description:description(x)}));
   const groups=new Set<string>([...excludedGroups,...preserved.map(x=>x.canonicalGroup)]); const perTarget=new Map<string,number>();
   const quotas={...rules.desiredDistribution};
+  const teamCap=Math.ceil(rules.maxAssignments/2); const perTeam:Record<string,number>={A:0,B:0};
+  for(const item of preserved)perTeam[item.target.team]=(perTeam[item.target.team]??0)+1;
   for(const item of preserved){perTarget.set(item.target.playerId,(perTarget.get(item.target.playerId)??0)+1);quotas[item.estimate.difficulty]--;}
   while(chosen.length<rules.maxAssignments){
-    const eligible=pool.filter(c=>!groups.has(c.canonicalGroup)&&!chosen.some(x=>x.target.playerId===c.target.playerId&&x.conflictFields.some(field=>c.conflictFields.includes(field))));
+    const eligible=pool.filter(c=>!groups.has(c.canonicalGroup)&&(!input.spectator||(perTeam[c.target.team]??0)<teamCap)&&!chosen.some(x=>x.target.playerId===c.target.playerId&&x.conflictFields.some(field=>c.conflictFields.includes(field))));
     if(!eligible.length)break;
     const underCap=eligible.filter(c=>(perTarget.get(c.target.playerId)??0)<3);
     const choices=underCap.length?underCap:eligible;
@@ -142,6 +146,7 @@ export function generateAssignmentDraft(input:GenerationInput, preserved:readonl
     chosen.push({...selected,description:description(selected)});
     groups.add(selected.canonicalGroup);
     perTarget.set(selected.target.playerId,(perTarget.get(selected.target.playerId)??0)+1);
+    perTeam[selected.target.team]=(perTeam[selected.target.team]??0)+1;
     quotas[selected.estimate.difficulty]--;
   }
   return chosen.slice(preserved.length);

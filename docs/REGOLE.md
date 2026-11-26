@@ -190,3 +190,10 @@ Le decisioni recenti dell'utente prevalgono sulle descrizioni delle fasi inizial
 - Solo l'admin della lega vede il pulsante "Vedi voti espressi" nella partita e può consultare chi ha votato chi e quale voto ha dato. Il controllo è applicato anche dal database.
 - L'admin vede anche quanti partecipanti abilitati hanno espresso almeno un voto e quanti non hanno ancora votato. Il conteggio include solo chi ha giocato, ha un account collegato ed è membro della lega; si aggiorna durante la votazione.
 - Dopo l'attivazione, l'admin può ancora correggere risultato, gol, assist e testi, ma non sovrascrivere le medie dei partecipanti.
+
+## Bet: pronostici sui giocatori (regole versione 5)
+
+- Fino a 6 pronostici sui giocatori per giocata. Chi gioca la partita li vede tutti sulla squadra avversaria.
+- Chi non gioca ma ha un giocatore collegato nella lega ne vede 3 sui Blu e 3 sui Bianchi.
+- Con 1-X-2 e risultato esatto una giocata arriva a 8 elementi. Moltiplicatori: 3-4 indovinati ×1,25 · 5 ×1,50 · 6 ×1,75 · 7 ×2 · 8 su 8 ×2,25 (serve almeno il 70% di precisione e saldo positivo).
+- Le partite che hanno già le regole congelate (versione 4) restano a 5 pronostici.

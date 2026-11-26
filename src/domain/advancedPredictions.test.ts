@@ -72,6 +72,6 @@ describe('advanced prediction catalogue',()=>{
     expect(scorePredictions([...good,{result:'VOID',weight:5}]).multiplierBasisPoints).toBe(12500);
     expect(scorePredictions([{result:'WON',weight:1},{result:'WON',weight:2},{result:'WON',weight:4}]).finalUnits).toBe(87500);
     expect(Object.values(DIFFICULTY_WEIGHT)).toEqual([1,2,3,4,5]);
-    expect(Object.values(PREDICTION_RULES.desiredDistribution).reduce((a,b)=>a+b,0)).toBe(5);
+    expect(Object.values(PREDICTION_RULES.desiredDistribution).reduce((a,b)=>a+b,0)).toBe(6);
   });
 });

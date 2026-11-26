@@ -85,8 +85,18 @@ async function board(matchId:string,userId:string){
     admin.from('formation_polls').select('finalized_at').eq('match_id',matchId).maybeSingle(),
   ]);
   if(peopleError||leagueError||pollError)throw peopleError??leagueError??pollError;
-  const predictorRow=rows.find(x=>people?.some(p=>p.id===x.player_id&&p.user_id===userId));
-  if(!predictorRow)return reply({error:'Non partecipi alla partita'},403);
+  let predictorRow=rows.find(x=>people?.some(p=>p.id===x.player_id&&p.user_id===userId));
+  // Chi non gioca ma ha un giocatore nella lega può scommettere: vede metà giocatori per squadra.
+  const spectator=!predictorRow;
+  if(!predictorRow){
+    const mine=await admin.from('players').select('id').eq('user_id',userId);
+    if(mine.error)throw mine.error;
+    const mineIds=(mine.data??[]).map(x=>x.id);
+    const own=mineIds.length?await admin.from('league_players').select('player_id').eq('league_id',m.league_id).in('player_id',mineIds).limit(1):{data:[],error:null};
+    if(own.error)throw own.error;
+    if(!own.data?.length)return reply({error:'Non hai un giocatore collegato in questa lega'},403);
+    predictorRow={match_id:matchId,player_id:own.data[0]!.player_id,team:'A',goals:null,assist:null,autogol:null,meta:null,rating:null};
+  }
   const existing=await admin.from('advanced_prediction_generations').select('match_id').eq('match_id',matchId).eq('predictor_player_id',predictorRow.player_id).maybeSingle();
   if(existing.error)throw existing.error;
   if(!existing.data){
@@ -102,7 +112,7 @@ async function board(matchId:string,userId:string){
     const draft=generateAssignmentDraft({predictor:convert(predictorRow),players:rows.map(convert),
       ownLeaguePlayerIds:new Set((leaguePlayers??[]).map(x=>x.player_id)),historicalMatches:snapshots,
       leagueHistoricalMatches:snapshots,recentAssignments:(recent.data??[]).map(x=>({templateCode:x.template_code,targetPlayerId:x.target_player_id})),
-      seed:`${matchId}:${predictorRow.player_id}:v${version}`,matchDate:m.date,rules,allowRatings:true});
+      seed:`${matchId}:${predictorRow.player_id}:v${version}`,matchDate:m.date,rules,allowRatings:true,spectator});
     const payload=draftPayload(draft,people??[],snapshots,m.date);
     const stored=await admin.rpc('advanced_prediction_generate',{p_match:matchId,p_predictor:predictorRow.player_id,p_configuration_version:version,p_rows:payload});
     if(stored.error)return reply({error:stored.error.message},409);
@@ -121,7 +131,7 @@ async function board(matchId:string,userId:string){
       groups.add(group);
       const target=byId.get(old.target_player_id);
       if(old.status==='AVAILABLE'||old.status==='SELECTED'){
-        if(!target||target.team===predictorRow.team||!(leaguePlayers??[]).some(x=>x.player_id===target.playerId)){incompatible=true;continue;}
+        if(!target||(!spectator&&target.team===predictorRow.team)||!(leaguePlayers??[]).some(x=>x.player_id===target.playerId)){incompatible=true;continue;}
         preserved.push({template,target,parameters:old.parameters_snapshot??{},estimate:{
           difficulty:old.difficulty,weight:old.weight,probability:old.estimated_probability,
           sampleSize:old.historical_sample_size,method:old.estimation_method},recentAssignments:0,
@@ -133,7 +143,7 @@ async function board(matchId:string,userId:string){
       const snapshots=await loadHistory(m);
       const draft=generateAssignmentDraft({predictor:convert(predictorRow),players:rows.map(convert),
         ownLeaguePlayerIds:new Set((leaguePlayers??[]).map(x=>x.player_id)),historicalMatches:snapshots,
-        leagueHistoricalMatches:snapshots,seed:`${matchId}:${predictorRow.player_id}:v${version}:replace`,matchDate:m.date,rules,allowRatings:true},
+        leagueHistoricalMatches:snapshots,seed:`${matchId}:${predictorRow.player_id}:v${version}:replace`,matchDate:m.date,rules,allowRatings:true,spectator},
         preserved,groups);
       const refreshed=await admin.rpc('advanced_prediction_refresh',{p_match:matchId,p_predictor:predictorRow.player_id,p_rows:draftPayload(draft,people??[],snapshots,m.date)});
       if(refreshed.error)return reply({error:refreshed.error.message},409);
@@ -175,7 +185,7 @@ async function reconcileMatch(matchId:string){
     const predictor=performances.find(x=>x.playerId===a.predictor_player_id);
     let outcome:'WON'|'LOST'|'VOID'='VOID';
     let reason='Giocatore assente o squadra modificata';
-    if(target&&predictor&&target.team!==predictor.team){
+    if(target&&(!predictor||target.team!==predictor.team)){
       const template={id:a.template_id,code:a.template_code,category:a.category,
         condition:a.condition_snapshot,defaultDifficulty:'COMMON',ratingDependent:false,historicalRequired:false} as Template;
       const snapshot=a.historical_snapshot as {recent?:Performance[];season?:Performance[]}|null;

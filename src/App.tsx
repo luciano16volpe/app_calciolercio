@@ -162,11 +162,11 @@ function Shell() {
       else if (panel) closePanel();
       else if (menuOpen) closeMenu();
       else if (bachecaOpen) setBachecaOpen(false);
-      else if (page !== HOME_PAGE) go(HOME_PAGE);
+      // Le sezioni del footer si cambiano solo dal footer: Indietro non le naviga.
     };
     window.addEventListener('popstate', onBack);
     return () => window.removeEventListener('popstate', onBack);
-  }, [view, close, gazViewer, setGazViewer, ptDialog, setPtDialog, panel, closePanel, menuOpen, closeMenu, bachecaOpen, setBachecaOpen, page, go]);
+  }, [view, close, gazViewer, setGazViewer, ptDialog, setPtDialog, panel, closePanel, menuOpen, closeMenu, bachecaOpen, setBachecaOpen, page]);
   const ready0 = !!data;
   useEffect(() => { if (ready0) prefetchScreens(); }, [ready0]);
   const visualsActive = !view && !gazViewer && !ptDialog && !menuOpen && !panel && !inviteToken;

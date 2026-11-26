@@ -9,13 +9,23 @@ const opponents=Array.from({length:5},(_,i)=>player(`opponent-${i}`,'B'));
 const players=[predictor,teammate,...opponents];
 const input={predictor,players,ownLeaguePlayerIds:new Set(players.map(x=>x.playerId)),historicalMatches:[],seed:'stable-seed'};
 describe('advanced prediction generation',()=>{
-  it('assigns five independent, eligible, non-overlapping drafts',()=>{
+  it('assigns six independent, eligible, non-overlapping drafts',()=>{
     const draft=generateAssignmentDraft(input);
-    expect(draft).toHaveLength(5);
+    expect(draft).toHaveLength(6);
     expect(draft.every(x=>x.target.team==='B'&&!x.template.ratingDependent)).toBe(true);
     expect(new Set(draft.map(x=>x.canonicalGroup)).size).toBe(draft.length);
     expect(draft.filter(x=>x.target.playerId==='opponent-0').length).toBeLessThanOrEqual(3);
     expect(generateAssignmentDraft(input)).toEqual(draft);
+  });
+  it('gives someone who does not play three players per team',()=>{
+    const blues=Array.from({length:5},(_,i)=>player(`blue-${i}`,'A'));
+    const all=[...blues,...opponents];
+    const spectator=player('spectator','A');
+    const draft=generateAssignmentDraft({predictor:spectator,players:all,ownLeaguePlayerIds:new Set(all.map(x=>x.playerId)),
+      historicalMatches:[],seed:'spectator-seed',spectator:true});
+    expect(draft).toHaveLength(6);
+    expect(draft.filter(x=>x.target.team==='A')).toHaveLength(3);
+    expect(draft.filter(x=>x.target.team==='B')).toHaveLength(3);
   });
   it('does not invent targets or templates to fill the quota',()=>{
     expect(generateAssignmentDraft({...input,players:[predictor,teammate],ownLeaguePlayerIds:new Set(players.map(x=>x.playerId))})).toEqual([]);
