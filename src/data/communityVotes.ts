@@ -33,6 +33,10 @@ export interface CommunityVoteProgress {
   eligible: number;
   voted: number;
   remaining: number;
+  /** solo admin: chi ancora manca (premium=false: non può votare senza Premium) */
+  missing?: { name: string; premium: boolean }[];
+  /** solo admin: chi non può votare e perché */
+  cannot_vote?: { name: string; reason: string }[];
 }
 
 export interface CommunityVoteDisagreement {

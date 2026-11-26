@@ -6,20 +6,24 @@ import { useToast } from '../../app/Toast';
 import { closeCommunityVoting, reopenCommunityVoting, communityVoteKey, communityVoteProgressKey, enableCommunityVoting, fetchCommunityVoteDetails, submitCommunityVotes, useCommunityVoteProgress, useCommunityVoteState, type CommunityVoteDetail, type CommunityVoteState } from '../../data/communityVotes';
 import { LEAGUE_HISTORY_QUERY_KEY, LEAGUE_QUERY_KEY } from '../../data/queries';
 import { formatDate } from '../../domain/format';
-import { normalizeTeam } from '../../domain/stats';
-import type { Match } from '../../domain/types';
+import { normalizeTeam, validVote } from '../../domain/stats';
+import type { Match, Rating } from '../../domain/types';
 
 const fmtVote = (rating: number) => Number(rating).toFixed(1).replace('.', ',');
 
 /** Voti espressi raggruppati per giocatore: chi ha votato e che voto ha dato. */
-function VoteGroups({ rows }: { rows: CommunityVoteDetail[] }) {
+function VoteGroups({ rows, finals }: { rows: CommunityVoteDetail[]; finals?: Map<string, number> }) {
   const groups = new Map<string, CommunityVoteDetail[]>();
   for (const row of rows) groups.set(row.target_name, [...(groups.get(row.target_name) ?? []), row]);
   const list = [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, 'it'));
   return <div className="vote-groups" style={{ display: 'grid', gap: 8, marginTop: 8 }}>
     {list.map(([target, votes]) => <section key={target} className="vote-group" style={{ border: '1px solid var(--gray3)', borderRadius: 'var(--radius-sm)', padding: '8px 10px', background: 'var(--gray)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
-        <strong style={{ fontSize: 14 }}>{target}</strong>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {finals ? <div title="Voto finale" style={{ minWidth: 46, textAlign: 'center', borderRadius: 8, padding: '3px 6px', background: 'var(--gray2)', border: '1px solid var(--gray3)' }}>
+          <small style={{ display: 'block', fontSize: 9, fontWeight: 800, color: 'var(--text2)', letterSpacing: '.04em' }}>FINALE</small>
+          <b style={{ fontSize: 18 }}>{finals.has(target) ? fmtVote(finals.get(target)!) : '—'}</b>
+        </div> : null}
+        <strong style={{ fontSize: 14, flex: 1, minWidth: 0 }}>{target}</strong>
         <small style={{ color: 'var(--text2)' }}>{votes.length} {votes.length === 1 ? 'voto' : 'voti'}</small>
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
@@ -32,7 +36,7 @@ function VoteGroups({ rows }: { rows: CommunityVoteDetail[] }) {
   </div>;
 }
 
-function VoteDetails({ matchId, autoOpen = false }: { matchId: string; autoOpen?: boolean }) {
+function VoteDetails({ matchId, autoOpen = false, ratings }: { matchId: string; autoOpen?: boolean; ratings?: Rating[] }) {
   const [open, setOpen] = useState(autoOpen);
   const [loading, setLoading] = useState(autoOpen);
   const [rows, setRows] = useState<CommunityVoteDetail[] | null>(null);
@@ -58,7 +62,7 @@ function VoteDetails({ matchId, autoOpen = false }: { matchId: string; autoOpen?
       {loading ? <p>Caricamento voti…</p> : null}
       {error ? <p role="alert">Impossibile caricare i voti: {error}</p> : null}
       {rows && !rows.length ? <p>Nessun voto espresso.</p> : null}
-      {rows?.length ? <VoteGroups rows={rows} /> : null}
+      {rows?.length ? <VoteGroups rows={rows} finals={ratings ? new Map(ratings.flatMap((r) => { const v = validVote(r.rating); return r.player && v != null ? [[r.player, v] as [string, number]] : []; })) : undefined} /> : null}
     </div> : null}
   </div>;
 }
@@ -101,6 +105,8 @@ function AdminVoteProgress({ matchId, isOpen }: { matchId: string; isOpen: boole
       <div><strong>{voted}</strong><span>Hanno votato</span></div>
       <div><strong>{remaining}</strong><span>{isOpen ? 'Ancora da votare' : 'Non hanno votato'}</span></div>
     </div>
+    {progress.data.missing?.length ? <p className="cv-progress-note"><b>{isOpen ? 'Mancano' : 'Non hanno votato'}:</b> {progress.data.missing.map((x) => x.premium ? x.name : `${x.name} (senza Premium)`).join(', ')}</p> : null}
+    {progress.data.cannot_vote?.length ? <p className="cv-progress-note"><b>Non possono votare:</b> {progress.data.cannot_vote.map((x) => `${x.name} (${x.reason})`).join(', ')}</p> : null}
     <p>{eligible ? `Su ${eligible} ${eligible === 1 ? 'partecipante abilitato' : 'partecipanti abilitati'} · conta chi ha inserito almeno un voto.` : 'Nessun partecipante collegato può votare.'}</p>
   </div>;
 }
@@ -164,7 +170,7 @@ export function CommunityVoteControls({ match, state, canEdit, userId }: {
 }
 
 /** La votazione si apre come finestra autonoma dal pulsante VOTA. */
-export function CommunityVoteModal({ match, onClose }: { match: Match | undefined; onClose: () => void }) {
+export function CommunityVoteModal({ match, ratings, onClose }: { match: Match | undefined; ratings?: Rating[]; onClose: () => void }) {
   const { user } = useAuth();
   const matchId = match?.id ?? '';
   const vote = useCommunityVoteState(matchId);
@@ -298,7 +304,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
             </div>
           </section> : null)}
         </> : <p className="vote-modal-message">{state.is_open ? 'Può votare solo chi ha partecipato alla partita.' : state.closed_early_at ? `La votazione è stata chiusa in anticipo${state.closed_early_by_name ? ` da ${state.closed_early_by_name}` : ''}.` : state.finalized ? 'La votazione è chiusa: le medie sono pubblicate.' : 'La votazione non è disponibile per questa partita.'}</p>}
-        {state?.finalized && state.has_premium ? <VoteDetails matchId={match.id} autoOpen /> : null}
+        {state?.finalized && state.has_premium ? <VoteDetails matchId={match.id} autoOpen ratings={ratings ?? []} /> : null}
       </div>
       {state?.can_vote && state.has_premium ? <div className="vote-modal-footer">
         <span>{savedCount ? `${savedCount} ${savedCount === 1 ? 'voto già salvato' : 'voti già salvati'}` : 'Nessun voto salvato'}{changedCount ? ` · ${changedCount} da salvare` : ''}</span>

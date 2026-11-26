@@ -240,7 +240,10 @@ test('solo admin vede quanti partecipanti abilitati hanno votato almeno una volt
   await asUser(admin);
   await db.query(activate, [match]);
   const progress = 'select community_vote_progress($1::uuid) as progress';
-  expect((await db.query(progress, [match])).rows[0]).toEqual({ progress: { eligible: 4, voted: 0, remaining: 4 } });
+  const adminView = async () => (await db.query<{ progress: { eligible: number; voted: number; remaining: number; missing: { name: string }[]; cannot_vote: unknown[] } }>(progress, [match])).rows[0]!.progress;
+  let seen = await adminView();
+  expect(seen).toMatchObject({ eligible: 4, voted: 0, remaining: 4, cannot_vote: [{ name: 'Senza account', reason: 'senza profilo collegato' }] });
+  expect(seen.missing.map((x) => x.name)).toEqual(['Admin giocatore', 'Due', 'Tre', 'Uno']);
 
   await asUser(users[0]!);
   await db.query(vote, [match, JSON.stringify([
@@ -251,7 +254,9 @@ test('solo admin vede quanti partecipanti abilitati hanno votato almeno una volt
   await asUser(users[1]!);
   await db.query(vote, [match, ballot(players[0]!, 7.5)]);
   await asUser(admin);
-  expect((await db.query(progress, [match])).rows[0]).toEqual({ progress: { eligible: 4, voted: 2, remaining: 2 } });
+  seen = await adminView();
+  expect(seen).toMatchObject({ eligible: 4, voted: 2, remaining: 2 });
+  expect(seen.missing.map((x) => x.name)).toEqual(['Admin giocatore', 'Tre']);
 });
 
 test('apertura del voto: push ai partecipanti attivi, una volta sola e non dopo la scadenza', async () => {

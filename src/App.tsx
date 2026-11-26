@@ -221,7 +221,7 @@ function Shell() {
         />
       ) : null}
       {data && view?.kind === 'match' ? <MatchCardGate key={view.id} data={data} matchId={view.id} startText={view.text} startEdit={view.edit} onClose={close} act={act} /> : null}
-      {data && view?.kind === 'vote' ? <CommunityVoteModal key={view.id} match={data.dataset.matches.find((match) => match.id === view.id)} onClose={close} /> : null}
+      {data && view?.kind === 'vote' ? <CommunityVoteModal key={view.id} match={data.dataset.matches.find((match) => match.id === view.id)} ratings={data.dataset.ratings.filter((r) => r.matchId === view.id)} onClose={close} /> : null}
       {data && view?.kind === 'formationPoll' ? <FormationPollModal key={view.id} data={data} matchId={view.id} onClose={close} /> : null}
       {data && view?.kind === 'gazArchive' ? <GazArchive data={data} act={act} onClose={close} /> : null}
       {data && gazViewer ? (
