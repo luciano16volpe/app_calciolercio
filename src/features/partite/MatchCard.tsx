@@ -201,7 +201,7 @@ function TeamPanel({ title, team, ratings, blue, side, ed, hideRating = false }:
         return (
           <div key={`${pl.name}-${i}`} style={{ padding: '7px 0', borderBottom: '1px solid rgba(128,128,128,0.12)' }}>
             <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pl.name}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+            {!ed ? <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
               <span style={{ fontSize: 10, color: 'var(--text2)', fontWeight: 700 }}>VOTO VOTANTI</span>
               <div className="rate-stepper">
                 <input
@@ -209,7 +209,7 @@ function TeamPanel({ title, team, ratings, blue, side, ed, hideRating = false }:
                   disabled readOnly style={rateColors(val)}
                 />
               </div>
-            </div>
+            </div> : null}
             {ed && f ? <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
               <span style={{ fontSize: 10, color: 'var(--text2)', fontWeight: 700 }}>VOTO EDITORE</span>
               <div className="rate-stepper">
@@ -607,8 +607,8 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               {stepper('sc-b', draft ? draft.scB : scoreB, 'scB')}
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--teamb)' }}>⚪ Bianchi</span>
             </div>
-              {!editing ? <Highlights data={data} m={m} hideRatings={hideCommunityRatings} /> : null}
-            <CommunityVoteControls match={m} state={communityVote.data} canEdit={canEdit} userId={user?.id} />
+            {!editing ? <Highlights data={data} m={m} hideRatings={hideCommunityRatings} /> : null}
+            {!editing ? <CommunityVoteControls match={m} state={communityVote.data} canEdit={canEdit} userId={user?.id} /> : null}
             <div className="gaz-sec" id="gaz-sec">
               {g ? (
                 <>
@@ -637,14 +637,14 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               <TeamPanel title="🔵 Blu" team={teamA} ratings={ratings} blue side="A" ed={ed} hideRating={hideCommunityRatings} />
               <TeamPanel title="⚪ Bianchi" team={teamB} ratings={ratings} blue={false} side="B" ed={ed} hideRating={hideCommunityRatings} />
             </div>
-            <button type="button" className="btn btn-secondary btn-full eq-toggle" id="match-balance-btn" onClick={() => setBalanceOpen((o) => !o)}>
+            {!editing ? <><button type="button" className="btn btn-secondary btn-full eq-toggle" id="match-balance-btn" onClick={() => setBalanceOpen((o) => !o)}>
               ⚖️ Equilibrio squadre {balanceOpen ? '▴' : '▾'}
             </button>
             <div id="match-balance" style={{ display: balanceOpen ? 'block' : 'none' }}>
               {balance ? <BalanceBody b={balance} /> : null}
               {canEdit && formationPoll.data?.is_admin ? <FormationVoteSummary matchId={matchId} options={formationPoll.data.options}
                 names={new Map(data.dataset.players.map((player) => [player.id, player.name]))} /> : null}
-            </div>
+            </div></> : null}
             {full && draft ? (
               <SheetScan data={data} m={m} onApply={(r) => setDraft((d) => (d ? {
                 ...d, scA: r.scA, scB: r.scB,
