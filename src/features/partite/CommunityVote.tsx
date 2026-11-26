@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../app/auth';
 import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { useToast } from '../../app/Toast';
-import { closeCommunityVoting, communityVoteKey, communityVoteProgressKey, enableCommunityVoting, fetchCommunityVoteDetails, submitCommunityVotes, useCommunityVoteProgress, useCommunityVoteState, type CommunityVoteDetail, type CommunityVoteState } from '../../data/communityVotes';
+import { closeCommunityVoting, reopenCommunityVoting, communityVoteKey, communityVoteProgressKey, enableCommunityVoting, fetchCommunityVoteDetails, submitCommunityVotes, useCommunityVoteProgress, useCommunityVoteState, type CommunityVoteDetail, type CommunityVoteState } from '../../data/communityVotes';
 import { LEAGUE_HISTORY_QUERY_KEY, LEAGUE_QUERY_KEY } from '../../data/queries';
 import { formatDate } from '../../domain/format';
 import { normalizeTeam } from '../../domain/stats';
@@ -70,16 +70,16 @@ function remainingText(ms: number) {
   return hours ? `${hours} h ${minutes % 60} min` : `${minutes} min`;
 }
 
-function VoteStatusOpen({ matchId, until }: { matchId: string; until: string }) {
+function VoteStatusOpen({ matchId, until }: { matchId: string; until: string | null }) {
   const progress = useCommunityVoteProgress(matchId, true);
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30_000);
     return () => window.clearInterval(timer);
   }, []);
-  const left = new Date(until).getTime() - now;
+  const left = until ? new Date(until).getTime() - now : null;
   return <div className="vote-status" role="status" style={{ flexBasis: '100%', textAlign: 'center', fontSize: 12, color: 'var(--text2)', margin: '2px 0' }}>
-    ⏳ Voto aperto · chiude tra <b style={{ color: 'var(--text)' }}>{remainingText(left)}</b>
+    ⏳ Voto aperto · {left === null ? <b style={{ color: 'var(--text)' }}>chiude quando decide l’admin</b> : <>chiude tra <b style={{ color: 'var(--text)' }}>{remainingText(left)}</b></>}
     {progress.data ? <> · <b style={{ color: 'var(--text)' }}>{progress.data.voted}</b> {progress.data.voted === 1 ? 'ha votato' : 'hanno votato'} · <b style={{ color: 'var(--text)' }}>{progress.data.remaining}</b> {progress.data.remaining === 1 ? 'manca' : 'mancano'}</> : null}
   </div>;
 }
@@ -87,7 +87,7 @@ function VoteStatusOpen({ matchId, until }: { matchId: string; until: string }) 
 /** Conto alla rovescia e votanti: compare solo mentre il voto dei partecipanti è aperto. */
 export function VoteStatus({ matchId }: { matchId: string }) {
   const state = useCommunityVoteState(matchId);
-  if (!state.data?.is_open || !state.data.open_until) return null;
+  if (!state.data?.is_open) return null;
   return <VoteStatusOpen matchId={matchId} until={state.data.open_until} />;
 }
 
@@ -115,9 +115,25 @@ export function CommunityVoteControls({ match, state, canEdit, userId }: {
   const qc = useQueryClient();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  const confirm = useConfirm();
   if (!state || !canEdit || (!state.enabled && !state.can_activate)) return null;
 
   const until = state.open_until ? new Date(state.open_until).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' }) : '';
+  const reopen = async () => {
+    const ok = await confirm({ icon: '🔓', title: 'Riaprire la votazione?', lines: ['Le medie pubblicate saranno ritirate e i partecipanti potranno votare di nuovo.', 'Resta aperta finché non la richiudi tu, anche dopo molte ore.'], okLabel: 'Riapri' });
+    if (!ok) return;
+    setBusy(true);
+    try {
+      await reopenCommunityVoting(match.id);
+      void qc.invalidateQueries({ queryKey: communityVoteKey(match.id, userId) });
+      void qc.invalidateQueries({ queryKey: communityVoteProgressKey(match.id, userId) });
+      void qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
+      void qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      toast('Votazione riaperta');
+    } catch (error) {
+      toast('Errore: ' + (error as Error).message);
+    } finally { setBusy(false); }
+  };
   const hasScore = match.scoreA !== '' && match.scoreA != null && match.scoreB !== '' && match.scoreB != null;
   const activate = async () => {
     setBusy(true);
@@ -137,10 +153,11 @@ export function CommunityVoteControls({ match, state, canEdit, userId }: {
       <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => void activate()}>Attiva il voto</button>
     </> : null}
     {state.enabled ? <p style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 8 }}>
-      {state.is_open ? `Votazione aperta fino al ${until}.` : `Votazione chiusa il ${until}.`}
+      {state.is_open ? (until ? `Votazione aperta fino al ${until}.` : 'Votazione riaperta: resta aperta finché non la chiudi.') : `Votazione chiusa il ${until}.`}
       {state.is_open ? ' Le medie saranno visibili solo alla chiusura.'
         : state.finalized ? ' Le medie sono ora visibili nella scheda.' : ' Le medie saranno disponibili tra poco.'}
     </p> : null}
+    {state.can_reopen ? <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => void reopen()}>🔓 Riapri votazione</button> : null}
     {state.enabled ? <AdminVoteProgress matchId={match.id} isOpen={state.is_open} /> : null}
     {state.enabled ? <VoteDetails matchId={match.id} /> : null}
   </section>;
@@ -183,6 +200,24 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
     setDraft((previous) => ({ ...previous, [playerId]: Math.max(1, Math.min(10, rating)) }));
   };
   // chiusura anticipata (solo admin, anche se non ha giocato o non è Premium): pubblica subito le medie
+  const reopenVoting = async () => {
+    if (closing) return;
+    const ok = await confirm({ icon: '🔓', title: 'Riaprire la votazione?', lines: ['Le medie pubblicate saranno ritirate e i partecipanti potranno votare di nuovo.', 'Resta aperta finché non la richiudi tu, anche dopo molte ore.'], okLabel: 'Riapri' });
+    if (!ok) return;
+    setClosing(true);
+    try {
+      await reopenCommunityVoting(match.id);
+      void qc.invalidateQueries({ queryKey: communityVoteKey(match.id, user?.id) });
+      void qc.invalidateQueries({ queryKey: communityVoteProgressKey(match.id, user?.id) });
+      void qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY });
+      void qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY });
+      toast('Votazione riaperta');
+      close();
+    } catch (error) {
+      toast('Errore: ' + (error as Error).message);
+      setClosing(false);
+    }
+  };
   const closeVoting = async () => {
     if (closing) return;
     const ok = await confirm({ icon: '🔒', title: 'Chiudere la votazione?', lines: ['Nessuno potrà più cambiare i voti e le medie saranno pubblicate subito.', 'Non si può annullare.'], okLabel: 'Chiudi votazione', danger: true });
@@ -237,7 +272,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
           <div className="vote-modal-intro">
             <strong>Come funziona</strong>
             <p>Vota solo i giocatori che vuoi valutare: puoi lasciare gli altri senza voto. Scegli da 1 a 10 con i pulsanti + e −, a passi di mezzo punto.</p>
-            <span>Puoi correggere i voti fino al {until}, oppure finché tutti hanno votato. Le medie saranno visibili alla chiusura.</span>
+            <span>{until ? `Puoi correggere i voti fino al ${until}, oppure finché tutti hanno votato.` : 'La votazione è stata riaperta: puoi correggere i voti finché l’admin non la chiude.'} Le medie saranno visibili alla chiusura.</span>
           </div>
           {teams.map((team) => team.players.length ? <section key={team.side} className={`vote-team vote-team-${team.side}`}>
             <h3 className="vote-team-heading"><span className="vote-team-dot" /> Squadra {team.label}</h3>
@@ -271,11 +306,18 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
           {busy ? 'Salvataggio…' : changedCount ? `Salva ${changedCount} ${changedCount === 1 ? 'voto' : 'voti'}` : 'Scegli un voto per iniziare'}
         </button>
       </div> : null}
-      {state?.can_close ? <div className="vote-modal-admin">
-        <button type="button" id="community-vote-close" className="btn btn-secondary btn-sm admin-close-vote admin-only" disabled={closing || busy} onClick={() => void closeVoting()}>
-          {closing ? 'Chiusura…' : '🔒 Chiudi votazione'}
-        </button>
-        <small>Solo per l’admin. Si chiude anche quando tutti hanno votato, al più tardi il {until}.</small>
+      {state?.can_close || state?.can_reopen ? <div className="vote-modal-admin">
+        {state.can_close ? <>
+          <button type="button" id="community-vote-close" className="btn btn-secondary btn-sm admin-close-vote admin-only" disabled={closing || busy} onClick={() => void closeVoting()}>
+            {closing ? 'Chiusura…' : '🔒 Chiudi votazione'}
+          </button>
+          <small>{until ? `Solo per l’admin. Si chiude anche quando tutti hanno votato, al più tardi il ${until}.` : 'Solo per l’admin. Riaperta: si chiude solo quando la chiudi tu.'}</small>
+        </> : <>
+          <button type="button" id="community-vote-reopen" className="btn btn-secondary btn-sm admin-only" disabled={closing || busy} onClick={() => void reopenVoting()}>
+            {closing ? 'Riapertura…' : '🔓 Riapri votazione'}
+          </button>
+          <small>Solo per l’admin. Le medie pubblicate vengono ritirate; la richiudi tu quando vuoi, anche dopo 12 ore.</small>
+        </>}
       </div> : null}
     </div>
   </div>;

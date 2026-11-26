@@ -12,6 +12,10 @@ export interface CommunityVoteState {
   can_vote: boolean;
   /** solo l'admin della lega, finché la votazione è aperta */
   can_close: boolean;
+  /** solo l'admin: la votazione è chiusa (o scaduta) e si può riaprire */
+  can_reopen: boolean;
+  /** riaperta dall'admin: nessuna scadenza, la chiude lui */
+  reopened: boolean;
   closed_early_at: string | null;
   closed_early_by_name: string | null;
   has_premium: boolean;
@@ -85,6 +89,12 @@ export function useCommunityVoteProgress(matchId: string, isOpen: boolean, enabl
 
 export async function enableCommunityVoting(matchId: string) {
   const { error } = await supabase.rpc('enable_community_voting', { p_match: matchId });
+  if (error) throw error;
+}
+
+/** Riapre una votazione chiusa: le medie vengono ritirate e resta aperta finché l'admin non la richiude (solo admin). */
+export async function reopenCommunityVoting(matchId: string) {
+  const { error } = await supabase.rpc('reopen_community_voting', { p_match: matchId });
   if (error) throw error;
 }
 

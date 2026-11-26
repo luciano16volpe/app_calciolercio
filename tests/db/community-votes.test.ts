@@ -352,3 +352,42 @@ test('migrazione: ritira le medie anticipate senza perdere i voti e le pubblica 
       .toEqual([{ rating: '7.0' }]);
   } finally { await oldDb.close(); }
 }, 60_000);
+
+test('l’admin riapre il voto: medie ritirate, nessuna scadenza, chiusura quando vuole', async () => {
+  await asUser(admin);
+  await db.query(activate, [match]);
+  await asUser(users[0]!);
+  await db.query(vote, [match, ballot(players[1]!, 7)]);
+  await db.exec('reset role');
+  await db.query("update community_vote_settings set started_at=now()-interval '13 hours' where match_id=$1", [match]);
+  await db.query('select finalize_community_votes()');
+  const rating = async () => Number((await db.query<{ rating: string | null }>(
+    'select rating from match_players where match_id=$1 and player_id=$2', [match, players[1]])).rows[0]!.rating);
+  expect(await rating()).toBe(7);
+
+  // solo l'admin riapre
+  await asUser(users[0]!);
+  await fails('select reopen_community_voting($1::uuid)', [match], /Permesso negato/);
+  await asUser(admin);
+  const state = async () => (await db.query<{ s: Record<string, unknown> }>('select community_vote_state($1::uuid) as s', [match])).rows[0]!.s;
+  expect((await state()).can_reopen).toBe(true);
+  await db.query('select reopen_community_voting($1::uuid)', [match]);
+  let s = await state();
+  expect(s).toMatchObject({ is_open: true, finalized: false, open_until: null, can_close: true, can_reopen: false, reopened: true });
+  await db.exec('reset role');
+  expect((await db.query('select rating from match_players where match_id=$1 and player_id=$2', [match, players[1]])).rows[0]).toEqual({ rating: null });
+
+  // dopo molte ore resta aperta e i voti si possono ancora correggere
+  await db.query("update community_vote_settings set started_at=now()-interval '50 hours',reopened_at=now()-interval '40 hours' where match_id=$1", [match]);
+  await db.query('select finalize_community_votes()');
+  await asUser(users[0]!);
+  await db.query(vote, [match, ballot(players[1]!, 9)]);
+  await asUser(admin);
+  expect((await state()).is_open).toBe(true);
+
+  // la richiude l'admin, anche dopo le 12 ore
+  await db.query('select close_community_voting($1::uuid)', [match]);
+  expect(await state()).toMatchObject({ is_open: false, finalized: true, can_reopen: true });
+  await db.exec('reset role');
+  expect(await rating()).toBe(9);
+});

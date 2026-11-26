@@ -1282,6 +1282,7 @@ export type Database = {
       submit_formation_vote: { Args: { p_match: string; p_option: number }; Returns: undefined }
       close_formation_poll: { Args: { p_match: string }; Returns: undefined }
       close_community_voting: { Args: { p_match: string }; Returns: undefined }
+      reopen_community_voting: { Args: { p_match: string }; Returns: undefined }
       create_player_in_league: {
         Args: { p_league: string; p_name: string }
         Returns: string
