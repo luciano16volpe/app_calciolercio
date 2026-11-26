@@ -37,7 +37,7 @@ export function Sheet({ title, onClose, children, id, swipeBack = true, admin = 
       onTouchStart={(e) => {
         if (closing.current) return;
         const t = e.touches[0];
-        start.current = swipeBack && e.touches.length === 1 && t && t.clientX <= 32 ? { x: t.clientX, y: t.clientY, time: performance.now() } : null;
+        start.current = swipeBack && e.touches.length === 1 && t && t.clientX >= window.innerWidth - 32 ? { x: t.clientX, y: t.clientY, time: performance.now() } : null;
         if (start.current && sheet.current) sheet.current.style.willChange = 'transform';
       }}
       onTouchMove={(e) => {
@@ -46,7 +46,7 @@ export function Sheet({ title, onClose, children, id, swipeBack = true, admin = 
         if (!origin || !t || !sheet.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         const dx = t.clientX - origin.x;
         const dy = Math.abs(t.clientY - origin.y);
-        if (dx > 0 && dx > dy * 1.5) {
+        if (dx < 0 && -dx > dy * 1.5) {
           sheet.current.style.transition = 'none';
           sheet.current.style.transform = `translateX(${dx}px)`;
         }
@@ -60,14 +60,14 @@ export function Sheet({ title, onClose, children, id, swipeBack = true, admin = 
         const dy = Math.abs(t.clientY - origin.y);
         const el = sheet.current;
         const width = el?.offsetWidth ?? window.innerWidth;
-        const success = dx >= 80 && dx > dy * 1.5;
+        const success = dx <= -80 && -dx > dy * 1.5;
         if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { if (success) close.current(); return; }
-        const remaining = success ? Math.max(0, width - dx) : Math.max(0, dx);
-        if (!remaining) { el.style.willChange = ''; if (success) close.current(); return; }
-        const speed = Math.max(1.5, dx / Math.max(1, performance.now() - origin.time));
+        const remaining = success ? Math.max(0, width + dx) : Math.max(0, -dx);
+        if (!remaining) { if (!success) el.style.transform = 'translateX(0)'; el.style.willChange = ''; if (success) close.current(); return; }
+        const speed = Math.max(1.5, -dx / Math.max(1, performance.now() - origin.time));
         const duration = Math.min(90, Math.max(30, remaining / speed));
         el.style.transition = `transform ${duration}ms ease-out`;
-        el.style.transform = success ? 'translateX(100%)' : 'translateX(0)';
+        el.style.transform = success ? 'translateX(-100%)' : 'translateX(0)';
         if (success) {
           closing.current = true;
           timer.current = window.setTimeout(finish, duration + 16);

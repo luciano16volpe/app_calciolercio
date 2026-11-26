@@ -95,8 +95,8 @@ test('In Safari su iPhone i due bordi non avviano Indietro o Avanti nelle pagine
   await expect(sheet).toBeVisible();
   await sheet.evaluate((target) => {
     const touch = (x: number) => ({ identifier: 1, target, clientX: x, clientY: 200 });
-    const start = touch(10);
-    const end = touch(110);
+    const start = touch((target as HTMLElement).offsetWidth - 10);
+    const end = touch(start.clientX - 100);
     const emit = (type: string, touches: object[], changedTouches: object[]) => target.dispatchEvent(Object.assign(new Event(type, { bubbles: true, cancelable: true }), { touches, changedTouches }));
     emit('touchstart', [start], [start]);
     emit('touchmove', [end], [end]);

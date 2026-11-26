@@ -40,7 +40,7 @@ test('Menu: voci comuni e accesso alle funzioni giocatori', async ({ page }) => 
   for (const id of ['#menu-compare', '#menu-couples', '#menu-albo', '#menu-records']) await expect(page.locator(id)).toBeVisible();
 });
 
-test('Menu e sottosezioni si chiudono solo nel rispettivo verso di swipe', async ({ page }) => {
+test('Menu e sottosezioni si chiudono solo con swipe da destra verso sinistra', async ({ page }) => {
   await setup(page);
   await openApp(page);
   await openMenu(page);
@@ -66,13 +66,14 @@ test('Menu e sottosezioni si chiudono solo nel rispettivo verso di swipe', async
   await page.locator('#menu-couples').click();
   const sheet = page.locator('#sheet-coppie');
   await expect(sheet).toBeVisible();
-  await swipe('#sheet-coppie', 110, 10);
-  await expect(sheet).toBeVisible();
   await swipe('#sheet-coppie', 10, 110);
+  await expect(sheet).toBeVisible();
+  const rightEdge = (page.viewportSize() as { width: number }).width - 10;
+  await swipe('#sheet-coppie', rightEdge, rightEdge - 100);
   await expect(page.locator('#sheet-players-hub')).toBeVisible();
 });
 
-test('Giocatori: lo swipe dal bordo torna ai riquadri senza intercettare lo scorrimento centrale', async ({ page }) => {
+test('Giocatori: lo swipe dal bordo destro torna ai riquadri senza intercettare lo scorrimento centrale', async ({ page }) => {
   await setup(page);
   await openApp(page);
   await openMenu(page);
@@ -92,9 +93,9 @@ test('Giocatori: lo swipe dal bordo torna ai riquadri senza intercettare lo scor
       emit('touchend', [], [end]);
     }, { x, dx, dy });
   };
-  await swipe(120, 100);
+  await swipe(120, -100);
   await expect(sheet).toBeVisible();
-  await swipe(10, 100);
+  await swipe((page.viewportSize() as { width: number }).width - 10, -100);
   await expect(page.locator('#sheet-players-hub')).toBeVisible();
 });
 
@@ -107,14 +108,14 @@ test('Menu: lo swipe dal bordo chiude anche le altre schermate con animazione', 
   await expect(sheet).toBeVisible();
   await sheet.evaluate((target) => {
     const touch = (x: number) => ({ identifier: 1, target, clientX: x, clientY: 200 });
-    const start = touch(10);
-    const end = touch(110);
+    const start = touch((target as HTMLElement).offsetWidth - 10);
+    const end = touch(start.clientX - 100);
     target.dispatchEvent(Object.assign(new Event('touchstart', { bubbles: true }), { touches: [start], changedTouches: [start] }));
     target.dispatchEvent(Object.assign(new Event('touchmove', { bubbles: true }), { touches: [end], changedTouches: [end] }));
   });
-  await expect(sheet).toHaveCSS('transform', /matrix\(1, 0, 0, 1, 100, 0\)/);
+  await expect(sheet).toHaveCSS('transform', /matrix\(1, 0, 0, 1, -100, 0\)/);
   await sheet.evaluate((target) => {
-    const end = { identifier: 1, target, clientX: 110, clientY: 200 };
+    const end = { identifier: 1, target, clientX: (target as HTMLElement).offsetWidth - 110, clientY: 200 };
     target.dispatchEvent(Object.assign(new Event('touchend', { bubbles: true }), { touches: [], changedTouches: [end] }));
   });
   await expect(sheet).toHaveCount(0);
@@ -131,8 +132,8 @@ test('Abbonamenti: lo swipe quasi completo termina senza attendere altri 200 ms'
   await expect(sheet).toBeVisible();
   const duration = await sheet.evaluate((target) => {
     const touch = (x: number) => ({ identifier: 1, target, clientX: x, clientY: 200 });
-    const start = touch(10);
-    const end = touch((target as HTMLElement).offsetWidth - 10);
+    const start = touch((target as HTMLElement).offsetWidth - 10);
+    const end = touch(10);
     const emit = (type: string, touches: object[], changedTouches: object[]) => target.dispatchEvent(Object.assign(new Event(type, { bubbles: true }), { touches, changedTouches }));
     emit('touchstart', [start], [start]);
     emit('touchmove', [end], [end]);

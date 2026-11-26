@@ -43,6 +43,16 @@ test('programma: annulla e torna alla scheda senza salvare',async ({browser},inf
   const {page,be}=await openPlanned(browser,info);
   await page.getByRole('button',{name:'Modifica programma e squadre'}).click();
   const editor=page.locator('#sheet-planned-match');
+  await editor.evaluate((target) => {
+    const touch = (x: number) => ({ identifier: 1, target, clientX: x, clientY: 200 });
+    const start = touch((target as HTMLElement).offsetWidth - 10);
+    const end = touch(start.clientX - 100);
+    const emit = (type: string, touches: object[], changedTouches: object[]) => target.dispatchEvent(Object.assign(new Event(type, { bubbles: true }), { touches, changedTouches }));
+    emit('touchstart', [start], [start]);
+    emit('touchmove', [end], [end]);
+    emit('touchend', [], [end]);
+  });
+  await expect(editor).toBeVisible();
   await editor.getByLabel('Luogo della partita').fill('Non salvato');
   await editor.getByRole('button',{name:'Annulla',exact:true}).click();
   await expect(editor).toHaveCount(0);
