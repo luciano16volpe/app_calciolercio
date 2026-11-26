@@ -40,6 +40,7 @@ test('Il footer resta visibile sopra i pannelli del menu e porta alla sezione sc
 test('Nell’app installata Indietro non cambia le sezioni del footer ma chiude il menu', async ({ page }) => {
   await setup(page);
   await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'userAgent', { value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' });
     const original = window.matchMedia.bind(window);
     window.matchMedia = (query) => query === '(display-mode: standalone)'
       ? { matches: true } as MediaQueryList
@@ -64,7 +65,7 @@ test('Nell’app installata Indietro non cambia le sezioni del footer ma chiude 
   expect(await page.evaluate(() => history.length)).toBe(initialLength);
 });
 
-test('In Safari su iPhone il bordo non avvia Indietro nelle pagine del footer', async ({ page }) => {
+test('In Safari su iPhone i due bordi non avviano Indietro o Avanti nelle pagine del footer', async ({ page }) => {
   await setup(page);
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'userAgent', { value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' });
@@ -72,12 +73,21 @@ test('In Safari su iPhone il bordo non avvia Indietro nelle pagine del footer', 
   await openApp(page, '/l/san-marcello/rosa');
   await expect(page.locator('#page-rosa')).toHaveClass(/active/);
   const blocked = await page.locator('#page-rosa').evaluate((target) => {
-    const event = new Event('touchstart', { bubbles: true, cancelable: true });
-    Object.defineProperty(event, 'touches', { value: [{ clientX: 10, clientY: 200 }] });
-    target.dispatchEvent(event);
-    return event.defaultPrevented;
+    return [10, window.innerWidth - 10].map((x) => {
+      const event = new Event('touchstart', { bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'touches', { value: [{ clientX: x, clientY: 200 }] });
+      target.dispatchEvent(event);
+      return event.defaultPrevented;
+    });
   });
-  expect(blocked).toBe(true);
+  expect(blocked).toEqual([true, true]);
+  const menuTapAllowed = await page.locator('#menu-button').evaluate((target) => {
+    const event = new Event('touchstart', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'touches', { value: [{ clientX: 20, clientY: 20 }] });
+    target.dispatchEvent(event);
+    return !event.defaultPrevented;
+  });
+  expect(menuTapAllowed).toBe(true);
   await openMenu(page);
   await page.locator('#menu-players').click();
   await page.locator('#menu-couples').click();
