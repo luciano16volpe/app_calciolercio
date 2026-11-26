@@ -115,7 +115,7 @@ function conditionText(condition:Condition,parameters:Record<string,number>):str
 }
 function description(candidate:Candidate):string {
   let text=candidate.template.title;
-  for(const [key,value] of Object.entries(candidate.parameters))text=text.replaceAll(key==='threshold'?'X':key,value.toString());
+  for(const [key,value] of Object.entries(candidate.parameters))text=text.replaceAll(`{${key}}`,value.toString()).replaceAll(key==='threshold'?'X':key,value.toString());
   return `${text} · ${conditionText(candidate.template.condition,candidate.parameters)}`;
 }
 /** Deterministic draft only. The caller must persist the first generation atomically and return it on subsequent calls. */
