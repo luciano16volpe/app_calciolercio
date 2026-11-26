@@ -31,25 +31,40 @@ function useDraft(match: BettingMatch, leagueId: string): { draft: Draft; status
   const [scoreB, setScoreB] = useState<number | null>(match.my_prediction?.score_b ?? null);
   const [status, setStatus] = useState<SaveStatus>('idle');
   const touched = useRef(false);
+  const saved = useRef({ outcome: match.my_prediction?.outcome ?? null, scoreA: match.my_prediction?.score_a ?? null, scoreB: match.my_prediction?.score_b ?? null });
+  const queue = useRef<Promise<void>>(Promise.resolve());
   useEffect(() => {
-    if (!touched.current || !outcome || !match.is_open) return;
+    if (!touched.current || !match.is_open) return;
+    let active = true;
     setStatus('saving');
-    const timer = window.setTimeout(async () => {
-      try {
+    const timer = window.setTimeout(() => {
+      const next = { outcome, scoreA, scoreB };
+      const work = queue.current.then(async () => {
         await savePrediction(match.match_id, outcome, scoreA, scoreB);
-        await qc.invalidateQueries({ queryKey: bettingKey(leagueId, user?.id) });
-        setStatus('saved');
-      } catch (error) {
+        saved.current = next;
+        await Promise.all([
+          qc.invalidateQueries({ queryKey: bettingKey(leagueId, user?.id) }),
+          qc.invalidateQueries({ queryKey: ['wallet'] }),
+        ]);
+      });
+      queue.current = work.catch(() => undefined);
+      void work.then(() => { if (active) setStatus('saved'); }, (error: unknown) => {
+        if (!active) return;
+        touched.current = false;
+        setOutcome(saved.current.outcome);
+        setScoreA(saved.current.scoreA);
+        setScoreB(saved.current.scoreB);
         setStatus('error');
         toast('Errore: ' + (error as Error).message);
-      }
+      });
     }, 500);
-    return () => window.clearTimeout(timer);
+    return () => { active = false; window.clearTimeout(timer); };
   }, [outcome, scoreA, scoreB]); // eslint-disable-line react-hooks/exhaustive-deps
   const draft: Draft = {
     outcome, scoreA, scoreB,
     pick: (next) => {
       touched.current = true;
+      if (outcome === next) { setOutcome(null); setScoreA(null); setScoreB(null); return; }
       setOutcome(next);
       if (scoreA !== null && scoreB !== null && outcomeOf(scoreA, scoreB) !== next) { setScoreA(null); setScoreB(null); }
     },
@@ -78,7 +93,7 @@ function BettingCard({ match, draft }: { match: BettingMatch; draft?: Draft }) {
       <span>{match.play_time ? `Ore ${match.play_time.slice(0, 5)}` : 'Orario da definire'}</span></div>
     {match.score_a !== null && match.score_b !== null ? <p>Risultato: <b>Blu {match.score_a} – {match.score_b} Bianchi</b></p> : null}
     {editing ? <>
-      <p className="betting-hint">Esito <b>+3 pt</b> · risultato esatto <b>+5 pt</b> in più · se sbagli non perdi punti.</p>
+      <p className="betting-hint">Esito <b>+3 pt</b> · risultato esatto <b>+5 pt</b> in più. Ogni scelta costa 1 dollalercio; tocca di nuovo l’esito per annullarlo.</p>
       <div className="betting-outcomes" role="group" aria-label="Bet 1 X 2">
         {(['1', 'X', '2'] as const).map((pick) => <button type="button" key={pick} className={draft.outcome === pick ? 'selected' : ''}
           aria-pressed={draft.outcome === pick} onClick={() => draft.pick(pick)}>{outcomeLabel[pick]}</button>)}
@@ -147,7 +162,7 @@ function BettingContent({ data }: { data: LeagueData }) {
     {board.isSuccess ? <>
       {tab === 'gioca' ? <>
         <details className="bet-info card"><summary>ⓘ Come funziona</summary>
-          <p>Una giocata per partita: l’esito 1-X-2, il risultato esatto (facoltativo) e fino a 6 pronostici sui giocatori. Se giochi scommetti sugli avversari, se non giochi su 3 giocatori per squadra. Nessuna puntata in denaro.</p></details>
+          <p>Una giocata per partita: l’esito 1-X-2, il risultato esatto (facoltativo) e fino a 6 pronostici sui giocatori. Ogni elemento costa 1 dollalercio; se lo togli prima della chiusura, la puntata torna sul conto. Se giochi scommetti sugli avversari, se non giochi su 3 giocatori per squadra. Nessuna puntata in denaro.</p></details>
         {upcoming.length ? upcoming.map((match) => <GiocataUnica key={match.match_id} match={match} leagueId={data.league.id} />) : <div className="card">Nessuna prossima partita in programma.</div>}
       </> : <>
         <AdvancedPredictionsSection fixedView={fixedView[tab]} leagueId={data.league.id} matches={matches} resultMatches={resultMatches} players={data.dataset.players} photos={data.photos} />

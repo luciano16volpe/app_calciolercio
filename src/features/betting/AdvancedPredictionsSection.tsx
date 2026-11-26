@@ -20,7 +20,7 @@ function PredictionCard({assignment,matchId,canSelect}:{assignment:AdvancedAssig
   const selected=assignment.selected_at!==null;
   const change=async()=>{if(busy)return;setBusy(true);try{
     await selectAdvancedPrediction(assignment.id,!selected);
-    await qc.invalidateQueries({queryKey:advancedBoardKey(user?.id,matchId)});
+    await Promise.all([qc.invalidateQueries({queryKey:advancedBoardKey(user?.id,matchId)}),qc.invalidateQueries({queryKey:['wallet']})]);
     toast(selected?'Giocata rimossa':'Giocata selezionata');
   }catch(error){toast((error as Error).message);}finally{setBusy(false);}};
   const outcome=assignment.result?.outcome;
@@ -37,6 +37,7 @@ function PredictionCard({assignment,matchId,canSelect}:{assignment:AdvancedAssig
     <h4>{text}</h4>
     <div className="advanced-prediction-meta"><span className="difficulty-tag">{difficultyLabel[assignment.difficulty]}</span>
       <span><b>+{assignment.weight}</b> / <b>−{assignment.weight}</b> pt</span>
+      <span>1 dollalercio</span>
       <span className="advanced-prediction-result">{assignment.result?`${status} · ${points(assignment.result.points_units)} pt`:selected?'Giocata':''}</span></div>
     {assignment.result?<small className="advanced-prediction-detail">{assignment.result.reason} · {observed}</small>:null}
   </article>;
@@ -56,13 +57,16 @@ export function GiocataBar({match,outcome,scoreA,scoreB,status}:{match:BettingMa
   const board=useAdvancedBoard(match.match_id);
   const assignments=board.data?.assignments??[];
   const selected=assignments.filter(x=>x.selected_at!==null);
-  const max=simulateGiocata(match,selected.map(x=>x.weight)).finalUnits;
+  const draftMatch={...match,my_prediction:outcome?{outcome,score_a:scoreA,score_b:scoreB}:null};
+  const max=simulateGiocata(draftMatch,selected.map(x=>x.weight)).finalUnits;
+  const stakeCount=(outcome?1:0)+(scoreA!==null&&scoreB!==null?1:0)+selected.length;
   return <div className="giocata-bar" role="status">
     <div className="giocata-bar-items">
       <span className={outcome?'done':''}>{outcome?'✓':'○'} 1-X-2 {outcome?`${outcomeShort[outcome]}${scoreA!==null&&scoreB!==null?` ${scoreA}-${scoreB}`:''}`:'da scegliere'}</span>
       {board.isSuccess&&assignments.length?<span className={selected.length?'done':''}>{selected.length?'✓':'○'} Giocatori {selected.length}/{assignments.length}</span>:null}
     </div>
     <div className="giocata-bar-end"><b>fino a +{points(max)} pt</b>
+      <small>{stakeCount} {stakeCount===1?'elemento giocato':'elementi giocati'}</small>
       <small>{status==='saving'?'Salvo…':status==='saved'?'Salvato ✓':status==='error'?'Non salvato':''}</small></div>
   </div>;
 }

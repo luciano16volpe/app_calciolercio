@@ -27,7 +27,7 @@ export function useBettingAdminParticipation(matchId:string,enabled=true){
     queryFn:async()=>{const {data,error}=await supabase.rpc('betting_admin_participation',{p_match:matchId});
       if(error)throw error;return (data??[]) as unknown as BettingAdminParticipant[];},staleTime:30_000,retry:false});
 }
-export async function savePrediction(matchId: string, outcome: Outcome, scoreA: number | null, scoreB: number | null) {
+export async function savePrediction(matchId: string, outcome: Outcome | null, scoreA: number | null, scoreB: number | null) {
   const { error } = await supabase.rpc('save_match_prediction', { p_match: matchId, p_outcome: outcome, p_score_a: scoreA, p_score_b: scoreB });
   if (error) throw error;
 }

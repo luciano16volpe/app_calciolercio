@@ -203,6 +203,6 @@ Le decisioni recenti dell'utente prevalgono sulle descrizioni delle fasi inizial
 - Un conto per ogni persona in ogni lega. Si parte con **50 dollalerci**, assegnati una sola volta al primo accesso. Il saldo è la somma dei movimenti registrati nel database: nessuno può modificarlo a mano.
 - **Ricarica settimanale:** chi ha meno di 20 dollalerci torna a 20, una sola volta per settimana (settimana italiana, da lunedì). Chi ha 20 o più non riceve nulla.
 - Per ora i dollalerci non si accumulano giocando le partite (messo in pausa) e non si comprano con soldi veri.
-- **Puntata fissa:** 1 dollalero per ogni elemento della giocata (1-X-2, risultato esatto, ognuno dei 6 pronostici sui giocatori).
+- **Puntata fissa:** 1 dollalercio per ogni elemento della giocata (1-X-2, risultato esatto, ognuno dei 6 pronostici sui giocatori). La puntata si registra insieme alla scelta; cambiare un pronostico già scelto non costa altro. Se si toglie un elemento prima della chiusura, il dollalercio torna sul conto. Un saldo insufficiente impedisce la nuova scelta. Le scelte precedenti all’attivazione delle puntate restano gratuite.
 - **Montepremi:** le puntate di una partita vanno in un unico fondo, diviso tra chi ha indovinato in proporzione alla difficoltà dei pronostici giusti. Se nessuno indovina o il pronostico è annullato, la puntata torna indietro; gli spiccioli di una divisione restano nel fondo.
-- Fasi: 1) conto e ricarica (fatto) · 2) puntate · 3) montepremi e classifica per dollalerci.
+- Fasi: 1) conto e ricarica (fatto) · 2) puntate (fatto) · 3) montepremi e classifica per dollalerci.
