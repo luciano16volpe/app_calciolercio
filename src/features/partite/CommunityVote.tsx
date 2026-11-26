@@ -9,36 +9,56 @@ import { formatDate } from '../../domain/format';
 import { normalizeTeam } from '../../domain/stats';
 import type { Match } from '../../domain/types';
 
-function VoteDetails({ matchId }: { matchId: string }) {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+const fmtVote = (rating: number) => Number(rating).toFixed(1).replace('.', ',');
+
+/** Voti espressi raggruppati per giocatore: chi ha votato e che voto ha dato. */
+function VoteGroups({ rows }: { rows: CommunityVoteDetail[] }) {
+  const groups = new Map<string, CommunityVoteDetail[]>();
+  for (const row of rows) groups.set(row.target_name, [...(groups.get(row.target_name) ?? []), row]);
+  const list = [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, 'it'));
+  return <div className="vote-groups" style={{ display: 'grid', gap: 8, marginTop: 8 }}>
+    {list.map(([target, votes]) => <section key={target} className="vote-group" style={{ border: '1px solid var(--gray3)', borderRadius: 'var(--radius-sm)', padding: '8px 10px', background: 'var(--gray)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+        <strong style={{ fontSize: 14 }}>{target}</strong>
+        <small style={{ color: 'var(--text2)' }}>{votes.length} {votes.length === 1 ? 'voto' : 'voti'}</small>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+        {[...votes].sort((a, b) => b.rating - a.rating || a.voter_name.localeCompare(b.voter_name, 'it')).map((vote, index) =>
+          <span key={`${vote.voter_name}-${index}`} style={{ display: 'inline-flex', gap: 5, alignItems: 'center', border: '1px solid var(--gray3)', borderRadius: 999, padding: '2px 8px', fontSize: 12, background: 'var(--gray2)' }}>
+            {vote.voter_name} <b>{fmtVote(vote.rating)}</b>
+          </span>)}
+      </div>
+    </section>)}
+  </div>;
+}
+
+function VoteDetails({ matchId, autoOpen = false }: { matchId: string; autoOpen?: boolean }) {
+  const [open, setOpen] = useState(autoOpen);
+  const [loading, setLoading] = useState(autoOpen);
   const [rows, setRows] = useState<CommunityVoteDetail[] | null>(null);
   const [error, setError] = useState('');
-  const toggle = async () => {
-    if (open) { setOpen(false); setRows(null); return; }
-    setOpen(true);
+  const load = async () => {
     setLoading(true);
     setError('');
     try { setRows(await fetchCommunityVoteDetails(matchId)); }
     catch (cause) { setError((cause as Error).message); }
     finally { setLoading(false); }
   };
+  useEffect(() => { if (autoOpen) void load(); }, [matchId, autoOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  const toggle = async () => {
+    if (open) { setOpen(false); setRows(null); return; }
+    setOpen(true);
+    await load();
+  };
   return <div style={{ marginTop: 12 }}>
-    <button type="button" className="btn btn-secondary btn-sm" aria-expanded={open} onClick={() => void toggle()}>
+    {autoOpen ? <strong style={{ fontSize: 14 }}>Voti espressi</strong> : <button type="button" className="btn btn-secondary btn-sm" aria-expanded={open} onClick={() => void toggle()}>
       {open ? 'Nascondi voti espressi' : 'Vedi voti espressi'}
-    </button>
+    </button>}
     {open ? <div style={{ marginTop: 8, fontSize: 12 }}>
       {loading ? <p>Caricamento voti…</p> : null}
       {error ? <p role="alert">Impossibile caricare i voti: {error}</p> : null}
       {rows && !rows.length ? <p>Nessun voto espresso.</p> : null}
-      {rows?.length ? <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
-          <thead><tr><th scope="col">Chi ha votato</th><th scope="col">Giocatore</th><th scope="col">Voto</th></tr></thead>
-          <tbody>{rows.map((row, index) => <tr key={`${row.voter_name}-${row.target_name}-${index}`}>
-            <td>{row.voter_name}</td><td>{row.target_name}</td><td>{Number(row.rating).toFixed(1).replace('.', ',')}</td>
-          </tr>)}</tbody>
-        </table>
-      </div> : null}
+      {rows?.length ? <VoteGroups rows={rows} /> : null}
     </div> : null}
   </div>;
 }
@@ -243,7 +263,7 @@ export function CommunityVoteModal({ match, onClose }: { match: Match | undefine
             </div>
           </section> : null)}
         </> : <p className="vote-modal-message">{state.is_open ? 'Può votare solo chi ha partecipato alla partita.' : state.closed_early_at ? `La votazione è stata chiusa in anticipo${state.closed_early_by_name ? ` da ${state.closed_early_by_name}` : ''}.` : state.finalized ? 'La votazione è chiusa: le medie sono pubblicate.' : 'La votazione non è disponibile per questa partita.'}</p>}
-        {state?.finalized && state.has_premium ? <VoteDetails matchId={match.id} /> : null}
+        {state?.finalized && state.has_premium ? <VoteDetails matchId={match.id} autoOpen /> : null}
       </div>
       {state?.can_vote && state.has_premium ? <div className="vote-modal-footer">
         <span>{savedCount ? `${savedCount} ${savedCount === 1 ? 'voto già salvato' : 'voti già salvati'}` : 'Nessun voto salvato'}{changedCount ? ` · ${changedCount} da salvare` : ''}</span>
