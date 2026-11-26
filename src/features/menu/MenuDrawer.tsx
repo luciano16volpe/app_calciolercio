@@ -98,7 +98,7 @@ export function MenuDrawer({ data, onClose, covered = false, onOpenPanel, onGoSe
           const x0 = startX.current;
           startX.current = null;
           const x1 = e.changedTouches[0]?.clientX;
-          if (x0 !== null && x1 !== undefined && x0 - x1 > 70) onClose(); // trascinato verso sinistra
+          if (x0 !== null && x1 !== undefined && (x0 - x1 > 70 || (x0 <= 32 && x1 - x0 > 70))) onClose();
         }}
       >
         <div className="menu-dh">

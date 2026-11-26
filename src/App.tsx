@@ -21,6 +21,7 @@ import { DeferredPage, LazyContent } from './app/LazyContent';
 import { AppHeader } from './app/AppHeader';
 import { InstallHint } from './app/InstallHint';
 import { PullToRefresh } from './app/PullToRefresh';
+import { useSafariBackSwipeGuard } from './app/useSafariBackSwipeGuard';
 import { PushPrompt } from './app/PushPrompt';
 import { PremiumTrialBanner } from './app/PremiumTrialBanner';
 
@@ -137,6 +138,7 @@ function Loading({ q, onPanel }: { q: { isError: boolean; error?: unknown; refet
 }
 
 function Shell() {
+  useSafariBackSwipeGuard();
   const { view, setView, menuOpen, setMenuOpen, panel, setPanel, inviteToken, setInviteToken, inviteKind,
     gazViewer, setGazViewer, ptDialog, setPtDialog, bachecaOpen, setBachecaOpen,
     close, openPlayer, openPlayerFromRosa, openMatch, act, closePanel, closeMenu } = useShellWindows();

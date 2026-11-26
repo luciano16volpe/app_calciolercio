@@ -63,3 +63,34 @@ test('Nell’app installata Indietro non cambia le sezioni del footer ma chiude 
   await expect(page.locator('#page-rosa')).toHaveClass(/active/);
   expect(await page.evaluate(() => history.length)).toBe(initialLength);
 });
+
+test('In Safari su iPhone il bordo non avvia Indietro nelle pagine del footer', async ({ page }) => {
+  await setup(page);
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'userAgent', { value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' });
+  });
+  await openApp(page, '/l/san-marcello/rosa');
+  await expect(page.locator('#page-rosa')).toHaveClass(/active/);
+  const blocked = await page.locator('#page-rosa').evaluate((target) => {
+    const event = new Event('touchstart', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'touches', { value: [{ clientX: 10, clientY: 200 }] });
+    target.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+  expect(blocked).toBe(true);
+  await openMenu(page);
+  await page.locator('#menu-players').click();
+  await page.locator('#menu-couples').click();
+  const sheet = page.locator('#sheet-coppie');
+  await expect(sheet).toBeVisible();
+  await sheet.evaluate((target) => {
+    const touch = (x: number) => ({ identifier: 1, target, clientX: x, clientY: 200 });
+    const start = touch(10);
+    const end = touch(110);
+    const emit = (type: string, touches: object[], changedTouches: object[]) => target.dispatchEvent(Object.assign(new Event(type, { bubbles: true, cancelable: true }), { touches, changedTouches }));
+    emit('touchstart', [start], [start]);
+    emit('touchmove', [end], [end]);
+    emit('touchend', [], [end]);
+  });
+  await expect(page.locator('#sheet-players-hub')).toBeVisible();
+});
