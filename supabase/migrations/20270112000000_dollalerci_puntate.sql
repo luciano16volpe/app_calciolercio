@@ -1,4 +1,4 @@
--- Punto 2: ogni elemento scelto del Bet costa un dollalero.
+-- Punto 2: ogni elemento scelto del Bet costa un dollalercio.
 -- La puntata e la scelta vengono salvate nella stessa transazione.
 -- Le giocate già presenti prima di questa migrazione restano gratuite: si addebitano solo nuove scelte.
 create table public.wallet_stakes (
