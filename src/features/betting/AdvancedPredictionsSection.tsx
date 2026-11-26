@@ -70,8 +70,6 @@ export function MatchPredictions({match,embedded=false}:{match:BettingMatch;embe
           <span>Moltiplicatore ideale: <b>×{points(simulated.multiplierBasisPoints)}</b></span>
           <span>Massimo teorico: <b>+{points(simulated.finalUnits)}</b></span></div>
         <p className="betting-hint">Difficoltà scelte: {Object.entries(difficultyLabel).map(([code,label])=>`${label} ${selected.filter(x=>x.difficulty===code).length}`).join(' · ')}</p>
-        <details><summary>Come funzionano i moltiplicatori</summary><p>Contano tutti i pronostici della giocata: 1-X-2, risultato esatto e fino a 5 sui giocatori (massimo 7). 3-4 indovinati ×1,25 · 5 ×1,50 · 6 ×1,75 · 7 su 7 ×2.</p>
-          <p>Servono almeno il 70% di precisione e un saldo base positivo. Il bonus si applica solo al saldo netto.</p></details>
         <small>Il massimo è teorico: condizioni correlate possono renderlo irraggiungibile.</small>
       </div>
       {board.data.summary?<div className="card"><h3>Risultato Bet</h3>
@@ -166,7 +164,6 @@ export function AdvancedPredictionsSection({leagueId,matches,resultMatches,playe
   const current=visible.find(x=>x.match_id===matchId)??visible[0];
   if(!enabled.data)return null;
   return <section className="advanced-predictions-section"><h2>Bet sugli avversari</h2>
-    <p>Risultati, classifica e statistiche delle tue giocate. Le giocate della prossima partita sono in alto, insieme al 1-X-2.</p>
     <div className="advanced-view-tabs" role="tablist" aria-label="Viste Bet">
       {([['results','Risultati'],['leaderboard','Classifica'],['stats','Il mio Bet']] as const)
         .map(([key,label])=><button type="button" key={key} role="tab" aria-selected={view===key} className={view===key?'selected':''}
