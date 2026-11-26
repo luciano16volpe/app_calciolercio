@@ -159,10 +159,25 @@ test('Ricaricare: niente rotellina in alto; si tira la pagina verso il basso e i
       ev.touches = t === 'touchend' ? [] : [{ clientX: 180, clientY: yy as number }];
       (document.querySelector('#page-profilo') as Element).dispatchEvent(ev);
     }, [type, y] as const);
+  await page.locator('.bottom-nav').evaluate((target) => {
+    const emit = (type: string, y: number) => {
+      const ev = new Event(type, { bubbles: true }) as Event & { touches?: unknown[] };
+      ev.touches = type === 'touchend' ? [] : [{ clientX: 180, clientY: y }];
+      target.dispatchEvent(ev);
+    };
+    emit('touchstart', 100); emit('touchmove', 300); emit('touchend', 300);
+  });
+  await expect(page.locator('#ptr')).toHaveCount(0);
+  expect(reads).toBe(0);
   // tirata corta: non succede niente
   await touch('touchstart', 100); await touch('touchmove', 140); await touch('touchmove', 170);
   await expect(page.locator('#ptr')).toContainText('Tira per aggiornare');
   await touch('touchend', 170);
+  await expect(page.locator('#ptr')).toHaveCount(0);
+  expect(reads).toBe(0);
+  await touch('touchstart', 100); await touch('touchmove', 300);
+  await expect(page.locator('#ptr')).toBeVisible();
+  await touch('touchcancel', 300);
   await expect(page.locator('#ptr')).toHaveCount(0);
   expect(reads).toBe(0);
   // tirata lunga: compare l'avviso, al rilascio si aggiorna

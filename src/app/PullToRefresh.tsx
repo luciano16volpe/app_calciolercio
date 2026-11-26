@@ -6,7 +6,7 @@ import { useToast } from './Toast';
 
 const TRIGGER = 70; // quanto tirare (px) perché si ricarichi
 const MAX = 110;
-const BLOCKED = '.app-header, #menu-drawer, .sheet, #match-modal, #app-modal, #img-viewer, .pchip, input, textarea, select';
+const BLOCKED = '.app-header, .bottom-nav, #menu-drawer, .sheet, #match-modal, #app-modal, #img-viewer, .pchip, button, a, input, textarea, select, summary';
 
 type Phase = 'idle' | 'pull' | 'ready' | 'loading';
 
@@ -17,6 +17,8 @@ export function PullToRefresh() {
   const [phase, setPhase] = useState<Phase>('idle');
   const state = useRef<{ x: number; y: number; on: boolean; d: number }>({ x: 0, y: 0, on: false, d: 0 });
   const busy = useRef(false);
+  const timeout = useRef<number | undefined>(undefined);
+  const refreshId = useRef(0);
 
   useEffect(() => {
     const atTop = () => (window.scrollY || document.documentElement.scrollTop || 0) <= 0;
@@ -35,6 +37,12 @@ export function PullToRefresh() {
       if (!s.on || !t) return;
       const dy = t.clientY - s.y;
       const dx = t.clientX - s.x;
+      if (dy <= 0 || !atTop()) {
+        s.on = false;
+        setPhase('idle');
+        setDist(0);
+        return;
+      }
       if (s.d === 0) {
         // gesto non ancora riconosciuto: verso l'alto o di lato è una scorsa normale
         if (dy < 0 || Math.abs(dx) > Math.abs(dy)) {
@@ -42,10 +50,6 @@ export function PullToRefresh() {
           return;
         }
         if (dy < 10) return;
-      }
-      if (!atTop() && s.d === 0) {
-        s.on = false;
-        return;
       }
       const d = Math.min(MAX, dy * 0.5);
       s.d = d;
@@ -63,15 +67,34 @@ export function PullToRefresh() {
         setPhase('loading');
         setDist(48);
         const t0 = Date.now();
-        void qc.invalidateQueries().finally(() => {
+        const id = ++refreshId.current;
+        const finish = () => {
+          if (refreshId.current !== id || !busy.current) return false;
+          window.clearTimeout(timeout.current);
+          busy.current = false;
+          setPhase('idle');
+          setDist(0);
+          return true;
+        };
+        timeout.current = window.setTimeout(() => {
+          if (finish()) toast('Aggiornamento lento: riprova tra poco');
+        }, 8000);
+        void qc.invalidateQueries().then(() => {
           window.setTimeout(() => {
-            busy.current = false;
-            setPhase('idle');
-            setDist(0);
-            toast('✓ Aggiornato');
+            if (finish()) toast('✓ Aggiornato');
           }, Math.max(0, 600 - (Date.now() - t0)));
+        }, () => {
+          if (finish()) toast('Aggiornamento non riuscito');
         });
       } else {
+        setPhase('idle');
+        setDist(0);
+      }
+    };
+    const cancel = () => {
+      state.current.on = false;
+      state.current.d = 0;
+      if (!busy.current) {
         setPhase('idle');
         setDist(0);
       }
@@ -80,12 +103,15 @@ export function PullToRefresh() {
     // passivo e senza preventDefault: su iPhone un controllo del tocco che può bloccare lo scroll rallenta la pagina e sposta il footer fisso
     document.addEventListener('touchmove', move, { passive: true });
     document.addEventListener('touchend', end);
-    document.addEventListener('touchcancel', end);
+    document.addEventListener('touchcancel', cancel);
     return () => {
       document.removeEventListener('touchstart', start);
       document.removeEventListener('touchmove', move);
       document.removeEventListener('touchend', end);
-      document.removeEventListener('touchcancel', end);
+      document.removeEventListener('touchcancel', cancel);
+      window.clearTimeout(timeout.current);
+      refreshId.current += 1;
+      busy.current = false;
     };
   }, [qc, toast]);
 
