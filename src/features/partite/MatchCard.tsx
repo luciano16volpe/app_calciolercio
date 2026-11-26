@@ -607,7 +607,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               {stepper('sc-b', draft ? draft.scB : scoreB, 'scB')}
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--teamb)' }}>⚪ Bianchi</span>
             </div>
-            <Highlights data={data} m={m} hideRatings={hideCommunityRatings} />
+              {!editing ? <Highlights data={data} m={m} hideRatings={hideCommunityRatings} /> : null}
             <CommunityVoteControls match={m} state={communityVote.data} canEdit={canEdit} userId={user?.id} />
             <div className="gaz-sec" id="gaz-sec">
               {g ? (
