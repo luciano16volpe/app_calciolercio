@@ -274,17 +274,15 @@ test('Rosa: l\'amministratore cambia statistica e ruolo', async ({ page }) => {
 test('Rosa: nuova foto, carica e salva', async ({ page }) => {
   const writes = await login(page);
   const modal = await openFirstPlayer(page);
-  // se il giocatore ha già una foto si passa dal menu "Cambia"
+  // La foto si aggiunge dalla galleria del giocatore.
   const photoEdit = modal.locator('.photo-edit');
-  const hasPhoto = await photoEdit.locator('.has-photo').count();
-  const chooser = page.waitForEvent('filechooser');
   await photoEdit.click();
-  if (hasPhoto) await page.locator('#app-modal button', { hasText: 'Cambia' }).click();
-  await (await chooser).setFiles({ name: 'foto.png', mimeType: 'image/png', buffer: PNG });
-  await expect(page.locator('#toast')).toContainText('Foto aggiornata', { timeout: 15_000 });
+  await page.getByRole('button', { name: 'Aggiungi foto' }).click();
+  await page.locator('[role="dialog"] input[type="file"]').setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: PNG });
+  await expect(page.locator('#toast')).toContainText('Foto aggiunta', { timeout: 15_000 });
   expect(writes.some((w) => w.table === 'storage' && w.method === 'POST' && /^photos\/.+\.jpg$/.test(String(w.body)))).toBe(true);
-  const upd = writes.find((w) => w.table === 'players' && w.method === 'PATCH') as Write;
-  expect((upd.body as { photo_path: string }).photo_path).toMatch(/\.jpg$/);
+  const upd = writes.find((w) => w.table === 'manage_player_photo') as Write;
+  expect((upd.body as { p_path: string }).p_path).toMatch(/\.jpg$/);
 });
 
 test('Rosa: + Aggiungi giocatore', async ({ page }) => {

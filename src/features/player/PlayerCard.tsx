@@ -16,6 +16,7 @@ import { PagelleSection } from './PagelleSection';
 import { PlayerEditTop } from './PlayerEditTop';
 import { PlayerBenchRow } from './PlayerBenchRow';
 import { PlayerLinkRow } from './PlayerLinkRow';
+import { PlayerPhotoGallery } from './PlayerPhotoGallery';
 import { PlayerPagelleDialog } from './PlayerPagelleDialog';
 import { usePrompt } from '../../app/Dialogs';
 import { useToast } from '../../app/Toast';
@@ -134,6 +135,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   const prompt = usePrompt();
   const toast = useToast();
   const queryClient = useQueryClient();
+  const [galleryOpen, setGalleryOpen] = useState(false);
   const player = dataset.players.find((p) => p.id === playerId);
   const rename = async () => {
     if (!player) return;
@@ -211,7 +213,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
             ) : (
               <>
                 <div className="photo-row" style={{ margin: '2px 0 8px', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 16 }}>
-                  <Avatar player={player} photo={photoUrl(data.photos[player.id])} />
+                  <button type="button" onClick={() => setGalleryOpen(true)} aria-label={`Apri le foto di ${player.name}`} style={{ border: 0, padding: 0, background: 'none', cursor: 'pointer' }}><Avatar player={player} photo={photoUrl(data.photos[player.id])} /></button>
                   <div style={{ width: 84 }}><FutMini data={data} player={player} statsDataset={period?.dataset} /></div>
                 </div>
                 <div className="stats-grid">
@@ -242,6 +244,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
       {pagelleOpen ? (
         <PlayerPagelleDialog data={statsData} player={player} scopeLabel={period?.label} focusId={pagelleOpen.focus} onClose={() => setPagelleOpen(null)} onOpenMatch={onOpenMatch} />
       ) : null}
+      {galleryOpen ? <PlayerPhotoGallery data={data} playerId={player.id} name={player.name} canManage={false} onClose={() => setGalleryOpen(false)} /> : null}
     </>
   );
 }

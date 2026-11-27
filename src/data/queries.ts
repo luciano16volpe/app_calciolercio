@@ -49,6 +49,8 @@ export interface LeagueData {
   modulesText?: string;
   /** Foto di ogni giocatore (id → percorso nell'archivio). */
   photos: Record<string, string | null>;
+  /** Foto conservate per ogni giocatore, inclusa quella attiva. */
+  photoGalleries?: Record<string, string[]>;
   /** Albo d'oro salvato (righe di tutte le stagioni). */
   albo: AlboRow[];
   /** Gazzette: id partita → percorso del file. */
@@ -109,15 +111,29 @@ async function fetchLeagueIdentity(slug: string | null): Promise<LeagueData['lea
 
 }
 
+type PlayerWithGallery = DbRows['players'][number] & { photo_path: string | null; photo_gallery: string[] };
+
+async function fetchPlayersWithGallery(ids: string[], label: string): Promise<PlayerWithGallery[]> {
+  const players: PlayerWithGallery[] = [];
+  for (let i = 0; i < ids.length; i += 100) {
+    const part = ids.slice(i, i + 100);
+    try {
+      players.push(...await fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path, photo_gallery').in('id', part).order('id').range(a, b), label));
+    } catch (error) {
+      // Durante la pubblicazione il client può arrivare prima della migrazione.
+      if (!String(error).includes('photo_gallery')) throw error;
+      const legacy = await fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path').in('id', part).order('id').range(a, b), label);
+      players.push(...legacy.map((item) => ({ ...item, photo_gallery: item.photo_path ? [item.photo_path] : [] })));
+    }
+  }
+  return players;
+}
+
 /** Rosa attiva e soprannomi: hanno una cache distinta dallo storico. */
 async function fetchLeagueRoster(leagueId: string) {
   const lp = await fetchAll((a, b) => supabase.from('league_players').select('player_id, aliases').eq('league_id', leagueId).order('player_id').range(a, b), 'giocatori della lega');
   const ids = lp.map((x) => x.player_id);
-  const players: Array<DbRows['players'][number] & { photo_path: string | null }> = [];
-  for (let i = 0; i < ids.length; i += 100) {
-    const part = ids.slice(i, i + 100);
-    players.push(...await fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path').in('id', part).order('id').range(a, b), 'giocatori'));
-  }
+  const players = await fetchPlayersWithGallery(ids, 'giocatori');
   return { ids, players, aliases: Object.fromEntries(lp.filter((x) => x.aliases?.length).map((x) => [x.player_id, x.aliases])) };
 }
 
@@ -173,12 +189,7 @@ export async function fetchGameSettings(): Promise<Pick<LeagueData, 'weights' | 
 
 /** Chi e uscito dalla rosa resta leggibile nelle partite passate. */
 async function fetchPastPlayers(ids: string[]) {
-  const players: Array<DbRows['players'][number] & { photo_path: string | null }> = [];
-  for (let i = 0; i < ids.length; i += 100) {
-    const part = ids.slice(i, i + 100);
-    players.push(...await fetchAll((a, b) => supabase.from('players').select('id, name, roles, stats, photo_path').in('id', part).order('id').range(a, b), 'giocatori nello storico'));
-  }
-  return players;
+  return fetchPlayersWithGallery(ids, 'giocatori nello storico');
 }
 
 /** Identita, rosa, storico e regole hanno cache separate per utente e lega. */
@@ -222,6 +233,7 @@ export function useLeagueData() {
     return { textsDeferred: true, textVersion: version.data + ':' + history.dataUpdatedAt, league: identity, rosterIds: roster.data.ids, aliases: roster.data.aliases,
       dataset: dbToDataset({ players, matches: history.data.matches, matchPlayers: history.data.matchPlayers }),
       photos: Object.fromEntries(players.map((p) => [p.id, p.photo_path])),
+      photoGalleries: Object.fromEntries(players.map((p) => [p.id, p.photo_gallery])),
       albo: history.data.albo, gazzette: history.data.gazzette, editors: history.data.editors, ...settings.data };
   }, [identity, roster.data, history.data, history.dataUpdatedAt, version.data, version.isError, version.isSuccess, settings.data, pastPlayers.data]);
   return { ...league, data,

@@ -175,14 +175,17 @@ test('Il mio profilo: se il nome è già usato si vede il motivo', async ({ page
 });
 
 test('Il mio profilo: cambio la mia foto (file e collegamento passano dalle funzioni sicure)', async ({ page }) => {
+  test.setTimeout(60_000);
   const writes = await setup(page, { mePlayer: fixturePlayer() });
   await openApp(page);
   await openProfile(page);
-  await page.locator('#my-photo-file').setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: PNG });
-  await expect(page.locator('#toast')).toContainText('Foto aggiornata', { timeout: 15_000 });
+  await page.locator('#my-photo').click();
+  await page.getByRole('button', { name: 'Aggiungi foto' }).click();
+  await page.locator('[role="dialog"] input[type="file"]').setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: PNG });
+  await expect(page.locator('#toast')).toContainText('Foto aggiunta', { timeout: 15_000 });
   const me = fixturePlayer();
   expect(writes.some((w) => w.table === 'storage' && w.method === 'POST' && String(w.body).startsWith('photos/' + me.id + '-'))).toBe(true);
-  expect((lastWrite(writes, 'set_my_photo').body as { p_path: string }).p_path).toMatch(new RegExp('^' + me.id + '-[0-9]+\\.jpg$'));
+  expect((lastWrite(writes, 'manage_player_photo').body as { p_path: string }).p_path).toMatch(new RegExp('^' + me.id + '-[0-9]+\\.jpg$'));
   expect(writes.some((w) => w.table === 'players')).toBe(false);
 });
 

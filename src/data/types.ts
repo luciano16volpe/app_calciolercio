@@ -816,6 +816,7 @@ export type Database = {
           id: string
           name: string
           photo_path: string | null
+          photo_gallery: string[]
           roles: string[]
           stats: number[]
           updated_at: string
@@ -827,6 +828,7 @@ export type Database = {
           id?: string
           name: string
           photo_path?: string | null
+          photo_gallery?: string[]
           roles?: string[]
           stats?: number[]
           updated_at?: string
@@ -838,6 +840,7 @@ export type Database = {
           id?: string
           name?: string
           photo_path?: string | null
+          photo_gallery?: string[]
           roles?: string[]
           stats?: number[]
           updated_at?: string
@@ -1282,6 +1285,7 @@ export type Database = {
       submit_formation_vote: { Args: { p_match: string; p_option: number }; Returns: undefined }
       close_formation_poll: { Args: { p_match: string }; Returns: undefined }
       reopen_formation_poll: { Args: { p_match: string }; Returns: undefined }
+      manage_player_photo: { Args: { p_player: string; p_action: string; p_path?: string | null; p_old_path?: string | null }; Returns: string[] }
       close_community_voting: { Args: { p_match: string }; Returns: undefined }
       reopen_community_voting: { Args: { p_match: string }; Returns: undefined }
       wallet_state: { Args: { p_league: string }; Returns: Json }

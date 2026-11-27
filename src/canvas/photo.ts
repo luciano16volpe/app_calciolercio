@@ -1,7 +1,7 @@
-// Foto del giocatore: ritaglio quadrato al centro, 200 px, JPEG qualità 0,7.
+// Foto del giocatore: conserva l'inquadratura originale, fino a 1600 px, JPEG qualità 0,9.
 
-/** Legge un file immagine e lo restituisce ritagliato quadrato 200×200 in JPEG. */
-export function resizeSquare(file: File, size = 200): Promise<Blob> {
+/** Riduce solo le foto grandi, mantenendo proporzioni e risoluzione delle foto piccole. */
+export function preparePlayerPhoto(file: File, maxSide = 1600): Promise<Blob> {
   return new Promise((resolve, reject) => {
     if (!file.type.startsWith('image/')) return reject(new Error("Seleziona un'immagine"));
     const url = URL.createObjectURL(file);
@@ -9,13 +9,12 @@ export function resizeSquare(file: File, size = 200): Promise<Blob> {
     img.onload = () => {
       URL.revokeObjectURL(url);
       const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      canvas.width = Math.max(1, Math.round(img.width * scale));
+      canvas.height = Math.max(1, Math.round(img.height * scale));
       const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-      const scale = Math.max(size / img.width, size / img.height);
-      const w = img.width * scale, h = img.height * scale;
-      ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
-      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Errore foto'))), 'image/jpeg', 0.7);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Errore foto'))), 'image/jpeg', 0.9);
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);

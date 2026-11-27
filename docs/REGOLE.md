@@ -174,6 +174,8 @@ Le decisioni recenti dell'utente prevalgono sulle descrizioni delle fasi inizial
 
 ## Profilo: periodo e lega
 
+- Ogni giocatore può conservare fino a tre foto. La foto principale è usata negli avatar e nelle immagini generate; dalla scheda si possono vedere le altre. Il giocatore collegato e gli admin della sua lega possono aggiungere, sostituire, rimuovere e scegliere la foto principale. Le nuove foto mantengono le proporzioni originali, con lato massimo di 1600 px e qualità JPEG 0,9.
+
 - Il profilo mostra i dati della lega selezionata. Le 11 statistiche, i ruoli e l'OVR del giocatore restano comuni alle leghe; il peso dei voti e calcolato sulla lega selezionata.
 - Nella scheda del profilo pagelle, media, forma e vittorie considerano la stagione in corso quando il giocatore ha almeno 5 partite con risultato; altrimenti le sue ultime 5 partite con risultato della lega, anche di una stagione precedente. Il periodo e indicato nella scheda e nella finestra delle pagelle.
 - Nel profilo le ultime partite sono al massimo 10 della lega selezionata, ordinate dalla piu recente. Il riepilogo complessivo per tutte le leghe e stato rimosso.

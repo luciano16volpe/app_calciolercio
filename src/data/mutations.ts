@@ -129,23 +129,6 @@ export async function createPlayer(leagueId: string, name: string): Promise<stri
 }
 
 /**
- * Cambia o toglie la foto (null = toglie). Il nome del file cambia a ogni foto, così nessuno vede quella vecchia rimasta in memoria.
- * Restituisce il nuovo percorso (o null).
- */
-export async function setPlayerPhoto(playerId: string, blob: Blob | null, oldPath: string | null): Promise<string | null> {
-  let path: string | null = null;
-  if (blob) {
-    path = `${playerId}-${Date.now()}.jpg`;
-    const up = await supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000' });
-    if (up.error) throw fail('foto', up.error);
-  }
-  const { error } = await supabase.from('players').update({ photo_path: path }).eq('id', playerId);
-  if (error) throw fail('foto', error);
-  if (oldPath) await supabase.storage.from('photos').remove([oldPath]); // pulizia: se fallisce non è grave
-  return path;
-}
-
-/**
  * Carica (o sostituisce) la Gazzetta di una partita: file completo + miniatura. Il nome cambia a ogni caricamento
  * (niente immagine vecchia in memoria); i file della Gazzetta precedente vengono tolti. Restituisce il nuovo percorso.
  */

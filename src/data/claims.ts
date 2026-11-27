@@ -41,23 +41,6 @@ export async function requestClaim(leagueId: string, playerId: string): Promise<
   if (error) throw friendly(error.message);
 }
 
-/**
- * Cambia (o toglie, con `blob` nullo) la foto del MIO giocatore. Il file ha un nome nuovo a ogni foto (nessuna immagine vecchia in memoria);
- * il database accetta solo file e percorsi del mio giocatore. Restituisce il nuovo percorso (o null).
- */
-export async function setMyPhoto(playerId: string, blob: Blob | null, oldPath: string | null): Promise<string | null> {
-  let path: string | null = null;
-  if (blob) {
-    path = `${playerId}-${Date.now()}.jpg`;
-    const up = await supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000' });
-    if (up.error) throw new Error(up.error.message);
-  }
-  const { error } = await supabase.rpc('set_my_photo', { p_path: path as string });
-  if (error) throw friendly(error.message);
-  if (oldPath) await supabase.storage.from('photos').remove([oldPath]); // pulizia: se fallisce non è grave
-  return path;
-}
-
 /** Cambia il nome del MIO giocatore (se libero nelle mie leghe): stesso giocatore, nessuna cronologia persa. Restituisce il nome salvato. */
 export async function renameMyPlayer(name: string): Promise<string> {
   const { data, error } = await supabase.rpc('rename_my_player', { p_name: name });
