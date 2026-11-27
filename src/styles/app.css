@@ -1045,6 +1045,11 @@ input[type=file]{display:none}
 .giocata-bar-end small { min-height: 14px; color: var(--text2); font-size: 11px; }
 .bet-info > summary { cursor: pointer; font-size: 12px; font-weight: 750; color: var(--text2); }
 .bet-info[open] > summary { margin-bottom: 6px; }
+.bet-guide { font-size: 13px; line-height: 1.55; }
+.bet-guide p { margin: 10px 0; }
+.bet-guide ul { margin: 6px 0 14px; padding-left: 20px; }
+.bet-guide li + li { margin-top: 6px; }
+.bet-guide h3 { margin: 16px 0 6px; font-size: 14px; }
 .betting-page > .bet-info.card { padding: 10px 14px; }
 .bet-exact { margin-top: 4px; }
 .bet-exact-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; color: var(--text2); }

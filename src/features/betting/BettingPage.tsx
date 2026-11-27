@@ -166,7 +166,22 @@ function BettingContent({ data }: { data: LeagueData }) {
     {board.isSuccess ? <>
       {tab === 'gioca' ? <>
         <details className="bet-info card"><summary>ⓘ Come funziona</summary>
-          <p>Una giocata per partita: l’esito 1-X-2, il risultato esatto (facoltativo) e fino a 6 pronostici sui giocatori. Ogni elemento costa 1 dollalercio; se lo togli prima della chiusura, la puntata torna sul conto. Se giochi scommetti sugli avversari, se non giochi su 3 giocatori per squadra. Nessuna puntata in denaro.</p></details>
+          <div className="bet-guide">
+            <p>Apri la sezione <b>Bet → Gioca</b> e scegli i tuoi pronostici prima dell’inizio della partita. Le scelte si salvano automaticamente e puoi cambiarle finché le Bet sono aperte.</p>
+            <p>Puoi giocare fino a <b>8 pronostici per partita</b>:</p>
+            <ul>
+              <li><b>1-X-2:</b> vincono i Blu, pareggio o vincono i Bianchi.</li>
+              <li><b>Risultato esatto:</b> facoltativo.</li>
+              <li><b>Fino a 6 pronostici sui giocatori:</b> scegli quelli che vuoi giocare dall’elenco proposto. Se partecipi alla partita riguardano gli avversari; se non partecipi e hai un giocatore collegato nella lega, ne trovi 3 per squadra.</li>
+            </ul>
+            <h3>🪙 Dollalerci</h3>
+            <p>All’inizio ricevi <b>50 dollalerci</b>. Ogni pronostico scelto costa <b>1 dollalercio</b>: una giocata completa da 8 elementi costa quindi 8. Cambiare una scelta già fatta non costa altro; se la togli prima della chiusura, ricevi il dollalercio indietro. Se il saldo scende sotto 20, la ricarica settimanale lo riporta a 20. I dollalerci non si comprano con denaro.</p>
+            <h3>🏆 Come si vince</h3>
+            <p>I pronostici corretti danno punti per la classifica Bet: 1-X-2 vale <b>3 punti</b>, il risultato esatto <b>5</b>; i pronostici sui giocatori hanno un valore legato alla difficoltà. Se indovini abbastanza elementi, hai anche un moltiplicatore, purché la precisione sia almeno del 70% e il saldo dei punti sia positivo.</p>
+            <p>Le puntate in dollalerci finiscono nel montepremi della partita. Ogni pronostico corretto recupera il proprio dollalercio e partecipa alla divisione delle puntate perse. Se nessuno indovina, le puntate vengono restituite.</p>
+            <p>Dopo la partita, quando le statistiche sono confermate, trovi il dettaglio in <b>Bet → Risultati</b>. In <b>Classifica</b> vedi sia i punti Bet sia i guadagni netti in dollalerci. Buon pronostico! ⚽</p>
+          </div>
+        </details>
         {upcoming.length ? upcoming.map((match) => <GiocataUnica key={match.match_id} match={match} leagueId={data.league.id} />) : <div className="card">Nessuna prossima partita in programma.</div>}
       </> : <>
         <AdvancedPredictionsSection fixedView={fixedView[tab]} leagueId={data.league.id} matches={matches} resultMatches={resultMatches} players={data.dataset.players} photos={data.photos} />
