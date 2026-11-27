@@ -7,7 +7,7 @@ import { seasonStats } from './stats';
 import type { Dataset, Player } from './types';
 
 export interface Slot {
-  role: 'ATT' | 'MED' | 'DIF';
+  role: 'ATT' | 'MED' | 'DIF' | 'POR';
   x: number; // 0 = propria porta, 1 = porta avversaria
   y: number;
 }
@@ -18,9 +18,9 @@ export interface Module {
   slots: Slot[];
 }
 
-/** Il primo slot è sempre il portiere (DIF, x≈0.07). por è sempre 1; def/mid/att sono i giocatori di movimento. */
+/** Il primo slot è sempre il portiere (POR, x≈0.07). def/mid/att sono i giocatori di movimento. */
 export function makeSlots(_por: number, def: number, mid: number, att: number): Slot[] {
-  const s: Slot[] = [{ role: 'DIF', x: 0.07, y: 0.5 }];
+  const s: Slot[] = [{ role: 'POR', x: 0.07, y: 0.5 }];
   const band = (count: number, x: number, role: Slot['role']) => {
     for (let i = 0; i < count; i++) s.push({ role, x, y: (i + 0.5) / count });
   };
@@ -109,11 +109,11 @@ type RolePlayer = { roles?: string[] };
 
 /**
  * Ruoli coperti da una squadra in un modulo (0–1): ogni slot di movimento riceve un solo giocatore.
- * Lo slot del portiere (DIF più arretrato, x<0.15) non conta: il portiere ruota. Si riempiono prima
+ * Lo slot del portiere (POR; nelle vecchie formazioni DIF arretrato) non conta nel fit dei ruoli di movimento. Si riempiono prima
  * gli slot il cui ruolo è più raro e, tra i compatibili, si sceglie chi ha meno ruoli.
  */
 export function roleFitScore(players: RolePlayer[], team: number[], slots: Slot[]): number {
-  const outfield = slots.filter((s) => !(s.role === 'DIF' && s.x < 0.15));
+  const outfield = slots.filter((s) => s.role !== 'POR' && !(s.role === 'DIF' && s.x < 0.15));
   if (!outfield.length) return 1;
   const supply: Record<string, number> = { ATT: 0, MED: 0, DIF: 0 };
   team.forEach((i) =>
@@ -261,6 +261,8 @@ export interface GenerateInput extends BalanceContext {
   modules?: Record<number, Module[]>;
   /** Coppie (indici nella rosa) che non possono stare nella stessa squadra: le divisioni che le uniscono non si propongono. */
   blocked?: Array<[number, number]>;
+  /** Due portieri fissi: devono essere convocati e giocare in squadre diverse. */
+  goalkeepers?: [number, number];
 }
 
 /** Al massimo 96 divisioni valutate con tutti i moduli, invece di tutte le combinazioni. */
@@ -278,6 +280,7 @@ function candidateSplits(input: GenerateInput): PartialSplit[] {
   const { selected, sizeA, sizeB, scores } = input;
   const selectedSet = new Set(selected);
   const blocked = new Map<number, number[]>();
+  const keeperMate = (player: number): number | undefined => input.goalkeepers?.[0] === player ? input.goalkeepers[1] : input.goalkeepers?.[1] === player ? input.goalkeepers[0] : undefined;
   for (const [x, y] of input.blocked ?? []) {
     if (!selectedSet.has(x) || !selectedSet.has(y)) continue;
     blocked.set(x, [...(blocked.get(x) ?? []), y]);
@@ -302,12 +305,12 @@ function candidateSplits(input: GenerateInput): PartialSplit[] {
     const player = ordered[depth] as number;
     const next: PartialSplit[] = [];
     for (const split of beam) {
-      if (split.a.length < sizeA) next.push({
+      if (split.a.length < sizeA && !split.a.includes(keeperMate(player) ?? -1)) next.push({
         a: [...split.a, player], b: split.b, sumA: split.sumA + (scores[player] as number),
         violations: split.violations + (blocked.get(player) ?? []).filter((other) => split.a.includes(other)).length,
         order: split.order * 2,
       });
-      if (split.b.length < sizeB && !(sizeA === sizeB && depth === 0)) next.push({
+      if (split.b.length < sizeB && !(sizeA === sizeB && depth === 0) && !split.b.includes(keeperMate(player) ?? -1)) next.push({
         a: split.a, b: [...split.b, player], sumA: split.sumA,
         violations: split.violations + (blocked.get(player) ?? []).filter((other) => split.b.includes(other)).length,
         order: split.order * 2 + 1,
@@ -371,11 +374,12 @@ function enforceMinimumViolations(input: GenerateInput, candidates: PartialSplit
       return;
     }
     const player = input.selected[depth] as number;
-    if (a.length < input.sizeA) {
+    const mate = input.goalkeepers?.[0] === player ? input.goalkeepers[1] : input.goalkeepers?.[1] === player ? input.goalkeepers[0] : undefined;
+    if (a.length < input.sizeA && !a.includes(mate ?? -1)) {
       const added = (adjacency.get(player) ?? []).filter((other) => a.includes(other)).length;
       visit(depth + 1, [...a, player], b, sumA + (input.scores[player] as number), violations + added);
     }
-    if (b.length < input.sizeB && !(input.sizeA === input.sizeB && depth === 0)) {
+    if (b.length < input.sizeB && !(input.sizeA === input.sizeB && depth === 0) && !b.includes(mate ?? -1)) {
       const added = (adjacency.get(player) ?? []).filter((other) => b.includes(other)).length;
       visit(depth + 1, a, [...b, player], sumA, violations + added);
     }
@@ -393,6 +397,10 @@ function enforceMinimumViolations(input: GenerateInput, candidates: PartialSplit
 export function generateTeams(input: GenerateInput): { combos: Combo[]; genBest: number | null; violations: number } | null {
   const { selected, sizeA, sizeB } = input;
   if (selected.length !== sizeA + sizeB) return null;
+  if (input.goalkeepers && (input.goalkeepers[0] === input.goalkeepers[1] || input.goalkeepers.some((i) => !selected.includes(i)))) return null;
+  const scoring: BalanceContext = input.goalkeepers
+    ? { players: input.players.map((p, i) => input.goalkeepers!.includes(i) ? { ...p, roles: ['POR'] } : p), scores: input.scores }
+    : input;
   const { splits: candidates, violations } = enforceMinimumViolations(input, candidateSplits(input));
   const scored: Combo[] = [];
   const modulesA = getModulesForSize(sizeA, input.modules);
@@ -405,7 +413,7 @@ export function generateTeams(input: GenerateInput): { combos: Combo[]; genBest:
     let best: Combo | null = null;
     for (const modA of modulesA) {
       for (const modB of modulesB) {
-        const combo = { tA, tB, modA, modB, ...comboMetrics(input, tA, tB, modA, modB) };
+        const combo = { tA, tB, modA, modB, ...comboMetrics(scoring, tA, tB, modA, modB) };
         if (!best || combo.score < best.score) best = combo;
       }
     }

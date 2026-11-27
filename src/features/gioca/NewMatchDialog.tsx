@@ -19,7 +19,7 @@ const input = { width: '100%', padding: '9px 11px', border: '1.5px solid var(--g
 const lbl = { fontSize: 12, color: 'var(--text2)', display: 'block', marginBottom: 5 } as const;
 const score = { width: 60, padding: '9px 11px', border: '1.5px solid var(--gray3)', borderRadius: 7, background: 'var(--gray)', color: 'var(--text)', fontSize: 16, fontWeight: 800, textAlign: 'center' } as const;
 
-export function NewMatchDialog({ data, combos, idx, onClose }: { data: LeagueData; combos: Combo[]; idx: number; onClose: () => void }) {
+export function NewMatchDialog({ data, combos, idx, goalkeeperIds, onClose }: { data: LeagueData; combos: Combo[]; idx: number; goalkeeperIds: string[]; onClose: () => void }) {
   const toast = useToast();
   const qc = useQueryClient();
   const players = data.dataset.players;
@@ -64,6 +64,7 @@ export function NewMatchDialog({ data, combos, idx, onClose }: { data: LeagueDat
         bettingEnabled: betting.data === true && bettingSelected,
         teamA: combo.tA.map((i) => (players[i] as { id: string }).id),
         teamB: combo.tB.map((i) => (players[i] as { id: string }).id),
+        goalkeeperIds,
         scoreA: sa !== '' ? clampInt(sa, 0, 99, 0) : '', scoreB: sb !== '' ? clampInt(sb, 0, 99, 0) : '',
         // previsione al momento della creazione → "Precisione bilanciamento" esatta in seguito
         pred: +(combo.sA - combo.sB).toFixed(4), predRank: combo.custom ? 0 : idx + 1,
@@ -108,6 +109,9 @@ export function NewMatchDialog({ data, combos, idx, onClose }: { data: LeagueDat
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--green)', marginBottom: 4 }}>✓ Squadre dall'ultima generazione</div>
             <div style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.5 }}>
               <strong>🔵 Blu:</strong> {names(combo.tA)}<br /><strong>⚪ Bianchi:</strong> {names(combo.tB)}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 5 }}>
+              🧤 {goalkeeperIds.length === 2 ? `Portieri fissi: ${goalkeeperIds.map((id) => players.find((p) => p.id === id)?.name).join(' e ')}` : 'Portieri volanti'}
             </div>
             <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 6 }}>
               🎯 Previsione: <strong>{goalsLabel(combo.sA - combo.sB)}</strong> · {combo.custom ? 'squadre modificate a mano' : `${idx + 1}ª proposta`}{' '}

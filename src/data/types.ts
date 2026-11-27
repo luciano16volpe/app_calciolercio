@@ -592,6 +592,7 @@ export type Database = {
       matches: {
         Row: {
           betting_enabled: boolean
+          goalkeeper_ids: string[]
           created_at: string
           created_by: string | null
           date: string
@@ -611,6 +612,7 @@ export type Database = {
         }
         Insert: {
           betting_enabled?: boolean
+          goalkeeper_ids?: string[]
           created_at?: string
           created_by?: string | null
           date: string
@@ -630,6 +632,7 @@ export type Database = {
         }
         Update: {
           betting_enabled?: boolean
+          goalkeeper_ids?: string[]
           created_at?: string
           created_by?: string | null
           date?: string

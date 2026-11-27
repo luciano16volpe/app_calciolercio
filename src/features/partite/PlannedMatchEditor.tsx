@@ -27,6 +27,9 @@ export function PlannedMatchEditor({ data, match, onClose, onSaved }: { data: Le
   const roster = data.dataset.players.filter((p) => !data.rosterIds || data.rosterIds.includes(p.id)).slice().sort((a, b) => a.name.localeCompare(b.name));
   const save = async () => {
     if (!date || !time || !place.name.trim()) { setError('Indica giorno, ora e luogo della partita.'); return; }
+    if (match.goalkeeperIds?.length === 2 && (!match.goalkeeperIds.every((id) => teams.teamA.includes(id) !== teams.teamB.includes(id)) || teams.teamA.includes(match.goalkeeperIds[0]!) === teams.teamA.includes(match.goalkeeperIds[1]!))) {
+      setError('I due portieri fissi devono restare convocati, uno per squadra.'); return;
+    }
     setBusy(true);
     setError('');
     try {

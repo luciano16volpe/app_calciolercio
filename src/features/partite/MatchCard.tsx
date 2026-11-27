@@ -262,7 +262,7 @@ function MatchOverview({ m, ratings }: { m: Match; ratings: Rating[] }) {
             const title = rating?.titolo ? String(rating.titolo) : '';
             const desc = rating?.notes ? String(rating.notes) : '';
             return <div className="match-overview-player" key={player.id ?? `${player.name}-${index}`}>
-              <div className="match-overview-player-top"><strong>{player.name}</strong><div className="match-overview-votes">
+              <div className="match-overview-player-top"><strong>{m.goalkeeperIds?.includes(player.id ?? '') ? '🧤 ' : ''}{player.name}</strong><div className="match-overview-votes">
                 {vote !== null ? <span className="match-overview-vote-community" title="Media dei votanti">Votanti {String(vote).replace('.', ',')}</span> : null}
                 {editorVote !== null ? <span className="match-overview-vote-editor" title="Voto dell'editore">Editore {String(editorVote).replace('.', ',')}</span> : null}
               </div></div>

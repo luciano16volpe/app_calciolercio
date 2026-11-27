@@ -22,7 +22,7 @@ export function initials(n: unknown): string {
 export function avatarClass(roles: string[] | undefined | null): string {
   if (!roles || roles.length === 0) return 'av-none';
   if (roles.length > 1) return 'av-multi';
-  return roles[0] === 'ATT' ? 'av-att' : roles[0] === 'DIF' ? 'av-def' : 'av-mid';
+    return roles[0] === 'ATT' ? 'av-att' : roles[0] === 'DIF' ? 'av-def' : roles[0] === 'POR' ? 'av-por' : 'av-mid';
 }
 
 /** Mette in sicurezza il testo per l'HTML (& < > " '). */

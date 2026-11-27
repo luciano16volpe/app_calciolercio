@@ -47,6 +47,19 @@ async function createPoll(pollOptions = options) {
   return rows[0]!.id;
 }
 
+test('salva i portieri fissi e rifiuta proposte che li mettono insieme', async () => {
+  await asUser(admin);
+  await db.query('update players set roles=array[\'POR\'] where id=$1', [players[0]]);
+  const header = { league_id: league, date: '2026-12-30', play_time: '21:00', place: 'Campo Sole', goalkeeper_ids: [players[0], players[3]] };
+  const created = await db.query<{ id: string }>('select create_match_with_formation_poll($1::jsonb,$2::jsonb) as id', [JSON.stringify(header), JSON.stringify(options)]);
+  const saved = await db.query<{ goalkeeper_ids: string[] }>('select goalkeeper_ids from matches where id=$1', [created.rows[0]!.id]);
+  expect(saved.rows[0]!.goalkeeper_ids).toEqual([players[0], players[3]]);
+  await db.exec('savepoint invalid_goalkeepers');
+  const invalid = { ...header, goalkeeper_ids: [players[0], players[2]] };
+  await expect(db.query('select create_match_with_formation_poll($1::jsonb,$2::jsonb)', [JSON.stringify(invalid), JSON.stringify(options)])).rejects.toThrow(/portiere fisso/);
+  await db.exec('rollback to savepoint invalid_goalkeepers');
+});
+
 test('tutti i membri vedono le opzioni e votano anche senza giocare', async () => {
   const id = await createPoll();
   await asUser(standard);

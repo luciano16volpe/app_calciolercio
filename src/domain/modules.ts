@@ -6,10 +6,10 @@ export const MODULE_SIZES = [5, 6, 7] as const;
 /** Chiave nel telefono. */
 export const MODULES_KEY = 'calc5_modules';
 
-/** Portieri, difensori, centrocampisti e attaccanti di uno schieramento (il portiere è il primo DIF molto arretrato). */
+/** Portieri, difensori, centrocampisti e attaccanti di uno schieramento. Riconosce anche il vecchio primo slot DIF. */
 export function moduleComposition(slots: Slot[]): { por: number; def: number; med: number; att: number } {
   return {
-    por: slots.filter((s) => s.role === 'DIF' && s.x < 0.15).length,
+    por: slots.filter((s) => s.role === 'POR' || (s.role === 'DIF' && s.x < 0.15)).length,
     def: slots.filter((s) => s.role === 'DIF' && s.x >= 0.15).length,
     med: slots.filter((s) => s.role === 'MED').length,
     att: slots.filter((s) => s.role === 'ATT').length,

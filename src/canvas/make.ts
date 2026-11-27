@@ -14,12 +14,12 @@ import { drawSheet, sheetInput, type SheetMatch } from './foglio';
 import { loadImage } from './images';
 import { drawSummary, summaryInput } from './riepilogo';
 
-const ROLE_ORDER: Record<string, number> = { ATT: 0, MED: 1, DIF: 2 };
+const ROLE_ORDER: Record<string, number> = { ATT: 0, MED: 1, DIF: 2, POR: 3 };
 
 /** Formazioni della proposta mostrata in Gioca. `now` = data di oggi (per il titolo). */
-export function combosFormations(ld: LeagueData, scores: number[], c: Combo, now = new Date()): HTMLCanvasElement {
+export function combosFormations(ld: LeagueData, scores: number[], c: Combo, now = new Date(), goalkeeperIndices: number[] = []): HTMLCanvasElement {
   const players = ld.dataset.players;
-  const side = (team: number[]): FormationPlayer[] => teamPlayers(players, scores, team).map((p) => ({ name: p.name, score: p.score, role: p.dispRole }));
+  const side = (team: number[]): FormationPlayer[] => teamPlayers(players, scores, team, goalkeeperIndices).map((p) => ({ name: p.name, score: p.score, role: p.fixedGoalkeeper ? 'POR' : p.dispRole }));
   const dstr = String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear();
   return drawFormations({
     tA: side(c.tA), tB: side(c.tB), sA: c.sA, sB: c.sB,
@@ -41,7 +41,7 @@ export function matchFormations(ld: LeagueData, m: Match): HTMLCanvasElement {
       .map((pl) => {
         const i = rosterIdx(pl);
         const p = i >= 0 ? (players[i] as Player) : null;
-        return { name: p ? p.name : pl.name, score: p ? (scores[i] as number) : null, role: p ? primaryRole(p) : 'MED' };
+        return { name: p ? p.name : pl.name, score: p ? (scores[i] as number) : null, role: m.goalkeeperIds?.includes(pl.id ?? '') ? 'POR' : p ? primaryRole(p) : 'MED' };
       })
       .sort((a, b) => (ROLE_ORDER[a.role] as number) - (ROLE_ORDER[b.role] as number));
   const tA = build(m.teamA), tB = build(m.teamB);

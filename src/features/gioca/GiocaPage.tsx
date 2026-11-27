@@ -110,7 +110,7 @@ function Chips({ arr, pcls, team, onDown }: { arr: TeamPlayer[]; pcls: string; t
       {arr.map((p) => (
         <div key={p.idx} className={`pchip ${pcls}`} data-team={team} data-pidx={p.idx} onDragStart={(e) => e.preventDefault()} onPointerDown={(e) => onDown(e, p.idx, team)}>
           <span className="pchip-grip">⠿</span>
-          <span className="pchip-name">{p.name}</span>
+          <span className="pchip-name">{p.fixedGoalkeeper ? '🧤 ' : ''}{p.name}</span>
           <span className="pchip-score">{p.score.toFixed(1)}</span>
         </div>
       ))}
@@ -151,19 +151,24 @@ export function PrecisionCard({ data }: { data: LeagueData }) {
 /** I tre pulsanti sotto le squadre dividono la riga in parti uguali; sugli schermi stretti (360 px) il testo va a capo invece di uscire dallo schermo. */
 const narrowBtn = { flex: 1, minWidth: 0, padding: '12px 6px', whiteSpace: 'normal', lineHeight: 1.2 } as const;
 
-export function ResultView({ data, res, scores, onChange, onCreate }: { data: LeagueData; res: Result; scores: number[]; onChange: (r: Result) => void; onCreate?: () => void }) {
+export function ResultView({ data, res, scores, goalkeeperIndices = [], onChange, onCreate }: { data: LeagueData; res: Result; scores: number[]; goalkeeperIndices?: number[]; onChange: (r: Result) => void; onCreate?: () => void }) {
   const toast = useToast();
   const { showImage, shareCanvas } = useImageTools();
   const { dataset } = data;
   const players = useMemo(() => dataset.players.map((p) => ({ ...p, photo: photoUrl(data.photos[p.id]) })), [dataset, data.photos]);
   const c = res.combos[res.idx] as Combo;
-  const pA = teamPlayers(players, scores, c.tA);
-  const pB = teamPlayers(players, scores, c.tB);
+  const pA = teamPlayers(players, scores, c.tA, goalkeeperIndices);
+  const pB = teamPlayers(players, scores, c.tB, goalkeeperIndices);
   const sum = comboSummary(c, res.genBest, res.idx, res.combos.length);
   const svg = pitchSvg(pA, pB, c.modA, c.modB);
   const rows = statAverages(dataset.players, c.tA, c.tB);
   const down = useDragSwap((a, b) => {
-    const next = swapPlayers({ players: dataset.players, scores }, c, a, b);
+    if (goalkeeperIndices.includes(a) !== goalkeeperIndices.includes(b)) {
+      toast('I portieri fissi devono restare uno per squadra');
+      return;
+    }
+    const scoringPlayers = goalkeeperIndices.length ? dataset.players.map((p, i) => goalkeeperIndices.includes(i) ? { ...p, roles: ['POR'] } : p) : dataset.players;
+    const next = swapPlayers({ players: scoringPlayers, scores }, c, a, b);
     if (!next) return;
     const combos = res.combos.slice();
     combos[res.idx] = next;
@@ -201,7 +206,7 @@ export function ResultView({ data, res, scores, onChange, onCreate }: { data: Le
       </div>
 
       <div style={{ display: 'flex', gap: 8, margin: '4px 0 14px' }}>
-        <button className="btn btn-primary" style={{ ...narrowBtn, background: '#25D366', borderColor: '#25D366' }} onClick={() => showImage('⚽ Formazioni di oggi', combosFormations(data, scores, c), 'formazioni.png', '⚽ Formazioni di oggi')}>📲 Condividi</button>
+        <button className="btn btn-primary" style={{ ...narrowBtn, background: '#25D366', borderColor: '#25D366' }} onClick={() => showImage('⚽ Formazioni di oggi', combosFormations(data, scores, c, new Date(), goalkeeperIndices), 'formazioni.png', '⚽ Formazioni di oggi')}>📲 Condividi</button>
         <button className="btn btn-secondary" style={narrowBtn} onClick={() => { void comboSheet(data, c).then((s) => shareCanvas(s.canvas, 'foglio_partita_' + s.date + '.png', '📋 Foglio partita del ' + formatDate(s.date))).catch(() => toast('Impossibile preparare il foglio. Riprova.')); }} title="Foglio A4 in bianco e nero da stampare e compilare in campo">🖨️ Foglio</button>
         <button className="btn btn-primary" style={narrowBtn} onClick={onCreate ?? soon("Per creare la partita serve essere amministratore della lega")}>📅 Crea partita</button>
       </div>
@@ -250,6 +255,8 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
   const [chosen, setChosen] = useState<Format | null>(() => readSavedFormat(data.league.id));
   const fmt: Format = chosen ?? (leagueFormat ? { sizeA: leagueFormat, sizeB: leagueFormat, asym: false } : { sizeA: 5, sizeB: 5, asym: false });
   const [selected, setSelected] = useState<string[]>(initialSelected); // id dei convocati, nell'ordine in cui sono scelti
+  const [keeperMode, setKeeperMode] = useState<'volanti' | 'fissi'>('volanti');
+  const [keeperIds, setKeeperIds] = useState<string[]>([]);
   const [res, setRes] = useState<Result | null>(null);
   const [creating, setCreating] = useState(false);
   const [scores, setScores] = useState<number[]>([]);
@@ -258,19 +265,32 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
   const all = useMemo(() => seasonStats(dataset), [dataset]);
   const update = (f: Format) => {
     setChosen(f);
+    setRes(null);
     saveFormat(data.league.id, f);
   };
   const live = selected.filter((id) => dataset.players.some((p) => p.id === id)); // un giocatore tolto dalla rosa non conta più
+
+  const activeKeepers = keeperMode === 'fissi' ? [0, 1].map((slot) => live.includes(keeperIds[slot] ?? '') ? keeperIds[slot] as string : '') : [];
+  const goalkeeperIndices = activeKeepers.filter(Boolean).map((id) => dataset.players.findIndex((p) => p.id === id));
+  const choosePlayers = (ids: string[]) => {
+    setSelected(ids);
+    setKeeperIds((prev) => prev.map((id) => ids.includes(id) ? id : ''));
+    setRes(null);
+  };
 
   const generate = () => {
     if (live.length !== total) {
       toast(`Seleziona esattamente ${total} giocatori (${live.length}/${total})`);
       return;
     }
+    if (keeperMode === 'fissi' && (!activeKeepers[0] || !activeKeepers[1] || activeKeepers[0] === activeKeepers[1])) {
+      toast('Seleziona due portieri fissi tra i convocati');
+      return;
+    }
     const sc = balanceScores(dataset, weights, formOn(data));
     const idx = live.map((id) => dataset.players.findIndex((p) => p.id === id));
-    const out = generateTeams({ players: dataset.players, scores: sc, selected: idx, sizeA: fmt.sizeA, sizeB: fmt.sizeB, modules: modulesOf(data), blocked: blockedPairs(dataset, idx) });
-    if (!out) return;
+    const out = generateTeams({ players: dataset.players, scores: sc, selected: idx, sizeA: fmt.sizeA, sizeB: fmt.sizeB, modules: modulesOf(data), blocked: blockedPairs(dataset, idx), goalkeepers: keeperMode === 'fissi' ? goalkeeperIndices as [number, number] : undefined });
+    if (!out || !out.combos.length) { toast('Nessuna formazione disponibile con i portieri scelti'); return; }
     if (out.violations > 0) toast(`Turnazione non rispettabile del tutto: ${out.violations === 1 ? 'una coppia resta insieme' : `${out.violations} coppie restano insieme`} per più di 3 partite di fila.`);
     setScores(sc);
     setRes({ combos: out.combos, genBest: out.genBest, idx: 0 });
@@ -323,10 +343,10 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
       <div className="card gioca-section">
         <div className="gioca-section-heading"><span className="gioca-step">2</span><div><div className="section-header">Convocati</div><div className="gioca-section-help">Scegli i giocatori che scenderanno in campo.</div></div></div>
         <div className="btn-row" style={{ marginBottom: 8 }}>
-          <button className="btn btn-secondary btn-sm" onClick={() => setSelected(order.slice(0, Math.min(total, order.length)).map((i) => (dataset.players[i] as { id: string }).id))}>
+          <button className="btn btn-secondary btn-sm" onClick={() => choosePlayers(order.slice(0, Math.min(total, order.length)).map((i) => (dataset.players[i] as { id: string }).id))}>
             ✓ Seleziona i primi <span id="sfn">{total}</span>
           </button>
-          <button className="btn btn-secondary btn-sm" onClick={() => setSelected([])}>✕ Tutti</button>
+          <button className="btn btn-secondary btn-sm" onClick={() => choosePlayers([])}>✕ Tutti</button>
         </div>
         <div className="conv-grid" id="conv-list">
           {order.map((i) => {
@@ -335,7 +355,7 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
             const pag = pagInfo(playerRatingAvg(playerSeason(dataset, p, all)).avg);
             const photo = photoUrl(data.photos[p.id]);
             return (
-              <div key={p.id} className={`conv-item${sel ? ' sel' : ''}`} onClick={() => setSelected(sel ? live.filter((x) => x !== p.id) : [...live, p.id])}>
+              <div key={p.id} className={`conv-item${sel ? ' sel' : ''}`} onClick={() => choosePlayers(sel ? live.filter((x) => x !== p.id) : [...live, p.id])}>
                 <div className="conv-avatar-stack">
                   <span className={`pag-badge ${pag.cls}`} title="Media pagelle">{pag.label}</span>
                   <PlayerAvatar key={`${p.id}:${photo}`} className="conv-avatar" name={p.name} roles={p.roles ?? []} photo={photo} />
@@ -351,13 +371,29 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
           })}
         </div>
         <div className="conv-status">Selezionati: <span className={`cnt${live.length === total ? '' : ' warn'}`} id="sel-cnt">{live.length}</span> / <span id="needed-n2">{total}</span> richiesti</div>
+        <div className="keeper-choice">
+          <div className="section-header">Portieri</div>
+          <div className="keeper-modes">
+            <label><input type="radio" name="keeper-mode" checked={keeperMode === 'volanti'} onChange={() => { setKeeperMode('volanti'); setRes(null); }} /> Volanti</label>
+            <label><input type="radio" name="keeper-mode" checked={keeperMode === 'fissi'} onChange={() => { setKeeperMode('fissi'); setKeeperIds(live.filter((id) => dataset.players.find((p) => p.id === id)?.roles?.includes('POR')).slice(0, 2)); setRes(null); }} /> Fissi per tutta la partita</label>
+          </div>
+          {keeperMode === 'fissi' ? <div className="keeper-selects">
+            {[0, 1].map((slot) => <label key={slot}>Portiere {slot + 1}
+              <select value={activeKeepers[slot] ?? ''} onChange={(e) => { const next = [...activeKeepers]; next[slot] = e.target.value; setKeeperIds(next); setRes(null); }}>
+                <option value="">Scegli un convocato</option>
+                {live.filter((id) => id === activeKeepers[slot] || id !== activeKeepers[1 - slot]).map((id) => <option key={id} value={id}>{dataset.players.find((p) => p.id === id)?.name}</option>)}
+              </select>
+            </label>)}
+            <small>I due portieri vengono messi in squadre diverse; il sorteggio completa le formazioni attorno a loro.</small>
+          </div> : <small>Il portiere può ruotare durante la partita, come nelle formazioni attuali.</small>}
+        </div>
       </div>
 
       <div className="gioca-generate"><div className="gioca-section-heading"><span className="gioca-step">3</span><div><div className="section-header">Squadre</div><div className="gioca-section-help">{live.length === total ? 'Tutto pronto per il sorteggio.' : `Selezionati ${live.length} su ${total} giocatori.`}</div></div></div>
       <button className="btn btn-primary btn-full" style={{ marginBottom: 14 }} onClick={generate}>⚽ Genera squadre bilanciate</button></div>
 
-      {res && res.combos.length ? <ResultView data={data} res={res} scores={scores} onChange={setRes} onCreate={canCreate ? () => setCreating(true) : undefined} /> : null}
-      {creating && res && res.combos.length ? <NewMatchDialog data={data} combos={res.combos} idx={res.idx} onClose={() => setCreating(false)} /> : null}
+      {res && res.combos.length ? <ResultView data={data} res={res} scores={scores} goalkeeperIndices={keeperMode === 'fissi' ? goalkeeperIndices : []} onChange={setRes} onCreate={canCreate ? () => setCreating(true) : undefined} /> : null}
+      {creating && res && res.combos.length ? <NewMatchDialog data={data} combos={res.combos} idx={res.idx} goalkeeperIds={keeperMode === 'fissi' ? activeKeepers.filter(Boolean) : []} onClose={() => setCreating(false)} /> : null}
     </>
   );
 }

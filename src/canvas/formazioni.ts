@@ -36,7 +36,7 @@ export function drawFormations(o: FormationsInput): HTMLCanvasElement {
       ctx.fillStyle = SHARE_C.CARD;
       roundRect(ctx, x, y, colW, rowH - 8, 10);
       ctx.fill();
-      ctx.fillStyle = p.role === 'ATT' ? '#ef5350' : p.role === 'DIF' ? '#42a5f5' : '#66bb6a';
+      ctx.fillStyle = p.role === 'POR' ? '#b494e3' : p.role === 'ATT' ? '#ef5350' : p.role === 'DIF' ? '#42a5f5' : '#66bb6a';
       ctx.beginPath();
       ctx.arc(x + 22, y + (rowH - 8) / 2, 7, 0, 7);
       ctx.fill();

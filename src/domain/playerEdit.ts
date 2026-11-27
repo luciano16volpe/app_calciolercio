@@ -10,6 +10,6 @@ export function toggleRole(roles: string[], r: string): string[] | null {
 }
 
 /** Ordine fisso dei ruoli e loro nomi. */
-export const ROLES = ['ATT', 'MED', 'DIF'] as const;
-export const ROLE_CLS: Record<string, string> = { ATT: 'att', MED: 'mid', DIF: 'def' };
-export const ROLE_LABEL: Record<string, string> = { ATT: 'Attacco', MED: 'Centrocampo', DIF: 'Difesa' };
+export const ROLES = ['ATT', 'MED', 'DIF', 'POR'] as const;
+export const ROLE_CLS: Record<string, string> = { ATT: 'att', MED: 'mid', DIF: 'def', POR: 'por' };
+export const ROLE_LABEL: Record<string, string> = { ATT: 'Attacco', MED: 'Centrocampo', DIF: 'Difesa', POR: 'Portiere' };

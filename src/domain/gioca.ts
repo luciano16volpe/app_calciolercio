@@ -5,7 +5,7 @@ import {
 import type { PitchPlayer } from './pitch';
 import type { Match, Player } from './types';
 
-const ROLE_ORDER: Record<string, number> = { ATT: 0, MED: 1, DIF: 2 };
+const ROLE_ORDER: Record<string, number> = { ATT: 0, MED: 1, DIF: 2, POR: 3 };
 
 /** Ruolo mostrato di un giocatore: il primo, altrimenti centrocampista. */
 export const primaryRole = (p: { roles?: string[] }): string => (p.roles && p.roles[0]) || 'MED';
@@ -22,11 +22,12 @@ export function teamPlayers(
   players: Array<Pick<Player, 'name' | 'roles'> & { photo?: string | null }>,
   scores: number[],
   team: number[],
+  goalkeepers: number[] = [],
 ): TeamPlayer[] {
   return team
     .map((i) => {
       const p = players[i] as (typeof players)[number];
-      return { name: p.name, photo: p.photo ?? null, roles: p.roles ?? [], idx: i, score: scores[i] as number, dispRole: primaryRole(p) };
+      return { name: p.name, photo: p.photo ?? null, roles: p.roles ?? [], idx: i, score: scores[i] as number, dispRole: primaryRole(p), fixedGoalkeeper: goalkeepers.includes(i) };
     })
     .sort((a, b) => (ROLE_ORDER[a.dispRole] as number) - (ROLE_ORDER[b.dispRole] as number));
 }

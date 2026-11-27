@@ -10,6 +10,8 @@ export interface PitchPlayer {
   roles: string[];
   /** ruolo mostrato (il primo, altrimenti centrocampista) */
   dispRole: string;
+  /** Se vero, occupa il primo posto davanti alla propria porta per tutta la partita. */
+  fixedGoalkeeper?: boolean;
 }
 
 /** Misure e contenuto del campo: viewBox e tutto quello che sta dentro l'SVG. */
@@ -93,7 +95,9 @@ export function pitchSvg(
       let bestScore = -1;
       playerArr.forEach((p, pi) => {
         if (used.has(pi)) return;
+        if (p.fixedGoalkeeper && si !== 0) return;
         let sc = 0;
+        if (si === 0 && p.fixedGoalkeeper) sc += 100;
         if (p.roles.includes(sl.role)) sc += 2;
         if (p.dispRole === sl.role) sc += 1;
         if (sc > bestScore) {

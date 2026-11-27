@@ -4,7 +4,7 @@ export const STATS = [
   'attacco', 'difesa', 'tecnica', 'porta', 'intelligenza',
 ] as const;
 
-export type Role = 'ATT' | 'MED' | 'DIF';
+export type Role = 'ATT' | 'MED' | 'DIF' | 'POR';
 
 export interface Player {
   id: string;
@@ -24,6 +24,7 @@ export interface Match {
   scoreB?: number | string | null;
   teamA?: TeamEntry[];
   teamB?: TeamEntry[];
+  goalkeeperIds?: string[];
   [extra: string]: unknown;
 }
 
@@ -54,4 +55,4 @@ export interface Dataset {
 export const ICONS = ["🏃","💪","⚡","💨","🎯","🔀","⚔️","🛡️","🎨","🧤","🧠"] as const;
 
 /** Nome esteso dei ruoli. */
-export const ROLE_LABELS: Record<Role, string> = {"ATT":"Attacco","MED":"Centrocampo","DIF":"Difesa"};
+export const ROLE_LABELS: Record<Role, string> = {"ATT":"Attacco","MED":"Centrocampo","DIF":"Difesa","POR":"Portiere"};

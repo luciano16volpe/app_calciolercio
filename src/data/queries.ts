@@ -139,8 +139,13 @@ async function fetchLeagueRoster(leagueId: string) {
 
 /** Lo storico resta completo per tutte le formule e si legge in pagine dal server. */
 async function fetchLeagueHistory(league: LeagueData['league']) {
+  const matchesWithKeepers = () => fetchAll((a, b) => supabase.from('matches').select('id, date, play_time, place, place_lat, place_lng, place_url, ratings_skipped, notes, score_a, score_b, pred, pred_rank, betting_enabled, goalkeeper_ids').eq('league_id', league.id).order('id').range(a, b), 'partite');
+  const matchesLegacy = () => fetchAll((a, b) => supabase.from('matches').select('id, date, play_time, place, place_lat, place_lng, place_url, ratings_skipped, notes, score_a, score_b, pred, pred_rank, betting_enabled').eq('league_id', league.id).order('id').range(a, b), 'partite').then((rows) => rows.map((row) => ({ ...row, goalkeeper_ids: [] as string[] })));
   const [matches, albo, editorsRes] = await Promise.all([
-    fetchAll((a, b) => supabase.from('matches').select('id, date, play_time, place, place_lat, place_lng, place_url, ratings_skipped, notes, score_a, score_b, pred, pred_rank, betting_enabled').eq('league_id', league.id).order('id').range(a, b), 'partite'),
+    matchesWithKeepers().catch((error: unknown) => {
+      if (!String(error).includes('goalkeeper_ids')) throw error;
+      return matchesLegacy();
+    }),
     supabase.from('albo').select('rows').eq('league_id', league.id),
     supabase.from('match_editors').select('match_id, name').eq('league_id', league.id), // la firma delle pagelle: se non si legge, si omette
   ]);

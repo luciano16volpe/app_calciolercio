@@ -77,6 +77,7 @@ export interface NewMatch {
   notes: string;
   teamA: string[];
   teamB: string[];
+  goalkeeperIds?: string[];
   scoreA: number | '';
   scoreB: number | '';
   /** squilibrio previsto alla creazione (Blu − Bianchi) e quale proposta si gioca (0 = squadre cambiate a mano) */
@@ -88,7 +89,7 @@ export interface NewMatch {
 /** Crea partita e squadre in una sola transazione. */
 export async function createMatch(m: NewMatch): Promise<string> {
   const header = { league_id: m.leagueId, date: m.date, play_time: m.time || null,
-      betting_enabled: m.bettingEnabled,
+      betting_enabled: m.bettingEnabled, goalkeeper_ids: m.goalkeeperIds ?? [],
       place: m.place.trim() || null, place_lat: m.placeLat ?? null, place_lng: m.placeLng ?? null, place_url: m.placeUrl ?? null, notes: m.notes || null,
       score_a: m.scoreA === '' ? null : m.scoreA, score_b: m.scoreB === '' ? null : m.scoreB,
       pred: m.pred, pred_rank: m.predRank };

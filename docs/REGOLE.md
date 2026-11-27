@@ -62,8 +62,12 @@ Le decisioni recenti dell'utente prevalgono sulle descrizioni delle fasi inizial
 (`futTier`, `FUT_TIERS`)
 
 ## 7. Sorteggio delle squadre (Gioca)
-- Formati 5vs5, 6vs6, 7vs7, anche asimmetrici (es. 5vs6). Moduli per formato in `MODULES`
-  (il portiere ruota: lo slot DIF più arretrato non conta per i ruoli).
+- Formati 5vs5, 6vs6, 7vs7, anche asimmetrici (es. 5vs6). Moduli per formato in `MODULES`:
+  il primo `1` indica sempre il posto del portiere (`POR`) e non conta nella copertura dei ruoli di movimento.
+- Nella Rosa si può assegnare `POR` come ruolo stabile del giocatore. In Gioca, prima del sorteggio, si scelgono
+  portieri **volanti** (funzionamento precedente: il posto in porta può ruotare) oppure **fissi** per tutta la partita.
+  Per i fissi si indicano due convocati, anche se non hanno `POR` come ruolo stabile: tutte le formazioni generate
+  e tutte le opzioni del sondaggio ne hanno uno per squadra. La scelta è salvata nella partita.
 - `comboMetrics(tA,tB,modA,modB)` — punteggio (più basso = meglio):
   `score = diff×1,00 + distrib×0,28 + rolePenalty×1,30 + repartiPenalty×1,10 + extremePenalty`
   - `diff` = |media A − media B| (sui valori di bilanciamento)
