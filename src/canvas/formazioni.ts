@@ -5,6 +5,7 @@ export interface FormationPlayer {
   name: string;
   score: number | null;
   role: string;
+  fixedGoalkeeper?: boolean;
 }
 
 export interface FormationsInput {
@@ -42,8 +43,14 @@ export function drawFormations(o: FormationsInput): HTMLCanvasElement {
       ctx.fill();
       ctx.fillStyle = SHARE_C.TXT;
       ctx.textAlign = 'left';
+      const keeperLabel = p.fixedGoalkeeper ? 'PORTIERE FISSO' : p.role === 'POR' ? 'PORTIERE DI RUOLO' : '';
       ctx.font = SHARE_FONT('700 21px');
-      ctx.fillText(fitText(ctx, p.name, colW - 110), x + 40, y + (rowH - 8) / 2 + 7);
+      ctx.fillText(fitText(ctx, p.name, colW - 110), x + 40, y + (keeperLabel ? 22 : (rowH - 8) / 2 + 7));
+      if (keeperLabel) {
+        ctx.fillStyle = '#b494e3';
+        ctx.font = SHARE_FONT('700 12px');
+        ctx.fillText(keeperLabel, x + 40, y + 40);
+      }
       ctx.fillStyle = accent;
       ctx.textAlign = 'right';
       ctx.font = SHARE_FONT('800 20px');

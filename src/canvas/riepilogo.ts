@@ -7,6 +7,8 @@ import { drawShareHeader, drawTeamBlock, fitText, newShareCanvas, roundRect, SHA
 
 export interface SummaryRow {
   name: string;
+  fixedGoalkeeper?: boolean;
+  goalkeeperRole?: boolean;
   /** voto (1–10) o niente se non votato */
   v: number | null;
   /** giudizio dell'editore, separato dalla media dei votanti */
@@ -43,6 +45,8 @@ export function summaryInput(data: Dataset, m: Match, editor?: string): SummaryI
         const editorV = r ? parseFloat(r.editorRating as string) : NaN;
         return {
           name: playerKey(data.players, pl.id, pl.name).name,
+          fixedGoalkeeper: m.goalkeeperIds?.includes(pl.id ?? '') ?? false,
+          goalkeeperRole: data.players.some((player) => player.id === pl.id && player.roles?.includes('POR')),
           v: !isNaN(v) && v >= 1 ? v : null,
           editorV: !isNaN(editorV) && editorV >= 1 ? editorV : null,
           g: r ? parseInt(r.goals as string) || 0 : 0,
@@ -74,7 +78,9 @@ export function drawSummary(s: SummaryInput): HTMLCanvasElement {
   const sbY = notes ? 130 : 110, sbH = 128; // tabellone
   const hlY = sbY + sbH + 18, hlH = 84; // riquadri dei momenti chiave
   const tbY = hlY + hlH + 22, tbH = 58; // riquadri delle squadre
-  const anyTit = [...tA, ...tB].some((p) => p.tit), rowH = anyTit ? 86 : 64, rowsY = tbY + tbH + 10; // righe più alte se ci sono i titoli
+  const anyTit = [...tA, ...tB].some((p) => p.tit);
+  const anyKeeper = [...tA, ...tB].some((p) => p.fixedGoalkeeper || p.goalkeeperRole);
+  const rowH = (anyTit ? 86 : 64) + (anyKeeper ? 18 : 0), rowsY = tbY + tbH + 10;
   const bodyRows = Math.max(tA.length, tB.length);
   const H = rowsY + bodyRows * rowH + 56;
   const { canvas, ctx } = newShareCanvas(W, H);
@@ -170,10 +176,16 @@ export function drawSummary(s: SummaryInput): HTMLCanvasElement {
       ctx.fillStyle = C.TXT;
       ctx.font = SHARE_FONT('700 20px');
       ctx.fillText(fitText(ctx, (isMvp ? '⭐ ' : '') + p.name, colW - 150), x + 16, y + 25);
+      const keeperLabel = p.fixedGoalkeeper ? 'PORTIERE FISSO' : p.goalkeeperRole ? 'PORTIERE DI RUOLO' : '';
+      if (keeperLabel) {
+        ctx.fillStyle = '#b494e3';
+        ctx.font = SHARE_FONT('700 13px');
+        ctx.fillText(keeperLabel, x + 16, y + 44);
+      }
       if (p.tit) {
         ctx.fillStyle = '#f2c94c';
         ctx.font = SHARE_FONT('italic 700 16px');
-        ctx.fillText(fitText(ctx, '«' + p.tit + '»', colW - 150), x + 16, y + 48);
+        ctx.fillText(fitText(ctx, '«' + p.tit + '»', colW - 150), x + 16, y + (keeperLabel ? 65 : 48));
       }
       const chips = [p.g ? `⚽ ${p.g}` : '', p.a ? `🅰️ ${p.a}` : '', p.ag ? `🙃 ${p.ag}` : '', p.rs ? `❌ ${p.rs}` : '', p.mt ? `🚀 ${p.mt}` : '']
         .filter(Boolean)
@@ -181,7 +193,7 @@ export function drawSummary(s: SummaryInput): HTMLCanvasElement {
       if (chips) {
         ctx.fillStyle = C.SUB;
         ctx.font = SHARE_FONT('600 15px');
-        ctx.fillText(fitText(ctx, chips, colW - 150), x + 16, y + (anyTit ? 70 : 46));
+        ctx.fillText(fitText(ctx, chips, colW - 150), x + 16, y + (anyTit ? (keeperLabel ? 86 : 70) : (keeperLabel ? 64 : 46)));
       }
       ctx.textAlign = 'right';
       ctx.font = SHARE_FONT('800 15px');
