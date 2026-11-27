@@ -52,11 +52,10 @@ test('Figurina: si apre a schermo intero, a doppia risoluzione, con Condividi e 
   expect(size).toEqual({ w: 1440, h: 2280 }); // 720×1140 a doppia risoluzione
   await expect(viewer.locator('.gv-top')).toContainText('🃏 La figurina di');
   await expect(viewer.locator('.gv-btns button')).toHaveText(['📲 Condividi', '⬇️ Salva']);
-  // tocco sull'immagine = ingrandisce / rimpicciolisce
-  await viewer.locator('.gv-img').click();
-  await expect(viewer.locator('.gv-img')).toHaveClass(/zoom/);
+  // La figurina resta intera: il tocco non attiva lo zoom.
   await viewer.locator('.gv-img').click();
   await expect(viewer.locator('.gv-img')).not.toHaveClass(/zoom/);
+  await expect(viewer.locator('.gv-note')).not.toContainText('ingrandirla');
   // Salva scarica il file
   const [dl] = await Promise.all([page.waitForEvent('download'), viewer.locator('.gv-btns button', { hasText: 'Salva' }).click()]);
   expect(dl.suggestedFilename()).toMatch(/^figurina_.+\.png$/);

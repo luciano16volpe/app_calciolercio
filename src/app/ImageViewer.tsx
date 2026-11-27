@@ -130,11 +130,11 @@ export function ImageProvider({ children }: { children: ReactNode }) {
             <span>{shown.title}</span>
             <button type="button" onClick={close} aria-label="Chiudi">✕</button>
           </div>
-          <div className={`gv-img${zoom ? ' zoom' : ''}`} onClick={() => setZoom((z) => !z)}>
+          <div className={`gv-img${zoom ? ' zoom' : ''}${shown.tilt ? ' figurina-static' : ''}`} onClick={shown.tilt ? undefined : () => setZoom((z) => !z)}>
             {shown.tilt && !zoom ? <TiltImage url={shown.url} alt={shown.title} holo={shown.tilt.holo} subscribe={gyro.subscribe} /> : <img src={shown.url} alt={shown.title} decoding="async" />}
           </div>
           <div className="gv-note">
-            {shown.tilt ? 'Muovi il dito sulla figurina per farla brillare. Tocca per ingrandirla.' : "Tocca l'immagine per ingrandirla."}
+            {shown.tilt ? 'Muovi il dito sulla figurina per farla brillare.' : "Tocca l'immagine per ingrandirla."}
             {gyro.needsPermission ? <button type="button" className="gv-tilt-btn" onClick={() => void gyro.enable()}>✨ Fai brillare inclinando il telefono</button> : null}
           </div>
           <div className="gv-btns">
