@@ -130,6 +130,7 @@ Le decisioni recenti dell'utente prevalgono sulle descrizioni delle fasi inizial
 - 🤝 Compagni e avversari (compagno d'oro / maledetto, bestia nera, vittima preferita) + ⚔️ Confronta.
 
 ## 11. Partite
+- Sondaggio formazioni: resta aperto per 24 ore dalla creazione. Tutti i membri della lega possono votare, anche se non giocano la partita. Il numero di votanti e il tempo residuo sono visibili a tutti durante il voto; le scelte individuali diventano visibili a tutti dopo la chiusura. L'admin può vederle anche durante il voto, chiudere il sondaggio in anticipo e riaprirlo prima della partita se risultato e statistiche non sono stati inseriti. La riapertura conserva i voti e avvia una nuova finestra di 24 ore, limitata dall'orario della partita. In caso di parità, vince la formazione con il rango di precisione migliore.
 - Pulsanti di condivisione: **non giocata** → Formazioni · Riepilogo · Foglio; **giocata** →
   Riepilogo + 📰 Gazzetta (se c'è) + 📜 Pagelle (se c'è almeno un titolo/descrizione).
 - Elenco: segnalini 📰 (Gazzetta) e ✍️ / ✍️ 4/10 (descrizioni presenti / parziali).

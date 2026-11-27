@@ -1,15 +1,19 @@
 import { useFormationPollVotes, type FormationOption } from '../../data/formationPolls';
 
-export function FormationVoteSummary({ matchId, options, names }: {
+export function FormationVoteSummary({ matchId, options, names, total, showDetails, admin }: {
   matchId: string;
   options: FormationOption[];
   names: Map<string, string>;
+  total: number;
+  showDetails: boolean;
+  admin: boolean;
 }) {
-  const votes = useFormationPollVotes(matchId, true);
-  return <details className="formation-vote-summary admin-only">
-    <summary>Partecipazione al voto <span>{votes.data ? `${votes.data.total} ${votes.data.total === 1 ? 'votante' : 'votanti'}` : '…'}</span></summary>
+  const votes = useFormationPollVotes(matchId, showDetails);
+  return <details className={`formation-vote-summary${admin ? ' admin-only' : ''}`}>
+    <summary>Partecipazione al voto <span>{total} {total === 1 ? 'votante' : 'votanti'}</span></summary>
     <div className="formation-vote-summary-content">
-      {votes.isError ? <p role="alert">Impossibile caricare i voti. Riprova.</p>
+      {!showDetails ? <p>I nomi e le scelte saranno visibili alla chiusura.</p>
+        : votes.isError ? <p role="alert">Impossibile caricare i voti. Riprova.</p>
         : !votes.data ? <p>Caricamento voti…</p>
           : !votes.data.total ? <p>Ancora nessun voto.</p>
             : votes.data.options.filter((option) => option.voters.length).sort((a, b) => b.voters.length - a.voters.length).map((option) => {

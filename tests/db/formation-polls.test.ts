@@ -39,29 +39,30 @@ async function asUser(id: string) {
   await db.query("select set_config('request.jwt.claim.sub',$1,true)", [id]);
   await db.exec('set local role authenticated');
 }
-async function createPoll() {
+async function createPoll(pollOptions = options) {
   await asUser(admin);
   const { rows } = await db.query<{ id: string }>('select create_match_with_formation_poll($1::jsonb,$2::jsonb) as id', [
-    JSON.stringify({ league_id: league, date: '2026-12-30', play_time: '21:00', place: 'Campo Sole' }), JSON.stringify(options),
+    JSON.stringify({ league_id: league, date: '2026-12-30', play_time: '21:00', place: 'Campo Sole' }), JSON.stringify(pollOptions),
   ]);
   return rows[0]!.id;
 }
 
-test('tutti i membri vedono le opzioni, ma solo Premium può votare anche senza giocare', async () => {
+test('tutti i membri vedono le opzioni e votano anche senza giocare', async () => {
   const id = await createPoll();
   await asUser(standard);
-  const { rows: standardState } = await db.query<{ state: { is_open: boolean; has_premium: boolean; options: unknown[] } }>('select formation_poll_state($1::uuid) as state', [id]);
-  expect(standardState[0]!.state).toMatchObject({ is_open: true, has_premium: false });
+  const { rows: standardState } = await db.query<{ state: { is_open: boolean; voter_count: number; options: unknown[] } }>('select formation_poll_state($1::uuid) as state', [id]);
+  expect(standardState[0]!.state).toMatchObject({ is_open: true, voter_count: 0 });
   expect(standardState[0]!.state.options).toHaveLength(2);
-  await db.exec('savepoint denied');
-  await expect(db.query('select submit_formation_vote($1::uuid,2::smallint)', [id])).rejects.toThrow(/Premium/);
-  await db.exec('rollback to savepoint denied');
+  await db.query('select submit_formation_vote($1::uuid,2::smallint)', [id]);
   await asUser(premium);
   await db.query('select submit_formation_vote($1::uuid,2::smallint)', [id]);
   await db.query('select submit_formation_vote($1::uuid,1::smallint)', [id]);
   expect((await db.query('select formation_poll_state($1::uuid) as state', [id])).rows[0]).toMatchObject({ state: { my_vote: 1 } });
   await asUser(outsider);
   expect((await db.query('select formation_poll_state($1::uuid) as state', [id])).rows[0]).toEqual({ state: null });
+  await db.exec('savepoint outsider_vote');
+  await expect(db.query('select submit_formation_vote($1::uuid,1::smallint)', [id])).rejects.toThrow(/Non fai parte della lega/);
+  await db.exec('rollback to savepoint outsider_vote');
 });
 
 test('alla chiusura salva la formazione vincente una sola volta', async () => {
@@ -90,8 +91,8 @@ test('senza voti mantiene le squadre pubblicate dall’admin', async () => {
     .toEqual([{ player_id: players[0] }, { player_id: players[1] }]);
 });
 
-test('un pareggio conserva le squadre iniziali', async () => {
-  const id = await createPoll();
+test('un pareggio sceglie la formazione più precisa', async () => {
+  const id = await createPoll([{ ...options[0]!, rank: 2 }, { ...options[1]!, rank: 1 }]);
   await asUser(admin);
   await db.query('select submit_formation_vote($1::uuid,1::smallint)', [id]);
   await asUser(premium);
@@ -100,7 +101,59 @@ test('un pareggio conserva le squadre iniziali', async () => {
   await db.query("select set_config('request.jwt.claim.sub','',true)");
   await db.query("update formation_polls set opened_at=now()-interval '25 hours',closes_at=now()-interval '1 hour' where match_id=$1", [id]);
   await db.query('select finalize_formation_polls()');
-  expect((await db.query('select winning_option from formation_polls where match_id=$1', [id])).rows).toEqual([{ winning_option: 1 }]);
+  expect((await db.query('select winning_option from formation_polls where match_id=$1', [id])).rows).toEqual([{ winning_option: 2 }]);
+  expect((await db.query("select player_id from match_players where match_id=$1 and team='A' order by position", [id])).rows)
+    .toEqual([{ player_id: players[0] }, { player_id: players[2] }]);
+});
+
+test('il numero dei votanti è pubblico subito, le scelte dopo la chiusura', async () => {
+  const id = await createPoll();
+  await asUser(premium);
+  await db.query('select submit_formation_vote($1::uuid,2::smallint)', [id]);
+  await asUser(standard);
+  expect((await db.query('select formation_poll_state($1::uuid) as state', [id])).rows[0])
+    .toMatchObject({ state: { voter_count: 1, is_open: true } });
+  expect((await db.query('select formation_poll_votes($1::uuid) as votes', [id])).rows[0])
+    .toMatchObject({ votes: { total: 1, options: [] } });
+  await asUser(admin);
+  expect((await db.query('select formation_poll_votes($1::uuid) as votes', [id])).rows[0])
+    .toMatchObject({ votes: { total: 1, options: expect.arrayContaining([expect.objectContaining({ option_no: 2, voters: [expect.objectContaining({ user_id: premium })] })]) } });
+  await db.query('select close_formation_poll($1::uuid)', [id]);
+  await asUser(standard);
+  expect((await db.query('select formation_poll_votes($1::uuid) as votes', [id])).rows[0])
+    .toMatchObject({ votes: { total: 1, options: expect.arrayContaining([expect.objectContaining({ option_no: 2, voters: [expect.objectContaining({ user_id: premium })] })]) } });
+});
+
+test('solo l’admin riapre il sondaggio e i voti restano modificabili per 24 ore', async () => {
+  const id = await createPoll();
+  await asUser(premium);
+  await db.query('select submit_formation_vote($1::uuid,2::smallint)', [id]);
+  await asUser(admin);
+  await db.query('select close_formation_poll($1::uuid)', [id]);
+  expect((await db.query('select formation_poll_state($1::uuid) as state', [id])).rows[0])
+    .toMatchObject({ state: { winning_option: 2 } });
+  await asUser(standard);
+  await db.exec('savepoint not_admin');
+  await expect(db.query('select reopen_formation_poll($1::uuid)', [id])).rejects.toThrow(/solo l’amministratore/);
+  await db.exec('rollback to savepoint not_admin');
+  await asUser(admin);
+  await db.query('select reopen_formation_poll($1::uuid)', [id]);
+  const { rows } = await db.query<{ state: { is_open: boolean; voter_count: number; can_reopen: boolean; closes_at: string } }>('select formation_poll_state($1::uuid) as state', [id]);
+  expect(rows[0]!.state).toMatchObject({ is_open: true, voter_count: 1, can_reopen: false });
+  const remaining = new Date(rows[0]!.state.closes_at).getTime() - Date.now();
+  expect(remaining).toBeGreaterThan(23 * 60 * 60 * 1000);
+  expect(remaining).toBeLessThanOrEqual(24 * 60 * 60 * 1000);
+  await asUser(standard);
+  await db.query('select submit_formation_vote($1::uuid,1::smallint)', [id]);
+  await asUser(premium);
+  await db.query('select submit_formation_vote($1::uuid,1::smallint)', [id]);
+  await asUser(admin);
+  await db.query('select close_formation_poll($1::uuid)', [id]);
+  expect((await db.query('select formation_poll_state($1::uuid) as state', [id])).rows[0])
+    .toMatchObject({ state: { winning_option: 1 } });
+  await db.exec('reset role');
+  expect((await db.query("select player_id from match_players where match_id=$1 and team='A' order by position", [id])).rows)
+    .toEqual([{ player_id: players[0] }, { player_id: players[1] }]);
 });
 
 test('durante il sondaggio non si possono cambiare le squadre e dopo la scadenza non si può votare', async () => {

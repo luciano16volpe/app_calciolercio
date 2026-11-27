@@ -1281,6 +1281,7 @@ export type Database = {
       save_match_prediction: { Args: { p_match: string; p_outcome: string | null; p_score_a?: number | null; p_score_b?: number | null }; Returns: undefined }
       submit_formation_vote: { Args: { p_match: string; p_option: number }; Returns: undefined }
       close_formation_poll: { Args: { p_match: string }; Returns: undefined }
+      reopen_formation_poll: { Args: { p_match: string }; Returns: undefined }
       close_community_voting: { Args: { p_match: string }; Returns: undefined }
       reopen_community_voting: { Args: { p_match: string }; Returns: undefined }
       wallet_state: { Args: { p_league: string }; Returns: Json }

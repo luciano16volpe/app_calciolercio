@@ -3,22 +3,34 @@ import { useQueryClient } from '@tanstack/react-query';
 import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { useAuth } from '../../app/auth';
 import { useToast } from '../../app/Toast';
-import { closeFormationPoll, formationPollListKey, formationPollStateKey, formationPollVotesKey, submitFormationVote, useFormationPolls, useFormationPollState, type FormationOption } from '../../data/formationPolls';
+import { closeFormationPoll, formationPollListKey, formationPollStateKey, formationPollVotesKey, reopenFormationPoll, submitFormationVote, useFormationPolls, useFormationPollState, type FormationOption } from '../../data/formationPolls';
 import { FormationVoteSummary } from './FormationVoteSummary';
 import { LEAGUE_HISTORY_QUERY_KEY, LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
 import { formatDate } from '../../domain/format';
 
 const number = (value: number, digits = 1) => Number(value).toFixed(digits).replace('.', ',');
 const deadline = (value: string) => new Date(value).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' });
+const timeLeft = (value: string, now: number) => {
+  const minutes = Math.max(0, Math.ceil((new Date(value).getTime() - now) / 60_000));
+  if (!minutes) return 'In chiusura';
+  const hours = Math.floor(minutes / 60);
+  return hours ? `${hours} h ${minutes % 60} min` : `${minutes} min`;
+};
+function useClock() {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 30_000); return () => window.clearInterval(timer); }, []);
+  return now;
+}
 
 export function FormationPollBanner({ data, onOpen, excludeId }: { data: LeagueData; onOpen: (id: string) => void; excludeId?: string }) {
   const polls = useFormationPolls(data.league.id);
+  const now = useClock();
   const list = (polls.data ?? []).filter((poll) => poll.match_id !== excludeId);
   if (!list.length) return null;
   return <section className="formation-poll-banner" aria-label="Sondaggi formazioni aperti">
     <strong>⭐ Scegli le squadre</strong>
     {list.map((poll) => <button key={poll.match_id} type="button" className="formation-poll-entry" onClick={() => onOpen(poll.match_id)}>
-      <span><b>Partita del {formatDate(poll.date)}</b><small>Fino al {deadline(poll.closes_at)}</small></span>
+      <span><b>Partita del {formatDate(poll.date)}</b><small>Chiude tra {timeLeft(poll.closes_at, now)}</small></span>
       <span aria-hidden="true">Vedi e vota ›</span>
     </button>)}
   </section>;
@@ -27,10 +39,11 @@ export function FormationPollBanner({ data, onOpen, excludeId }: { data: LeagueD
 /** Pulsante «Vedi e vota» dentro la card della prossima partita (solo se il sondaggio è aperto). */
 export function FormationPollInline({ data, matchId, onOpen }: { data: LeagueData; matchId: string; onOpen: (id: string) => void }) {
   const polls = useFormationPolls(data.league.id);
+  const now = useClock();
   const poll = polls.data?.find((p) => p.match_id === matchId);
   if (!poll) return null;
   return <button type="button" className="formation-poll-entry" style={{ marginTop: 10, width: '100%' }} onClick={() => onOpen(matchId)}>
-    <span><b>⭐ Scegli le squadre</b><small>Fino al {deadline(poll.closes_at)}</small></span>
+    <span><b>⭐ Scegli le squadre</b><small>Chiude tra {timeLeft(poll.closes_at, now)}</small></span>
     <span aria-hidden="true">Vedi e vota ›</span>
   </button>;
 }
@@ -74,6 +87,8 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
   const [selection, setSelection] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [reopening, setReopening] = useState(false);
+  const now = useClock();
   const confirm = useConfirm();
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') { releaseKeyboard(); onClose(); repairViewport(); } };
@@ -83,12 +98,12 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
   const state = poll.data;
   const names = new Map(data.dataset.players.map((player) => [player.id, player.name]));
   const chosen = selection ?? state?.my_vote ?? null;
-  const canVote = !!state?.is_open && !!state.has_premium;
+  const canVote = !!state?.is_open;
   const close = () => { releaseKeyboard(); onClose(); repairViewport(); };
   // chiusura anticipata (solo admin, anche se non è Premium): sceglie subito la formazione definitiva
   const closePoll = async () => {
     if (closing) return;
-    const ok = await confirm({ icon: '🔒', title: 'Chiudere il sondaggio?', lines: ['Si sceglie subito la formazione più votata. Con un pareggio o senza voti resta quella che hai pubblicato.', 'Non si può annullare.'], okLabel: 'Chiudi sondaggio', danger: true });
+    const ok = await confirm({ icon: '🔒', title: 'Chiudere il sondaggio?', lines: ['Si sceglie subito la formazione più votata. In caso di parità vince la formazione più precisa.', 'Potrai riaprirlo prima della partita.'], okLabel: 'Chiudi sondaggio' });
     if (!ok) return;
     setClosing(true);
     try {
@@ -98,8 +113,20 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
         qc.invalidateQueries({ queryKey: formationPollListKey(data.league.id, user?.id) }),
         qc.invalidateQueries({ queryKey: LEAGUE_QUERY_KEY }), qc.invalidateQueries({ queryKey: LEAGUE_HISTORY_QUERY_KEY })]);
       toast('Sondaggio chiuso: squadre definitive salvate');
-      close();
-    } catch (error) { toast('Errore: ' + (error as Error).message); setClosing(false); }
+    } catch (error) { toast('Errore: ' + (error as Error).message); }
+    finally { setClosing(false); }
+  };
+  const reopenPoll = async () => {
+    if (reopening) return;
+    setReopening(true);
+    try {
+      await reopenFormationPoll(matchId);
+      await Promise.all([qc.invalidateQueries({ queryKey: formationPollStateKey(matchId, user?.id) }),
+        qc.invalidateQueries({ queryKey: formationPollVotesKey(matchId, user?.id) }),
+        qc.invalidateQueries({ queryKey: formationPollListKey(data.league.id, user?.id) })]);
+      toast('Sondaggio riaperto: si può votare di nuovo.');
+    } catch (error) { toast('Errore: ' + (error as Error).message); }
+    finally { setReopening(false); }
   };
   const save = async () => {
     if (!canVote || chosen === null) return;
@@ -116,14 +143,14 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
   return <div className="formation-poll-overlay" role="dialog" aria-modal="true" aria-labelledby="formation-poll-title" onClick={(event) => { if (event.target === event.currentTarget) close(); }}>
     <div className="formation-poll-panel">
       <header className="formation-poll-head"><div><h2 id="formation-poll-title">⭐ Scegli le squadre</h2>
-        <p>{state?.is_open ? `Puoi votare fino al ${deadline(state.closes_at)}` : 'Sondaggio chiuso'} · Partita del {formatDate(data.dataset.matches.find((m) => m.id === matchId)?.date)}</p></div>
+        <p>{state?.is_open ? `Chiude tra ${timeLeft(state.closes_at, now)} · ${deadline(state.closes_at)}` : 'Sondaggio chiuso'} · Partita del {formatDate(data.dataset.matches.find((m) => m.id === matchId)?.date)}</p></div>
         <button type="button" aria-label="Chiudi scelta formazioni" onClick={close}>✕</button></header>
       <div className="formation-poll-body">
         {poll.isError ? <p role="alert">Impossibile caricare le formazioni. Riprova.</p> : poll.isSuccess && !state ? <p>Sondaggio non disponibile.</p> : !state ? <p>Caricamento formazioni…</p> : <>
-          {!state.has_premium ? <div className="formation-premium-note"><b>Funzione Premium</b><p>Puoi vedere tutte le formazioni. Per scegliere serve Premium attivo: chiedi all’amministratore di attivarlo.</p></div> : null}
           {state.is_open && state.my_vote ? <p className="formation-my-vote">Hai scelto la formazione {state.my_vote}. Puoi cambiare idea prima della chiusura.</p> : null}
           {!state.is_open ? <p className="formation-my-vote">{state.winning_option ? `Formazione definitiva: ${state.winning_option}.` : 'La scelta finale sarà pubblicata a breve.'}{state.closed_early_at ? ` Chiuso in anticipo${state.closed_early_by_name ? ` da ${state.closed_early_by_name}` : ''}.` : ''}</p> : null}
-          {state.is_admin ? <FormationVoteSummary matchId={matchId} options={state.options} names={names} /> : null}
+          <FormationVoteSummary matchId={matchId} options={state.options} names={names}
+            total={state.voter_count} showDetails={state.is_admin || !!state.finalized_at} admin={state.is_admin && !state.finalized_at} />
           {state.options.map((option) => <OptionCard key={option.option_no} option={option} names={names}
             chosen={chosen === option.option_no} onChoose={() => setSelection(option.option_no)} canVote={canVote} />)}
         </>}
@@ -132,6 +159,11 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
         <button type="button" id="formation-poll-close" className="btn btn-secondary btn-sm admin-close-vote admin-only" disabled={closing || busy} onClick={() => void closePoll()}>
           {closing ? 'Chiusura…' : '🔒 Chiudi votazione'}</button>
         <small>Solo per l’admin. Altrimenti si chiude da sola il {deadline(state.closes_at)}.</small>
+      </footer> : null}
+      {state?.can_reopen ? <footer className="formation-poll-footer formation-poll-admin">
+        <button type="button" className="btn btn-secondary btn-sm admin-only" disabled={reopening || busy} onClick={() => void reopenPoll()}>
+          {reopening ? 'Riapertura…' : '🔓 Riapri votazione'}</button>
+        <small>La votazione riparte per 24 ore, o fino all’inizio della partita se manca meno tempo.</small>
       </footer> : null}
       {canVote ? <footer className="formation-poll-footer"><button type="button" className="btn btn-primary btn-full" disabled={busy || chosen === null} onClick={() => void save()}>
         {busy ? 'Salvataggio…' : chosen === null ? 'Scegli una formazione' : `Conferma la formazione ${chosen}`}</button></footer> : null}
