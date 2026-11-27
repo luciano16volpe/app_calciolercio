@@ -269,6 +269,12 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
     saveFormat(data.league.id, f);
   };
   const live = selected.filter((id) => dataset.players.some((p) => p.id === id)); // un giocatore tolto dalla rosa non conta più
+  const keeperCandidates = live
+    .map((id) => dataset.players.find((p) => p.id === id))
+    .filter((p): p is (typeof dataset.players)[number] => p !== undefined)
+    .sort((a, b) => Number(b.roles?.includes('POR')) - Number(a.roles?.includes('POR'))
+      || (Number(b.stats[9]) || 0) - (Number(a.stats[9]) || 0)
+      || a.name.localeCompare(b.name, 'it') || a.id.localeCompare(b.id));
 
   const activeKeepers = keeperMode === 'fissi' ? [0, 1].map((slot) => live.includes(keeperIds[slot] ?? '') ? keeperIds[slot] as string : '') : [];
   const goalkeeperIndices = activeKeepers.filter(Boolean).map((id) => dataset.players.findIndex((p) => p.id === id));
@@ -375,13 +381,13 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
           <div className="section-header">Portieri</div>
           <div className="keeper-modes">
             <label><input type="radio" name="keeper-mode" checked={keeperMode === 'volanti'} onChange={() => { setKeeperMode('volanti'); setRes(null); }} /> Volanti</label>
-            <label><input type="radio" name="keeper-mode" checked={keeperMode === 'fissi'} onChange={() => { setKeeperMode('fissi'); setKeeperIds(live.filter((id) => dataset.players.find((p) => p.id === id)?.roles?.includes('POR')).slice(0, 2)); setRes(null); }} /> Fissi per tutta la partita</label>
+            <label><input type="radio" name="keeper-mode" checked={keeperMode === 'fissi'} onChange={() => { setKeeperMode('fissi'); setKeeperIds(keeperCandidates.filter((p) => p.roles?.includes('POR')).slice(0, 2).map((p) => p.id)); setRes(null); }} /> Fissi per tutta la partita</label>
           </div>
           {keeperMode === 'fissi' ? <div className="keeper-selects">
             {[0, 1].map((slot) => <label key={slot}>Portiere {slot + 1}{slot === 1 ? ' (facoltativo)' : ''}
               <select value={activeKeepers[slot] ?? ''} onChange={(e) => { const next = [...activeKeepers]; next[slot] = e.target.value; setKeeperIds(next); setRes(null); }}>
                 <option value="">Scegli un convocato</option>
-                {live.filter((id) => id === activeKeepers[slot] || id !== activeKeepers[1 - slot]).map((id) => <option key={id} value={id}>{dataset.players.find((p) => p.id === id)?.name}</option>)}
+                {keeperCandidates.filter((p) => p.id !== activeKeepers[1 - slot]).map((p) => <option key={p.id} value={p.id}>{p.roles?.includes('POR') ? '🧤 ' : ''}{p.name} · Porta {p.stats[9] ?? 0}</option>)}
               </select>
             </label>)}
             <small>Con un solo portiere fisso, nell’altra squadra il portiere può ruotare. Con due, il sorteggio li mette in squadre diverse.</small>
