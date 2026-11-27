@@ -111,7 +111,7 @@ export function NewMatchDialog({ data, combos, idx, goalkeeperIds, onClose }: { 
               <strong>🔵 Blu:</strong> {names(combo.tA)}<br /><strong>⚪ Bianchi:</strong> {names(combo.tB)}
             </div>
             <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 5 }}>
-              🧤 {goalkeeperIds.length === 2 ? `Portieri fissi: ${goalkeeperIds.map((id) => players.find((p) => p.id === id)?.name).join(' e ')}` : 'Portieri volanti'}
+              🧤 {goalkeeperIds.length ? `${goalkeeperIds.length === 1 ? 'Portiere fisso' : 'Portieri fissi'}: ${goalkeeperIds.map((id) => players.find((p) => p.id === id)?.name).join(' e ')}` : 'Portieri volanti'}
             </div>
             <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 6 }}>
               🎯 Previsione: <strong>{goalsLabel(combo.sA - combo.sB)}</strong> · {combo.custom ? 'squadre modificate a mano' : `${idx + 1}ª proposta`}{' '}

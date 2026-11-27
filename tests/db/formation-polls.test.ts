@@ -60,6 +60,22 @@ test('salva i portieri fissi e rifiuta proposte che li mettono insieme', async (
   await db.exec('rollback to savepoint invalid_goalkeepers');
 });
 
+test('salva una partita con un solo portiere fisso e mantiene tutte le opzioni valide', async () => {
+  await asUser(admin);
+  const header = { league_id: league, date: '2026-12-30', play_time: '21:00', place: 'Campo Sole', goalkeeper_ids: [players[0]] };
+  const created = await db.query<{ id: string }>('select create_match_with_formation_poll($1::jsonb,$2::jsonb) as id', [JSON.stringify(header), JSON.stringify(options)]);
+  const id = created.rows[0]!.id;
+  expect((await db.query<{ goalkeeper_ids: string[] }>('select goalkeeper_ids from matches where id=$1', [id])).rows[0]!.goalkeeper_ids).toEqual([players[0]]);
+  await db.exec('reset role');
+  expect((await db.query<{ count: number }>('select count(*)::integer as count from formation_options where match_id=$1', [id])).rows[0]!.count).toBe(2);
+  await asUser(admin);
+  await db.exec('savepoint missing_keeper');
+  await expect(db.query('select create_match_with_teams($1::jsonb,$2::uuid[],$3::uuid[])', [
+    JSON.stringify({ ...header, goalkeeper_ids: ['20000000-0000-4000-8000-000000000099'] }), [players[0], players[1]], [players[2], players[3]],
+  ])).rejects.toThrow(/portieri fissi/);
+  await db.exec('rollback to savepoint missing_keeper');
+});
+
 test('tutti i membri vedono le opzioni e votano anche senza giocare', async () => {
   const id = await createPoll();
   await asUser(standard);

@@ -163,7 +163,7 @@ export function ResultView({ data, res, scores, goalkeeperIndices = [], onChange
   const svg = pitchSvg(pA, pB, c.modA, c.modB);
   const rows = statAverages(dataset.players, c.tA, c.tB);
   const down = useDragSwap((a, b) => {
-    if (goalkeeperIndices.includes(a) !== goalkeeperIndices.includes(b)) {
+    if (goalkeeperIndices.length === 2 && goalkeeperIndices.includes(a) !== goalkeeperIndices.includes(b)) {
       toast('I portieri fissi devono restare uno per squadra');
       return;
     }
@@ -283,13 +283,13 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
       toast(`Seleziona esattamente ${total} giocatori (${live.length}/${total})`);
       return;
     }
-    if (keeperMode === 'fissi' && (!activeKeepers[0] || !activeKeepers[1] || activeKeepers[0] === activeKeepers[1])) {
-      toast('Seleziona due portieri fissi tra i convocati');
+    if (keeperMode === 'fissi' && (!activeKeepers[0] || (activeKeepers[1] && activeKeepers[0] === activeKeepers[1]))) {
+      toast('Seleziona almeno un portiere fisso tra i convocati');
       return;
     }
     const sc = balanceScores(dataset, weights, formOn(data));
     const idx = live.map((id) => dataset.players.findIndex((p) => p.id === id));
-    const out = generateTeams({ players: dataset.players, scores: sc, selected: idx, sizeA: fmt.sizeA, sizeB: fmt.sizeB, modules: modulesOf(data), blocked: blockedPairs(dataset, idx), goalkeepers: keeperMode === 'fissi' ? goalkeeperIndices as [number, number] : undefined });
+    const out = generateTeams({ players: dataset.players, scores: sc, selected: idx, sizeA: fmt.sizeA, sizeB: fmt.sizeB, modules: modulesOf(data), blocked: blockedPairs(dataset, idx), goalkeepers: keeperMode === 'fissi' ? goalkeeperIndices : undefined });
     if (!out || !out.combos.length) { toast('Nessuna formazione disponibile con i portieri scelti'); return; }
     if (out.violations > 0) toast(`Turnazione non rispettabile del tutto: ${out.violations === 1 ? 'una coppia resta insieme' : `${out.violations} coppie restano insieme`} per più di 3 partite di fila.`);
     setScores(sc);
@@ -378,13 +378,13 @@ export function GiocaPage({ data, initialSelected = [], canCreate = false }: { d
             <label><input type="radio" name="keeper-mode" checked={keeperMode === 'fissi'} onChange={() => { setKeeperMode('fissi'); setKeeperIds(live.filter((id) => dataset.players.find((p) => p.id === id)?.roles?.includes('POR')).slice(0, 2)); setRes(null); }} /> Fissi per tutta la partita</label>
           </div>
           {keeperMode === 'fissi' ? <div className="keeper-selects">
-            {[0, 1].map((slot) => <label key={slot}>Portiere {slot + 1}
+            {[0, 1].map((slot) => <label key={slot}>Portiere {slot + 1}{slot === 1 ? ' (facoltativo)' : ''}
               <select value={activeKeepers[slot] ?? ''} onChange={(e) => { const next = [...activeKeepers]; next[slot] = e.target.value; setKeeperIds(next); setRes(null); }}>
                 <option value="">Scegli un convocato</option>
                 {live.filter((id) => id === activeKeepers[slot] || id !== activeKeepers[1 - slot]).map((id) => <option key={id} value={id}>{dataset.players.find((p) => p.id === id)?.name}</option>)}
               </select>
             </label>)}
-            <small>I due portieri vengono messi in squadre diverse; il sorteggio completa le formazioni attorno a loro.</small>
+            <small>Con un solo portiere fisso, nell’altra squadra il portiere può ruotare. Con due, il sorteggio li mette in squadre diverse.</small>
           </div> : <small>Il portiere può ruotare durante la partita, come nelle formazioni attuali.</small>}
         </div>
       </div>

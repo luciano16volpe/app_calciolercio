@@ -261,8 +261,8 @@ export interface GenerateInput extends BalanceContext {
   modules?: Record<number, Module[]>;
   /** Coppie (indici nella rosa) che non possono stare nella stessa squadra: le divisioni che le uniscono non si propongono. */
   blocked?: Array<[number, number]>;
-  /** Due portieri fissi: devono essere convocati e giocare in squadre diverse. */
-  goalkeepers?: [number, number];
+  /** Uno o due portieri fissi convocati; se sono due, giocano in squadre diverse. */
+  goalkeepers?: number[];
 }
 
 /** Al massimo 96 divisioni valutate con tutti i moduli, invece di tutte le combinazioni. */
@@ -280,7 +280,9 @@ function candidateSplits(input: GenerateInput): PartialSplit[] {
   const { selected, sizeA, sizeB, scores } = input;
   const selectedSet = new Set(selected);
   const blocked = new Map<number, number[]>();
-  const keeperMate = (player: number): number | undefined => input.goalkeepers?.[0] === player ? input.goalkeepers[1] : input.goalkeepers?.[1] === player ? input.goalkeepers[0] : undefined;
+  const keeperMate = (player: number): number | undefined => input.goalkeepers?.length === 2
+    ? input.goalkeepers[0] === player ? input.goalkeepers[1] : input.goalkeepers[1] === player ? input.goalkeepers[0] : undefined
+    : undefined;
   for (const [x, y] of input.blocked ?? []) {
     if (!selectedSet.has(x) || !selectedSet.has(y)) continue;
     blocked.set(x, [...(blocked.get(x) ?? []), y]);
@@ -374,7 +376,9 @@ function enforceMinimumViolations(input: GenerateInput, candidates: PartialSplit
       return;
     }
     const player = input.selected[depth] as number;
-    const mate = input.goalkeepers?.[0] === player ? input.goalkeepers[1] : input.goalkeepers?.[1] === player ? input.goalkeepers[0] : undefined;
+    const mate = input.goalkeepers?.length === 2
+      ? input.goalkeepers[0] === player ? input.goalkeepers[1] : input.goalkeepers[1] === player ? input.goalkeepers[0] : undefined
+      : undefined;
     if (a.length < input.sizeA && !a.includes(mate ?? -1)) {
       const added = (adjacency.get(player) ?? []).filter((other) => a.includes(other)).length;
       visit(depth + 1, [...a, player], b, sumA + (input.scores[player] as number), violations + added);
@@ -397,7 +401,7 @@ function enforceMinimumViolations(input: GenerateInput, candidates: PartialSplit
 export function generateTeams(input: GenerateInput): { combos: Combo[]; genBest: number | null; violations: number } | null {
   const { selected, sizeA, sizeB } = input;
   if (selected.length !== sizeA + sizeB) return null;
-  if (input.goalkeepers && (input.goalkeepers[0] === input.goalkeepers[1] || input.goalkeepers.some((i) => !selected.includes(i)))) return null;
+  if (input.goalkeepers && (input.goalkeepers.length < 1 || input.goalkeepers.length > 2 || new Set(input.goalkeepers).size !== input.goalkeepers.length || input.goalkeepers.some((i) => !selected.includes(i)))) return null;
   const scoring: BalanceContext = input.goalkeepers
     ? { players: input.players.map((p, i) => input.goalkeepers!.includes(i) ? { ...p, roles: ['POR'] } : p), scores: input.scores }
     : input;

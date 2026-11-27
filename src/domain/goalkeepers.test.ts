@@ -19,6 +19,18 @@ test('il sorteggio separa i due portieri fissi in ogni proposta', () => {
   }
 });
 
+test('il sorteggio accetta un solo portiere fisso', () => {
+  const players = Array.from({ length: 10 }, () => ({ roles: ['DIF', 'MED', 'ATT'] }));
+  const result = generateTeams({
+    players, scores: Array(10).fill(5), selected: players.map((_, i) => i),
+    sizeA: 5, sizeB: 5, goalkeepers: [2],
+  });
+  expect(result?.combos.length).toBeGreaterThan(0);
+  for (const combo of result?.combos ?? []) {
+    expect(combo.tA.includes(2) !== combo.tB.includes(2)).toBe(true);
+  }
+});
+
 test('non accetta un portiere fisso fuori dai convocati', () => {
   const players = Array.from({ length: 4 }, () => ({ roles: ['MED'] }));
   expect(generateTeams({ players, scores: [5, 5, 5, 5], selected: [0, 1, 2, 3], sizeA: 2, sizeB: 2, goalkeepers: [0, 4] })).toBeNull();
