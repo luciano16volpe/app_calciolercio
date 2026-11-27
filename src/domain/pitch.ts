@@ -32,18 +32,29 @@ export function pitchSvg(
   const midX = W / 2;
   let s = '';
 
-  // sfondo e strisce
-  s += `<rect x="0" y="0" width="${W}" height="${H}" fill="#1b5e2d"/>`;
-  const sh = Math.round(fh / 9);
-  for (let y = M; y < M + fh; y += sh * 2)
-    s += `<rect x="${M}" y="${y}" width="${fw}" height="${Math.min(sh, M + fh - y)}" fill="rgba(255,255,255,0.03)"/>`;
+  // Manto scuro, taglio dell'erba, luce centrale e riflessi delle due squadre.
+  s += `<defs>
+    <linearGradient id="pitch-turf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b342a"/><stop offset="0.48" stop-color="#176a46"/><stop offset="1" stop-color="#0b392e"/></linearGradient>
+    <radialGradient id="pitch-light"><stop offset="0" stop-color="#7fdb95" stop-opacity=".18"/><stop offset="1" stop-color="#7fdb95" stop-opacity="0"/></radialGradient>
+    <linearGradient id="pitch-blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#69b9ff"/><stop offset="1" stop-color="#1758a8"/></linearGradient>
+    <linearGradient id="pitch-white" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#9ba7b5"/></linearGradient>
+    <filter id="pitch-shadow" x="-70%" y="-70%" width="240%" height="240%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#061912" flood-opacity=".8"/></filter>
+  </defs>`;
+  s += `<rect x="0" y="0" width="${W}" height="${H}" fill="url(#pitch-turf)"/>`;
+  const stripeW = fw / 10;
+  for (let i = 0; i < 10; i += 2)
+    s += `<rect x="${(M + i * stripeW).toFixed(1)}" y="${M}" width="${stripeW.toFixed(1)}" height="${fh}" fill="#d8ffd5" opacity=".035"/>`;
+  s += `<rect x="${M}" y="${M}" width="${fw / 2}" height="${fh}" fill="#2e8dff" opacity=".035"/>`;
+  s += `<rect x="${midX}" y="${M}" width="${fw / 2}" height="${fh}" fill="#e4ebff" opacity=".025"/>`;
+  s += `<ellipse cx="${midX}" cy="${H / 2}" rx="${fw * .65}" ry="${fh * .82}" fill="url(#pitch-light)"/>`;
+  s += `<rect x="3" y="3" width="${W - 6}" height="${H - 6}" rx="11" fill="none" stroke="#a4dbb4" stroke-opacity=".22" stroke-width="1.5"/>`;
 
   // linee del campo
-  s += `<rect x="${M}" y="${M}" width="${fw}" height="${fh}" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.8"/>`;
-  s += `<line x1="${midX}" y1="${M}" x2="${midX}" y2="${M + fh}" stroke="rgba(255,255,255,0.7)" stroke-width="1.8"/>`;
+  s += `<rect x="${M}" y="${M}" width="${fw}" height="${fh}" fill="none" stroke="#e9f8e9" stroke-opacity=".75" stroke-width="1.8"/>`;
+  s += `<line x1="${midX}" y1="${M}" x2="${midX}" y2="${M + fh}" stroke="#e9f8e9" stroke-opacity=".75" stroke-width="1.8"/>`;
   const cr2 = Math.min(H * 0.12, 28);
-  s += `<circle cx="${midX}" cy="${H / 2}" r="${cr2}" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.8"/>`;
-  s += `<circle cx="${midX}" cy="${H / 2}" r="2.5" fill="rgba(255,255,255,0.8)"/>`;
+  s += `<circle cx="${midX}" cy="${H / 2}" r="${cr2}" fill="none" stroke="#e9f8e9" stroke-opacity=".75" stroke-width="1.8"/>`;
+  s += `<circle cx="${midX}" cy="${H / 2}" r="2.5" fill="#e9f8e9"/>`;
 
   // aree di rigore
   const paH = fh * 0.52;
@@ -51,6 +62,8 @@ export function pitchSvg(
   const paY = M + (fh - paH) / 2;
   s += `<rect x="${M}" y="${paY}" width="${paW}" height="${paH}" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.2"/>`;
   s += `<rect x="${M + fw - paW}" y="${paY}" width="${paW}" height="${paH}" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.2"/>`;
+  s += `<circle cx="${M + paW * .73}" cy="${H / 2}" r="2" fill="#e9f8e9" fill-opacity=".8"/>`;
+  s += `<circle cx="${M + fw - paW * .73}" cy="${H / 2}" r="2" fill="#e9f8e9" fill-opacity=".8"/>`;
 
   // porte
   const gH = fh * 0.25;
@@ -121,38 +134,42 @@ export function pitchSvg(
   const assignedA = assignToSlots(pA, slotsA);
   const assignedB = assignToSlots(pB, slotsB);
 
-  const PR = 17; // raggio del cerchio del giocatore
+  const PR = 18; // raggio del cerchio del giocatore
   let clipDefs = '';
   let clipSeq = 0;
   function drawPlayer(px: number, py: number, player: PitchPlayer, fill: string, borderCol: string) {
     const name = player.name;
     const cx = px.toFixed(1);
     const cy = py.toFixed(1);
+    const ring = player.fixedGoalkeeper ? '#d8b5ff' : borderCol;
+    s += `<circle cx="${cx}" cy="${cy}" r="${PR + 3}" fill="#061c1c" fill-opacity=".55" filter="url(#pitch-shadow)"/>`;
+    if (player.fixedGoalkeeper) s += `<circle cx="${cx}" cy="${cy}" r="${PR + 5}" fill="none" stroke="#d8b5ff" stroke-opacity=".55" stroke-width="1.5"/>`;
     if (player.photo) {
       const cid = 'pclip' + clipSeq++;
       clipDefs += `<clipPath id="${cid}"><circle cx="${cx}" cy="${cy}" r="${PR}"/></clipPath>`;
-      // foto ritagliata nel cerchio, con l'anello del colore della squadra
-      s += `<image href="${player.photo}" x="${(px - PR).toFixed(1)}" y="${(py - PR).toFixed(1)}" width="${PR * 2}" height="${PR * 2}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${cid})"/>`;
-      s += `<circle cx="${cx}" cy="${cy}" r="${PR}" fill="none" stroke="${borderCol}" stroke-width="3"/>`;
-      // il nome sotto la foto, per riconoscerlo
-      const short = name.length > 8 ? name.substring(0, 7) + '…' : name;
-      s += `<text x="${cx}" y="${(py + PR + 9).toFixed(1)}" text-anchor="middle" font-size="7.5" font-weight="800" fill="white" stroke="rgba(0,0,0,0.5)" stroke-width="0.4" font-family="-apple-system,BlinkMacSystemFont,sans-serif">${esc(short)}</text>`;
+      s += `<image href="${esc(player.photo)}" x="${(px - PR).toFixed(1)}" y="${(py - PR).toFixed(1)}" width="${PR * 2}" height="${PR * 2}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${cid})"/>`;
+      s += `<circle cx="${cx}" cy="${cy}" r="${PR}" fill="none" stroke="${ring}" stroke-width="3"/>`;
     } else {
-      const short = name.length > 7 ? name.substring(0, 6) + '…' : name;
-      s += `<circle cx="${cx}" cy="${cy}" r="${PR}" fill="${fill}" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>`;
-      s += `<text x="${cx}" y="${(py + 4).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="800" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">${esc(short)}</text>`;
+      const initials = name.trim().split(/\s+/).slice(0, 2).map((part) => part[0] ?? '').join('').toUpperCase();
+      s += `<circle cx="${cx}" cy="${cy}" r="${PR}" fill="${fill}" stroke="${ring}" stroke-width="2.5"/>`;
+      s += `<text x="${cx}" y="${(py + 4).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="900" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">${esc(initials)}</text>`;
     }
+    const short = name.length > 10 ? name.substring(0, 9) + '…' : name;
+    const labelW = Math.min(78, Math.max(42, short.length * 5.2 + 12));
+    const labelY = py + PR + 3;
+    s += `<rect x="${(px - labelW / 2).toFixed(1)}" y="${labelY.toFixed(1)}" width="${labelW.toFixed(1)}" height="14" rx="7" fill="#071c1b" fill-opacity=".88" stroke="${ring}" stroke-opacity=".6" stroke-width=".8"/>`;
+    s += `<text x="${cx}" y="${(labelY + 10).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="800" fill="#f8fff8" font-family="-apple-system,BlinkMacSystemFont,sans-serif">${esc(short)}</text>`;
   }
 
   slotsA.forEach((sl, i) => {
     const p = assignedA[i];
     if (!p) return;
-    drawPlayer(lxS + sl.x * (lxE - lxS), yS + sl.y * (yE - yS), p, '#1e62c2', '#3a8fef');
+    drawPlayer(lxS + sl.x * (lxE - lxS), yS + sl.y * (yE - yS), p, 'url(#pitch-blue)', '#69b9ff');
   });
   slotsB.forEach((sl, i) => {
     const p = assignedB[i];
     if (!p) return;
-    drawPlayer(rxS + (1 - sl.x) * (rxE - rxS), yS + sl.y * (yE - yS), p, '#5b6570', '#ffffff');
+    drawPlayer(rxS + (1 - sl.x) * (rxE - rxS), yS + sl.y * (yE - yS), p, 'url(#pitch-white)', '#ffffff');
   });
 
   return { viewBox: `0 0 ${W} ${H}`, inner: (clipDefs ? `<defs>${clipDefs}</defs>` : '') + s };

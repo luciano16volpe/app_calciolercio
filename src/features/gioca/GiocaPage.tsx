@@ -182,10 +182,11 @@ export function ResultView({ data, res, scores, goalkeeperIndices = [], onChange
     <div id="partita-result">
       <div className="pitch-wrap">
         <div className="pitch-title-bar">
-          <span className="pitch-title">Campo</span>
+          <span className="pitch-title">Campo · Formazioni</span>
           <div className="pitch-legend">
             <span><div className="dot" style={{ background: '#3a8fef' }} />Blu</span>
             <span><div className="dot" style={{ background: '#f2f2f2', border: '1px solid #b0b6c0' }} />Bianchi</span>
+            {goalkeeperIndices.length ? <span><div className="dot" style={{ background: '#d8b5ff', border: '1px solid #f0ddff' }} />Portiere fisso</span> : null}
           </div>
         </div>
         <svg id="pitch-svg" className="pitch" xmlns="http://www.w3.org/2000/svg" viewBox={svg.viewBox} dangerouslySetInnerHTML={{ __html: svg.inner }} />

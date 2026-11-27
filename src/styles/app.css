@@ -618,13 +618,14 @@ html[data-theme="dark"] .conv-item{background:#1e232e}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap}
 
 /* ─── pitch ─── */
-.pitch-wrap{background:#1b5e2d;border-radius:var(--radius);overflow:visible;box-shadow:var(--shadow);margin-bottom:12px}
-.pitch-title-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(0,0,0,0.22);border-radius:var(--radius) var(--radius) 0 0}
-.pitch-title{color:#fff;font-size:14px;font-weight:800}
-.pitch-legend{display:flex;gap:12px}
+.pitch-wrap{background:#0b251f;border:1px solid rgba(192,226,205,.4);border-radius:18px;overflow:hidden;box-shadow:0 14px 30px rgba(9,29,25,.26),0 2px 0 rgba(255,255,255,.14) inset;margin-bottom:12px}
+.pitch-title-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 10px;padding:11px 15px;background:linear-gradient(100deg,#0b2323,#173e36 60%,#0b2323);border-bottom:1px solid rgba(191,239,209,.22)}
+.pitch-title{color:#f1fff6;font-size:13px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.pitch-legend{display:flex;gap:7px 12px;flex-wrap:wrap}
+@media(max-width:520px){.pitch-legend{width:100%}}
 .pitch-legend span{color:rgba(255,255,255,0.85);font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px}
 .dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
-svg.pitch{display:block;width:100%;border-radius:0 0 var(--radius) var(--radius)}
+svg.pitch{display:block;width:100%;border-radius:0 0 17px 17px}
 
 /* ─── result ─── */
 .team-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
@@ -1030,6 +1031,9 @@ input[type=file]{display:none}
 .new-match-betting-option input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--green); flex: none; }
 .new-match-betting-option span { display: flex; flex-direction: column; gap: 3px; line-height: 1.3; }
 .new-match-betting-option small { color: var(--text2); }
+.new-match-betting-section{display:grid;gap:7px}
+.new-match-betting-section>.btn{justify-self:start}
+.new-match-betting-option.is-disabled{opacity:.72;cursor:default}
 .match-bet-setting { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin: 10px 0; padding: 10px 12px; background: var(--gray2); border: 1px solid var(--gray3); border-radius: var(--radius-sm); }
 .match-bet-setting div { display: grid; gap: 3px; flex: 1 1 210px; }
 .match-bet-setting small { color: var(--text2); line-height: 1.4; }
