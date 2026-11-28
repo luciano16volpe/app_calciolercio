@@ -3,6 +3,7 @@ import { photoUrl, type LeagueData } from '../data/queries';
 import type { Combo } from '../domain/balancing';
 import { balanceScores } from '../domain/balancing';
 import { primaryRole, teamPlayers } from '../domain/gioca';
+import { pitchSvg, type PitchPlayer } from '../domain/pitch';
 import { formatDate, whenWhere } from '../domain/format';
 import { normalizeTeam } from '../domain/stats';
 import { profileSeasonData } from '../domain/profile';
@@ -57,7 +58,25 @@ export function matchFormations(ld: LeagueData, m: Match): HTMLCanvasElement {
   return drawFormations({ tA, tB, sA, sB, modA: '', modB: '', diff: sA != null && sB != null ? Math.abs(sA - sB) : null, subtitle: ['Formazioni del ' + formatDate(m.date), whenWhere(m)].filter(Boolean).join(' · ') });
 }
 
-export const matchSummary = (ld: LeagueData, m: Match): HTMLCanvasElement => drawSummary(summaryInput(ld.dataset, m, ld.editors?.[m.id]));
+/** Disegna nel riepilogo il campo con le squadre effettive. L'SVG non usa foto esterne, così il PNG resta esportabile. */
+export async function matchSummary(ld: LeagueData, m: Match): Promise<HTMLCanvasElement> {
+  const players = ld.dataset.players;
+  const side = (team: Match['teamA']): PitchPlayer[] => normalizeTeam(team).map((entry) => {
+    const player = players.find((p) => p.id === entry.id) ?? players.find((p) => p.name === entry.name);
+    return { name: player?.name ?? entry.name, roles: player?.roles ?? [], dispRole: primaryRole(player ?? {}),
+      fixedGoalkeeper: m.goalkeeperIds?.includes(entry.id ?? '') ?? false };
+  });
+  const svg = pitchSvg(side(m.teamA), side(m.teamB));
+  const [, , width, height] = svg.viewBox.split(' ').map(Number);
+  const markup = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${svg.viewBox}">${svg.inner}</svg>`;
+  const pitch = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => image.naturalWidth ? resolve(image) : reject(new Error('Campo non disponibile'));
+    image.onerror = () => reject(new Error('Impossibile preparare il campo'));
+    image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`;
+  });
+  return drawSummary(summaryInput(ld.dataset, m, ld.editors?.[m.id]), pitch);
+}
 
 export const matchSheet = (ld: LeagueData, m: SheetMatch): HTMLCanvasElement => drawSheet(sheetInput(ld.dataset, m));
 

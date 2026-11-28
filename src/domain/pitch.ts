@@ -23,7 +23,7 @@ export function pitchSvg(
 ): { viewBox: string; inner: string } {
   // l'altezza dipende dal numero di giocatori, così non si sovrappongono
   const maxN = Math.max(pA.length, pB.length);
-  const H = maxN <= 5 ? 240 : maxN <= 6 ? 270 : 300;
+  const H = maxN <= 5 ? 270 : maxN <= 6 ? 300 : 330;
   const W = 560;
 
   const M = 14;
@@ -134,10 +134,10 @@ export function pitchSvg(
   const assignedA = assignToSlots(pA, slotsA);
   const assignedB = assignToSlots(pB, slotsB);
 
-  const PR = 18; // raggio del cerchio del giocatore
+  const PR = 24; // raggio del cerchio del giocatore
   let clipDefs = '';
   let clipSeq = 0;
-  function drawPlayer(px: number, py: number, player: PitchPlayer, fill: string, borderCol: string) {
+  function drawPlayer(px: number, py: number, player: PitchPlayer, fill: string, borderCol: string, isGoalkeeper: boolean) {
     const name = player.name;
     const cx = px.toFixed(1);
     const cy = py.toFixed(1);
@@ -152,11 +152,11 @@ export function pitchSvg(
     } else {
       const initials = name.trim().split(/\s+/).slice(0, 2).map((part) => part[0] ?? '').join('').toUpperCase();
       s += `<circle cx="${cx}" cy="${cy}" r="${PR}" fill="${fill}" stroke="${ring}" stroke-width="2.5"/>`;
-      s += `<text x="${cx}" y="${(py + 4).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="900" fill="white" font-family="-apple-system,BlinkMacSystemFont,sans-serif">${esc(initials)}</text>`;
+      s += `<text x="${cx}" y="${(py + 5).toFixed(1)}" text-anchor="middle" font-size="14" font-weight="900" fill="${fill === 'url(#pitch-white)' ? '#16252f' : '#ffffff'}" font-family="-apple-system,BlinkMacSystemFont,sans-serif">${esc(initials)}</text>`;
     }
     const short = name.length > 10 ? name.substring(0, 9) + '…' : name;
     const labelW = Math.min(78, Math.max(42, short.length * 5.2 + 12));
-    const labelY = py + PR + 3;
+    const labelY = isGoalkeeper ? py - PR - 19 : py + PR + 3;
     s += `<rect x="${(px - labelW / 2).toFixed(1)}" y="${labelY.toFixed(1)}" width="${labelW.toFixed(1)}" height="14" rx="7" fill="#071c1b" fill-opacity=".88" stroke="${ring}" stroke-opacity=".6" stroke-width=".8"/>`;
     s += `<text x="${cx}" y="${(labelY + 10).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="800" fill="#f8fff8" font-family="-apple-system,BlinkMacSystemFont,sans-serif">${esc(short)}</text>`;
   }
@@ -164,12 +164,12 @@ export function pitchSvg(
   slotsA.forEach((sl, i) => {
     const p = assignedA[i];
     if (!p) return;
-    drawPlayer(lxS + sl.x * (lxE - lxS), yS + sl.y * (yE - yS), p, 'url(#pitch-blue)', '#69b9ff');
+    drawPlayer(lxS + sl.x * (lxE - lxS), yS + sl.y * (yE - yS), p, 'url(#pitch-blue)', '#69b9ff', i === 0 && sl.x < .15);
   });
   slotsB.forEach((sl, i) => {
     const p = assignedB[i];
     if (!p) return;
-    drawPlayer(rxS + (1 - sl.x) * (rxE - rxS), yS + sl.y * (yE - yS), p, 'url(#pitch-white)', '#ffffff');
+    drawPlayer(rxS + (1 - sl.x) * (rxE - rxS), yS + sl.y * (yE - yS), p, 'url(#pitch-white)', '#ffffff', i === 0 && sl.x < .15);
   });
 
   return { viewBox: `0 0 ${W} ${H}`, inner: (clipDefs ? `<defs>${clipDefs}</defs>` : '') + s };

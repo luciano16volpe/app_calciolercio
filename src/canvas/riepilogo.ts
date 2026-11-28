@@ -70,14 +70,17 @@ export function summaryInput(data: Dataset, m: Match, editor?: string): SummaryI
   };
 }
 
-export function drawSummary(s: SummaryInput): HTMLCanvasElement {
+export function drawSummary(s: SummaryInput, pitch?: HTMLImageElement): HTMLCanvasElement {
   const C = SHARE_C;
   const { h, tA, tB, notes } = s;
   // misure
   const W = 900, padX = 50, colGap = 40, colW = (W - 2 * padX - colGap) / 2;
   const sbY = notes ? 130 : 110, sbH = 128; // tabellone
   const hlY = sbY + sbH + 18, hlH = 84; // riquadri dei momenti chiave
-  const tbY = hlY + hlH + 22, tbH = 58; // riquadri delle squadre
+  const pitchW = W - 2 * padX;
+  const pitchH = pitch ? Math.round(pitchW * pitch.naturalHeight / pitch.naturalWidth) : 0;
+  const pitchY = hlY + hlH + 44;
+  const tbY = pitch ? pitchY + pitchH + 22 : hlY + hlH + 22, tbH = 58; // riquadri delle squadre
   const anyTit = [...tA, ...tB].some((p) => p.tit);
   const anyKeeper = [...tA, ...tB].some((p) => p.fixedGoalkeeper || p.goalkeeperRole);
   const rowH = (anyTit ? 86 : 64) + (anyKeeper ? 18 : 0), rowsY = tbY + tbH + 10;
@@ -158,6 +161,18 @@ export function drawSummary(s: SummaryInput): HTMLCanvasElement {
       ctx.fillText(val, x + 12, hlY + 72);
     }
   });
+
+  if (pitch) {
+    ctx.fillStyle = C.SUB;
+    ctx.textAlign = 'left';
+    ctx.font = SHARE_FONT('800 16px');
+    ctx.fillText('FORMAZIONI IN CAMPO', padX, pitchY - 15);
+    ctx.save();
+    roundRect(ctx, padX, pitchY, pitchW, pitchH, 14);
+    ctx.clip();
+    ctx.drawImage(pitch, padX, pitchY, pitchW, pitchH);
+    ctx.restore();
+  }
 
   // ── pagelle delle squadre ──
   const xA = padX, xB = padX + colW + colGap;
