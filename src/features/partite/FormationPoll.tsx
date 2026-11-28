@@ -3,6 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { releaseKeyboard, repairViewport, useConfirm } from '../../app/Dialogs';
 import { useAuth } from '../../app/auth';
 import { useToast } from '../../app/Toast';
+import { buildPath } from '../../app/league';
+import { drawFormationPollShare } from '../../canvas/formationPollShare';
 import { closeFormationPoll, formationPollListKey, formationPollStateKey, formationPollVotesKey, reopenFormationPoll, submitFormationVote, useFormationPolls, useFormationPollState, type FormationOption } from '../../data/formationPolls';
 import { FormationVoteSummary } from './FormationVoteSummary';
 import { LEAGUE_HISTORY_QUERY_KEY, LEAGUE_QUERY_KEY, type LeagueData } from '../../data/queries';
@@ -84,6 +86,7 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
   const poll = useFormationPollState(matchId);
   const qc = useQueryClient();
   const toast = useToast();
+  const [shareImage, setShareImage] = useState<{ key: string; blob: Blob } | null>(null);
   const [selection, setSelection] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -97,9 +100,48 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
   }, [onClose]);
   const state = poll.data;
   const names = new Map(data.dataset.players.map((player) => [player.id, player.name]));
+  const matchDate = data.dataset.matches.find((match) => match.id === matchId)?.date ?? '';
+  const shareKey = `${matchId}:${state?.closes_at ?? ''}`;
+  const readyShareImage = shareImage?.key === shareKey ? shareImage.blob : null;
+  useEffect(() => {
+    if (!state?.is_admin || !state.is_open) return;
+    let active = true;
+    const playerNames = new Map(data.dataset.players.map((player) => [player.id, player.name]));
+    drawFormationPollShare(matchDate, state.closes_at, state.options, playerNames)
+      .toBlob((blob) => { if (active && blob) setShareImage({ key: shareKey, blob }); }, 'image/png');
+    return () => { active = false; };
+  }, [data.dataset.players, matchDate, shareKey, state?.is_admin, state?.is_open, state?.closes_at, state?.options]);
   const chosen = selection ?? state?.my_vote ?? null;
   const canVote = !!state?.is_open;
   const close = () => { releaseKeyboard(); onClose(); repairViewport(); };
+  const sharePoll = async () => {
+    if (!state?.is_admin || !state.is_open || !readyShareImage) return;
+    const link = `${window.location.origin}${buildPath(data.league.slug, 'partite')}?formation-poll=${encodeURIComponent(matchId)}`;
+    const text = `⭐ Vota le formazioni della partita del ${formatDate(matchDate)}. Può votare ogni membro della lega, anche chi non gioca. Scegli qui: ${link}`;
+    const file = new File([readyShareImage], `sondaggio_formazioni_${matchDate || matchId}.png`, { type: 'image/png' });
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ title: 'Sondaggio formazioni', text, files: [file] });
+        return;
+      } catch (error) {
+        if ((error as Error).name === 'AbortError') return;
+      }
+    }
+    const imageUrl = URL.createObjectURL(readyShareImage);
+    const anchor = document.createElement('a');
+    anchor.href = imageUrl;
+    anchor.download = file.name;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(imageUrl), 1_000);
+    try {
+      await navigator.clipboard.writeText(link);
+      toast('Immagine salvata e link copiato');
+    } catch {
+      window.prompt('Immagine salvata. Copia il link per votare:', link);
+    }
+  };
   // chiusura anticipata (solo admin, anche se non è Premium): sceglie subito la formazione definitiva
   const closePoll = async () => {
     if (closing) return;
@@ -156,8 +198,11 @@ export function FormationPollModal({ data, matchId, onClose }: { data: LeagueDat
         </>}
       </div>
       {state?.can_close ? <footer className="formation-poll-footer formation-poll-admin">
-        <button type="button" id="formation-poll-close" className="btn btn-secondary btn-sm admin-close-vote admin-only" disabled={closing || busy} onClick={() => void closePoll()}>
-          {closing ? 'Chiusura…' : '🔒 Chiudi votazione'}</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" id="formation-poll-share" className="btn btn-secondary btn-sm admin-only" style={{ flex: 1 }} disabled={closing || !readyShareImage} onClick={() => void sharePoll()}>📲 Condividi</button>
+          <button type="button" id="formation-poll-close" className="btn btn-secondary btn-sm admin-close-vote admin-only" style={{ flex: 1 }} disabled={closing || busy} onClick={() => void closePoll()}>
+            {closing ? 'Chiusura…' : '🔒 Chiudi votazione'}</button>
+        </div>
         <small>Solo per l’admin. Altrimenti si chiude da sola il {deadline(state.closes_at)}.</small>
       </footer> : null}
       {state?.can_reopen ? <footer className="formation-poll-footer formation-poll-admin">

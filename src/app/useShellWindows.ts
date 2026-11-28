@@ -7,7 +7,11 @@ type View = { kind: 'player'; id: string; fromRosa?: boolean } | { kind: 'match'
 
 export function notificationMatch(path: string, search: string): View {
   if (parsePath(path).page !== 'partite') return null;
-  const id = new URLSearchParams(search).get('match');
+  const params = new URLSearchParams(search);
+  const pollId = params.get('formation-poll');
+  if (pollId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pollId))
+    return { kind: 'formationPoll', id: pollId };
+  const id = params.get('match');
   return id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
     ? { kind: 'match', id } : null;
 }
@@ -19,6 +23,7 @@ export function useShellWindows() {
     if (!notificationMatch(window.location.pathname, window.location.search)) return;
     const url = new URL(window.location.href);
     url.searchParams.delete('match');
+    url.searchParams.delete('formation-poll');
     window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
   }, []);
   const [menuOpen, setMenuOpen] = useState(false);
