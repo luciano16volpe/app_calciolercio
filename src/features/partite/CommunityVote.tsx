@@ -48,7 +48,11 @@ function VoteDetails({ matchId, autoOpen = false, ratings }: { matchId: string; 
     catch (cause) { setError((cause as Error).message); }
     finally { setLoading(false); }
   };
-  useEffect(() => { if (autoOpen) void load(); }, [matchId, autoOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!autoOpen) return;
+    const timer = window.setTimeout(() => void load(), 0);
+    return () => window.clearTimeout(timer);
+  }, [matchId, autoOpen]); // eslint-disable-line react-hooks/exhaustive-deps
   const toggle = async () => {
     if (open) { setOpen(false); setRows(null); return; }
     setOpen(true);
@@ -304,7 +308,7 @@ export function CommunityVoteModal({ match, ratings, onClose }: { match: Match |
             </div>
           </section> : null)}
         </> : <p className="vote-modal-message">{state.is_open ? 'Può votare solo chi ha partecipato alla partita.' : state.closed_early_at ? `La votazione è stata chiusa in anticipo${state.closed_early_by_name ? ` da ${state.closed_early_by_name}` : ''}.` : state.finalized ? 'La votazione è chiusa: le medie sono pubblicate.' : 'La votazione non è disponibile per questa partita.'}</p>}
-        {state?.finalized && state.has_premium ? <VoteDetails matchId={match.id} autoOpen ratings={ratings ?? []} /> : null}
+        {state?.finalized && (state.has_premium || state.can_reopen) ? <VoteDetails matchId={match.id} autoOpen ratings={ratings ?? []} /> : null}
       </div>
       {state?.can_vote && state.has_premium ? <div className="vote-modal-footer">
         <span>{savedCount ? `${savedCount} ${savedCount === 1 ? 'voto già salvato' : 'voti già salvati'}` : 'Nessun voto salvato'}{changedCount ? ` · ${changedCount} da salvare` : ''}</span>

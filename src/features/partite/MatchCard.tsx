@@ -8,6 +8,7 @@ import { canPlanMatch } from '../../domain/plannedMatch';
 import { PlannedMatchEditor } from './PlannedMatchEditor';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../app/auth';
+import { useMyPremium } from '../../data/premium';
 import { useCommunityVoteDisagreement, useCommunityVoteState, type CommunityVoteDisagreement } from '../../data/communityVotes';
 import { useFormationPollState } from '../../data/formationPolls';
 import { CommunityVoteControls } from './CommunityVote';
@@ -352,6 +353,7 @@ export function MatchCard(props: Parameters<typeof LoadedMatchCard>[0]) {
 function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEditText = false, canGazzetta = true, startText = false, startEdit = false }: { data: LeagueData; matchId: string; onClose: () => void; act: MatchActions; canEdit?: boolean; canEditText?: boolean; /** pubblicare/sostituire la Gazzetta (admin: solo Premium) */ canGazzetta?: boolean; startText?: boolean; startEdit?: boolean }) {
   const m = data.dataset.matches.find((x) => x.id === matchId);
   const { user } = useAuth();
+  const premium = useMyPremium(user?.id ?? null);
   const communityVote = useCommunityVoteState(matchId);
   const disagreement = useCommunityVoteDisagreement(matchId, communityVote.data?.finalized === true);
   const bettingEnabled = useAdvancedEnabled(data.league.id);
@@ -397,6 +399,7 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
   const scoreA = m.scoreA !== '' && m.scoreA != null ? String(m.scoreA) : '';
   const scoreB = m.scoreB !== '' && m.scoreB != null ? String(m.scoreB) : '';
   const editing = draft !== null;
+  const canViewPagelleVotes = premium.data?.active === true || canEdit;
   const full = editing && !textOnly; // modifica completa (amministratore)
   const teamA = normalizeTeam(m.teamA);
   const teamB = normalizeTeam(m.teamB);
@@ -665,15 +668,17 @@ function LoadedMatchCard({ data, matchId, onClose, act, canEdit = false, canEdit
               <TeamPanel title="🔵 Blu" team={teamA} ratings={ratings} blue side="A" ed={ed} hideRating={hideCommunityRatings} />
               <TeamPanel title="⚪ Bianchi" team={teamB} ratings={ratings} blue={false} side="B" ed={ed} hideRating={hideCommunityRatings} />
             </div> : <MatchOverview m={m} ratings={ratings} />}
-            {!editing ? <><button type="button" className="btn btn-secondary btn-full eq-toggle" id="match-balance-btn" onClick={() => setBalanceOpen((o) => !o)}>
-              ⚖️ Equilibrio squadre {balanceOpen ? '▴' : '▾'}
-            </button>
-            <div id="match-balance" style={{ display: balanceOpen ? 'block' : 'none' }}>
-              {balance ? <BalanceBody b={balance} /> : null}
-            </div>
-            {formationPoll.data ? <button type="button" className="btn btn-secondary btn-full" onClick={() => act.openFormationPoll(matchId)}>
-              {formationPoll.data.is_open ? '⭐ Vota le formazioni' : '🗳️ Vedi voti formazioni'}
-            </button> : null}</> : null}
+            {!editing ? <div className="match-insights" style={{ display: 'grid', gap: 8, marginTop: 14 }}>
+              <button type="button" className="btn btn-secondary btn-full eq-toggle" id="match-balance-btn" aria-expanded={balanceOpen} onClick={() => setBalanceOpen((o) => !o)}>
+                ⚖️ Equilibrio squadre {balanceOpen ? '▴' : '▾'}
+              </button>
+              {balanceOpen ? <div id="match-balance">{balance ? <BalanceBody b={balance} /> : null}</div> : null}
+              {communityVote.data?.enabled && communityVote.data.finalized ? canViewPagelleVotes ?
+                <button type="button" className="btn btn-secondary btn-full" onClick={() => act.openMatchVote(matchId)}>🗳️ Vedi voti pagelle</button> :
+                <button type="button" className="btn btn-secondary btn-full premium-locked" onClick={() => explainPremium('Voti pagelle')}>🗳️ Vedi voti pagelle <PremiumBadge /></button> : null}
+              {formationPoll.data?.is_open ? <button type="button" className="btn btn-secondary btn-full" onClick={() => act.openFormationPoll(matchId)}>⭐ Vota le formazioni</button> :
+                formationPoll.data?.finalized_at ? <button type="button" className="btn btn-secondary btn-full" onClick={() => act.openFormationPoll(matchId)}>🗳️ Vedi voti formazioni</button> : null}
+            </div> : null}
             {full && draft ? (
               <SheetScan data={data} m={m} onApply={(r) => setDraft((d) => (d ? {
                   ...d, goallessPlayed: r.scA === '0' && r.scB === '0',
