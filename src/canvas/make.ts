@@ -12,7 +12,7 @@ import { compareInput, drawCompare } from './confronto';
 import { drawFutCard, futCardModel } from './figurina';
 import { drawFormations, type FormationPlayer } from './formazioni';
 import { drawSheet, sheetInput, type SheetMatch } from './foglio';
-import { loadImage } from './images';
+import { embeddedPhoto, loadImage } from './images';
 import { drawSummary, summaryInput } from './riepilogo';
 
 const ROLE_ORDER: Record<string, number> = { POR: 0, DIF: 1, MED: 2, ATT: 3 };
@@ -58,12 +58,18 @@ export function matchFormations(ld: LeagueData, m: Match): HTMLCanvasElement {
   return drawFormations({ tA, tB, sA, sB, modA: '', modB: '', diff: sA != null && sB != null ? Math.abs(sA - sB) : null, subtitle: ['Formazioni del ' + formatDate(m.date), whenWhere(m)].filter(Boolean).join(' · ') });
 }
 
-/** Disegna nel riepilogo il campo con le squadre effettive. L'SVG non usa foto esterne, così il PNG resta esportabile. */
+/** Disegna nel riepilogo il campo con le squadre effettive e le foto principali incorporate. */
 export async function matchSummary(ld: LeagueData, m: Match): Promise<HTMLCanvasElement> {
   const players = ld.dataset.players;
+  const entries = [...normalizeTeam(m.teamA), ...normalizeTeam(m.teamB)];
+  const photos = new Map(await Promise.all(entries.map(async (entry) => {
+    const player = players.find((p) => p.id === entry.id) ?? players.find((p) => p.name === entry.name);
+    return [player?.id ?? '', await embeddedPhoto(photoUrl(ld.photos[player?.id ?? '']))] as const;
+  })));
   const side = (team: Match['teamA']): PitchPlayer[] => normalizeTeam(team).map((entry) => {
     const player = players.find((p) => p.id === entry.id) ?? players.find((p) => p.name === entry.name);
-    return { name: player?.name ?? entry.name, roles: player?.roles ?? [], dispRole: primaryRole(player ?? {}),
+    return { name: player?.name ?? entry.name, photo: photos.get(player?.id ?? '') ?? null,
+      roles: player?.roles ?? [], dispRole: primaryRole(player ?? {}),
       fixedGoalkeeper: m.goalkeeperIds?.includes(entry.id ?? '') ?? false };
   });
   const svg = pitchSvg(side(m.teamA), side(m.teamB));

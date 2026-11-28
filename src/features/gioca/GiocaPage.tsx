@@ -1,10 +1,11 @@
 // Gioca: formato della partita, convocati, sorteggio delle squadre bilanciate, campo, scambi a mano.
 // "Crea partita" arriva con il passo 3.7.
-import { Fragment, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useImageTools } from '../../app/ImageViewer';
 import { AdBanner } from '../../app/AdBanner';
 import { formOn, modulesOf } from '../../data/gameSettings';
 import { comboSheet, combosFormations } from '../../canvas/lazy';
+import { embeddedPhoto } from '../../canvas/images';
 import { NewMatchDialog } from './NewMatchDialog';
 import { useToast } from '../../app/Toast';
 import { photoUrl, type LeagueData } from '../../data/queries';
@@ -155,8 +156,21 @@ export function ResultView({ data, res, scores, goalkeeperIndices = [], onChange
   const toast = useToast();
   const { showImage, shareCanvas } = useImageTools();
   const { dataset } = data;
-  const players = useMemo(() => dataset.players.map((p) => ({ ...p, photo: photoUrl(data.photos[p.id]) })), [dataset, data.photos]);
   const c = res.combos[res.idx] as Combo;
+  const [photoData, setPhotoData] = useState<Record<string, string>>({});
+  useEffect(() => {
+    let active = true;
+    const urls = [...new Set([...c.tA, ...c.tB].map((i) => photoUrl(data.photos[dataset.players[i]?.id ?? ''])).filter((url): url is string => !!url))];
+    void Promise.all(urls.map(async (url) => [url, await embeddedPhoto(url)] as const)).then((entries) => {
+      if (!active) return;
+      setPhotoData((current) => ({ ...current, ...Object.fromEntries(entries.filter((entry): entry is readonly [string, string] => !!entry[1])) }));
+    });
+    return () => { active = false; };
+  }, [c.tA, c.tB, data.photos, dataset.players]);
+  const players = useMemo(() => dataset.players.map((p) => {
+    const url = photoUrl(data.photos[p.id]);
+    return { ...p, photo: url ? photoData[url] ?? url : null };
+  }), [dataset, data.photos, photoData]);
   const pA = teamPlayers(players, scores, c.tA, goalkeeperIndices);
   const pB = teamPlayers(players, scores, c.tB, goalkeeperIndices);
   const sum = comboSummary(c, res.genBest, res.idx, res.combos.length);

@@ -147,6 +147,7 @@ export function pitchSvg(
     if (player.photo) {
       const cid = 'pclip' + clipSeq++;
       clipDefs += `<clipPath id="${cid}"><circle cx="${cx}" cy="${cy}" r="${PR}"/></clipPath>`;
+      s += `<circle cx="${cx}" cy="${cy}" r="${PR}" fill="${fill}"/>`;
       s += `<image href="${esc(player.photo)}" x="${(px - PR).toFixed(1)}" y="${(py - PR).toFixed(1)}" width="${PR * 2}" height="${PR * 2}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${cid})"/>`;
       s += `<circle cx="${cx}" cy="${cy}" r="${PR}" fill="none" stroke="${ring}" stroke-width="3"/>`;
     } else {
