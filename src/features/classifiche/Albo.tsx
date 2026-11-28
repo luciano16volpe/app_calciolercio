@@ -1,7 +1,9 @@
 // "🏆 Albo d'oro": premi, Occasionali, premi della vergogna e imprese di ogni stagione.
 import { Fragment, useMemo } from 'react';
 import type { LeagueData } from '../../data/queries';
-import { ALBO_MIN_MATCHES, alboSeasons, FEATS, type AwardResult } from '../../domain/awards';
+import { ALBO_MIN_MATCHES, alboSeasons, AWARDS, FEATS, type AwardResult } from '../../domain/awards';
+
+const awardDescription = new Map(AWARDS.map((award) => [award.k, award.d]));
 
 const SEASON_ICON: Record<string, string> = { PRI: '🌸', EST: '☀️', AUT: '🍂', INV: '❄️' };
 
@@ -44,7 +46,7 @@ export function AlboList({ data, scope, onOpenPlayer }: { data: LeagueData; scop
   const idOf = (name: string) => data.dataset.players.find((p) => p.name === name)?.id;
   const row = (a: AwardResult) => (
     <div className="albo-row" key={a.k}>
-      <span className="albo-t">{a.t}</span>
+      <span className="albo-t">{a.t}<small className="albo-description">{awardDescription.get(a.k)}</small></span>
       <span className="albo-w"><Winners ws={a.winners} sep={a.k === 'coppia' ? 'br' : ','} idOf={idOf} onOpenPlayer={onOpenPlayer} /></span>
       <span className="albo-v">{a.value}</span>
     </div>
@@ -94,7 +96,7 @@ export function AlboList({ data, scope, onOpenPlayer }: { data: LeagueData; scop
                 <div className="albo-grp">Imprese</div>
                 {feats.map((f) => (
                   <div className="albo-feat" key={f.k}>
-                    <span className="albo-t">{f.t}</span>
+                    <span className="albo-t">{f.t}<small className="albo-description">{f.d}</small></span>
                     <span>
                       {(S.feats[f.k] ?? []).map((x, i) => (
                         <Fragment key={i}>

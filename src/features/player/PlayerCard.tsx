@@ -5,6 +5,7 @@ import { formOn } from '../../data/gameSettings';
 import { photoUrl, type LeagueData } from '../../data/queries';
 import { formState } from '../../domain/form';
 import { profileSeasonData } from '../../domain/profile';
+import { playerWrap } from '../../domain/playerWrap';
 import { PlayerAvatar } from './PlayerAvatar';
 import { playerPairs, type PairMate } from '../../domain/pairs';
 import { bachecaView, formWeightTip, formWeightView, playerTrophies } from '../../domain/playerCard';
@@ -18,6 +19,7 @@ import { PlayerBenchRow } from './PlayerBenchRow';
 import { PlayerLinkRow } from './PlayerLinkRow';
 import { PlayerPhotoGallery } from './PlayerPhotoGallery';
 import { PlayerPagelleDialog } from './PlayerPagelleDialog';
+import { PlayerWrapDialog } from './PlayerWrapDialog';
 import { usePrompt } from '../../app/Dialogs';
 import { useToast } from '../../app/Toast';
 import { useQueryClient } from '@tanstack/react-query';
@@ -136,6 +138,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   const toast = useToast();
   const queryClient = useQueryClient();
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const [wrapOpen, setWrapOpen] = useState(false);
   const player = dataset.players.find((p) => p.id === playerId);
   const rename = async () => {
     if (!player) return;
@@ -150,16 +153,17 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
   const [pagelleOpen, setPagelleOpen] = useState<{ focus?: string } | null>(null);
   const all = useMemo(() => seasonStats(dataset), [dataset]);
   const period = useMemo(() => player ? profileSeasonData(dataset, player.id, player.name) : null, [dataset, player]);
+  const wrap = useMemo(() => player ? playerWrap(dataset, player, data.albo, undefined, data.aliases?.[player.id]) : null, [dataset, player, data.albo, data.aliases]);
   const statsData = useMemo(() => period ? { ...data, dataset: period.dataset } : data, [data, period]);
   const useForm = formOn(data);
 
   // Esc chiude la scheda (passando a un altro giocatore la scheda riparte da capo: vedi key in App)
   useEffect(() => {
-    if (inline) return;
+    if (inline || wrapOpen) return;
     const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', k);
     return () => document.removeEventListener('keydown', k);
-  }, [onClose, inline]);
+  }, [onClose, inline, wrapOpen]);
 
   if (!player) return null;
   const state = formState(dataset, player, all);
@@ -207,6 +211,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
             </div>
             {inline ? null : <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text2)', fontSize: 22, padding: 4, lineHeight: 1 }}>✕</button>}
           </div>
+          <button type="button" className="btn btn-secondary btn-sm player-wrap-trigger" onClick={() => setWrapOpen(true)}>✨ Vedi Wrap passata stagione</button>
           <div id="match-modal-body">
             {canEdit ? (
               <div className="admin-only admin-block"><PlayerEditTop data={data} player={player} weightRow={weightRow} /></div>
@@ -245,6 +250,7 @@ export function PlayerCard({ data, playerId, onClose, onOpenPlayer, onOpenMatch,
         <PlayerPagelleDialog data={statsData} player={player} scopeLabel={period?.label} focusId={pagelleOpen.focus} onClose={() => setPagelleOpen(null)} onOpenMatch={onOpenMatch} />
       ) : null}
       {galleryOpen ? <PlayerPhotoGallery data={data} playerId={player.id} name={player.name} canManage={false} onClose={() => setGalleryOpen(false)} /> : null}
+      {wrapOpen ? <PlayerWrapDialog name={player.name} photo={photoUrl(data.photos[player.id])} wrap={wrap} onClose={() => setWrapOpen(false)} /> : null}
     </>
   );
 }

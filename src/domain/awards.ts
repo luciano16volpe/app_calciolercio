@@ -9,27 +9,28 @@ export const ALBO_MIN_MVP = 2; // "Re degli MVP" richiede almeno 2 titoli di MVP
 export interface AwardDef {
   k: string;
   t: string;
+  d: string;
   shame?: boolean;
   occ?: boolean;
 }
 
 export const AWARDS: AwardDef[] = [
-  { k: 'goleador', t: '🥇 Goleador' },
-  { k: 'assistman', t: '🅰️ Assistman' },
-  { k: 'media', t: '⭐ Miglior media' },
-  { k: 'mvp', t: '👑 Re degli MVP' },
-  { k: 'stelle', t: '🚀 Re delle Stelle' },
-  { k: 'stakanov', t: '🏃 Stakanovista' },
-  { k: 'coppia', t: "🤝 Coppia d'oro" },
-  { k: 'flop', t: '🥴 Peggior media', shame: true },
-  { k: 'cucchiaio', t: '🥄 Cucchiaio di legno', shame: true },
-  { k: 'rigori', t: '❌ Re dei rigori sbagliati', shame: true },
-  { k: 'autogol', t: '🙃 Re degli autogol', shame: true },
+  { k: 'goleador', t: '🥇 Goleador', d: 'Chi ha segnato più gol nella stagione.' },
+  { k: 'assistman', t: '🅰️ Assistman', d: 'Chi ha fornito più assist.' },
+  { k: 'media', t: '⭐ Miglior media', d: 'La media più alta dei voti ufficiali.' },
+  { k: 'mvp', t: '👑 Re degli MVP', d: 'Più titoli di migliore in campo, almeno due.' },
+  { k: 'stelle', t: '🚀 Re delle Stelle', d: 'Chi ha realizzato più mete.' },
+  { k: 'stakanov', t: '🏃 Stakanovista', d: 'Più presenze in campo.' },
+  { k: 'coppia', t: "🤝 Coppia d'oro", d: 'La coppia con più vittorie insieme, almeno tre partite.' },
+  { k: 'flop', t: '🥴 Peggior media', d: 'La media più bassa dei voti ufficiali.', shame: true },
+  { k: 'cucchiaio', t: '🥄 Cucchiaio di legno', d: 'La percentuale di vittorie più bassa.', shame: true },
+  { k: 'rigori', t: '❌ Re dei rigori sbagliati', d: 'Più rigori sbagliati.', shame: true },
+  { k: 'autogol', t: '🙃 Re degli autogol', d: 'Più autogol segnati.', shame: true },
   // 🧳 OCCASIONALI: da 2 partite fino a sotto il 40% della stagione (automatici)
-  { k: 'occMedia', t: '💎 Miglior Occasionale', occ: true },
-  { k: 'occBomber', t: '🎯 Bomber a gettone', occ: true },
-  { k: 'occFortuna', t: '🍀 Portafortuna', occ: true },
-  { k: 'occPendolare', t: "✈️ Pendolare d'oro", occ: true },
+  { k: 'occMedia', t: '💎 Miglior Occasionale', d: 'Media voto più alta tra chi ha giocato saltuariamente.', occ: true },
+  { k: 'occBomber', t: '🎯 Bomber a gettone', d: 'Più gol a partita tra gli occasionali.', occ: true },
+  { k: 'occFortuna', t: '🍀 Portafortuna', d: 'Percentuale di vittorie più alta tra gli occasionali.', occ: true },
+  { k: 'occPendolare', t: "✈️ Pendolare d'oro", d: 'Più presenze tra chi resta sotto la soglia dei titolari.', occ: true },
 ];
 
 /** Categorie aggiunte dopo la chiusura di una stagione: si aggiungono una volta sola alle stagioni già chiuse. */
